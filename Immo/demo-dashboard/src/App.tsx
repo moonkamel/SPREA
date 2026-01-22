@@ -422,14 +422,14 @@ export default function App() {
                                     {t.label}
                                     {simulation?.currentLabel === t.label && (
                                         <div className="absolute -top-14 flex flex-col items-center">
-                                            <span className="rounded-full bg-slate-800 px-5 py-2 text-xs font-black text-white shadow-xl">ACTUEL</span>
-                                            <div className="h-5 w-1.5 bg-slate-800" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-slate-800 shadow-lg" />
+                                            <div className="h-4 w-1 bg-slate-800" />
                                         </div>
                                     )}
                                     {simulation?.newLabel === t.label && (
                                         <div className="absolute -bottom-16 flex flex-col items-center animate-bounce">
-                                            <div className="h-5 w-1.5 bg-blue-600" />
-                                            <span className="rounded-full bg-blue-600 px-5 py-2 text-xs font-black text-white shadow-2xl">CIBLE</span>
+                                            <div className="h-4 w-1 bg-blue-600" />
+                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-lg" />
                                         </div>
                                     )}
                                 </div>

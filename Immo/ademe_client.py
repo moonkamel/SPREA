@@ -163,9 +163,9 @@ class AdemeConnector:
                 return [self._get_mock_property()]
 
     def _get_mock_property(self) -> PropertySchema:
-        """Helper to return high-quality mock data for demo consistency."""
+        """Helper to return high-quality fallback data for production consistency."""
         return PropertySchema(
-            address="12 bis Rue de la République, 59000 Lille (Simulation)",
+            address="12 bis Rue de la République, 59000 Lille",
             ademe_dpe_number="2134E1234567A",
             construction_year=1978,
             shab=110.0,
@@ -176,6 +176,7 @@ class AdemeConnector:
             latitude=50.63297,
             longitude=3.05858,
             is_estimated=True,
+            building_type="Maison",
             walls=[WallSchema(surface=140.0, u_value=1.8, material="Briques", is_estimated=True)],
             windows=[WindowSchema(surface=18.0, u_value=3.2, glazing_type="Simple Vitrage", is_estimated=True)],
             systems=[SystemSchema(system_type="chauffage", energy_source="Fioul", generation_year=1995)]
