@@ -47,7 +47,7 @@ const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
     { label: 'D', max: 250 }, { label: 'E', max: 330 }, { label: 'F', max: 420 }, { label: 'G', max: 999 },
 ];
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || "/api";
+const API_BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000";
 
 // --- Main Component ---
 
