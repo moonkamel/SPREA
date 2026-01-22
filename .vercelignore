@@ -1,0 +1,10 @@
+api/
+pdf_parser.py
+requirements.txt
+Dockerfile
+.venv/
+__pycache__/
+*.pyc
+.gitignore_backend
+schema.sql
+verify_*.py
