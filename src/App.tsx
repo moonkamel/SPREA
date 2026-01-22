@@ -1,10 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-    ShieldAlert,
     TrendingUp,
     Euro,
     Home,
-    Zap,
     Hammer,
     ChevronRight,
     Info,
@@ -12,7 +10,6 @@ import {
     Upload,
     FileText,
     Loader2,
-    ArrowRight,
     MapPin,
     AlertTriangle,
     Building2,

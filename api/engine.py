@@ -1,7 +1,7 @@
 import logging
 import copy
 from typing import Dict, List, Optional, Any
-from ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

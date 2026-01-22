@@ -13,7 +13,7 @@ try:
 except ImportError:
     OCR_AVAILABLE = False
 
-from ademe_client import AdemeConnector
+from api.ademe_client import AdemeConnector
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
