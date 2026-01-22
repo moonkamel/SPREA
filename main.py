@@ -46,6 +46,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"status": "online", "message": "SPREA API is running. Use /docs for API documentation."}
+
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # --- Core Logic ---
