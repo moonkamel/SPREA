@@ -1,3 +1,4 @@
+# Vercel Trigger: Renamed entrypoint to main.py
 import os
 import io
 import logging
