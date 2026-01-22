@@ -6,7 +6,7 @@ import json
 
 # Import the app (we might need to mock LLM before import if it calls it at top level)
 # but in our implementation, it's called inside the path operation.
-from pdf_parser import app
+from api.main import app
 
 client = TestClient(app)
 

@@ -1,5 +1,5 @@
-from ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
-from engine import DPECalculator
+from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+from api.engine import DPECalculator
 import json
 
 def test_engine_simulation():

@@ -1,4 +1,4 @@
-from ademe_client import AdemeConnector, ClimateZone, DPEClass
+from api.ademe_client import AdemeConnector, ClimateZone, DPEClass
 import json
 
 def test_mapping_and_fallback():
