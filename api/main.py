@@ -156,6 +156,7 @@ async def search_dpe(dpe_number: str):
 @app.post("/analyze-dpe")
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
+    logger.info(f"Received PDF upload request: {file.filename}")
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDFs are allowed.")
     
@@ -164,19 +165,27 @@ async def analyze_dpe(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB.")
 
     # 2. Text Extraction
-    raw_text = extract_text_from_pdf(file_bytes)
+    try:
+        raw_text = extract_text_from_pdf(file_bytes)
+        logger.info(f"Extracted {len(raw_text)} chars from PDF.")
+    except Exception as e:
+        logger.error(f"Text extraction failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not extract text from PDF.")
+
     if not raw_text:
         raise HTTPException(status_code=422, detail="PDF seems empty or unreadable.")
 
     # 3. LLM Analysis
     extracted_data = analyze_text_with_llm(raw_text)
+    logger.info("LLM extraction complete.")
 
-    return {{
+    return {
         "filename": file.filename,
         "raw_text_length": len(raw_text),
         "data": extracted_data
-    }}
+    }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    # Important: Use 0.0.0.0 for containerized deployment (Render/Docker)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

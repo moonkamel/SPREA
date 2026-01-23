@@ -134,14 +134,12 @@ class AdemeConnector:
                 
                 feature = ban_data["features"][0]
                 postcode = feature["properties"]["postcode"]
+                street = feature["properties"]["street"] or feature["properties"]["name"]
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
-                label = feature["properties"]["label"]
 
-                # 2. Search ADEME
-                # Use postcode for filtering to narrow down the search
+                # 2. Search ADEME with precision keywords (street + postcode)
                 ademe_params = {
-                    "q": postcode,
-                    "q_fields": "code_postal_brut",
+                    "q": f"{street} {postcode}",
                     "size": 50
                 }
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
