@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     TrendingUp,
     Euro,
@@ -10,12 +10,7 @@ import {
     MapPin,
     AlertTriangle,
     Building2,
-    Building,
-    Home,
-    TrendingUp,
-    Euro,
-    ChevronRight,
-    Info
+    Building
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -55,7 +50,6 @@ const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
     { label: 'D', max: 250 }, { label: 'E', max: 330 }, { label: 'F', max: 420 }, { label: 'G', max: 999 },
 ];
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://sprea.onrender.com";
 
 // --- Main Component ---
 
