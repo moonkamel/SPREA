@@ -38,6 +38,9 @@ interface PropertyData {
     gesValue?: number;
     wallMaterials?: string;
     glassType?: string;
+    roofIsolation?: string;
+    floorIsolation?: string;
+    heatingDetail?: string;
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -164,6 +167,9 @@ export default function App() {
                             gesValue: parseFloat(r.emission_ges_5_usages_par_m2 || "0"),
                             wallMaterials: r.qualite_isolation_murs || "Inconnu",
                             glassType: r.qualite_isolation_menuiseries || "Inconnu",
+                            roofIsolation: r.qualite_isolation_plancher_haut_comble_perdu || "Non spécifié",
+                            floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
+                            heatingDetail: r.description_installation_chauffage_n1 || "",
                             date_etablissement: r.date_etablissement_dpe
                         };
                     });
@@ -403,15 +409,26 @@ export default function App() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Chauffage</p>
-                                    <p className="text-sm font-bold text-slate-200 truncate">{property?.heatingType}</p>
+                                    <p className="text-xs font-bold text-slate-200 leading-tight">
+                                        {property?.heatingType}
+                                        {property?.heatingDetail && <span className="block mt-1 opacity-50 font-medium text-[9px]">{property.heatingDetail.substring(0, 40)}...</span>}
+                                    </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Murs</p>
-                                    <p className="text-sm font-bold text-slate-200 truncate">{property?.wallMaterials}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Murs</p>
+                                    <p className="text-sm font-bold text-slate-200 truncate capitalize">{property?.wallMaterials}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Vitrage</p>
+                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.glassType}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Toiture</p>
+                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.roofIsolation}</p>
                                 </div>
                                 <div className="col-span-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Vitrage</p>
-                                    <p className="text-sm font-bold text-slate-200">{property?.glassType}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Plancher</p>
+                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.floorIsolation}</p>
                                 </div>
                             </div>
                         </div>
