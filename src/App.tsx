@@ -236,11 +236,15 @@ export default function App() {
         activeActions.forEach(a => {
             let eff = 1.0;
             if (a.id === 'ite' && property.wallMaterials?.includes('Isolé')) eff = 0.4;
-            if (a.id === 'ite') cost += a.defaultCost * property.surface * 1.1 + 3500;
-            else if (a.id === 'iti') cost += a.defaultCost * property.surface + 1200;
-            else if (a.id === 'windows') cost += (a.defaultCost + 150) * 6;
-            else if (a.id === 'heatpump') cost += a.defaultCost + 1500;
-            else cost += a.defaultCost;
+
+            let itemCost = a.defaultCost;
+            if (a.id === 'ite') itemCost = a.defaultCost * property.surface * 1.1 + 3500;
+            else if (a.id === 'iti') itemCost = a.defaultCost * property.surface + 1200;
+            else if (a.id === 'floor') itemCost = a.defaultCost * property.surface;
+            else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
+            else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
+
+            cost += itemCost;
             cepRed += a.impactKwh * eff;
             gesRed += a.impactGes * eff;
         });
@@ -268,17 +272,23 @@ export default function App() {
             let itemCost = a.defaultCost;
             if (a.id === 'ite') itemCost = a.defaultCost * property.surface * 1.1 + 3500;
             else if (a.id === 'iti') itemCost = a.defaultCost * property.surface + 1200;
+            else if (a.id === 'floor') itemCost = a.defaultCost * property.surface;
             else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
             else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
             return { name: a.name, cost: itemCost };
         });
 
-        // Investor Tax Benefit
+        // Investor Metrics
         const taxBenefit = isInvestor ? rest * (tmi / 100 + 0.172) : 0;
+        const estimatedPropertyMarketValue = property.surface * 4000; // Baseline for ROI
+        const annualRent = monthlyRent * 12;
+        const yieldBrut = (annualRent / (estimatedPropertyMarketValue + cost)) * 100;
+        const cashflow = monthlyRent - (rest / 240); // Simple 20y financing sim for cashflow feel
 
         return {
             newCep, newGes, cost, sub, rest, taxBenefit,
             activeDetailedCosts,
+            yieldBrut, cashflow,
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
@@ -292,8 +302,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -311,7 +321,8 @@ export default function App() {
                     ges_value: property.gesValue || 0, new_ges: activeSim.newGes, total_cost: activeSim.cost,
                     subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
                     annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
-                    detailed_costs: activeSim.activeDetailedCosts
+                    detailed_costs: activeSim.activeDetailedCosts,
+                    yield_brut: activeSim.yieldBrut, cashflow: activeSim.cashflow
                 })
             });
             if (!res.ok) {
@@ -478,7 +489,8 @@ export default function App() {
                         )}
 
                         <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Revenus du Ménage</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Revenus du Ménage</p>
+                            <p className="text-[8px] font-bold text-blue-500 uppercase mb-3">Impacte le taux MaPrimeRénov'</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
                                     <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
@@ -609,13 +621,20 @@ export default function App() {
                                 </div>
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center justify-between">
-                                        Valeur Verte
+                                        {isInvestor ? 'Rentabilité Brut' : 'Valeur Verte'}
                                         <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
                                     </p>
-                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
-                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
+                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">
+                                        {isInvestor ? `${activeSim?.yieldBrut.toFixed(1)} %` : `+${Math.round(activeSim?.gain || 0).toLocaleString()} €`}
+                                    </div>
+                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">
+                                        {isInvestor ? `Cashflow est. : ${Math.round(activeSim?.cashflow || 0)} €/mois` : 'Gain de valeur IMMO estimé'}
+                                    </p>
                                     <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%.
+                                        {isInvestor
+                                            ? "Rendement annuel rapporté à l'investissement total (achat + travaux). Le cashflow simule un crédit sur 20 ans pour le reste à charge."
+                                            : "Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%."
+                                        }
                                     </div>
                                 </div>
                             </div>

@@ -116,15 +116,20 @@ class PDFReportGenerator:
 
         # Economic Benefits
         elements.append(Paragraph("Bénéfices & Retour sur Investissement", self.subtitle_style))
-        benefits_data = [
-            ["Plus-value Immobilière (Valeur Verte)", f"+{data.get('latent_gain', 0):,.0f} €"],
-            ["Économies d'énergie annuelles", f"{data.get('annual_savings', 0):,.0f} €/an"],
-            ["Temps de retour sur investissement", f"{data.get('roi_years', 0)} ans"]
-        ]
-        t = Table(benefits_data, colWidths=[8*cm, 8*cm])
+        benefits_data = []
+        if data.get('yield_brut') > 0:
+            benefits_data.append(["Rentabilité Brut", f"{data.get('yield_brut', 0):.1f} %"])
+            benefits_data.append(["Cashflow Mensuel estimé", f"{data.get('cashflow', 0):,.0f} €/mois"])
+        else:
+            benefits_data.append(["Plus-value Immobilière (Valeur Verte)", f"+{data.get('latent_gain', 0):,.0f} €"])
+        
+        benefits_data.append(["Économies d'énergie annuelles", f"{data.get('annual_savings', 0):,.0f} €/an"])
+        benefits_data.append(["Temps de retour sur investissement", f"{data.get('roi_years', 0)} ans"])
+
+        t = Table(benefits_data, colWidths=[10*cm, 6*cm])
         t.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f9ff')),
-            ('ALIGN', (1, 0), (1, 2), 'RIGHT'),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.lightblue),
             ('PADDING', (0, 0), (-1, -1), 8),
         ]))
