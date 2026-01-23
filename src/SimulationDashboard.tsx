@@ -43,6 +43,7 @@ const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
 ];
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000";
+console.log("[SPREA Dashboard] API_BASE target:", API_BASE);
 
 // --- Main Component ---
 
@@ -80,9 +81,9 @@ export default function SimulationDashboard() {
             } else {
                 alert("Aucun bien trouvé pour cette adresse.");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Erreur lors de la recherche.");
+            alert(`Erreur lors de la recherche à l'adresse ${API_BASE}: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -112,9 +113,9 @@ export default function SimulationDashboard() {
                 label: d.etiquette_actuelle || 'G'
             });
             setView('dashboard');
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Erreur lors de l'analyse du PDF.");
+            alert(`Erreur lors de l'analyse du PDF à l'adresse ${API_BASE}: ${err.message}`);
         } finally {
             setLoading(false);
         }

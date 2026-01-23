@@ -48,6 +48,7 @@ const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
 ];
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000";
+console.log("[SPREA] API_BASE target:", API_BASE);
 
 // --- Main Component ---
 
@@ -109,7 +110,7 @@ export default function App() {
             }
         } catch (err: any) {
             console.error("[SPREA] Search API failed:", err);
-            setError(`Le serveur de simulation est injoignable (${err.message}). Assurez-vous que pdf_parser.py tourne sur le port 8000.`);
+            setError(`Le serveur de simulation est injoignable à l'adresse ${API_BASE} (${err.message}). Vérifiez votre configuration Vercel.`);
         } finally {
             setLoading(false);
         }
@@ -160,7 +161,7 @@ export default function App() {
             setView('dashboard');
         } catch (err: any) {
             console.error("[SPREA] PDF API failed:", err);
-            setError(`Échec de l'analyse du PDF (${err.message}).`);
+            setError(`Échec de l'analyse du PDF à l'adresse ${API_BASE} (${err.message}).`);
         } finally {
             setLoading(false);
         }
