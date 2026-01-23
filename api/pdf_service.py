@@ -93,8 +93,13 @@ class PDFReportGenerator:
             financial_data.append(["PRIX D'ACHAT DU BIEN", f"{data.get('purchase_price', 0):,.0f} €"])
         
         detailed = data.get('detailed_costs', [])
-        for item in detailed:
-            financial_data.append([item.get('name', 'Travaux'), f"{item.get('cost', 0):,.0f} €"])
+        suggested_indices = []
+        for i, item in enumerate(detailed):
+            name = item.get('name', 'Travaux')
+            if item.get('suggested'):
+                name += " (Conseillé)"
+                suggested_indices.append(i + (1 if data.get('purchase_price') > 0 else 0))
+            financial_data.append([name, f"{item.get('cost', 0):,.0f} €"])
         
         financial_data.append(["INVESTISSEMENT BRUT", f"{data.get('total_cost', 0):,.0f} €"])
         financial_data.append(["Subventions (MaPrimeRénov')", f"{data.get('subsidies', 0):,.0f} €"])
@@ -108,11 +113,18 @@ class PDFReportGenerator:
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.grey),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('PADDING', (0, 0), (-1, -1), 6),
+        ]
+        
+        for idx in suggested_indices:
+            style.append(('FONTNAME', (0, idx), (-1, idx), 'Helvetica-Bold'))
+            style.append(('TEXTCOLOR', (0, idx), (0, idx), colors.HexColor('#2563eb')))
+
+        style.extend([
             ('FONTNAME', (0, total_rows-3), (-1, total_rows-3), 'Helvetica-Bold'), # Brut
             ('FONTNAME', (0, total_rows-1), (-1, total_rows-1), 'Helvetica-Bold'), # Net
             ('TEXTCOLOR', (1, total_rows-1), (1, total_rows-1), colors.HexColor('#2563eb')),
             ('FONTSIZE', (0, total_rows-1), (-1, total_rows-1), 12),
-        ]
+        ])
         
         t.setStyle(TableStyle(style))
         elements.append(t)

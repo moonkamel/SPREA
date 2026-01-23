@@ -26,6 +26,7 @@ interface RetrofitAction {
     impactGes: number;
     description: string;
     active: boolean;
+    suggested?: boolean;
     costOverride?: number;
 }
 
@@ -209,6 +210,35 @@ export default function App() {
             else inferred.wallMaterials = "Isolé RT2005";
         }
         setProperty(inferred);
+
+        // Intelligent Recommendations Logic
+        let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
+        if (inferred.roofIsolation?.toLowerCase().includes('bonne')) pRoof *= 0.35;
+        if (inferred.wallMaterials?.toLowerCase().includes('bonne')) pWalls *= 0.40;
+        if (inferred.glassType?.toLowerCase().includes('performant')) pWindows *= 0.50;
+        const total = pRoof + pWalls + pWindows + pFloor + pAir;
+
+        const losses = {
+            iti: (pRoof / total) * 100,
+            ite: (pWalls / total) * 100,
+            windows: (pWindows / total) * 100,
+            floor: (pFloor / total) * 100,
+            vmc: (pAir / total) * 100
+        };
+
+        const suggester = (a: RetrofitAction) => {
+            let isSuggested = false;
+            if (a.id === 'iti' && losses.iti > 20) isSuggested = true;
+            if (a.id === 'ite' && losses.ite > 20) isSuggested = true;
+            if (a.id === 'windows' && losses.windows > 15) isSuggested = true;
+            if (a.id === 'floor' && losses.floor > 10) isSuggested = true;
+            if (a.id === 'vmc' && losses.vmc > 15) isSuggested = true;
+            return { ...a, suggested: isSuggested, active: isSuggested };
+        };
+
+        setActionsA(prev => prev.map(suggester));
+        setActionsB(prev => prev.map(suggester));
+
         setView('dashboard');
     };
 
@@ -277,7 +307,7 @@ export default function App() {
             else if (a.id === 'floor') itemCost = a.defaultCost * property.surface;
             else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
             else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
-            return { name: a.name, cost: itemCost };
+            return { name: a.name, cost: itemCost, suggested: a.suggested };
         });
 
         // Investor Metrics
@@ -554,7 +584,10 @@ export default function App() {
                             {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
                                 <div key={a.id} className="group relative">
                                     <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
-                                        <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                            {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
+                                        </div>
                                         <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
                                     </button>
                                     <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
