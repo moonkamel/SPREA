@@ -137,29 +137,36 @@ export default function App() {
             const ademeRes = await fetch(ademeUrl);
             const ademeData = await ademeRes.json();
 
+            const labelToCep = (l: string): number => {
+                const thresholds: Record<string, number> = { A: 50, B: 90, C: 150, D: 215, E: 290, F: 375, G: 500 };
+                return thresholds[l] || 420;
+            };
+
             if (ademeData.results && ademeData.results.length > 0) {
                 // Map ADEME results with STRICT STREET FILTERING
                 const mappedResults = ademeData.results
                     .filter((r: any) => {
                         const ademeStreet = cleanText(r.nom_rue_ban || r.adresse_brut || "");
-                        // Check if the BAN street matches or is closely related to the ADEME street name
                         return ademeStreet.includes(streetClean) || streetClean.includes(ademeStreet);
                     })
-                    .map((r: any) => ({
-                        address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
-                        ademe_dpe_number: r.numero_dpe,
-                        surface: parseFloat(r.surface_habitable_logement || "100"),
-                        year: parseInt(r.annee_construction || "1980"),
-                        initialCep: parseFloat(r.consommation_energie_primaire_logement || "420"),
-                        label: (r.etiquette_dpe as DPEClass) || 'G',
-                        buildingType: r.type_batiment || 'Maison',
-                        heatingType: r.type_energie_chauffage || "Inconnu",
-                        gesLabel: r.etiquette_ges || "N/A",
-                        gesValue: parseFloat(r.consommation_ges || "0"),
-                        wallMaterials: r.type_materiaux_murs || "Inconnu",
-                        glassType: r.type_vitrage || "Inconnu",
-                        date_etablissement: r.date_etablissement_dpe
-                    }));
+                    .map((r: any) => {
+                        const dpeLabel = (r.etiquette_dpe as DPEClass) || 'G';
+                        return {
+                            address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
+                            ademe_dpe_number: r.numero_dpe,
+                            surface: parseFloat(r.surface_habitable_logement || "0"),
+                            year: parseInt(r.annee_construction || "0"),
+                            initialCep: parseFloat(r.conso_5_usages_par_m2_ep || r.consommation_energie_primaire_logement) || labelToCep(dpeLabel),
+                            label: dpeLabel,
+                            buildingType: r.type_batiment || 'Maison',
+                            heatingType: r.type_energie_principale_chauffage || "Inconnu",
+                            gesLabel: r.etiquette_ges || "N/A",
+                            gesValue: parseFloat(r.emission_ges_5_usages_par_m2 || "0"),
+                            wallMaterials: r.qualite_isolation_murs || "Inconnu",
+                            glassType: r.qualite_isolation_menuiseries || "Inconnu",
+                            date_etablissement: r.date_etablissement_dpe
+                        };
+                    });
 
                 if (mappedResults.length === 0) {
                     setError("Aucun DPE trouvé pour cette rue exacte (Vérifiez l'orthographe).");
