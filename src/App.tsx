@@ -44,6 +44,7 @@ interface PropertyData {
     floorIsolation?: string;
     heatingDetail?: string;
     ademe_dpe_number?: string;
+    postcode?: string;
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -88,6 +89,10 @@ export default function App() {
     const [isInvestor, setIsInvestor] = useState(false);
     const [monthlyRent, setMonthlyRent] = useState(800);
     const [tmi, setTmi] = useState(30);
+
+    // Local Subsidies States
+    const [localAidName, setLocalAidName] = useState("");
+    const [localAidAmount, setLocalAidAmount] = useState(0);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
@@ -169,7 +174,8 @@ export default function App() {
                     roofIsolation: r.qualite_isolation_plancher_haut_comble_perdu || "Non spécifié",
                     floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
                     heatingDetail: r.description_installation_chauffage_n1 || "",
-                    date_etablissement: r.date_etablissement_dpe
+                    date_etablissement: r.date_etablissement_dpe,
+                    postcode: postcode
                 }));
                 setSearchResults(mapped);
                 setView('results');
@@ -192,6 +198,16 @@ export default function App() {
             else inferred.wallMaterials = "Isolé RT2005";
         }
         setProperty(inferred);
+
+        // Local Aid Auto-Detection
+        if (p.postcode?.startsWith('59')) {
+            setLocalAidName("Prime AIR MEL (Lille)");
+            setLocalAidAmount(1500);
+        } else {
+            setLocalAidName("");
+            setLocalAidAmount(0);
+        }
+
         setView('dashboard');
     };
 
@@ -245,7 +261,7 @@ export default function App() {
         const target = getInfos(newCep, newGes);
         const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
         const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
-        const sub = cost * rate;
+        const sub = cost * rate + (activeScenario === 'A' ? localAidAmount : 0); // Apply local aid to active scenario
         const rest = cost - sub;
 
         // Investor Tax Benefit (Déficit Foncier / LMNP Amortissement)
@@ -284,7 +300,8 @@ export default function App() {
                     new_label: activeSim.newLabel, initial_cep: property.initialCep, new_cep: activeSim.newCep,
                     ges_value: property.gesValue || 0, new_ges: activeSim.newGes, total_cost: activeSim.cost,
                     subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
-                    annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi)
+                    annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
+                    local_aid: activeScenario === 'A' ? localAidAmount : 0
                 })
             });
             const blob = await res.blob();
@@ -475,6 +492,31 @@ export default function App() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        <div className="mb-8 p-6 bg-emerald-50/30 rounded-[1.5rem] border border-emerald-100">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-4">Aides Locales & Régionales</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Nom de l'aide</p>
+                                    <input
+                                        type="text"
+                                        placeholder="Ex: Prime AIR MEL..."
+                                        value={localAidName}
+                                        onChange={(e) => setLocalAidName(e.target.value)}
+                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-emerald-600"
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Montant estimé (€)</p>
+                                    <input
+                                        type="number"
+                                        value={localAidAmount}
+                                        onChange={(e) => setLocalAidAmount(Number(e.target.value))}
+                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-emerald-600"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-3">

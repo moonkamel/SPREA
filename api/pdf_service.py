@@ -90,16 +90,17 @@ class PDFReportGenerator:
         elements.append(Paragraph("Plan de Financement", self.subtitle_style))
         financial_data = [
             ["Investissement Total", f"{data.get('total_cost', 0):,.0f} €"],
-            ["Aides estimées (MPR/CEE)", f"{data.get('subsidies', 0):,.0f} €"],
+            ["Aides d'État (MPR/CEE)", f"{data.get('subsidies', 0) - data.get('local_aid', 0):,.0f} €"],
+            ["Aides Locales & Régionales", f"{data.get('local_aid', 0):,.0f} €"],
             ["Reste à charge Net", f"{data.get('rest_to_pay', 0):,.0f} €"]
         ]
         t = Table(financial_data, colWidths=[8*cm, 8*cm])
         t.setStyle(TableStyle([
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 2), (-1, 2), 12),
-            ('TEXTCOLOR', (1, 2), (1, 2), colors.HexColor('#2563eb')),
-            ('ALIGN', (1, 0), (1, 2), 'RIGHT'),
+            ('FONTNAME', (0, 3), (-1, 3), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 3), (-1, 3), 12),
+            ('TEXTCOLOR', (1, 3), (1, 3), colors.HexColor('#2563eb')),
+            ('ALIGN', (1, 0), (1, 3), 'RIGHT'),
             ('PADDING', (0, 0), (-1, -1), 8),
         ]))
         elements.append(t)
