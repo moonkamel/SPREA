@@ -132,16 +132,18 @@ class AdemeConnector:
                     logger.warning(f"Address not found via BAN: {address}")
                     return []
                 
-                feature = ban_data["features"][0]
-                postcode = feature["properties"]["postcode"]
                 street = feature["properties"]["street"] or feature["properties"]["name"]
+                # Clean street name for broader search: "Rue Brûle-Maison" -> "Brûle Maison"
+                street_clean = street.lower().replace("rue ", "").replace("boulevard ", "").replace("avenue ", "").replace("-", " ")
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
 
-                # 2. Search ADEME with precision keywords (street + postcode)
+                # 2. Search ADEME with precision keywords
+                # We search for the cleaned street name + postcode
                 ademe_params = {
-                    "q": f"{street} {postcode}",
-                    "size": 50
+                    "q": f"{street_clean} {postcode}",
+                    "size": 100
                 }
+                logger.info(f"Querying ADEME with: {ademe_params['q']}")
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []
