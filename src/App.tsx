@@ -24,6 +24,7 @@ interface RetrofitAction {
     defaultCost: number;
     impactKwh: number;
     impactGes: number;
+    description: string;
     active: boolean;
     costOverride?: number;
 }
@@ -45,6 +46,7 @@ interface PropertyData {
     heatingDetail?: string;
     ademe_dpe_number?: string;
     postcode?: string;
+    city?: string;
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -95,13 +97,13 @@ export default function App() {
     const [localAidAmount, setLocalAidAmount] = useState(0);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
-        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, active: false },
-        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, active: false },
-        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, active: false },
-        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, active: false },
-        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, active: false },
-        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, active: false },
+        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture pour réduire les déperditions par le haut (environ 30%).', active: false },
+        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'Isolation par l\'extérieur pour supprimer les ponts thermiques et protéger la façade.', active: false },
+        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, description: 'Isolation des planchers bas (cave, garage) pour éviter les remontées de froid.', active: false },
+        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, description: 'Remplacement des fenêtres par du double ou triple vitrage haute performance.', active: false },
+        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, description: 'Installation d\'un système Air-Eau pour un chauffage écologique et très économe.', active: false },
+        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, description: 'Système de ventilation récupérant les calories de l\'air extrait pour préchauffer l\'air entrant.', active: false },
+        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, description: 'Installation de panneaux photovoltaïques pour l\'autoconsommation d\'électricité.', active: false },
     ]);
 
     const [actionsB, setActionsB] = useState<RetrofitAction[]>([...actionsA]);
@@ -175,7 +177,8 @@ export default function App() {
                     floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
                     heatingDetail: r.description_installation_chauffage_n1 || "",
                     date_etablissement: r.date_etablissement_dpe,
-                    postcode: postcode
+                    postcode: postcode,
+                    city: props.city || props.town || ""
                 }));
                 setSearchResults(mapped);
                 setView('results');
@@ -190,6 +193,16 @@ export default function App() {
     };
 
     const selectProperty = (p: PropertyData) => {
+        // Full State Reset
+        setActionsA(prev => prev.map(a => ({ ...a, active: false })));
+        setActionsB(prev => prev.map(a => ({ ...a, active: false })));
+        setActiveScenario('A');
+        setCompareMode(false);
+        setIsInvestor(false);
+        setIncomeLevel('intermediaire');
+        setTmi(30);
+        setMonthlyRent(800);
+
         const year = p.year || 1970;
         const inferred = { ...p };
         if (!p.wallMaterials || p.wallMaterials === "Inconnu") {
@@ -282,8 +295,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, localAidAmount]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, localAidAmount]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -365,12 +378,22 @@ export default function App() {
                 <h2 className="text-3xl font-black text-slate-800 mb-8">Résultats ADEME</h2>
                 <div className="space-y-4">
                     {searchResults.map((res, idx) => (
-                        <button key={idx} onClick={() => selectProperty(res)} className="w-full bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-blue-200 transition-all text-left flex items-start justify-between">
-                            <div>
-                                <p className="font-bold text-slate-800 text-lg">{res.address}</p>
-                                <p className="text-sm font-bold text-slate-400">{res.surface} m² • {res.year}</p>
+                        <button key={idx} onClick={() => selectProperty(res)} className="w-full text-left p-6 bg-white rounded-3xl border-2 border-slate-50 hover:border-blue-600 transition-all shadow-sm flex items-center justify-between group">
+                            <div className="flex-1">
+                                <p className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                    {res.address}
+                                    {res.city && <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg">{res.city}</span>}
+                                </p>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><Home size={12} /> {res.surface} m²</span>
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><Building size={12} /> {res.year}</span>
+                                    {res.ademe_dpe_number && <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><FileText size={12} /> {res.ademe_dpe_number}</span>}
+                                </div>
                             </div>
-                            <div className={`px-4 py-2 rounded-lg text-xl font-black text-white`} style={{ backgroundColor: DPE_COLORS[res.label as DPEClass] }}>{res.label}</div>
+                            <div className={`px-4 py-2 rounded-lg text-xl font-black text-white ml-4 flex flex-col items-center justify-center min-w-[50px] shadow-sm`} style={{ backgroundColor: DPE_COLORS[res.label as DPEClass] }}>
+                                {res.label}
+                                <span className="text-[8px] opacity-60">DPE</span>
+                            </div>
                         </button>
                     ))}
                 </div>
@@ -415,7 +438,15 @@ export default function App() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <aside className="lg:col-span-4 space-y-6">
                     <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl">
-                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-blue-400"><PieChart size={24} /> Déperditions Thermiques</h3>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="flex items-center gap-3 text-xl font-black text-blue-400"><PieChart size={24} /> Déperditions Thermiques</h3>
+                            <div className="group relative">
+                                <span className="cursor-help text-slate-500 text-[10px] font-black uppercase border border-slate-700 px-2 py-1 rounded-lg hover:border-blue-400 hover:text-blue-400 transition-colors">?</span>
+                                <div className="absolute right-0 top-full mt-2 w-48 p-3 bg-slate-800 text-[10px] font-bold text-slate-300 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-white/5">
+                                    Répartition des pertes de chaleur par éléments. Plus le % est élevé, plus l'isolation de cette paroi est prioritaire.
+                                </div>
+                            </div>
+                        </div>
                         <div className="space-y-4">
                             {heatLoss?.map(item => (
                                 <div key={item.id}>
@@ -521,10 +552,15 @@ export default function App() {
 
                         <div className="space-y-3">
                             {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
-                                <button key={a.id} onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
-                                    <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
-                                    <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
-                                </button>
+                                <div key={a.id} className="group relative">
+                                    <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
+                                        <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                        <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
+                                    </button>
+                                    <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
+                                        <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -580,10 +616,16 @@ export default function App() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Valeur Verte</p>
+                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center justify-between">
+                                        Valeur Verte
+                                        <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
+                                    </p>
                                     <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
                                     <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
+                                    <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%.
+                                    </div>
                                 </div>
                             </div>
                         </div>
