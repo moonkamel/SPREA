@@ -1,21 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
     TrendingUp,
-    Euro,
     Home,
-    ChevronRight,
-    Info,
     Search,
     Loader2,
     MapPin,
-    AlertTriangle,
     Building2,
     Building,
     FileText,
     PieChart,
     Layers,
     Copy,
-    ArrowRightLeft
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -54,7 +49,6 @@ interface PropertyData {
 const DPE_COLORS: Record<DPEClass, string> = {
     A: '#31a354', B: '#74c476', C: '#a1d99b', D: '#feb24c', E: '#fd8d3c', F: '#f03b20', G: '#bd0026',
 };
-const DPE_COLORS_BG: Record<string, string> = DPE_COLORS;
 
 const DPE_THRESHOLDS_BASE: { label: DPEClass; cep: number; ges: number }[] = [
     { label: 'A', cep: 70, ges: 6 },
@@ -89,6 +83,11 @@ export default function App() {
     const [downloading, setDownloading] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
     const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
+
+    // Investor States
+    const [isInvestor, setIsInvestor] = useState(false);
+    const [monthlyRent, setMonthlyRent] = useState(800);
+    const [tmi, setTmi] = useState(30);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
@@ -247,11 +246,16 @@ export default function App() {
         const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
         const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
         const sub = cost * rate;
+        const rest = cost - sub;
+
+        // Investor Tax Benefit (Déficit Foncier / LMNP Amortissement)
+        const taxBenefit = isInvestor ? rest * (tmi / 100 + 0.172) : 0;
 
         return {
-            newCep, newGes, cost, sub, rest: cost - sub,
+            newCep, newGes, cost, sub, rest, taxBenefit,
+            netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
-            roi: (cost - sub) / ((cepRed * property.surface) * 0.228 || 1),
+            roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
             gain: property.surface * 4200 * (steps * 0.045),
             currentLabel: current.label,
             newLabel: target.label,
@@ -349,7 +353,7 @@ export default function App() {
                                 <p className="font-bold text-slate-800 text-lg">{res.address}</p>
                                 <p className="text-sm font-bold text-slate-400">{res.surface} m² • {res.year}</p>
                             </div>
-                            <div className="px-4 py-2 rounded-lg text-xl font-black text-white" style={{ backgroundColor: DPE_COLORS[res.label] }}>{res.label}</div>
+                            <div className={`px-4 py-2 rounded-lg text-xl font-black text-white`} style={{ backgroundColor: DPE_COLORS[res.label as DPEClass] }}>{res.label}</div>
                         </button>
                     ))}
                 </div>
@@ -433,6 +437,46 @@ export default function App() {
                             </div>
                         </div>
 
+                        <div className="mb-8 p-6 bg-blue-50/30 rounded-[1.5rem] border border-blue-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Profil Investisseur</p>
+                                <button
+                                    onClick={() => setIsInvestor(!isInvestor)}
+                                    className={`w-12 h-6 rounded-full relative transition-colors ${isInvestor ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                >
+                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isInvestor ? 'translate-x-6' : ''}`} />
+                                </button>
+                            </div>
+
+                            {isInvestor && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Taux d'imposition (TMI)</p>
+                                        <div className="flex gap-1">
+                                            {[0, 11, 30, 41, 45].map(v => (
+                                                <button
+                                                    key={v}
+                                                    onClick={() => setTmi(v)}
+                                                    className={`flex-1 py-1 rounded-lg text-[10px] font-black border ${tmi === v ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-100'}`}
+                                                >
+                                                    {v}%
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Loyer Mensuel Estimé</p>
+                                        <input
+                                            type="number"
+                                            value={monthlyRent}
+                                            onChange={(e) => setMonthlyRent(Number(e.target.value))}
+                                            className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-blue-600"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="space-y-3">
                             {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
                                 <button key={a.id} onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
@@ -468,7 +512,7 @@ export default function App() {
                                 </div>
                                 <div className="grid grid-cols-7 gap-2 h-16 relative z-10">
                                     {getAdjustedThresholds(property?.surface || 100).map(t => (
-                                        <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md" style={{ backgroundColor: DPE_COLORS[t.label] }}>
+                                        <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md" style={{ backgroundColor: DPE_COLORS[t.label as DPEClass] }}>
                                             {t.label}
                                             {activeSim?.currentLabel === t.label && <div className="absolute -top-10 flex flex-col items-center"><div className="w-2 h-2 rounded-full bg-slate-800" /><div className="h-4 w-0.5 bg-slate-800" /></div>}
                                             {activeSim?.newLabel === t.label && <div className="absolute -bottom-12 flex flex-col items-center animate-bounce"><div className="h-4 w-0.5 bg-blue-600" /><div className="w-2 h-2 rounded-full bg-blue-600" /></div>}
@@ -481,8 +525,17 @@ export default function App() {
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Financement</p>
                                     <div className="space-y-4">
-                                        <div className="flex justify-between font-bold"><span>Subventions</span><span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span></div>
-                                        <div className="flex justify-between text-2xl font-black pt-4 border-t"><span>Coût Net</span><span>{Math.round(activeSim?.rest || 0).toLocaleString()} €</span></div>
+                                        <div className="flex justify-between font-bold text-sm"><span>Subventions</span><span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span></div>
+                                        {isInvestor && (
+                                            <div className="flex justify-between font-bold text-sm text-blue-600">
+                                                <span>Gain Fiscal (TMI {tmi}%)</span>
+                                                <span>+{Math.round(activeSim?.taxBenefit || 0).toLocaleString()} €</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-2xl font-black pt-4 border-t">
+                                            <span>{isInvestor ? 'Cout Net Final' : 'Reste à Charge'}</span>
+                                            <span>{Math.round(isInvestor ? (activeSim?.netInvestorCost || 0) : (activeSim?.rest || 0)).toLocaleString()} €</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm">
@@ -504,7 +557,7 @@ function ComparisonCard({ title, sim, active, onSelect }: any) {
         <button onClick={onSelect} className={`w-full text-left p-8 bg-white rounded-[2.5rem] border-4 transition-all ${active ? 'border-blue-600 shadow-xl scale-[1.02]' : 'border-white opacity-60 hover:opacity-100 shadow-sm'}`}>
             <div className="flex justify-between items-center mb-10">
                 <h4 className="text-xl font-black text-slate-800">{title}</h4>
-                <div className="px-4 py-2 rounded-xl text-2xl font-black text-white" style={{ backgroundColor: DPE_COLORS[sim?.newLabel || 'G'] }}>{sim?.newLabel}</div>
+                <div className="px-4 py-2 rounded-xl text-2xl font-black text-white" style={{ backgroundColor: DPE_COLORS[(sim?.newLabel || 'G') as DPEClass] }}>{sim?.newLabel}</div>
             </div>
             <div className="space-y-4">
                 <div className="flex justify-between text-sm font-bold"><span>Investissement Brut</span><span>{Math.round(sim?.cost || 0).toLocaleString()} €</span></div>
