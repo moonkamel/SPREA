@@ -111,8 +111,6 @@ export default function App() {
 
     // --- API Handlers ---
 
-    // --- API Handlers ---
-
     const handleSearch = async (addressQuery: string) => {
         setLoading(true);
         setError(null);
@@ -146,7 +144,6 @@ export default function App() {
             console.log("[SPREA] Normalized BAN - Street:", streetClean, "Number:", housenumber, "CP:", postcode);
 
             // 2. Direct ADEME Hyper-Precision Search
-            // We use the same pivot strategy confirmed in my backend tests
             const ademeQuery = streetClean;
             const ademeFilters = [];
             if (postcode) ademeFilters.push(`code_postal_brut:${postcode}`);
@@ -198,9 +195,7 @@ export default function App() {
                     return;
                 }
 
-                // Sort by date (most recent first)
                 mappedResults.sort((a: any, b: any) => (b.date_etablissement || "").localeCompare(a.date_etablissement || ""));
-
                 setSearchResults(mappedResults);
                 setView('results');
             } else {
@@ -223,8 +218,6 @@ export default function App() {
 
     const filteredActions = useMemo(() => {
         if (!property) return actions;
-        // If it's an apartment, "Isolation Combles" is only relevant for top floor.
-        // We don't have floor info yet, so let's just mark it as "Condo-aware"
         if (property.buildingType.toLowerCase().includes('appartement')) {
             return actions.map(a => a.id === 'iti' ? { ...a, name: 'Isolation Toiture (Copropriété)' } : a);
         }
@@ -242,7 +235,6 @@ export default function App() {
             const cost = a.costOverride || a.defaultCost;
             let efficiency = 1.0;
 
-            // Reduce impact if already well isolated
             if (a.id === 'ite' && (property.wallMaterials?.toLowerCase().includes('bonne') || property.wallMaterials?.toLowerCase().includes('moyenne'))) {
                 efficiency = property.wallMaterials.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
@@ -253,8 +245,7 @@ export default function App() {
                 efficiency = property.glassType.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
 
-            // Calculations for Energy & Cost
-            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 2500; // Induced costs: scaffolding + finishes
+            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 2500;
             else if (a.id === 'iti') totalCost += cost * property.surface;
             else if (a.id === 'floor') totalCost += cost * property.surface;
             else if (a.id === 'windows') totalCost += cost * (property.surface > 80 ? 8 : 4);
@@ -267,33 +258,46 @@ export default function App() {
         const newCep = Math.max(35, property.initialCep - cepReduction);
         const newGes = Math.max(2, (property.gesValue || 20) - gesReduction);
 
-        // Double-Seuil Logic (Energy vs Climate)
-        const getLabel = (cep: number, ges: number): DPEClass => {
+        const getLabelInfo = (cep: number, ges: number) => {
             const labelOrder: DPEClass[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
             const cepIdx = currentThresholds.findIndex(t => cep <= t.max);
             const gesIdx = currentThresholds.findIndex(t => ges <= t.maxGes);
-            return labelOrder[Math.max(cepIdx === -1 ? 6 : cepIdx, gesIdx === -1 ? 6 : gesIdx)];
+            const finalIdx = Math.max(cepIdx === -1 ? 6 : cepIdx, gesIdx === -1 ? 6 : gesIdx);
+            return {
+                cepLabel: labelOrder[cepIdx === -1 ? 6 : cepIdx],
+                gesLabel: labelOrder[gesIdx === -1 ? 6 : gesIdx],
+                finalLabel: labelOrder[finalIdx]
+            };
         };
 
-        const currentLabel = property.label;
-        const newLabel = getLabel(newCep, newGes);
+        const currentInfos = getLabelInfo(property.initialCep, property.gesValue || 20);
+        const newInfos = getLabelInfo(newCep, newGes);
 
-        // Subsidies (MaPrimeRénov' - simplified ampleur model)
-        const labelSteps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(newLabel) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(currentLabel));
+        const labelSteps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(newInfos.finalLabel) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(currentInfos.finalLabel));
         const subsidyRate = labelSteps >= 2 ? 0.55 : 0.30;
         const subsidies = totalCost * subsidyRate;
 
-        // Valeur Verte (Market-based Lille/Hauts-de-France)
-        // Gain per DPE class step (source rapport matrices)
-        const valVertePerStepRange = 4.5; // % per step in "Marché Tendu"
+        // ROI Calculation (based on actual energy savings)
+        const energyPrice = 0.228; // Average €/kWh (Electricity/Mix 2024)
+        const annualSavings = (cepReduction * property.surface) * energyPrice;
+        const netCost = totalCost - subsidies;
+        const roiYears = annualSavings > 0 ? Math.round(netCost / annualSavings) : 10;
+
+        const valVertePerStepRange = 4.5;
         const latentGain = property.surface * 4200 * (labelSteps * (valVertePerStepRange / 100));
 
         return {
             newCep, newGes, totalCost, subsidies,
             restToPay: totalCost - subsidies,
+            annualSavings,
+            roiYears,
             latentGain,
-            currentLabel,
-            newLabel,
+            currentLabel: currentInfos.finalLabel,
+            currentCepLabel: currentInfos.cepLabel,
+            currentGesLabel: currentInfos.gesLabel,
+            newLabel: newInfos.finalLabel,
+            newCepLabel: newInfos.cepLabel,
+            newGesLabel: newInfos.gesLabel,
         };
     }, [filteredActions, property]);
 
@@ -431,20 +435,27 @@ export default function App() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Classe Actuelle</p>
-                        <div className={`flex items-center justify-center rounded-xl px-6 py-2 text-3xl font-black text-white shadow-md`} style={{ backgroundColor: DPE_COLORS_BG[property?.label || 'G'] }}>
-                            {property?.label}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="text-right px-2">
+                            <p className="text-[8px] font-black uppercase text-slate-400">Énergie</p>
+                            <p className="text-sm font-black text-slate-600">{simulation?.currentCepLabel}</p>
+                        </div>
+                        <div className="w-px h-6 bg-slate-200" />
+                        <div className="text-right px-2">
+                            <p className="text-[8px] font-black uppercase text-slate-400">Climat</p>
+                            <p className="text-sm font-black text-slate-600">{simulation?.currentGesLabel}</p>
+                        </div>
+                        <div className={`flex items-center justify-center rounded-xl h-12 w-12 text-2xl font-black text-white shadow-lg ml-2`} style={{ backgroundColor: DPE_COLORS_BG[simulation?.currentLabel || 'G'] }}>
+                            {simulation?.currentLabel}
                         </div>
                     </div>
-                    <button onClick={() => setView('landing')} className="h-12 px-6 rounded-xl bg-slate-100 text-slate-500 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all text-sm">Nouvelle recherche</button>
+                    <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-blue-50 hover:text-blue-600 transition-all text-xs uppercase tracking-widest">Nouvelle recherche</button>
                 </div>
             </header>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <aside className="lg:col-span-4 space-y-6">
-                    {/* Technical Identity Card */}
                     <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl relative overflow-hidden">
                         <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-blue-400">
                             <Info size={24} />
@@ -526,7 +537,14 @@ export default function App() {
                         <div className="mb-10 flex items-center justify-between relative z-10">
                             <div>
                                 <h3 className="text-2xl font-black text-slate-800 letter-tight">Objectif Performance</h3>
-                                <p className="text-slate-400 font-bold text-sm mt-0.5">Estimation basée sur l'algorithme SPREA.</p>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-lg text-blue-700 font-black text-[10px] uppercase tracking-wider border border-blue-100">
+                                        Énergie: {simulation?.newCepLabel}
+                                    </div>
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-lg text-emerald-700 font-black text-[10px] uppercase tracking-wider border border-emerald-100">
+                                        Climat: {simulation?.newGesLabel}
+                                    </div>
+                                </div>
                             </div>
                             <div className="flex flex-col items-end">
                                 <span className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(simulation?.newCep ?? 0)}</span>
@@ -571,15 +589,15 @@ export default function App() {
                         </div>
 
                         <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100 border-l-[12px] border-l-blue-600 flex flex-col justify-between">
-                            <div className="flex items-center gap-3 text-slate-400 mb-8"><TrendingUp size={24} /><span className="text-[10px] font-black uppercase tracking-widest">Plus-value Immobilière</span></div>
+                            <div className="flex items-center gap-4 text-slate-400 mb-8"><TrendingUp size={24} /><span className="text-[10px] font-black uppercase tracking-widest">Plus-value Immobilière</span></div>
                             <div className="mb-6">
-                                <div className="text-5xl font-black text-blue-700 tracking-tighter">+{(simulation?.latentGain ?? 0).toLocaleString()} €</div>
+                                <div className="text-5xl font-black text-blue-700 tracking-tighter">+{Math.round(simulation?.latentGain ?? 0).toLocaleString()} €</div>
                                 <p className="mt-4 text-sm font-bold text-slate-500 leading-relaxed italic opacity-80">
-                                    "Valorisation estimée suite à l'amélioration du label."
+                                    "Économies d'énergie estimées à {Math.round(simulation?.annualSavings ?? 0).toLocaleString()} € / an."
                                 </p>
                             </div>
                             <div className="mt-auto p-4 bg-blue-50 rounded-xl flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase">
-                                <Info size={16} /> ROI : ~8 ans (TRI)
+                                <Info size={16} /> ROI : ~{simulation?.roiYears} ans (Payback)
                             </div>
                         </div>
                     </section>
@@ -588,5 +606,3 @@ export default function App() {
         </div>
     );
 }
-/ /   d e p l o y   t r i g g e r   0 1 / 2 3 / 2 0 2 6   1 2 : 2 6 : 2 4  
- 
