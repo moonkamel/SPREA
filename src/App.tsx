@@ -213,7 +213,31 @@ export default function App() {
     };
 
     const selectProperty = (p: PropertyData) => {
-        setProperty(p);
+        // --- Technical Inference Motor (Chapter 1.3.3) ---
+        const year = p.year || 1970;
+        const inferred = { ...p };
+
+        if (!p.wallMaterials || p.wallMaterials === "Inconnu") {
+            if (year < 1948) inferred.wallMaterials = "Murs en pierre (Non isolés)";
+            else if (year < 1975) inferred.wallMaterials = "Murs béton/brique (Non isolés)";
+            else if (year < 1990) inferred.wallMaterials = "Isolation d'époque (Moyenne)";
+            else if (year < 2012) inferred.wallMaterials = "Isolation RT2005 (Bonne)";
+            else inferred.wallMaterials = "Isolation RT2012+ (Excellente)";
+        }
+
+        if (!p.glassType || p.glassType === "Inconnu") {
+            if (year < 1980) inferred.glassType = "Simple vitrage";
+            else if (year < 2005) inferred.glassType = "Double vitrage standard";
+            else inferred.glassType = "Double vitrage performant";
+        }
+
+        if (!p.roofIsolation || p.roofIsolation === "Non spécifié") {
+            if (year < 1975) inferred.roofIsolation = "Non isolée";
+            else if (year < 2000) inferred.roofIsolation = "Isolée (Faible)";
+            else inferred.roofIsolation = "Isolée (Bonne)";
+        }
+
+        setProperty(inferred);
         setView('dashboard');
     };
 
@@ -248,10 +272,11 @@ export default function App() {
                 efficiency = property.glassType.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
 
-            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 2500;
-            else if (a.id === 'iti') totalCost += cost * property.surface;
+            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 3500; // Scaffolding + trims
+            else if (a.id === 'iti') totalCost += cost * property.surface + 1200; // Moving furniture + painting
             else if (a.id === 'floor') totalCost += cost * property.surface;
-            else if (a.id === 'windows') totalCost += cost * (property.surface > 80 ? 8 : 4);
+            else if (a.id === 'windows') totalCost += (cost + 150) * (property.surface > 80 ? 8 : 4); // + finishes per window
+            else if (a.id === 'heatpump') totalCost += cost + 1800; // Circuit flushing + electrical upgrade
             else totalCost += cost;
 
             cepReduction += a.impactKwh * efficiency;
@@ -630,6 +655,25 @@ export default function App() {
                                 <Info size={16} /> ROI : ~{simulation?.roiYears} ans (Payback)
                             </div>
                         </div>
+
+                        {(simulation?.currentLabel === 'F' || simulation?.currentLabel === 'G') && (
+                            <div className="col-span-1 md:col-span-2 p-6 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-6">
+                                <div className="bg-red-100 p-4 rounded-2xl text-red-600">
+                                    <AlertTriangle size={32} />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-black text-red-800 uppercase text-xs tracking-widest mb-1">Alerte : Coût de l'inaction</h4>
+                                    <p className="text-sm font-bold text-red-700 leading-tight">
+                                        Ce bien est actuellement une "Passoire Thermique". Sans travaux, vous faites face à une interdiction de louer imminente (Loi Climat & Résilience) et une décote vénale pouvant atteindre -20% sur ce marché.
+                                    </p>
+                                </div>
+                                <div className="h-12 w-px bg-red-200 hidden md:block" />
+                                <div className="text-right hidden md:block">
+                                    <p className="text-[10px] font-black text-red-400 uppercase">Risque de Décote</p>
+                                    <p className="text-xl font-black text-red-700">~ -45k €</p>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 </main>
             </div>
