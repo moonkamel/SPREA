@@ -88,29 +88,81 @@ export default function App() {
 
     // --- API Handlers ---
 
-    const handleSearch = async (address: string) => {
+    // --- API Handlers ---
+
+    const handleSearch = async (addressQuery: string) => {
         setLoading(true);
         setError(null);
         setSuggestions([]);
-        console.log("[SPREA] Searching address:", address);
+        console.log("[SPREA] Initiating direct search for:", addressQuery);
+
         try {
-            const res = await fetch(`${API_BASE}/search-address?q=${encodeURIComponent(address)}`, {
-                mode: 'cors'
-            });
-            if (!res.ok) throw new Error(`Backend Error: ${res.statusText}`);
+            // 1. Geocoding via BAN to get normalized street and house number
+            const banRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addressQuery)}&limit=1`);
+            const banData = await banRes.json();
 
-            const data = await res.json();
-            console.log("[SPREA] Search results count:", data.count);
+            if (!banData.features || banData.features.length === 0) {
+                setError("Adresse non reconnue par le service national (BAN).");
+                return;
+            }
 
-            if (data.results && data.results.length > 0) {
-                setSearchResults(data.results);
+            const props = banData.features[0].properties;
+            const postcode = props.postcode;
+            const housenumber = props.housenumber || "";
+            const street = props.street || props.name;
+
+            // Normalize street name (strip accents, lowercase, common words)
+            const cleanText = (text: string) => {
+                return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase()
+                    .replace("rue ", "").replace("boulevard ", "").replace("avenue ", "")
+                    .replace(/-/g, " ");
+            };
+
+            const streetClean = cleanText(street);
+            console.log("[SPREA] Normalized BAN - Street:", streetClean, "Number:", housenumber, "CP:", postcode);
+
+            // 2. Direct ADEME Hyper-Precision Search
+            // We use the same pivot strategy confirmed in my backend tests
+            const ademeQuery = streetClean;
+            const ademeFilters = [];
+            if (postcode) ademeFilters.push(`code_postal_brut:${postcode}`);
+            if (housenumber) ademeFilters.push(`numero_voie_ban:"${housenumber}"`);
+
+            const qs = ademeFilters.join(" AND ");
+            const ademeUrl = `https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?q=${encodeURIComponent(ademeQuery)}&qs=${encodeURIComponent(qs)}&size=100`;
+
+            console.log("[SPREA] Calling ADEME Directly:", ademeUrl);
+            const ademeRes = await fetch(ademeUrl);
+            const ademeData = await ademeRes.json();
+
+            if (ademeData.results && ademeData.results.length > 0) {
+                // Map ADEME results to our UI format
+                const mappedResults = ademeData.results.map((r: any) => ({
+                    address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
+                    ademe_dpe_number: r.numero_dpe,
+                    shab: parseFloat(r.surface_habitable_logement || "0"),
+                    construction_year: r.annee_construction || "Inconnue",
+                    dpe_class_current: r.etiquette_dpe,
+                    date_etablissement: r.date_etablissement_dpe,
+                    building_type: r.type_batiment || "Bâtiment",
+                    // Use BAN coords as fallback if ADEME doesn't have them
+                    latitude: r.latitude || banData.features[0].geometry.coordinates[1],
+                    longitude: r.longitude || banData.features[0].geometry.coordinates[0],
+                    consumption_level: r.consommation_energie_primaire_logement // for initialCep mapping
+                }));
+
+                // Sort by date (most recent first)
+                mappedResults.sort((a: any, b: any) => (b.date_etablissement || "").localeCompare(a.date_etablissement || ""));
+
+                setSearchResults(mappedResults);
                 setView('results');
             } else {
-                setError("Aucun bien trouvé pour cette adresse dans la base ADEME.");
+                setError("Aucun DPE trouvé pour cette adresse exacte dans la base ADEME (depuis juillet 2021).");
             }
         } catch (err: any) {
-            console.error("[SPREA] Search API failed:", err);
-            setError(`Le serveur de simulation est injoignable à l'adresse ${API_BASE} (${err.message}). Vérifiez votre configuration Vercel.`);
+            console.error("[SPREA] Direct ADEME Search failed:", err);
+            setError(`Erreur lors de la recherche ADEME : ${err.message}.`);
         } finally {
             setLoading(false);
         }
