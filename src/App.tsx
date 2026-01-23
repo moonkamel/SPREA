@@ -90,6 +90,7 @@ export default function App() {
     // Investor States
     const [isInvestor, setIsInvestor] = useState(false);
     const [monthlyRent, setMonthlyRent] = useState(800);
+    const [purchasePrice, setPurchasePrice] = useState(150000);
     const [tmi, setTmi] = useState(30);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
@@ -198,6 +199,7 @@ export default function App() {
         setIncomeLevel('intermediaire');
         setTmi(30);
         setMonthlyRent(800);
+        setPurchasePrice(p.surface * 4200); // Dynamic baseline, user can edit
 
         const year = p.year || 1970;
         const inferred = { ...p };
@@ -280,15 +282,15 @@ export default function App() {
 
         // Investor Metrics
         const taxBenefit = isInvestor ? rest * (tmi / 100 + 0.172) : 0;
-        const estimatedPropertyMarketValue = property.surface * 4000; // Baseline for ROI
+        const totalInvestment = purchasePrice + cost;
         const annualRent = monthlyRent * 12;
-        const yieldBrut = (annualRent / (estimatedPropertyMarketValue + cost)) * 100;
+        const yieldBrut = (annualRent / totalInvestment) * 100;
         const cashflow = monthlyRent - (rest / 240); // Simple 20y financing sim for cashflow feel
 
         return {
             newCep, newGes, cost, sub, rest, taxBenefit,
             activeDetailedCosts,
-            yieldBrut, cashflow,
+            yieldBrut, cashflow, purchasePrice,
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
@@ -322,7 +324,8 @@ export default function App() {
                     subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
                     annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
                     detailed_costs: activeSim.activeDetailedCosts,
-                    yield_brut: activeSim.yieldBrut, cashflow: activeSim.cashflow
+                    yield_brut: activeSim.yieldBrut, cashflow: activeSim.cashflow,
+                    purchase_price: purchasePrice
                 })
             });
             if (!res.ok) {
@@ -526,6 +529,15 @@ export default function App() {
                                         </div>
                                     </div>
                                     <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Prix d'Achat du Bien (€)</p>
+                                        <input
+                                            type="number"
+                                            value={purchasePrice}
+                                            onChange={(e) => setPurchasePrice(Number(e.target.value))}
+                                            className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-blue-600"
+                                        />
+                                    </div>
+                                    <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Loyer Mensuel Estimé</p>
                                         <input
                                             type="number"
@@ -621,23 +633,32 @@ export default function App() {
                                 </div>
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center justify-between">
-                                        {isInvestor ? 'Rentabilité Brut' : 'Valeur Verte'}
+                                        Valeur Verte (Resantise)
                                         <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
                                     </p>
-                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">
-                                        {isInvestor ? `${activeSim?.yieldBrut.toFixed(1)} %` : `+${Math.round(activeSim?.gain || 0).toLocaleString()} €`}
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">
-                                        {isInvestor ? `Cashflow est. : ${Math.round(activeSim?.cashflow || 0)} €/mois` : 'Gain de valeur IMMO estimé'}
-                                    </p>
+                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
+                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
                                     <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        {isInvestor
-                                            ? "Rendement annuel rapporté à l'investissement total (achat + travaux). Le cashflow simule un crédit sur 20 ans pour le reste à charge."
-                                            : "Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%."
-                                        }
+                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%.
                                     </div>
                                 </div>
-                            </div>
+
+                                {isInvestor && (
+                                    <div className="p-8 bg-slate-900 rounded-3xl border-l-[12px] border-l-blue-400 shadow-xl relative group">
+                                        <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-6 flex items-center justify-between">
+                                            Rentabilité Brut
+                                            <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
+                                        </p>
+                                        <div className="text-4xl font-black text-white tracking-tighter">{activeSim?.yieldBrut.toFixed(1)} %</div>
+                                        <p className="text-xs font-bold text-blue-400 mt-4 italic">Cashflow : {Math.round(activeSim?.cashflow || 0)} €/mois</p>
+                                        <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-white text-slate-900 text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-slate-100">
+                                            <p className="font-black text-blue-600 mb-2 uppercase">Méthodologie :</p>
+                                            <p className="mb-2 italic">Rendement = (Loyer × 12) / (Prix Achat + Travaux)</p>
+                                            <p className="italic">Cashflow = Loyer - Mensualité Crédit (Travaux sur 20 ans)</p>
+                                        </div>
+                                    </div>
+                                )}
+                                tunic                            </div>
                         </div>
                     )}
                 </main>

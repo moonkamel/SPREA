@@ -89,6 +89,9 @@ class PDFReportGenerator:
         # Financial Plan
         elements.append(Paragraph("Plan de Financement", self.subtitle_style))
         financial_data = []
+        if data.get('purchase_price') > 0:
+            financial_data.append(["PRIX D'ACHAT DU BIEN", f"{data.get('purchase_price', 0):,.0f} €"])
+        
         detailed = data.get('detailed_costs', [])
         for item in detailed:
             financial_data.append([item.get('name', 'Travaux'), f"{item.get('cost', 0):,.0f} €"])
@@ -139,6 +142,20 @@ class PDFReportGenerator:
         elements.append(Spacer(1, 30))
         disclaimer = "Ce document est une simulation à caractère informatif générée par l'outil SPREA basé sur la méthode 3CL-2021. Elle ne remplace en aucun cas un audit énergétique réglementaire réalisé par un professionnel certifié."
         elements.append(Paragraph(disclaimer, ParagraphStyle('Disclaimer', parent=self.body_style, fontSize=8, textColor=colors.grey, alignment=1)))
+
+        # Methodology Section (New Page)
+        elements.append(PageBreak())
+        elements.append(Paragraph("Note Méthodologique", self.subtitle_style))
+        method_text = [
+            "Ce rapport repose sur les formules et hypothèses de calcul suivantes :",
+            "- Rentabilité Brut : Rapport entre le Loyer Annuel Estimé et le coût total de l'opération (Prix d'Achat + Travaux Brut).",
+            "- Cashflow Mensuel : Différence entre le Loyer Mensuel et la mensualité théorique d'un prêt couvrant le Reste à Charge (calculé sur 20 ans).",
+            "- Valeur Verte : Estimation statistique du gain de valeur immobilière liée au passage d'une classe DPE à une autre (moyenne de 3% à 7% par saut de classe).",
+            "- Subventions MaPrimeRénov' : Calculées selon les barèmes en vigueur de l'ANAH en fonction du profil de revenus déclaré (Très Modeste, Modeste, Intermédiaire, Supérieur)."
+        ]
+        for p in method_text:
+            elements.append(Paragraph(p, self.body_style))
+            elements.append(Spacer(1, 5))
 
         doc.build(elements)
         buffer.seek(0)

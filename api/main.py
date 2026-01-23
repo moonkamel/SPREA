@@ -177,6 +177,7 @@ class ReportRequest(BaseModel):
     detailed_costs: Optional[list] = []
     yield_brut: Optional[float] = 0.0
     cashflow: Optional[float] = 0.0
+    purchase_price: Optional[float] = 0.0
 
 @app.post("/generate-report")
 async def generate_report(data: ReportRequest):
