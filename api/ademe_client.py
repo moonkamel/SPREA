@@ -134,16 +134,28 @@ class AdemeConnector:
                     return []
                 
                 feature = ban_data["features"][0]
-                postcode = feature["properties"]["postcode"]
-                street = feature["properties"]["street"] or feature["properties"]["name"]
-                # Clean street name: "Rue Brûle-Maison" -> "Brûle Maison"
-                street_clean = street.lower().replace("rue ", "").replace("boulevard ", "").replace("avenue ", "").replace("-", " ")
+                props = feature["properties"]
+                postcode = props.get("postcode")
+                housenumber = props.get("housenumber", "")
+                street = props.get("street") or props.get("name")
+                
+                # Unaccent and clean for better matching
+                def clean_text(text: str) -> str:
+                    import unicodedata
+                    if not text: return ""
+                    return "".join(
+                        c for c in unicodedata.normalize('NFD', text)
+                        if unicodedata.category(c) != 'Mn'
+                    ).lower().replace("rue ", "").replace("boulevard ", "").replace("avenue ", "").replace("-", " ")
+
+                street_clean = clean_text(street)
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
 
                 # 2. Search ADEME with precision keywords (Pivot Strategy)
-                # Query: Street name in 'q', Postcode in 'qs' (filter)
+                # Include housenumber to avoid getting lost in thousands of results for the same street
+                query = f"{housenumber} {street_clean}".strip()
                 ademe_params = {
-                    "q": street_clean,
+                    "q": query,
                     "qs": f'code_postal_brut:"{postcode}"',
                     "size": 100
                 }
