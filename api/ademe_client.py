@@ -151,15 +151,22 @@ class AdemeConnector:
                 street_clean = clean_text(street)
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
 
-                # 2. Search ADEME with precision keywords (Pivot Strategy)
-                # Include housenumber to avoid getting lost in thousands of results for the same street
-                query = f"{housenumber} {street_clean}".strip()
+                # 2. Search ADEME with Hyper-Precision (Pivot Strategy)
+                # We use specific normalized fields from BAN already present in the ADEME dataset
+                # This is much faster and more accurate than generic full-text search
+                filters = []
+                if postcode:
+                    filters.append(f"code_postal_brut:{postcode}")
+                if housenumber:
+                    filters.append(f'numero_voie_ban:"{housenumber}"')
+                
                 ademe_params = {
-                    "q": query,
-                    "qs": f'code_postal_brut:"{postcode}"',
+                    "q": street_clean,
+                    "qs": " AND ".join(filters) if filters else "",
                     "size": 100
                 }
-                logger.info(f"Querying ADEME with: {ademe_params}")
+                
+                logger.info(f"Querying ADEME with Hyper-Precision: {ademe_params}")
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []
