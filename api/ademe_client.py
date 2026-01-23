@@ -87,10 +87,10 @@ class PropertySchema(BaseModel):
 # --- ADEME Connector ---
 
 class AdemeConnector:
-    BASE_URL = "https://data.ademe.fr/data-fair/api/v1/datasets/dpe-logements-existants-depuis-juillet-2021/lines"
+    BASE_URL = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
     BAN_URL = "https://api-adresse.data.gouv.fr/search/"
 
-    def __init__(self, timeout: int = 30):
+    def __init__(self, timeout: int = 60):
         self.timeout = timeout
 
     @retry(
