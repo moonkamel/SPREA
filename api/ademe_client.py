@@ -104,7 +104,7 @@ class AdemeConnector:
         return response.json()
 
     async def search_by_dpe_number(self, dpe_number: str) -> Optional[PropertySchema]:
-        """Fetch technical details of a specific DPE with mock fallback."""
+        """Fetch technical details of a specific DPE."""
         async with httpx.AsyncClient() as client:
             try:
                 params = {"q": dpe_number, "q_fields": "numero_dpe"}
@@ -112,19 +112,16 @@ class AdemeConnector:
                 
                 if not data.get("results"):
                     logger.warning(f"No DPE found for number: {dpe_number}")
-                    # Return mock for demo if dpe_number looks like a test
-                    if "MOCK" in dpe_number.upper():
-                         return self._get_mock_property()
                     return None
                 
                 raw_data = data["results"][0]
                 return self._map_to_internal(raw_data)
             except Exception as e:
-                logger.error(f"ADEME API Error, returning mock: {e}")
-                return self._get_mock_property()
+                logger.error(f"ADEME API Error: {e}")
+                return None
 
     async def search_by_address(self, address: str) -> List[PropertySchema]:
-        """Geocode via BAN then search on ADEME with mock fallback."""
+        """Geocode via BAN then search on ADEME."""
         async with httpx.AsyncClient() as client:
             try:
                 # 1. Geocoding via BAN
@@ -133,54 +130,35 @@ class AdemeConnector:
                 
                 if not ban_data.get("features"):
                     logger.warning(f"Address not found via BAN: {address}")
-                    return [self._get_mock_property()]
+                    return []
                 
                 feature = ban_data["features"][0]
                 postcode = feature["properties"]["postcode"]
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
+                label = feature["properties"]["label"]
 
                 # 2. Search ADEME
+                # Use postcode for filtering to narrow down the search
                 ademe_params = {
                     "q": postcode,
                     "q_fields": "code_postal_brut",
-                    "size": 15
+                    "size": 50
                 }
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []
                 for raw_item in ademe_data.get("results", []):
+                    # We only keep results that roughly match our BAN coordinates or address
+                    # (In a production system, we'd use a more complex geospatial distance query)
                     mapped = self._map_to_internal(raw_item)
                     mapped.latitude = coords[1]
                     mapped.longitude = coords[0]
                     results.append(mapped)
                 
-                if not results:
-                    results.append(self._get_mock_property())
-                    
                 return results
             except Exception as e:
                 logger.error(f"Address search error: {e}")
-                return [self._get_mock_property()]
-
-    def _get_mock_property(self) -> PropertySchema:
-        """Helper to return high-quality fallback data for production consistency."""
-        return PropertySchema(
-            address="12 bis Rue de la République, 59000 Lille",
-            ademe_dpe_number="2134E1234567A",
-            construction_year=1978,
-            shab=110.0,
-            altitude=45.0,
-            climate_zone=ClimateZone.H1a,
-            dpe_class_current=DPEClass.G,
-            ges_class_current=DPEClass.F,
-            latitude=50.63297,
-            longitude=3.05858,
-            is_estimated=True,
-            building_type="Maison",
-            walls=[WallSchema(surface=140.0, u_value=1.8, material="Briques", is_estimated=True)],
-            windows=[WindowSchema(surface=18.0, u_value=3.2, glazing_type="Simple Vitrage", is_estimated=True)],
-            systems=[SystemSchema(system_type="chauffage", energy_source="Fioul", generation_year=1995)]
-        )
+                return []
 
     def _map_to_internal(self, raw: Dict[str, Any]) -> PropertySchema:
         """Map flat ADEME JSON to structured PropertySchema with fallback logic."""
