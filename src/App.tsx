@@ -10,7 +10,12 @@ import {
     MapPin,
     AlertTriangle,
     Building2,
-    Building
+    Building,
+    Home,
+    TrendingUp,
+    Euro,
+    ChevronRight,
+    Info
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -43,6 +48,7 @@ interface PropertyData {
 const DPE_COLORS: Record<DPEClass, string> = {
     A: '#31a354', B: '#74c476', C: '#a1d99b', D: '#feb24c', E: '#fd8d3c', F: '#f03b20', G: '#bd0026',
 };
+const DPE_COLORS_BG: Record<string, string> = DPE_COLORS;
 
 const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
     { label: 'A', max: 70 }, { label: 'B', max: 110 }, { label: 'C', max: 180 },
@@ -350,7 +356,7 @@ export default function App() {
             <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
                 <div className="flex items-center gap-6">
                     <div className="rounded-xl bg-slate-900 p-4 text-white shadow-lg">
-                        {property?.buildingType.toLowerCase().includes('appartement') ? <Building2 size={32} /> : <Home size={32} />}
+                        {property?.buildingType?.toLowerCase().includes('appartement') ? <Building2 size={32} /> : <Home size={32} />}
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-slate-800 tracking-tight truncate max-w-lg">{property?.address}</h1>
@@ -367,7 +373,7 @@ export default function App() {
                 <div className="flex items-center gap-6">
                     <div className="text-right">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Classe Actuelle</p>
-                        <div className={`flex items-center justify-center rounded-xl px-6 py-2 text-3xl font-black text-white shadow-md`} style={{ backgroundColor: DPE_COLORS[property?.label || 'G'] }}>
+                        <div className={`flex items-center justify-center rounded-xl px-6 py-2 text-3xl font-black text-white shadow-md`} style={{ backgroundColor: DPE_COLORS_BG[property?.label || 'G'] }}>
                             {property?.label}
                         </div>
                     </div>
@@ -387,9 +393,9 @@ export default function App() {
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Émissions GES</p>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-2xl font-black">{property?.gesValue}</span>
+                                    <span className="text-2xl font-black">{property?.gesValue ?? 0}</span>
                                     <span className="text-xs font-bold text-slate-400">kg CO₂/m².an</span>
-                                    <span className="ml-auto px-2 py-0.5 rounded bg-white/10 text-xs font-black">{property?.gesLabel}</span>
+                                    <span className="ml-auto px-2 py-0.5 rounded bg-white/10 text-xs font-black">{property?.gesLabel ?? 'N/A'}</span>
                                 </div>
                             </div>
                             <div className="h-px bg-white/10" />
@@ -436,7 +442,7 @@ export default function App() {
                         <div className="mt-8 rounded-2xl bg-slate-900 p-8 text-white shadow-xl relative overflow-hidden hover:scale-[1.02] transition-transform">
                             <div className="relative z-10">
                                 <div className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Investissement Estimé</div>
-                                <div className="text-4xl font-black tracking-tighter">{simulation?.totalCost.toLocaleString()} €</div>
+                                <div className="text-4xl font-black tracking-tighter">{(simulation?.totalCost ?? 0).toLocaleString()} €</div>
                             </div>
                             <ChevronRight className="absolute -right-2 -bottom-2 text-white opacity-5 w-24 h-24" />
                         </div>
@@ -451,7 +457,7 @@ export default function App() {
                                 <p className="text-slate-400 font-bold text-sm mt-0.5">Estimation basée sur l'algorithme SPREA.</p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(simulation?.newCep || 0)}</span>
+                                <span className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(simulation?.newCep ?? 0)}</span>
                                 <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase mt-0.5">kWh/m².an</span>
                             </div>
                         </div>
@@ -483,11 +489,11 @@ export default function App() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
                                     <span className="text-sm font-bold text-slate-600">Subvention estimée</span>
-                                    <span className="text-xl font-black text-green-600">+{simulation?.subsidies.toLocaleString()} €</span>
+                                    <span className="text-xl font-black text-green-600">+{(simulation?.subsidies ?? 0).toLocaleString()} €</span>
                                 </div>
                                 <div className="flex justify-between items-center bg-slate-900 p-8 rounded-2xl shadow-xl">
                                     <span className="text-sm font-bold text-slate-400">Reste à charge</span>
-                                    <span className="text-2xl font-black text-white">{simulation?.restToPay.toLocaleString()} €</span>
+                                    <span className="text-2xl font-black text-white">{(simulation?.restToPay ?? 0).toLocaleString()} €</span>
                                 </div>
                             </div>
                         </div>
@@ -495,7 +501,7 @@ export default function App() {
                         <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100 border-l-[12px] border-l-blue-600 flex flex-col justify-between">
                             <div className="flex items-center gap-3 text-slate-400 mb-8"><TrendingUp size={24} /><span className="text-[10px] font-black uppercase tracking-widest">Plus-value Immobilière</span></div>
                             <div className="mb-6">
-                                <div className="text-5xl font-black text-blue-700 tracking-tighter">+{simulation?.latentGain.toLocaleString()} €</div>
+                                <div className="text-5xl font-black text-blue-700 tracking-tighter">+{(simulation?.latentGain ?? 0).toLocaleString()} €</div>
                                 <p className="mt-4 text-sm font-bold text-slate-500 leading-relaxed italic opacity-80">
                                     "Valorisation estimée suite à l'amélioration du label."
                                 </p>
