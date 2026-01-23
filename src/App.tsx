@@ -22,6 +22,7 @@ interface RetrofitAction {
     name: string;
     defaultCost: number;
     impactKwh: number;
+    impactGes: number; // kgCO2 reduction per m2 per year
     active: boolean;
     costOverride?: number;
 }
@@ -48,10 +49,25 @@ const DPE_COLORS: Record<DPEClass, string> = {
 };
 const DPE_COLORS_BG: Record<string, string> = DPE_COLORS;
 
-const DPE_THRESHOLDS: { label: DPEClass; max: number }[] = [
-    { label: 'A', max: 70 }, { label: 'B', max: 110 }, { label: 'C', max: 180 },
-    { label: 'D', max: 250 }, { label: 'E', max: 330 }, { label: 'F', max: 420 }, { label: 'G', max: 999 },
+const DPE_THRESHOLDS_BASE: { label: DPEClass; cep: number; ges: number }[] = [
+    { label: 'A', cep: 70, ges: 6 },
+    { label: 'B', cep: 110, ges: 11 },
+    { label: 'C', cep: 180, ges: 30 },
+    { label: 'D', cep: 250, ges: 50 },
+    { label: 'E', cep: 330, ges: 70 },
+    { label: 'F', cep: 420, ges: 100 },
+    { label: 'G', cep: 999, ges: 999 },
 ];
+
+const getAdjustedThresholds = (surface: number) => {
+    // July 2024 Small Surface Adjustment (simplified approximation for <40m2)
+    const factor = surface < 40 ? 1 + (40 - surface) * 0.04 : 1;
+    return DPE_THRESHOLDS_BASE.map(t => ({
+        label: t.label,
+        max: Math.round(t.cep * factor),
+        maxGes: t.ges
+    }));
+};
 
 
 // --- Main Component ---
@@ -66,13 +82,13 @@ export default function App() {
     const [error, setError] = useState<string | null>(null);
 
     const [actions, setActions] = useState<RetrofitAction[]>([
-        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, active: false },
-        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, active: false },
-        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, active: false },
-        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, active: false },
-        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, active: false },
-        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, active: false },
+        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
+        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, active: false },
+        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, active: false },
+        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, active: false },
+        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, active: false },
+        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, active: false },
+        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, active: false },
     ]);
 
     // --- Autocomplete Logic ---
@@ -219,45 +235,65 @@ export default function App() {
         if (!property) return null;
         let totalCost = 0;
         let cepReduction = 0;
+        let gesReduction = 0;
+        const currentThresholds = getAdjustedThresholds(property.surface);
 
         filteredActions.filter(a => a.active).forEach(a => {
             const cost = a.costOverride || a.defaultCost;
             let efficiency = 1.0;
 
             // Reduce impact if already well isolated
-            if (a.id === 'ite' && (property.wallMaterials?.includes('bonne') || property.wallMaterials?.includes('moyenne'))) {
-                efficiency = property.wallMaterials.includes('bonne') ? 0.2 : 0.6;
+            if (a.id === 'ite' && (property.wallMaterials?.toLowerCase().includes('bonne') || property.wallMaterials?.toLowerCase().includes('moyenne'))) {
+                efficiency = property.wallMaterials.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
-            if (a.id === 'iti' && (property.roofIsolation?.includes('bonne') || property.roofIsolation?.includes('moyenne'))) {
-                efficiency = property.roofIsolation.includes('bonne') ? 0.2 : 0.6;
+            if (a.id === 'iti' && (property.roofIsolation?.toLowerCase().includes('bonne') || property.roofIsolation?.toLowerCase().includes('moyenne'))) {
+                efficiency = property.roofIsolation.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
-            if (a.id === 'windows' && (property.glassType?.includes('bonne') || property.glassType?.includes('moyenne'))) {
-                efficiency = property.glassType.includes('bonne') ? 0.2 : 0.6;
+            if (a.id === 'windows' && (property.glassType?.toLowerCase().includes('bonne') || property.glassType?.toLowerCase().includes('moyenne'))) {
+                efficiency = property.glassType.toLowerCase().includes('bonne') ? 0.15 : 0.5;
             }
 
-            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1);
+            // Calculations for Energy & Cost
+            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 2500; // Induced costs: scaffolding + finishes
             else if (a.id === 'iti') totalCost += cost * property.surface;
             else if (a.id === 'floor') totalCost += cost * property.surface;
             else if (a.id === 'windows') totalCost += cost * (property.surface > 80 ? 8 : 4);
             else totalCost += cost;
 
             cepReduction += a.impactKwh * efficiency;
+            gesReduction += a.impactGes * efficiency;
         });
 
         const newCep = Math.max(35, property.initialCep - cepReduction);
-        const subsidies = totalCost * 0.35;
-        const latentGain = property.surface * 150 * (filteredActions.filter(a => a.active).length);
+        const newGes = Math.max(2, (property.gesValue || 20) - gesReduction);
 
-        const getLabel = (cep: number): DPEClass => {
-            return DPE_THRESHOLDS.find(t => cep <= t.max)?.label || 'G';
+        // Double-Seuil Logic (Energy vs Climate)
+        const getLabel = (cep: number, ges: number): DPEClass => {
+            const labelOrder: DPEClass[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            const cepIdx = currentThresholds.findIndex(t => cep <= t.max);
+            const gesIdx = currentThresholds.findIndex(t => ges <= t.maxGes);
+            return labelOrder[Math.max(cepIdx === -1 ? 6 : cepIdx, gesIdx === -1 ? 6 : gesIdx)];
         };
 
+        const currentLabel = property.label;
+        const newLabel = getLabel(newCep, newGes);
+
+        // Subsidies (MaPrimeRénov' - simplified ampleur model)
+        const labelSteps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(newLabel) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(currentLabel));
+        const subsidyRate = labelSteps >= 2 ? 0.55 : 0.30;
+        const subsidies = totalCost * subsidyRate;
+
+        // Valeur Verte (Market-based Lille/Hauts-de-France)
+        // Gain per DPE class step (source rapport matrices)
+        const valVertePerStepRange = 4.5; // % per step in "Marché Tendu"
+        const latentGain = property.surface * 4200 * (labelSteps * (valVertePerStepRange / 100));
+
         return {
-            newCep, totalCost, subsidies,
+            newCep, newGes, totalCost, subsidies,
             restToPay: totalCost - subsidies,
             latentGain,
-            currentLabel: property.label,
-            newLabel: getLabel(newCep),
+            currentLabel,
+            newLabel,
         };
     }, [filteredActions, property]);
 
@@ -498,7 +534,7 @@ export default function App() {
                             </div>
                         </div>
                         <div className="relative mt-4 grid grid-cols-7 gap-2 h-16 z-10">
-                            {DPE_THRESHOLDS.map((t) => (
+                            {getAdjustedThresholds(property?.surface || 100).map((t) => (
                                 <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md transition-transform" style={{ backgroundColor: DPE_COLORS[t.label as DPEClass] }}>
                                     {t.label}
                                     {simulation?.currentLabel === t.label && (
