@@ -70,6 +70,8 @@ const getAdjustedThresholds = (surface: number) => {
 };
 
 
+type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
+
 // --- Main Component ---
 
 export default function App() {
@@ -80,6 +82,7 @@ export default function App() {
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [incomeLevel, setIncomeLevel] = useState<IncomeLevel>('intermediaire');
 
     const [actions, setActions] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
@@ -273,8 +276,19 @@ export default function App() {
         const currentInfos = getLabelInfo(property.initialCep, property.gesValue || 20);
         const newInfos = getLabelInfo(newCep, newGes);
 
+        // Subsidies (MaPrimeRénov' 2024/2025 Parcours Accompagné vs Geste)
         const labelSteps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(newInfos.finalLabel) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(currentInfos.finalLabel));
-        const subsidyRate = labelSteps >= 2 ? 0.55 : 0.30;
+
+        // Rates for "Rénovation d'ampleur" (saut >= 2 classes)
+        const perfRates: Record<IncomeLevel, number> = {
+            tres_modeste: 0.80, modeste: 0.60, intermediaire: 0.45, superieur: 0.30
+        };
+        // Rates for "Geste par geste" (simplified)
+        const gesteRates: Record<IncomeLevel, number> = {
+            tres_modeste: 0.35, modeste: 0.25, intermediaire: 0.15, superieur: 0.05
+        };
+
+        const subsidyRate = labelSteps >= 2 ? perfRates[incomeLevel] : gesteRates[incomeLevel];
         const subsidies = totalCost * subsidyRate;
 
         // ROI Calculation (based on actual energy savings)
@@ -501,10 +515,26 @@ export default function App() {
                     </div>
 
                     <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <h3 className="mb-8 flex items-center gap-4 text-xl font-black text-slate-800">
+                        <h3 className="mb-6 flex items-center gap-4 text-xl font-black text-slate-800">
                             <TrendingUp size={24} className="text-blue-600" />
                             Simuler des travaux
                         </h3>
+
+                        <div className="mb-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Profil du Ménage (MaPrimeRénov')</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map((level) => (
+                                    <button
+                                        key={level}
+                                        onClick={() => setIncomeLevel(level)}
+                                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border-2 ${incomeLevel === level ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-200'}`}
+                                    >
+                                        {level.replace('_', ' ')}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className="space-y-3">
                             {filteredActions.map((action) => (
                                 <button
