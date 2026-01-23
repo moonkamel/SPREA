@@ -66,10 +66,13 @@ export default function App() {
     const [error, setError] = useState<string | null>(null);
 
     const [actions, setActions] = useState<RetrofitAction[]>([
-        { id: 'iti', name: 'Isolation Combles', defaultCost: 35, impactKwh: 45, active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 160, impactKwh: 120, active: false },
-        { id: 'windows', name: 'Double Vitrage', defaultCost: 450, impactKwh: 30, active: false },
-        { id: 'heatpump', name: 'Changement -> PAC', defaultCost: 12000, impactKwh: 210, active: false },
+        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, active: false },
+        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, active: false },
+        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, active: false },
+        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, active: false },
+        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, active: false },
+        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, active: false },
+        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, active: false },
     ]);
 
     // --- Autocomplete Logic ---
@@ -219,16 +222,31 @@ export default function App() {
 
         filteredActions.filter(a => a.active).forEach(a => {
             const cost = a.costOverride || a.defaultCost;
-            if (a.id === 'ite') totalCost += cost * (property.surface * 1.2);
+            let efficiency = 1.0;
+
+            // Reduce impact if already well isolated
+            if (a.id === 'ite' && (property.wallMaterials?.includes('bonne') || property.wallMaterials?.includes('moyenne'))) {
+                efficiency = property.wallMaterials.includes('bonne') ? 0.2 : 0.6;
+            }
+            if (a.id === 'iti' && (property.roofIsolation?.includes('bonne') || property.roofIsolation?.includes('moyenne'))) {
+                efficiency = property.roofIsolation.includes('bonne') ? 0.2 : 0.6;
+            }
+            if (a.id === 'windows' && (property.glassType?.includes('bonne') || property.glassType?.includes('moyenne'))) {
+                efficiency = property.glassType.includes('bonne') ? 0.2 : 0.6;
+            }
+
+            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1);
             else if (a.id === 'iti') totalCost += cost * property.surface;
-            else if (a.id === 'windows') totalCost += cost * 15;
+            else if (a.id === 'floor') totalCost += cost * property.surface;
+            else if (a.id === 'windows') totalCost += cost * (property.surface > 80 ? 8 : 4);
             else totalCost += cost;
-            cepReduction += a.impactKwh;
+
+            cepReduction += a.impactKwh * efficiency;
         });
 
         const newCep = Math.max(35, property.initialCep - cepReduction);
         const subsidies = totalCost * 0.35;
-        const latentGain = property.surface * 250 * (filteredActions.filter(a => a.active).length);
+        const latentGain = property.surface * 150 * (filteredActions.filter(a => a.active).length);
 
         const getLabel = (cep: number): DPEClass => {
             return DPE_THRESHOLDS.find(t => cep <= t.max)?.label || 'G';
