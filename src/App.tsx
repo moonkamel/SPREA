@@ -11,19 +11,24 @@ import {
     AlertTriangle,
     Building2,
     Building,
-    FileText
+    FileText,
+    PieChart,
+    Layers,
+    Copy,
+    ArrowRightLeft
 } from 'lucide-react';
 
 // --- Types & Constants ---
 
 type DPEClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
+type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
 
 interface RetrofitAction {
     id: string;
     name: string;
     defaultCost: number;
     impactKwh: number;
-    impactGes: number; // kgCO2 reduction per m2 per year
+    impactGes: number;
     active: boolean;
     costOverride?: number;
 }
@@ -62,7 +67,6 @@ const DPE_THRESHOLDS_BASE: { label: DPEClass; cep: number; ges: number }[] = [
 ];
 
 const getAdjustedThresholds = (surface: number) => {
-    // July 2024 Small Surface Adjustment (simplified approximation for <40m2)
     const factor = surface < 40 ? 1 + (40 - surface) * 0.04 : 1;
     return DPE_THRESHOLDS_BASE.map(t => ({
         label: t.label,
@@ -70,9 +74,6 @@ const getAdjustedThresholds = (surface: number) => {
         maxGes: t.ges
     }));
 };
-
-
-type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
 
 // --- Main Component ---
 
@@ -86,53 +87,10 @@ export default function App() {
     const [error, setError] = useState<string | null>(null);
     const [incomeLevel, setIncomeLevel] = useState<IncomeLevel>('intermediaire');
     const [downloading, setDownloading] = useState(false);
+    const [compareMode, setCompareMode] = useState(false);
+    const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
 
-    const handleDownloadPDF = async () => {
-        if (!property || !simulation) return;
-        setDownloading(true);
-        try {
-            const response = await fetch('/api/generate-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    address: property.address,
-                    surface: property.surface,
-                    year: property.year,
-                    ademe_dpe_number: property.ademe_dpe_number,
-                    current_label: simulation.currentLabel,
-                    new_label: simulation.newLabel,
-                    initial_cep: property.initialCep,
-                    new_cep: simulation.newCep,
-                    ges_value: property.gesValue || 0,
-                    new_ges: simulation.newGes,
-                    total_cost: simulation.totalCost,
-                    subsidies: simulation.subsidies,
-                    rest_to_pay: simulation.restToPay,
-                    latent_gain: simulation.latentGain,
-                    annual_savings: simulation.annualSavings,
-                    roi_years: simulation.roiYears
-                })
-            });
-
-            if (!response.ok) throw new Error("Erreur lors de la génération du PDF");
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Rapport_SPREA_${property.address.substring(0, 20)}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        } catch (err: any) {
-            console.error("PDF Download error:", err);
-            alert("Erreur lors du téléchargement du PDF. Réessayez plus tard.");
-        } finally {
-            setDownloading(false);
-        }
-    };
-
-    const [actions, setActions] = useState<RetrofitAction[]>([
+    const [actionsA, setActionsA] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
         { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, active: false },
         { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, active: false },
@@ -141,6 +99,16 @@ export default function App() {
         { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, active: false },
         { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, active: false },
     ]);
+
+    const [actionsB, setActionsB] = useState<RetrofitAction[]>([...actionsA]);
+
+    const toggleAction = (id: string) => {
+        const updater = activeScenario === 'A' ? setActionsA : setActionsB;
+        const currentActions = activeScenario === 'A' ? actionsA : actionsB;
+        updater(currentActions.map(a => a.id === id ? { ...a, active: !a.active } : a));
+    };
+
+    const copyAToB = () => setActionsB([...actionsA.map(a => ({ ...a }))]);
 
     // --- Autocomplete Logic ---
     useEffect(() => {
@@ -166,573 +134,386 @@ export default function App() {
         setLoading(true);
         setError(null);
         setSuggestions([]);
-        console.log("[SPREA] Initiating direct search for:", addressQuery);
-
         try {
-            // 1. Geocoding via BAN to get normalized street and house number
             const banRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addressQuery)}&limit=1`);
             const banData = await banRes.json();
-
             if (!banData.features || banData.features.length === 0) {
-                setError("Adresse non reconnue par le service national (BAN).");
+                setError("Adresse non reconnue.");
                 return;
             }
-
             const props = banData.features[0].properties;
             const postcode = props.postcode;
             const housenumber = props.housenumber || "";
             const street = props.street || props.name;
 
-            // Normalize street name (strip accents, lowercase, common words)
-            const cleanText = (text: string) => {
-                return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                    .toLowerCase()
-                    .replace("rue ", "").replace("boulevard ", "").replace("avenue ", "")
-                    .replace(/-/g, " ");
-            };
-
+            const cleanText = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/rue |boulevard |avenue /g, "").replace(/-/g, " ");
             const streetClean = cleanText(street);
-            console.log("[SPREA] Normalized BAN - Street:", streetClean, "Number:", housenumber, "CP:", postcode);
 
-            // 2. Direct ADEME Hyper-Precision Search
-            const ademeQuery = streetClean;
-            const ademeFilters = [];
-            if (postcode) ademeFilters.push(`code_postal_brut:${postcode}`);
-            if (housenumber) ademeFilters.push(`numero_voie_ban:"${housenumber}"`);
-
-            const qs = ademeFilters.join(" AND ");
-            const ademeUrl = `https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?q=${encodeURIComponent(ademeQuery)}&qs=${encodeURIComponent(qs)}&size=100`;
-
-            console.log("[SPREA] Calling ADEME Directly:", ademeUrl);
+            const ademeUrl = `https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?q=${encodeURIComponent(streetClean)}&qs=code_postal_brut:${postcode}${housenumber ? ` AND numero_voie_ban:"${housenumber}"` : ''}&size=100`;
             const ademeRes = await fetch(ademeUrl);
             const ademeData = await ademeRes.json();
 
-            const labelToCep = (l: string): number => {
-                const thresholds: Record<string, number> = { A: 50, B: 90, C: 150, D: 215, E: 290, F: 375, G: 500 };
-                return thresholds[l] || 420;
-            };
-
             if (ademeData.results && ademeData.results.length > 0) {
-                // Map ADEME results with STRICT STREET FILTERING
-                const mappedResults = ademeData.results
-                    .filter((r: any) => {
-                        const ademeStreet = cleanText(r.nom_rue_ban || r.adresse_brut || "");
-                        return ademeStreet.includes(streetClean) || streetClean.includes(ademeStreet);
-                    })
-                    .map((r: any) => {
-                        const dpeLabel = (r.etiquette_dpe as DPEClass) || 'G';
-                        return {
-                            address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
-                            ademe_dpe_number: r.numero_dpe,
-                            surface: parseFloat(r.surface_habitable_logement || "0"),
-                            year: parseInt(r.annee_construction || "0"),
-                            initialCep: parseFloat(r.conso_5_usages_par_m2_ep || r.consommation_energie_primaire_logement) || labelToCep(dpeLabel),
-                            label: dpeLabel,
-                            buildingType: r.type_batiment || 'Maison',
-                            heatingType: r.type_energie_principale_chauffage || "Inconnu",
-                            gesLabel: r.etiquette_ges || "N/A",
-                            gesValue: parseFloat(r.emission_ges_5_usages_par_m2 || "0"),
-                            wallMaterials: r.qualite_isolation_murs || "Inconnu",
-                            glassType: r.qualite_isolation_menuiseries || "Inconnu",
-                            roofIsolation: r.qualite_isolation_plancher_haut_comble_perdu || "Non spécifié",
-                            floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
-                            heatingDetail: r.description_installation_chauffage_n1 || "",
-                            date_etablissement: r.date_etablissement_dpe
-                        };
-                    });
-
-                if (mappedResults.length === 0) {
-                    setError("Aucun DPE trouvé pour cette rue exacte (Vérifiez l'orthographe).");
-                    return;
-                }
-
-                mappedResults.sort((a: any, b: any) => (b.date_etablissement || "").localeCompare(a.date_etablissement || ""));
-                setSearchResults(mappedResults);
+                const mapped = ademeData.results.map((r: any) => ({
+                    address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
+                    ademe_dpe_number: r.numero_dpe,
+                    surface: parseFloat(r.surface_habitable_logement || "0"),
+                    year: parseInt(r.annee_construction || "0"),
+                    initialCep: parseFloat(r.conso_5_usages_par_m2_ep || r.consommation_energie_primaire_logement) || 250,
+                    label: (r.etiquette_dpe as DPEClass) || 'G',
+                    buildingType: r.type_batiment || 'Maison',
+                    heatingType: r.type_energie_principale_chauffage || "Inconnu",
+                    gesLabel: r.etiquette_ges || "N/A",
+                    gesValue: parseFloat(r.emission_ges_5_usages_par_m2 || "0"),
+                    wallMaterials: r.qualite_isolation_murs || "Inconnu",
+                    glassType: r.qualite_isolation_menuiseries || "Inconnu",
+                    roofIsolation: r.qualite_isolation_plancher_haut_comble_perdu || "Non spécifié",
+                    floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
+                    heatingDetail: r.description_installation_chauffage_n1 || "",
+                    date_etablissement: r.date_etablissement_dpe
+                }));
+                setSearchResults(mapped);
                 setView('results');
             } else {
-                setError("Aucun DPE trouvé pour cette adresse exacte dans la base ADEME (depuis juillet 2021).");
+                setError("Aucun DPE trouvé.");
             }
-        } catch (err: any) {
-            console.error("[SPREA] Direct ADEME Search failed:", err);
-            setError(`Erreur lors de la recherche ADEME : ${err.message}.`);
+        } catch (err) {
+            setError("Erreur réseau ADEME.");
         } finally {
             setLoading(false);
         }
     };
 
     const selectProperty = (p: PropertyData) => {
-        // --- Technical Inference Motor (Chapter 1.3.3) ---
         const year = p.year || 1970;
         const inferred = { ...p };
-
         if (!p.wallMaterials || p.wallMaterials === "Inconnu") {
-            if (year < 1948) inferred.wallMaterials = "Murs en pierre (Non isolés)";
-            else if (year < 1975) inferred.wallMaterials = "Murs béton/brique (Non isolés)";
-            else if (year < 1990) inferred.wallMaterials = "Isolation d'époque (Moyenne)";
-            else if (year < 2012) inferred.wallMaterials = "Isolation RT2005 (Bonne)";
-            else inferred.wallMaterials = "Isolation RT2012+ (Excellente)";
+            if (year < 1948) inferred.wallMaterials = "Pierre";
+            else if (year < 1975) inferred.wallMaterials = "Béton non isolé";
+            else inferred.wallMaterials = "Isolé RT2005";
         }
-
-        if (!p.glassType || p.glassType === "Inconnu") {
-            if (year < 1980) inferred.glassType = "Simple vitrage";
-            else if (year < 2005) inferred.glassType = "Double vitrage standard";
-            else inferred.glassType = "Double vitrage performant";
-        }
-
-        if (!p.roofIsolation || p.roofIsolation === "Non spécifié") {
-            if (year < 1975) inferred.roofIsolation = "Non isolée";
-            else if (year < 2000) inferred.roofIsolation = "Isolée (Faible)";
-            else inferred.roofIsolation = "Isolée (Bonne)";
-        }
-
         setProperty(inferred);
         setView('dashboard');
     };
 
     // --- Simulation Logic ---
 
-    const filteredActions = useMemo(() => {
-        if (!property) return actions;
-        if (property.buildingType.toLowerCase().includes('appartement')) {
-            return actions.map(a => a.id === 'iti' ? { ...a, name: 'Isolation Toiture (Copropriété)' } : a);
-        }
-        return actions;
-    }, [actions, property]);
-
-    const simulation = useMemo(() => {
+    const heatLoss = useMemo(() => {
         if (!property) return null;
-        let totalCost = 0;
-        let cepReduction = 0;
-        let gesReduction = 0;
-        const currentThresholds = getAdjustedThresholds(property.surface);
+        let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
+        if (property.roofIsolation?.toLowerCase().includes('bonne')) pRoof *= 0.35;
+        if (property.wallMaterials?.toLowerCase().includes('bonne')) pWalls *= 0.40;
+        if (property.glassType?.toLowerCase().includes('performant')) pWindows *= 0.50;
+        const total = pRoof + pWalls + pWindows + pFloor + pAir;
+        return [
+            { id: 'roof', name: 'Toiture', val: (pRoof / total) * 100, color: '#3b82f6' },
+            { id: 'walls', name: 'Murs', val: (pWalls / total) * 100, color: '#60a5fa' },
+            { id: 'windows', name: 'Vitrage', val: (pWindows / total) * 100, color: '#93c5fd' },
+            { id: 'floor', name: 'Sols', val: (pFloor / total) * 100, color: '#bfdbfe' },
+            { id: 'vent', name: 'Air', val: (pAir / total) * 100, color: '#dbeafe' },
+        ];
+    }, [property]);
 
-        filteredActions.filter(a => a.active).forEach(a => {
-            const cost = a.costOverride || a.defaultCost;
-            let efficiency = 1.0;
+    const compute = (activeActions: RetrofitAction[]) => {
+        if (!property) return null;
+        let cost = 0, cepRed = 0, gesRed = 0;
+        const thresholds = getAdjustedThresholds(property.surface);
 
-            if (a.id === 'ite' && (property.wallMaterials?.toLowerCase().includes('bonne') || property.wallMaterials?.toLowerCase().includes('moyenne'))) {
-                efficiency = property.wallMaterials.toLowerCase().includes('bonne') ? 0.15 : 0.5;
-            }
-            if (a.id === 'iti' && (property.roofIsolation?.toLowerCase().includes('bonne') || property.roofIsolation?.toLowerCase().includes('moyenne'))) {
-                efficiency = property.roofIsolation.toLowerCase().includes('bonne') ? 0.15 : 0.5;
-            }
-            if (a.id === 'windows' && (property.glassType?.toLowerCase().includes('bonne') || property.glassType?.toLowerCase().includes('moyenne'))) {
-                efficiency = property.glassType.toLowerCase().includes('bonne') ? 0.15 : 0.5;
-            }
-
-            if (a.id === 'ite') totalCost += cost * (property.surface * 1.1) + 3500; // Scaffolding + trims
-            else if (a.id === 'iti') totalCost += cost * property.surface + 1200; // Moving furniture + painting
-            else if (a.id === 'floor') totalCost += cost * property.surface;
-            else if (a.id === 'windows') totalCost += (cost + 150) * (property.surface > 80 ? 8 : 4); // + finishes per window
-            else if (a.id === 'heatpump') totalCost += cost + 1800; // Circuit flushing + electrical upgrade
-            else totalCost += cost;
-
-            cepReduction += a.impactKwh * efficiency;
-            gesReduction += a.impactGes * efficiency;
+        activeActions.forEach(a => {
+            let eff = 1.0;
+            if (a.id === 'ite' && property.wallMaterials?.includes('Isolé')) eff = 0.4;
+            if (a.id === 'ite') cost += a.defaultCost * property.surface * 1.1 + 3500;
+            else if (a.id === 'iti') cost += a.defaultCost * property.surface + 1200;
+            else if (a.id === 'windows') cost += (a.defaultCost + 150) * 6;
+            else if (a.id === 'heatpump') cost += a.defaultCost + 1500;
+            else cost += a.defaultCost;
+            cepRed += a.impactKwh * eff;
+            gesRed += a.impactGes * eff;
         });
 
-        const newCep = Math.max(35, property.initialCep - cepReduction);
-        const newGes = Math.max(2, (property.gesValue || 20) - gesReduction);
+        const newCep = Math.max(35, property.initialCep - cepRed);
+        const newGes = Math.max(2, (property.gesValue || 20) - gesRed);
 
-        const getLabelInfo = (cep: number, ges: number) => {
-            const labelOrder: DPEClass[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-            const cepIdx = currentThresholds.findIndex(t => cep <= t.max);
-            const gesIdx = currentThresholds.findIndex(t => ges <= t.maxGes);
-            const finalIdx = Math.max(cepIdx === -1 ? 6 : cepIdx, gesIdx === -1 ? 6 : gesIdx);
-            return {
-                cepLabel: labelOrder[cepIdx === -1 ? 6 : cepIdx],
-                gesLabel: labelOrder[gesIdx === -1 ? 6 : gesIdx],
-                finalLabel: labelOrder[finalIdx]
-            };
+        const getInfos = (cep: number, ges: number) => {
+            const labels: DPEClass[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            const cIdx = thresholds.findIndex(t => cep <= t.max);
+            const gIdx = thresholds.findIndex(t => ges <= t.maxGes);
+            const fIdx = Math.max(cIdx === -1 ? 6 : cIdx, gIdx === -1 ? 6 : gIdx);
+            return { label: labels[fIdx], cepL: labels[cIdx === -1 ? 6 : cIdx], gesL: labels[gIdx === -1 ? 6 : gIdx] };
         };
 
-        const currentInfos = getLabelInfo(property.initialCep, property.gesValue || 20);
-        const newInfos = getLabelInfo(newCep, newGes);
-
-        // Subsidies (MaPrimeRénov' 2024/2025 Parcours Accompagné vs Geste)
-        const labelSteps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(newInfos.finalLabel) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(currentInfos.finalLabel));
-
-        // Rates for "Rénovation d'ampleur" (saut >= 2 classes)
-        const perfRates: Record<IncomeLevel, number> = {
-            tres_modeste: 0.80, modeste: 0.60, intermediaire: 0.45, superieur: 0.30
-        };
-        // Rates for "Geste par geste" (simplified)
-        const gesteRates: Record<IncomeLevel, number> = {
-            tres_modeste: 0.35, modeste: 0.25, intermediaire: 0.15, superieur: 0.05
-        };
-
-        const subsidyRate = labelSteps >= 2 ? perfRates[incomeLevel] : gesteRates[incomeLevel];
-        const subsidies = totalCost * subsidyRate;
-
-        // ROI Calculation (based on actual energy savings)
-        const energyPrice = 0.228; // Average €/kWh (Electricity/Mix 2024)
-        const annualSavings = (cepReduction * property.surface) * energyPrice;
-        const netCost = totalCost - subsidies;
-        const roiYears = annualSavings > 0 ? Math.round(netCost / annualSavings) : 10;
-
-        const valVertePerStepRange = 4.5;
-        const latentGain = property.surface * 4200 * (labelSteps * (valVertePerStepRange / 100));
+        const current = getInfos(property.initialCep, property.gesValue || 20);
+        const target = getInfos(newCep, newGes);
+        const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
+        const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
+        const sub = cost * rate;
 
         return {
-            newCep, newGes, totalCost, subsidies,
-            restToPay: totalCost - subsidies,
-            annualSavings,
-            roiYears,
-            latentGain,
-            currentLabel: currentInfos.finalLabel,
-            currentCepLabel: currentInfos.cepLabel,
-            currentGesLabel: currentInfos.gesLabel,
-            newLabel: newInfos.finalLabel,
-            newCepLabel: newInfos.cepLabel,
-            newGesLabel: newInfos.gesLabel,
+            newCep, newGes, cost, sub, rest: cost - sub,
+            savings: (cepRed * property.surface) * 0.228,
+            roi: (cost - sub) / ((cepRed * property.surface) * 0.228 || 1),
+            gain: property.surface * 4200 * (steps * 0.045),
+            currentLabel: current.label,
+            newLabel: target.label,
+            newCepLabel: target.cepL,
+            newGesLabel: target.gesL,
+            currentCepLabel: current.cepL,
+            currentGesLabel: current.gesL
         };
-    }, [filteredActions, property]);
+    };
 
-    // --- UI Views ---
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel]);
 
-    if (view === 'landing') {
-        return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 md:p-12 font-sans">
-                <div className="max-w-2xl w-full text-center">
-                    <div className="mb-12 inline-block">
-                        <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-8 mx-auto w-fit">
-                            <Building2 className="text-blue-600" size={24} />
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">SPREA Intelligent Property</span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tighter leading-none mb-6">
-                            L'intelligence DPE au service de votre <span className="text-blue-600">rénovation.</span>
-                        </h1>
-                        <p className="text-lg text-slate-500 font-bold max-w-lg mx-auto leading-relaxed">
-                            Récupérez les données ADEME officielles et simulez vos gains énergétiques instantanément.
-                        </p>
+    const activeSim = activeScenario === 'A' ? simA : simB;
+
+    const handleDownloadPDF = async () => {
+        if (!property || !activeSim) return;
+        setDownloading(true);
+        try {
+            const res = await fetch('/api/generate-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: property.address, surface: property.surface, year: property.year,
+                    ademe_dpe_number: property.ademe_dpe_number, current_label: activeSim.currentLabel,
+                    new_label: activeSim.newLabel, initial_cep: property.initialCep, new_cep: activeSim.newCep,
+                    ges_value: property.gesValue || 0, new_ges: activeSim.newGes, total_cost: activeSim.cost,
+                    subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
+                    annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi)
+                })
+            });
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Rapport_SPREA.pdf`;
+            document.body.appendChild(a); a.click(); a.remove();
+        } finally { setDownloading(false); }
+    };
+
+    // --- Views ---
+
+    if (view === 'landing') return (
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+            <div className="max-w-2xl w-full text-center">
+                <div className="mb-12">
+                    <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-8 mx-auto w-fit">
+                        <Building2 className="text-blue-600" size={24} />
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">SPREA Intelligent Property</span>
                     </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tighter leading-none mb-6">
+                        L'intelligence DPE au service de votre <span className="text-blue-600">rénovation.</span>
+                    </h1>
+                </div>
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 relative z-10">
+                    <div className="relative">
+                        <div className="flex items-center bg-slate-100 rounded-2xl px-6 h-16 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all">
+                            <Search size={24} className="text-slate-400 mr-4" />
+                            <input
+                                type="text"
+                                placeholder="Adresse (ex: 43 rue Brule Maison, Lille)..."
+                                className="flex-1 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {loading && <Loader2 className="animate-spin text-blue-600" size={24} />}
+                        </div>
+                        {suggestions.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden z-20 text-left">
+                                {suggestions.map((s, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleSearch(s.properties.label)}
+                                        className="w-full text-left px-8 py-5 hover:bg-slate-50 flex items-center gap-5 transition-colors border-b border-slate-50 last:border-0 group"
+                                    >
+                                        <MapPin size={18} className="text-slate-400" />
+                                        <p className="font-bold text-slate-800">{s.properties.label}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {error && <p className="mt-4 text-red-600 font-bold">{error}</p>}
+            </div>
+        </div>
+    );
 
-                    {error && (
-                        <div className="mb-8 p-6 bg-red-50 border border-red-100 rounded-[2rem] text-red-600 flex items-center gap-4 text-left animate-in fade-in slide-in-from-top-4 duration-300">
-                            <AlertTriangle className="shrink-0" size={24} />
+    if (view === 'results') return (
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+            <div className="max-w-2xl w-full">
+                <h2 className="text-3xl font-black text-slate-800 mb-8">Résultats ADEME</h2>
+                <div className="space-y-4">
+                    {searchResults.map((res, idx) => (
+                        <button key={idx} onClick={() => selectProperty(res)} className="w-full bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-blue-200 transition-all text-left flex items-start justify-between">
                             <div>
-                                <p className="font-bold">Information</p>
-                                <p className="text-sm opacity-90">{error}</p>
+                                <p className="font-bold text-slate-800 text-lg">{res.address}</p>
+                                <p className="text-sm font-bold text-slate-400">{res.surface} m² • {res.year}</p>
                             </div>
-                        </div>
-                    )}
-
-                    <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-100 relative z-10">
-                        <div className="relative">
-                            <div className="flex items-center bg-slate-100 rounded-2xl px-6 h-16 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all">
-                                <Search size={24} className="text-slate-400 mr-4" />
-                                <input
-                                    type="text"
-                                    placeholder="Entrez une adresse (ex: 43 rue Brule Maison, Lille)..."
-                                    className="flex-1 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                {loading && <Loader2 className="animate-spin text-blue-600" size={24} />}
-                            </div>
-
-                            {suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden z-20 text-left">
-                                    {suggestions.map((s, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleSearch(s.properties.label)}
-                                            className="w-full text-left px-8 py-5 hover:bg-slate-50 flex items-center gap-5 transition-colors border-b border-slate-50 last:border-0 group"
-                                        >
-                                            <div className="bg-slate-100 p-2 rounded-lg group-hover:bg-blue-50">
-                                                <MapPin size={18} className="text-slate-400 group-hover:text-blue-600" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-slate-800 leading-tight">{s.properties.label}</p>
-                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">{s.properties.context}</p>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div className="mt-8 flex items-center justify-center gap-6 opacity-40 grayscale pointer-events-none overflow-hidden py-2 shrink-0">
-                            <span className="font-black text-xs uppercase tracking-widest">ADEME API</span>
-                            <span className="font-black text-xs uppercase tracking-widest">BAN Data</span>
-                            <span className="font-black text-xs uppercase tracking-widest">v2.5</span>
-                        </div>
-                    </div>
+                            <div className="px-4 py-2 rounded-lg text-xl font-black text-white" style={{ backgroundColor: DPE_COLORS[res.label] }}>{res.label}</div>
+                        </button>
+                    ))}
                 </div>
             </div>
-        );
-    }
-    if (view === 'results') {
-        return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 md:p-12 font-sans">
-                <div className="max-w-2xl w-full">
-                    <div className="mb-8 flex items-center justify-between">
-                        <h2 className="text-3xl font-black text-slate-800 tracking-tight">Résultats ADEME</h2>
-                        <button onClick={() => setView('landing')} className="text-blue-600 font-bold hover:underline">Nouvelle recherche</button>
-                    </div>
-                    <p className="text-slate-500 mb-6 font-medium">Plusieurs logements trouvés à cette adresse. Choisissez le vôtre :</p>
-                    <div className="space-y-4">
-                        {searchResults.map((res, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => selectProperty(res)}
-                                className="w-full bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all text-left flex items-start justify-between group"
-                            >
-                                <div className="flex items-start gap-4">
-                                    <div className="bg-slate-50 p-3 rounded-xl group-hover:bg-blue-50">
-                                        {res.buildingType?.toLowerCase().includes('appartement') ? <Building size={24} className="text-slate-400 group-hover:text-blue-600" /> : <Home size={24} className="text-slate-400 group-hover:text-blue-600" />}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-800 text-lg leading-tight">{res.address}</p>
-                                        <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">
-                                            {res.buildingType || 'Bâtiment'} • {res.surface} m² • {res.year || 'Année inconnue'}
-                                        </p>
-                                        <div className="flex items-center gap-3 mt-2">
-                                            <p className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Fait le : {res.date_etablissement ? new Date(res.date_etablissement).toLocaleDateString('fr-FR') : 'Date inconnue'}</p>
-                                            <p className="text-xs font-medium text-slate-400 italic">DPE n° {res.ademe_dpe_number || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={`px-4 py-2 rounded-lg text-xl font-black text-white shadow-lg`} style={{ backgroundColor: DPE_COLORS[res.label as DPEClass] || '#cbd5e1' }}>
-                                    {res.label || '?'}
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
             <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
                 <div className="flex items-center gap-6">
                     <div className="rounded-xl bg-slate-900 p-4 text-white shadow-lg">
-                        {property?.buildingType?.toLowerCase().includes('appartement') ? <Building2 size={32} /> : <Home size={32} />}
+                        {property?.buildingType?.includes('Appartement') ? <Building size={32} /> : <Home size={32} />}
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 tracking-tight truncate max-w-lg">{property?.address}</h1>
-                        <div className="mt-1 flex items-center gap-4 text-slate-400 font-bold text-sm">
-                            <span className="flex items-center gap-1.5"><MapPin size={16} /> {property?.buildingType}</span>
-                            <span className="h-1 w-1 rounded-full bg-slate-200" />
-                            <span>{property?.surface} m²</span>
-                            <span className="h-1 w-1 rounded-full bg-slate-200" />
-                            <span>Construit en {property?.year}</span>
-                        </div>
+                        <h1 className="text-2xl font-black text-slate-800 truncate max-w-lg">{property?.address}</h1>
+                        <p className="text-sm font-bold text-slate-400">{property?.surface} m² • {property?.year}</p>
                     </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
                         <div className="text-right px-2">
                             <p className="text-[8px] font-black uppercase text-slate-400">Énergie</p>
-                            <p className="text-sm font-black text-slate-600">{simulation?.currentCepLabel}</p>
+                            <p className="text-sm font-black text-slate-600">{activeSim?.currentCepLabel}</p>
                         </div>
                         <div className="w-px h-6 bg-slate-200" />
                         <div className="text-right px-2">
                             <p className="text-[8px] font-black uppercase text-slate-400">Climat</p>
-                            <p className="text-sm font-black text-slate-600">{simulation?.currentGesLabel}</p>
+                            <p className="text-sm font-black text-slate-600">{activeSim?.currentGesLabel}</p>
                         </div>
-                        <div className={`flex items-center justify-center rounded-xl h-12 w-12 text-2xl font-black text-white shadow-lg ml-2`} style={{ backgroundColor: DPE_COLORS_BG[simulation?.currentLabel || 'G'] }}>
-                            {simulation?.currentLabel}
+                        <div className={`flex items-center justify-center rounded-xl h-12 w-12 text-2xl font-black text-white shadow-lg ml-2`} style={{ backgroundColor: DPE_COLORS[activeSim?.currentLabel || 'G'] }}>
+                            {activeSim?.currentLabel}
                         </div>
                     </div>
-                    <button
-                        onClick={handleDownloadPDF}
-                        disabled={downloading}
-                        className="h-14 px-6 rounded-2xl bg-white border border-slate-200 text-blue-600 font-black hover:bg-blue-50 transition-all flex items-center gap-3 shadow-sm disabled:opacity-50"
-                    >
-                        {downloading ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
-                        <span className="text-xs uppercase tracking-widest">{downloading ? 'Génération...' : 'PDF'}</span>
+                    <button onClick={handleDownloadPDF} disabled={downloading} className="h-14 px-6 rounded-2xl bg-white border border-slate-200 text-blue-600 font-black hover:bg-blue-50 transition-all flex items-center gap-3">
+                        {downloading ? <Loader2 className="animate-spin" /> : <FileText size={18} />} PDF
                     </button>
-                    <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-blue-50 hover:text-blue-600 transition-all text-xs uppercase tracking-widest">Nouvelle recherche</button>
+                    <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-blue-600 hover:text-white transition-all text-xs uppercase tracking-widest">Retour</button>
                 </div>
             </header>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <aside className="lg:col-span-4 space-y-6">
-                    <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl relative overflow-hidden">
-                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-blue-400">
-                            <Info size={24} />
-                            Fiche Technique
-                        </h3>
-                        <div className="space-y-5 relative z-10">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Émissions GES</p>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl font-black">{property?.gesValue ?? 0}</span>
-                                    <span className="text-xs font-bold text-slate-400">kg CO₂/m².an</span>
-                                    <span className="ml-auto px-2 py-0.5 rounded bg-white/10 text-xs font-black">{property?.gesLabel ?? 'N/A'}</span>
+                    <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl">
+                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-blue-400"><PieChart size={24} /> Déperditions Thermiques</h3>
+                        <div className="space-y-4">
+                            {heatLoss?.map(item => (
+                                <div key={item.id}>
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1">
+                                        <span>{item.name}</span>
+                                        <span>{Math.round(item.val)}%</span>
+                                    </div>
+                                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                        <div className="h-full rounded-full transition-all" style={{ width: `${item.val}%`, backgroundColor: item.color }} />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="h-px bg-white/10" />
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Chauffage</p>
-                                    <p className="text-xs font-bold text-slate-200 leading-tight">
-                                        {property?.heatingType}
-                                        {property?.heatingDetail && <span className="block mt-1 opacity-50 font-medium text-[9px]">{property.heatingDetail.substring(0, 40)}...</span>}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Murs</p>
-                                    <p className="text-sm font-bold text-slate-200 truncate capitalize">{property?.wallMaterials}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Vitrage</p>
-                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.glassType}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Toiture</p>
-                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.roofIsolation}</p>
-                                </div>
-                                <div className="col-span-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Isolation Plancher</p>
-                                    <p className="text-sm font-bold text-slate-200 capitalize">{property?.floorIsolation}</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
-                        <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
                     </div>
 
                     <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <h3 className="mb-6 flex items-center gap-4 text-xl font-black text-slate-800">
-                            <TrendingUp size={24} className="text-blue-600" />
-                            Simuler des travaux
-                        </h3>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="flex items-center gap-4 text-xl font-black text-slate-800"><Layers size={24} className="text-blue-600" /> Scénarios</h3>
+                            <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
+                        </div>
 
-                        <div className="mb-8 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Profil du Ménage (MaPrimeRénov')</p>
+                        {compareMode && (
+                            <div className="flex gap-2 mb-6 p-2 bg-slate-100 rounded-2xl">
+                                <button onClick={() => setActiveScenario('A')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'A' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario A</button>
+                                <button onClick={() => setActiveScenario('B')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'B' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario B</button>
+                                <button onClick={copyAToB} title="Copier A vers B" className="p-3 bg-white rounded-xl text-slate-400 hover:text-blue-600"><Copy size={16} /></button>
+                            </div>
+                        )}
+
+                        <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Revenus du Ménage</p>
                             <div className="grid grid-cols-2 gap-2">
-                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map((level) => (
-                                    <button
-                                        key={level}
-                                        onClick={() => setIncomeLevel(level)}
-                                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border-2 ${incomeLevel === level ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-200'}`}
-                                    >
-                                        {level.replace('_', ' ')}
-                                    </button>
+                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
+                                    <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
                                 ))}
                             </div>
                         </div>
 
                         <div className="space-y-3">
-                            {filteredActions.map((action) => (
-                                <button
-                                    key={action.id}
-                                    onClick={() => setActions(actions.map(a => a.id === action.id ? { ...a, active: !a.active } : a))}
-                                    className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all duration-300 ${action.active ? 'border-blue-600 bg-blue-50/50 shadow-inner' : 'border-slate-50 bg-white hover:border-slate-200'}`}
-                                >
-                                    <div className="flex flex-col items-start gap-0.5">
-                                        <span className={`text-base font-bold ${action.active ? 'text-blue-700' : 'text-slate-700'}`}>{action.name}</span>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{action.defaultCost} € base</span>
-                                    </div>
-                                    <div className={`h-8 w-14 rounded-full relative transition-colors shrink-0 ${action.active ? 'bg-blue-600' : 'bg-slate-200'}`}>
-                                        <div className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-white transition-transform duration-300 shadow-md ${action.active ? 'translate-x-6' : ''}`} />
-                                    </div>
+                            {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
+                                <button key={a.id} onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
+                                    <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                    <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
                                 </button>
                             ))}
-                        </div>
-                        <div className="mt-8 rounded-2xl bg-slate-900 p-8 text-white shadow-xl relative overflow-hidden hover:scale-[1.02] transition-transform">
-                            <div className="relative z-10">
-                                <div className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Investissement Estimé</div>
-                                <div className="text-4xl font-black tracking-tighter">{(simulation?.totalCost ?? 0).toLocaleString()} €</div>
-                            </div>
-                            <ChevronRight className="absolute -right-2 -bottom-2 text-white opacity-5 w-24 h-24" />
                         </div>
                     </div>
                 </aside>
 
-                <main className="lg:col-span-8 space-y-6">
-                    <section className="rounded-3xl bg-white p-10 shadow-sm border border-slate-100 relative overflow-hidden">
-                        <div className="mb-10 flex items-center justify-between relative z-10">
-                            <div>
-                                <h3 className="text-2xl font-black text-slate-800 letter-tight">Objectif Performance</h3>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-lg text-blue-700 font-black text-[10px] uppercase tracking-wider border border-blue-100">
-                                        Énergie: {simulation?.newCepLabel}
-                                    </div>
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-lg text-emerald-700 font-black text-[10px] uppercase tracking-wider border border-emerald-100">
-                                        Climat: {simulation?.newGesLabel}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(simulation?.newCep ?? 0)}</span>
-                                <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase mt-0.5">kWh/m².an</span>
-                            </div>
+                <main className="lg:col-span-8">
+                    {compareMode ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ComparisonCard title="Scénario A" sim={simA} active={activeScenario === 'A'} onSelect={() => setActiveScenario('A')} />
+                            <ComparisonCard title="Scénario B" sim={simB} active={activeScenario === 'B'} onSelect={() => setActiveScenario('B')} />
                         </div>
-                        <div className="relative mt-4 grid grid-cols-7 gap-2 h-16 z-10">
-                            {getAdjustedThresholds(property?.surface || 100).map((t) => (
-                                <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md transition-transform" style={{ backgroundColor: DPE_COLORS[t.label as DPEClass] }}>
-                                    {t.label}
-                                    {simulation?.currentLabel === t.label && (
-                                        <div className="absolute -top-10 flex flex-col items-center">
-                                            <div className="w-2 h-2 rounded-full bg-slate-800 shadow-lg" />
-                                            <div className="h-4 w-0.5 bg-slate-800" />
+                    ) : (
+                        <div className="space-y-6">
+                            <section className="rounded-3xl bg-white p-10 shadow-sm border border-slate-100 relative overflow-hidden">
+                                <div className="mb-10 flex items-center justify-between relative z-10">
+                                    <div>
+                                        <h3 className="text-2xl font-black text-slate-800">Objectif Performance</h3>
+                                        <div className="flex gap-2 mt-2">
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">E: {activeSim?.newCepLabel}</span>
+                                            <span className="px-3 py-1 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">C: {activeSim?.newGesLabel}</span>
                                         </div>
-                                    )}
-                                    {simulation?.newLabel === t.label && (
-                                        <div className="absolute -bottom-12 flex flex-col items-center animate-bounce">
-                                            <div className="h-4 w-0.5 bg-blue-600" />
-                                            <div className="w-2 h-2 rounded-full bg-blue-600 shadow-lg" />
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(activeSim?.newCep || 0)}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">kWh/m².an</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-7 gap-2 h-16 relative z-10">
+                                    {getAdjustedThresholds(property?.surface || 100).map(t => (
+                                        <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md" style={{ backgroundColor: DPE_COLORS[t.label] }}>
+                                            {t.label}
+                                            {activeSim?.currentLabel === t.label && <div className="absolute -top-10 flex flex-col items-center"><div className="w-2 h-2 rounded-full bg-slate-800" /><div className="h-4 w-0.5 bg-slate-800" /></div>}
+                                            {activeSim?.newLabel === t.label && <div className="absolute -bottom-12 flex flex-col items-center animate-bounce"><div className="h-4 w-0.5 bg-blue-600" /><div className="w-2 h-2 rounded-full bg-blue-600" /></div>}
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-[80px] -mr-32 -mt-32" />
-                    </section>
+                            </section>
 
-                    <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100 border-l-[12px] border-l-green-500 flex flex-col justify-between">
-                            <div className="flex items-center gap-3 text-slate-400 mb-8"><Euro size={24} /><span className="text-[10px] font-black uppercase tracking-widest">Plan de Financement</span></div>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                                    <span className="text-sm font-bold text-slate-600">Subvention estimée</span>
-                                    <span className="text-xl font-black text-green-600">+{(simulation?.subsidies ?? 0).toLocaleString()} €</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Financement</p>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between font-bold"><span>Subventions</span><span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span></div>
+                                        <div className="flex justify-between text-2xl font-black pt-4 border-t"><span>Coût Net</span><span>{Math.round(activeSim?.rest || 0).toLocaleString()} €</span></div>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center bg-slate-900 p-8 rounded-2xl shadow-xl">
-                                    <span className="text-sm font-bold text-slate-400">Reste à charge</span>
-                                    <span className="text-2xl font-black text-white">{(simulation?.restToPay ?? 0).toLocaleString()} €</span>
+                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Valeur Verte</p>
+                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
+                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100 border-l-[12px] border-l-blue-600 flex flex-col justify-between">
-                            <div className="flex items-center gap-4 text-slate-400 mb-8"><TrendingUp size={24} /><span className="text-[10px] font-black uppercase tracking-widest">Plus-value Immobilière</span></div>
-                            <div className="mb-6">
-                                <div className="text-5xl font-black text-blue-700 tracking-tighter">+{Math.round(simulation?.latentGain ?? 0).toLocaleString()} €</div>
-                                <p className="mt-4 text-sm font-bold text-slate-500 leading-relaxed italic opacity-80">
-                                    "Économies d'énergie estimées à {Math.round(simulation?.annualSavings ?? 0).toLocaleString()} € / an."
-                                </p>
-                            </div>
-                            <div className="mt-auto p-4 bg-blue-50 rounded-xl flex items-center gap-3 text-blue-600 font-black text-[10px] uppercase">
-                                <Info size={16} /> ROI : ~{simulation?.roiYears} ans (Payback)
-                            </div>
-                        </div>
-
-                        {(simulation?.currentLabel === 'F' || simulation?.currentLabel === 'G') && (
-                            <div className="col-span-1 md:col-span-2 p-6 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-6">
-                                <div className="bg-red-100 p-4 rounded-2xl text-red-600">
-                                    <AlertTriangle size={32} />
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-black text-red-800 uppercase text-xs tracking-widest mb-1">Alerte : Coût de l'inaction</h4>
-                                    <p className="text-sm font-bold text-red-700 leading-tight">
-                                        Ce bien est actuellement une "Passoire Thermique". Sans travaux, vous faites face à une interdiction de louer imminente (Loi Climat & Résilience) et une décote vénale pouvant atteindre -20% sur ce marché.
-                                    </p>
-                                </div>
-                                <div className="h-12 w-px bg-red-200 hidden md:block" />
-                                <div className="text-right hidden md:block">
-                                    <p className="text-[10px] font-black text-red-400 uppercase">Risque de Décote</p>
-                                    <p className="text-xl font-black text-red-700">~ -45k €</p>
-                                </div>
-                            </div>
-                        )}
-                    </section>
+                    )}
                 </main>
             </div>
         </div>
+    );
+}
+
+function ComparisonCard({ title, sim, active, onSelect }: any) {
+    return (
+        <button onClick={onSelect} className={`w-full text-left p-8 bg-white rounded-[2.5rem] border-4 transition-all ${active ? 'border-blue-600 shadow-xl scale-[1.02]' : 'border-white opacity-60 hover:opacity-100 shadow-sm'}`}>
+            <div className="flex justify-between items-center mb-10">
+                <h4 className="text-xl font-black text-slate-800">{title}</h4>
+                <div className="px-4 py-2 rounded-xl text-2xl font-black text-white" style={{ backgroundColor: DPE_COLORS[sim?.newLabel || 'G'] }}>{sim?.newLabel}</div>
+            </div>
+            <div className="space-y-4">
+                <div className="flex justify-between text-sm font-bold"><span>Investissement Brut</span><span>{Math.round(sim?.cost || 0).toLocaleString()} €</span></div>
+                <div className="flex justify-between text-sm font-bold text-green-600"><span>Subventions</span><span>+{Math.round(sim?.sub || 0).toLocaleString()} €</span></div>
+                <div className="flex justify-between text-lg font-black pt-4 border-t border-slate-100"><span>Reste à Charge</span><span>{Math.round(sim?.rest || 0).toLocaleString()} €</span></div>
+                <div className="mt-6 flex items-center gap-2 p-3 bg-blue-50 rounded-xl text-blue-600 font-black text-[10px] uppercase tracking-widest">
+                    <TrendingUp size={14} /> Économies : {Math.round(sim?.savings || 0).toLocaleString()} €/an
+                </div>
+            </div>
+        </button>
     );
 }
