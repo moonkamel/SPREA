@@ -10,7 +10,8 @@ import {
     MapPin,
     AlertTriangle,
     Building2,
-    Building
+    Building,
+    FileText
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -42,6 +43,7 @@ interface PropertyData {
     roofIsolation?: string;
     floorIsolation?: string;
     heatingDetail?: string;
+    ademe_dpe_number?: string;
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -83,6 +85,52 @@ export default function App() {
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [incomeLevel, setIncomeLevel] = useState<IncomeLevel>('intermediaire');
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownloadPDF = async () => {
+        if (!property || !simulation) return;
+        setDownloading(true);
+        try {
+            const response = await fetch('/api/generate-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: property.address,
+                    surface: property.surface,
+                    year: property.year,
+                    ademe_dpe_number: property.ademe_dpe_number,
+                    current_label: simulation.currentLabel,
+                    new_label: simulation.newLabel,
+                    initial_cep: property.initialCep,
+                    new_cep: simulation.newCep,
+                    ges_value: property.gesValue || 0,
+                    new_ges: simulation.newGes,
+                    total_cost: simulation.totalCost,
+                    subsidies: simulation.subsidies,
+                    rest_to_pay: simulation.restToPay,
+                    latent_gain: simulation.latentGain,
+                    annual_savings: simulation.annualSavings,
+                    roi_years: simulation.roiYears
+                })
+            });
+
+            if (!response.ok) throw new Error("Erreur lors de la génération du PDF");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Rapport_SPREA_${property.address.substring(0, 20)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (err: any) {
+            console.error("PDF Download error:", err);
+            alert("Erreur lors du téléchargement du PDF. Réessayez plus tard.");
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const [actions, setActions] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, active: false },
@@ -489,6 +537,14 @@ export default function App() {
                             {simulation?.currentLabel}
                         </div>
                     </div>
+                    <button
+                        onClick={handleDownloadPDF}
+                        disabled={downloading}
+                        className="h-14 px-6 rounded-2xl bg-white border border-slate-200 text-blue-600 font-black hover:bg-blue-50 transition-all flex items-center gap-3 shadow-sm disabled:opacity-50"
+                    >
+                        {downloading ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
+                        <span className="text-xs uppercase tracking-widest">{downloading ? 'Génération...' : 'PDF'}</span>
+                    </button>
                     <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-blue-50 hover:text-blue-600 transition-all text-xs uppercase tracking-widest">Nouvelle recherche</button>
                 </div>
             </header>

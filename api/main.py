@@ -153,6 +153,42 @@ async def search_dpe(dpe_number: str):
         logger.error(f"DPE search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+from pydantic import BaseModel
+from fastapi.responses import Response
+from api.pdf_service import pdf_service
+
+class ReportRequest(BaseModel):
+    address: str
+    surface: float
+    year: Any
+    ademe_dpe_number: Optional[str] = "N/A"
+    current_label: str
+    new_label: str
+    initial_cep: float
+    new_cep: float
+    ges_value: float
+    new_ges: float
+    total_cost: float
+    subsidies: float
+    rest_to_pay: float
+    latent_gain: float
+    annual_savings: float
+    roi_years: int
+
+@app.post("/generate-report")
+async def generate_report(data: ReportRequest):
+    """Generates a PDF report from simulation results."""
+    try:
+        pdf_bytes = pdf_service.generate(data.dict())
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=Rapport_SPREA_{data.address.replace(' ', '_')}.pdf"}
+        )
+    except Exception as e:
+        logger.error(f"PDF Generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/analyze-dpe")
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
