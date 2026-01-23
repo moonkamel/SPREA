@@ -88,21 +88,30 @@ class PDFReportGenerator:
 
         # Financial Plan
         elements.append(Paragraph("Plan de Financement", self.subtitle_style))
-        financial_data = [
-            ["Investissement Total", f"{data.get('total_cost', 0):,.0f} €"],
-            ["Aides d'État (MPR/CEE)", f"{data.get('subsidies', 0) - data.get('local_aid', 0):,.0f} €"],
-            ["Aides Locales & Régionales", f"{data.get('local_aid', 0):,.0f} €"],
-            ["Reste à charge Net", f"{data.get('rest_to_pay', 0):,.0f} €"]
-        ]
-        t = Table(financial_data, colWidths=[8*cm, 8*cm])
-        t.setStyle(TableStyle([
+        financial_data = []
+        detailed = data.get('detailed_costs', [])
+        for item in detailed:
+            financial_data.append([item.get('name', 'Travaux'), f"{item.get('cost', 0):,.0f} €"])
+        
+        financial_data.append(["INVESTISSEMENT BRUT", f"{data.get('total_cost', 0):,.0f} €"])
+        financial_data.append(["Subventions (MaPrimeRénov')", f"{data.get('subsidies', 0):,.0f} €"])
+        financial_data.append(["RESTE À CHARGE NET", f"{data.get('rest_to_pay', 0):,.0f} €"])
+
+        t = Table(financial_data, colWidths=[10*cm, 6*cm])
+        
+        # Style calculation
+        total_rows = len(financial_data)
+        style = [
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('FONTNAME', (0, 3), (-1, 3), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 3), (-1, 3), 12),
-            ('TEXTCOLOR', (1, 3), (1, 3), colors.HexColor('#2563eb')),
-            ('ALIGN', (1, 0), (1, 3), 'RIGHT'),
-            ('PADDING', (0, 0), (-1, -1), 8),
-        ]))
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('PADDING', (0, 0), (-1, -1), 6),
+            ('FONTNAME', (0, total_rows-3), (-1, total_rows-3), 'Helvetica-Bold'), # Brut
+            ('FONTNAME', (0, total_rows-1), (-1, total_rows-1), 'Helvetica-Bold'), # Net
+            ('TEXTCOLOR', (1, total_rows-1), (1, total_rows-1), colors.HexColor('#2563eb')),
+            ('FONTSIZE', (0, total_rows-1), (-1, total_rows-1), 12),
+        ]
+        
+        t.setStyle(TableStyle(style))
         elements.append(t)
 
         # Economic Benefits

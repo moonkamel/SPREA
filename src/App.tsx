@@ -92,18 +92,14 @@ export default function App() {
     const [monthlyRent, setMonthlyRent] = useState(800);
     const [tmi, setTmi] = useState(30);
 
-    // Local Subsidies States
-    const [localAidName, setLocalAidName] = useState("");
-    const [localAidAmount, setLocalAidAmount] = useState(0);
-
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
-        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture pour réduire les déperditions par le haut (environ 30%).', active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'Isolation par l\'extérieur pour supprimer les ponts thermiques et protéger la façade.', active: false },
-        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, description: 'Isolation des planchers bas (cave, garage) pour éviter les remontées de froid.', active: false },
-        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, description: 'Remplacement des fenêtres par du double ou triple vitrage haute performance.', active: false },
-        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, description: 'Installation d\'un système Air-Eau pour un chauffage écologique et très économe.', active: false },
-        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, description: 'Système de ventilation récupérant les calories de l\'air extrait pour préchauffer l\'air entrant.', active: false },
-        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, description: 'Installation de panneaux photovoltaïques pour l\'autoconsommation d\'électricité.', active: false },
+        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture (~45€/m²) pour réduire les déperditions par le haut.', active: false },
+        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'Isolation par l\'extérieur (~180€/m²) pour supprimer les ponts thermiques et protéger la façade.', active: false },
+        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, description: 'Isolation des planchers bas (~60€/m²) pour éviter les remontées de froid.', active: false },
+        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, description: 'Remplacement des fenêtres (~800€/unité) par du double ou triple vitrage haute performance.', active: false },
+        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, description: 'Installation d\'un système Air-Eau (~14k€) pour un chauffage écologique et très économe.', active: false },
+        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, description: 'Système de ventilation (~6.5k€) récupérant les calories de l\'air extrait.', active: false },
+        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, description: 'Installation de panneaux photovoltaïques (~8.5k€) pour l\'autoconsommation.', active: false },
     ]);
 
     const [actionsB, setActionsB] = useState<RetrofitAction[]>([...actionsA]);
@@ -211,16 +207,6 @@ export default function App() {
             else inferred.wallMaterials = "Isolé RT2005";
         }
         setProperty(inferred);
-
-        // Local Aid Auto-Detection
-        if (p.postcode?.startsWith('59')) {
-            setLocalAidName("Prime AIR MEL (Lille)");
-            setLocalAidAmount(1500);
-        } else {
-            setLocalAidName("");
-            setLocalAidAmount(0);
-        }
-
         setView('dashboard');
     };
 
@@ -274,14 +260,25 @@ export default function App() {
         const target = getInfos(newCep, newGes);
         const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
         const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
-        const sub = cost * rate + (activeScenario === 'A' ? localAidAmount : 0); // Apply local aid to active scenario
+        const sub = cost * rate;
         const rest = cost - sub;
 
-        // Investor Tax Benefit (Déficit Foncier / LMNP Amortissement)
+        // Detailed work costs for UI
+        const activeDetailedCosts = activeActions.map(a => {
+            let itemCost = a.defaultCost;
+            if (a.id === 'ite') itemCost = a.defaultCost * property.surface * 1.1 + 3500;
+            else if (a.id === 'iti') itemCost = a.defaultCost * property.surface + 1200;
+            else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
+            else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
+            return { name: a.name, cost: itemCost };
+        });
+
+        // Investor Tax Benefit
         const taxBenefit = isInvestor ? rest * (tmi / 100 + 0.172) : 0;
 
         return {
             newCep, newGes, cost, sub, rest, taxBenefit,
+            activeDetailedCosts,
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
@@ -295,8 +292,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, localAidAmount]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, localAidAmount]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -314,9 +311,13 @@ export default function App() {
                     ges_value: property.gesValue || 0, new_ges: activeSim.newGes, total_cost: activeSim.cost,
                     subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
                     annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
-                    local_aid: activeScenario === 'A' ? localAidAmount : 0
+                    detailed_costs: activeSim.activeDetailedCosts
                 })
             });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Erreur lors de la génération du rapport.");
+            }
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `Rapport_SPREA.pdf`;
@@ -525,31 +526,6 @@ export default function App() {
                             )}
                         </div>
 
-                        <div className="mb-8 p-6 bg-emerald-50/30 rounded-[1.5rem] border border-emerald-100">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-4">Aides Locales & Régionales</p>
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Nom de l'aide</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Ex: Prime AIR MEL..."
-                                        value={localAidName}
-                                        onChange={(e) => setLocalAidName(e.target.value)}
-                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-emerald-600"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Montant estimé (€)</p>
-                                    <input
-                                        type="number"
-                                        value={localAidAmount}
-                                        onChange={(e) => setLocalAidAmount(Number(e.target.value))}
-                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-emerald-600"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
                         <div className="space-y-3">
                             {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
                                 <div key={a.id} className="group relative">
@@ -601,16 +577,31 @@ export default function App() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Financement</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Simulation Financement</p>
                                     <div className="space-y-4">
-                                        <div className="flex justify-between font-bold text-sm"><span>Subventions</span><span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span></div>
+                                        <div className="space-y-2 pb-4 border-b border-slate-50">
+                                            {activeSim?.activeDetailedCosts.map((item: any, idx: number) => (
+                                                <div key={idx} className="flex justify-between text-xs font-bold text-slate-600">
+                                                    <span>{item.name}</span>
+                                                    <span>{Math.round(item.cost).toLocaleString()} €</span>
+                                                </div>
+                                            ))}
+                                            <div className="flex justify-between text-base font-black pt-2 text-slate-800">
+                                                <span>Investissement Brut</span>
+                                                <span>{Math.round(activeSim?.cost || 0).toLocaleString()} €</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between font-bold text-sm">
+                                            <span>Subventions (MaPrimeRénov')</span>
+                                            <span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
+                                        </div>
                                         {isInvestor && (
                                             <div className="flex justify-between font-bold text-sm text-blue-600">
                                                 <span>Gain Fiscal (TMI {tmi}%)</span>
                                                 <span>+{Math.round(activeSim?.taxBenefit || 0).toLocaleString()} €</span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between text-2xl font-black pt-4 border-t">
+                                        <div className="flex justify-between text-2xl font-black pt-4 border-t border-slate-900 mt-4">
                                             <span>{isInvestor ? 'Cout Net Final' : 'Reste à Charge'}</span>
                                             <span>{Math.round(isInvestor ? (activeSim?.netInvestorCost || 0) : (activeSim?.rest || 0)).toLocaleString()} €</span>
                                         </div>

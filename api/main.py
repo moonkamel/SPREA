@@ -174,7 +174,7 @@ class ReportRequest(BaseModel):
     latent_gain: float
     annual_savings: float
     roi_years: int
-    local_aid: Optional[float] = 0.0
+    detailed_costs: Optional[list] = []
 
 @app.post("/generate-report")
 async def generate_report(data: ReportRequest):
