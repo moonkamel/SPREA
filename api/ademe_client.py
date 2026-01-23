@@ -76,6 +76,7 @@ class PropertySchema(BaseModel):
     climate_zone: Optional[ClimateZone] = None
     dpe_class_current: Optional[DPEClass] = None
     ges_class_current: Optional[DPEClass] = None
+    date_etablissement: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     building_type: Optional[str] = None # Maison, Appartement, etc.
@@ -132,29 +133,34 @@ class AdemeConnector:
                     logger.warning(f"Address not found via BAN: {address}")
                     return []
                 
+                feature = ban_data["features"][0]
+                postcode = feature["properties"]["postcode"]
                 street = feature["properties"]["street"] or feature["properties"]["name"]
-                # Clean street name for broader search: "Rue Brûle-Maison" -> "Brûle Maison"
+                # Clean street name: "Rue Brûle-Maison" -> "Brûle Maison"
                 street_clean = street.lower().replace("rue ", "").replace("boulevard ", "").replace("avenue ", "").replace("-", " ")
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
 
-                # 2. Search ADEME with precision keywords
-                # We search for the cleaned street name + postcode
+                # 2. Search ADEME with precision keywords (Pivot Strategy)
+                # Query: Street name in 'q', Postcode in 'qs' (filter)
                 ademe_params = {
-                    "q": f"{street_clean} {postcode}",
+                    "q": street_clean,
+                    "qs": f'code_postal_brut:"{postcode}"',
                     "size": 100
                 }
-                logger.info(f"Querying ADEME with: {ademe_params['q']}")
+                logger.info(f"Querying ADEME with: {ademe_params}")
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []
                 for raw_item in ademe_data.get("results", []):
-                    # We only keep results that roughly match our BAN coordinates or address
-                    # (In a production system, we'd use a more complex geospatial distance query)
                     mapped = self._map_to_internal(raw_item)
-                    mapped.latitude = coords[1]
-                    mapped.longitude = coords[0]
+                    # We might not have exact coords from ADEME, so we use BAN's
+                    if not mapped.latitude:
+                        mapped.latitude = coords[1]
+                        mapped.longitude = coords[0]
                     results.append(mapped)
                 
+                # Sort by date (most recent first)
+                results.sort(key=lambda x: x.date_etablissement or "", reverse=True)
                 return results
             except Exception as e:
                 logger.error(f"Address search error: {e}")
@@ -183,16 +189,16 @@ class AdemeConnector:
             is_estimated = True
 
         # Mapping main property using official OpenAPI names
-        # numero_dpe, adresse_brut, etiquette_dpe, etiquette_ges, zone_climatique
         prop = PropertySchema(
             address=raw.get("adresse_brut", raw.get("adresse_complete_brut", "Unknown")),
             ademe_dpe_number=raw.get("numero_dpe"),
             construction_year=construction_year,
             shab=float(raw.get("surface_habitable_logement", 0.0)),
-            altitude=raw.get("classe_altitude"), # Documented as classe_altitude
+            altitude=raw.get("classe_altitude"),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
             dpe_class_current=raw.get("etiquette_dpe"),
             ges_class_current=raw.get("etiquette_ges"),
+            date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment"),
             is_estimated=is_estimated
         )

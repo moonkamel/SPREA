@@ -121,15 +121,15 @@ def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
         response = client.chat.completions.create(
             model="gpt-4o-2024-08-06", # Using a highly capable model for table parsing
             messages=[
-                {{"role": "system", "content": "You are a specialized data extractor."}},
-                {{"role": "user", "content": prompt}}
+                {"role": "system", "content": "You are a specialized data extractor."},
+                {"role": "user", "content": prompt}
             ],
-            response_format={{ "type": "json_object" }}
+            response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
         logger.error(f"Error during LLM analysis: {e}")
-        return {{"error": "LLM analysis failed", "details": str(e)}}
+        return {"error": "LLM analysis failed", "details": str(e)}
 
 # --- Endpoints ---
 

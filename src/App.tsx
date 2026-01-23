@@ -323,8 +323,13 @@ export default function App() {
                                     </div>
                                     <div>
                                         <p className="font-bold text-slate-800 text-lg leading-tight">{res.address}</p>
-                                        <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">{res.building_type || 'Bâtiment'} • {res.shab} m² • {res.construction_year || 'Année inconnue'}</p>
-                                        <p className="text-xs font-medium text-slate-400 mt-2 italic">DPE n° {res.ademe_dpe_number || 'N/A'}</p>
+                                        <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                                            {res.building_type || 'Bâtiment'} • {res.shab} m² • {res.construction_year || 'Année inconnue'}
+                                        </p>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <p className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Fait le : {res.date_etablissement ? new Date(res.date_etablissement).toLocaleDateString('fr-FR') : 'Date inconnue'}</p>
+                                            <p className="text-xs font-medium text-slate-400 italic">DPE n° {res.ademe_dpe_number || 'N/A'}</p>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className={`px-4 py-2 rounded-lg text-xl font-black text-white shadow-lg`} style={{ backgroundColor: DPE_COLORS[res.dpe_class_current as DPEClass] || '#cbd5e1' }}>
