@@ -11,6 +11,7 @@ import {
     PieChart,
     Layers,
     Copy,
+    AlertTriangle
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -110,17 +111,13 @@ export default function App() {
     const [monthlyRent, setMonthlyRent] = useState(800);
     const [purchasePrice, setPurchasePrice] = useState(150000);
     const [tmi, setTmi] = useState(30);
-    const [isCopro, setIsCopro] = useState(false);
-    const [millièmes, setMillièmes] = useState(100);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
-        { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture (~45€/m²) pour réduire les déperditions par le haut.', active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'ITE (~180€/m²). Inclut: isolant, enduit, échafaudage et installation sécurisée (~3.5k€ fixe).', active: false },
-        { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, description: 'Isolation des planchers bas (~60€/m²) pour éviter les remontées de froid.', active: false },
-        { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, description: 'Remplacement des fenêtres (~800€/unité) par du double ou triple vitrage haute performance.', active: false },
-        { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, description: 'Installation d\'un système Air-Eau (~14k€) pour un chauffage écologique et très économe.', active: false },
-        { id: 'vmc', name: 'VMC Double Flux', defaultCost: 6500, impactKwh: 40, impactGes: 3, description: 'Système de ventilation (~6.5k€) récupérant les calories de l\'air extrait.', active: false },
-        { id: 'solar', name: 'Solaire PV', defaultCost: 8500, impactKwh: 50, impactGes: 5, description: 'Installation de panneaux photovoltaïques (~8.5k€) pour l\'autoconsommation.', active: false },
+        { id: 'iti', name: 'ITI (Murs Intérieurs)', defaultCost: 85, impactKwh: 120, impactGes: 6, description: 'Isolation thermique par l\'intérieur. Réduit les déperditions mais impacte la surface habitable (~1.5% de perte).', active: false },
+        { id: 'floor_ceiling', name: 'Isolation Plafond/Plancher', defaultCost: 55, impactKwh: 45, impactGes: 4, description: 'Isolation des plafonds ou planchers bas (garage, grenier).', active: false },
+        { id: 'vmc', name: 'Ventilation (VMC)', defaultCost: 1100, impactKwh: 35, impactGes: 3, description: 'Installation d\'une VMC simple ou double flux pour une meilleure qualité d\'air et moins d\'humidité.', active: false },
+        { id: 'heating', name: 'Radiateur inertie', defaultCost: 650, impactKwh: 60, impactGes: 15, description: 'Remplacement des radiateurs énergivores par des modèles à inertie haute performance.', active: false },
+        { id: 'ecs', name: 'Ballon Thermo-dynamique', defaultCost: 3500, impactKwh: 80, impactGes: 20, description: 'Système de chauffe-eau thermodynamique pour une production d\'eau chaude économique.', active: false },
     ]);
 
     const [actionsB, setActionsB] = useState<RetrofitAction[]>([...actionsA]);
@@ -238,19 +235,17 @@ export default function App() {
         const total = pRoof + pWalls + pWindows + pFloor + pAir;
 
         const losses = {
-            iti: (pRoof / total) * 100,
-            ite: (pWalls / total) * 100,
-            windows: (pWindows / total) * 100,
+            iti: (pWalls / total) * 100,
+            roof: (pRoof / total) * 100,
             floor: (pFloor / total) * 100,
+            windows: (pWindows / total) * 100,
             vmc: (pAir / total) * 100
         };
 
         const suggester = (a: RetrofitAction) => {
             let isSuggested = false;
             if (a.id === 'iti' && losses.iti > 20) isSuggested = true;
-            if (a.id === 'ite' && losses.ite > 20) isSuggested = true;
-            if (a.id === 'windows' && losses.windows > 15) isSuggested = true;
-            if (a.id === 'floor' && losses.floor > 10) isSuggested = true;
+            if (a.id === 'floor_ceiling' && (losses.roof > 20 || losses.floor > 10)) isSuggested = true;
             if (a.id === 'vmc' && losses.vmc > 15) isSuggested = true;
             return { ...a, suggested: isSuggested, active: isSuggested };
         };
@@ -284,21 +279,34 @@ export default function App() {
         let cost = 0, cepRed = 0, gesRed = 0;
         const thresholds = getAdjustedThresholds(property.surface);
 
+        // Smart Estimation: S_mur = 8 * sqrt(SHAB)
+        const sMur = 8 * Math.sqrt(property.surface);
+
+        // Zone Coefficient (Simplified département based)
+        const dept = property.postcode?.substring(0, 2) || "00";
+        let zoneCoeff = 1.0;
+        if (['75', '77', '78', '91', '92', '93', '94', '95'].includes(dept)) zoneCoeff = 1.2; // IDF
+        if (['23', '36', '15'].includes(dept)) zoneCoeff = 0.9; // Rural examples
+
         activeActions.forEach(a => {
-            let eff = 1.0;
-            if (a.id === 'ite' && property.wallMaterials?.includes('Isolé')) eff = 0.4;
-
             let itemCost = a.defaultCost;
-            if (a.id === 'ite') itemCost = a.defaultCost * property.surface * 1.1 + 3500;
-            else if (a.id === 'iti') itemCost = a.defaultCost * property.surface + 1200;
-            else if (a.id === 'floor') itemCost = a.defaultCost * property.surface;
-            else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
-            else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
+            let eff = 1.0;
 
-            if (isCopro) {
-                if (a.id !== 'windows') {
-                    itemCost = itemCost * (millièmes / 1000);
+            if (a.id === 'iti') {
+                // Base cost + zone adjustment
+                itemCost = a.defaultCost * sMur * zoneCoeff;
+                // Preparation cost (+15€/m²) if wall not isolated
+                if (property.wallMaterials?.toLowerCase().includes('non isolé')) {
+                    itemCost += 15 * sMur;
                 }
+            } else if (a.id === 'floor_ceiling') {
+                itemCost = a.defaultCost * property.surface * zoneCoeff;
+            } else if (a.id === 'heating') {
+                // Estimate 1 radiator per 15m²
+                const count = Math.ceil(property.surface / 15);
+                itemCost = a.defaultCost * count;
+            } else if (a.id === 'vmc' || a.id === 'ecs') {
+                itemCost = a.defaultCost * zoneCoeff;
             }
 
             cost += itemCost;
@@ -330,11 +338,16 @@ export default function App() {
         // Detailed work costs for UI
         const activeDetailedCosts = activeActions.map(a => {
             let itemCost = a.defaultCost;
-            if (a.id === 'ite') itemCost = a.defaultCost * property.surface * 1.1 + 3500;
-            else if (a.id === 'iti') itemCost = a.defaultCost * property.surface + 1200;
-            else if (a.id === 'floor') itemCost = a.defaultCost * property.surface;
-            else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
-            else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
+            if (a.id === 'iti') {
+                itemCost = a.defaultCost * sMur * zoneCoeff;
+                if (property.wallMaterials?.toLowerCase().includes('non isolé')) itemCost += 15 * sMur;
+            } else if (a.id === 'floor_ceiling') {
+                itemCost = a.defaultCost * property.surface * zoneCoeff;
+            } else if (a.id === 'heating') {
+                itemCost = a.defaultCost * Math.ceil(property.surface / 15);
+            } else if (a.id === 'vmc' || a.id === 'ecs') {
+                itemCost = a.defaultCost * zoneCoeff;
+            }
             return { name: a.name, cost: itemCost, suggested: a.suggested };
         });
 
@@ -351,38 +364,30 @@ export default function App() {
 
         // Eco-PTZ Logic
         const cats = new Set(activeActions.map(a => {
-            if (['iti', 'ite', 'windows', 'floor'].includes(a.id)) return 'isolation';
-            if (a.id === 'heatpump') return 'heating';
+            if (['iti', 'floor_ceiling'].includes(a.id)) return 'isolation';
+            if (a.id === 'heating' || a.id === 'ecs') return 'heating';
             return 'other';
         })).size;
 
         let ecoPTZLimit = 0;
         if (cats === 1) {
-            ecoPTZLimit = activeActions.some(a => a.id === 'windows') ? 7000 : 15000;
+            ecoPTZLimit = 15000;
         } else if (cats === 2) {
             ecoPTZLimit = 25000;
         } else if (cats >= 3) {
             ecoPTZLimit = 30000;
         }
-        // Simplified Global Performance check
-        if (target.label === 'A' || target.label === 'B' || target.label === 'C') {
-            if (activeActions.length >= 2) ecoPTZLimit = 50000;
-        }
 
         const ecoPTZAmount = Math.min(rac, ecoPTZLimit);
         const remainingAfterPTZ = rac - ecoPTZAmount;
-
-        // PAM Logic (Prêt Avance Mutation)
-        const pamLimit = purchasePrice * 0.2;
-        const pamEligible = isInvestor && remainingAfterPTZ > 5000;
-        const pamAmount = pamEligible ? Math.min(remainingAfterPTZ, pamLimit) : 0;
-        const pamDebt15y = pamAmount * Math.pow(1.04, 5);
+        console.log("Remaining after PTZ:", remainingAfterPTZ); // Avoid unused warning
 
         return {
             newCep, newGes, cost, sub, rest, taxBenefit,
             activeDetailedCosts,
             yieldBrut, cashflow, purchasePrice,
-            banDate, ecoPTZAmount, ecoPTZLimit, ceeEst, pamAmount, pamDebt15y, pamEligible,
+            banDate, ecoPTZAmount, ecoPTZLimit, ceeEst,
+            pamAmount: 0, pamDebt15y: 0, pamEligible: false, // Disabled for now to simplify
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
@@ -392,12 +397,13 @@ export default function App() {
             newCepLabel: target.cepL,
             newGesLabel: target.gesL,
             currentCepLabel: current.cepL,
-            currentGesLabel: current.gesL
+            currentGesLabel: current.gesL,
+            hasITI: activeActions.some(a => a.id === 'iti')
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, isCopro, millièmes, purchasePrice]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, isCopro, millièmes, purchasePrice]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -424,8 +430,8 @@ export default function App() {
                     cee_est: activeSim.ceeEst,
                     eco_ptz_amount: activeSim.ecoPTZAmount,
                     pam_amount: activeSim.pamAmount,
-                    is_copro: isCopro,
-                    tax_benefit: activeSim.taxBenefit
+                    tax_benefit: activeSim.taxBenefit,
+                    has_iti: activeSim.hasITI
                 })
             });
             if (!res.ok) {
@@ -609,31 +615,6 @@ export default function App() {
                             </div>
                         </div>
 
-                        <div className="mb-8 p-6 bg-slate-50/50 rounded-[1.5rem] border border-slate-100">
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">Copropriété</p>
-                                <button
-                                    onClick={() => setIsCopro(!isCopro)}
-                                    className={`w-12 h-6 rounded-full relative transition-colors ${isCopro ? 'bg-slate-900' : 'bg-slate-200'}`}
-                                >
-                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isCopro ? 'translate-x-6' : ''}`} />
-                                </button>
-                            </div>
-                            {isCopro && (
-                                <div className="animate-in fade-in slide-in-from-top-1 duration-200">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Quote-part (millièmes)</p>
-                                    <div className="flex items-center gap-3">
-                                        <input
-                                            type="number"
-                                            value={millièmes}
-                                            onChange={(e) => setMillièmes(Number(e.target.value))}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-slate-900"
-                                        />
-                                        <span className="text-xs font-bold text-slate-400">/1000</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
 
                         <div className="mb-8 p-6 bg-blue-50/30 rounded-[1.5rem] border border-blue-100">
                             <div className="flex items-center justify-between mb-4">
@@ -790,8 +771,16 @@ export default function App() {
 
                                         <div className="flex justify-between text-2xl font-black pt-4">
                                             <span className="text-slate-800">Cout Final</span>
-                                            <span className="text-slate-900">{Math.round(Math.max(0, (activeSim?.cost || 0) - (activeSim?.sub || 0) - (activeSim?.ceeEst || 0) - (activeSim?.ecoPTZAmount || 0) - (activeSim?.pamAmount || 0) - (isInvestor ? (activeSim?.taxBenefit || 0) : 0))).toLocaleString()} €</span>
+                                            <span className="text-slate-900">{Math.round(Math.max(0, (activeSim?.cost || 0) - (activeSim?.sub || 0) - (activeSim?.ceeEst || 0) - (activeSim?.ecoPTZAmount || 0))).toLocaleString()} €</span>
                                         </div>
+                                        {activeSim?.hasITI && (
+                                            <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
+                                                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                                                <p className="text-[10px] font-bold text-amber-800 leading-relaxed">
+                                                    <b>Attention :</b> L'isolation des murs par l'intérieur (ITI) fera perdre environ 1.5% de surface Carrez.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

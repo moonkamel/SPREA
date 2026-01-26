@@ -13,7 +13,10 @@ try:
 except ImportError:
     OCR_AVAILABLE = False
 
-from api.ademe_client import AdemeConnector
+try:
+    from api.ademe_client import AdemeConnector
+except ImportError:
+    from ademe_client import AdemeConnector
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
@@ -155,7 +158,10 @@ async def search_dpe(dpe_number: str):
 
 from pydantic import BaseModel
 from fastapi.responses import Response
-from api.pdf_service import pdf_service
+try:
+    from api.pdf_service import pdf_service
+except ImportError:
+    from pdf_service import pdf_service
 
 class ReportRequest(BaseModel):
     address: str
@@ -182,8 +188,8 @@ class ReportRequest(BaseModel):
     cee_est: Optional[float] = 0.0
     eco_ptz_amount: Optional[float] = 0.0
     pam_amount: Optional[float] = 0.0
-    is_copro: Optional[bool] = False
     tax_benefit: Optional[float] = 0.0
+    has_iti: Optional[bool] = False
 
 @app.post("/generate-report")
 async def generate_report(data: ReportRequest):

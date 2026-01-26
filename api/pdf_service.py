@@ -192,6 +192,13 @@ class PDFReportGenerator:
         ]))
         elements.append(t_fin)
         
+        if data.get('has_iti'):
+             elements.append(Spacer(1, 4))
+             elements.append(Paragraph(
+                 "<i>* Attention : L'isolation des murs par l'intérieur (ITI) réduit la surface habitable (~1.5%).</i>", 
+                 ParagraphStyle('SmallAlert', parent=self.body_style, fontSize=7, textColor=colors.HexColor('#92400e'))
+             ))
+        
         # Net Charge Bold Highlight
         elements.append(Spacer(1, 10))
         net_table = [[Paragraph("RESTE À CHARGE NET", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", self.net_cost_style)]]
