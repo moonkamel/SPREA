@@ -150,7 +150,7 @@ class AdemeConnector:
                     return "".join(
                         c for c in unicodedata.normalize('NFD', text)
                         if unicodedata.category(c) != 'Mn'
-                    ).lower().replace("rue ", "").replace("boulevard ", "").replace("avenue ", "").replace("-", " ")
+                    ).lower().replace("-", " ")
 
                 street_clean = clean_text(street)
                 coords = feature["geometry"]["coordinates"] # [lon, lat]
@@ -163,9 +163,12 @@ class AdemeConnector:
                     filters.append(f"code_postal_brut:{postcode}")
                 if housenumber:
                     filters.append(f'numero_voie_ban:"{housenumber}"')
+                if street:
+                    # Stricter street match in qs
+                    filters.append(f'adresse_brut:"*{street_clean}*"')
                 
                 ademe_params = {
-                    "q": f"{street_clean} {city}".strip(),
+                    "q": street_clean,
                     "qs": " AND ".join(filters) if filters else "",
                     "size": 100
                 }
@@ -230,7 +233,7 @@ class AdemeConnector:
             address=raw.get("adresse_brut", raw.get("adresse_complete_brut", "Unknown")),
             ademe_dpe_number=raw.get("numero_dpe"),
             construction_year=self._safe_int(raw.get("annee_construction")),
-            construction_period=raw.get("periode_construction"),
+            construction_period=raw.get("periode_construction") or raw.get("nom_periode_construction") or raw.get("periode_construction_ban"),
             shab=self._safe_float(raw.get("surface_habitable_logement"), 50.0), # Safer default
             altitude=self._safe_float(raw.get("classe_altitude")),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),

@@ -245,11 +245,12 @@ export default function App() {
         setMonthlyRent(800);
         setPurchasePrice(p.surface * 4200);
 
-        const year = p.year || 1970;
+        const year = p.year || (p.constructionPeriod?.includes('1948') ? 1940 : 1970);
         const inferred = { ...p };
         if (!p.wallMaterials || p.wallMaterials === "Inconnu") {
-            if (year < 1948) inferred.wallMaterials = "Pierre";
-            else if (year < 1975) inferred.wallMaterials = "Béton non isolé";
+            const period = (p.constructionPeriod || "").toLowerCase();
+            if (year < 1948 || period.includes('1948')) inferred.wallMaterials = "Pierre";
+            else if (year < 1975 || period.includes('1948-1974')) inferred.wallMaterials = "Béton non isolé";
             else inferred.wallMaterials = "Isolé RT2005";
         }
         setProperty(inferred);
