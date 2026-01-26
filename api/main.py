@@ -171,6 +171,8 @@ async def search_address(q: str):
                 calc = engine.calculate(r)
                 d["recommended_works"] = engine.get_recommendations(r)
                 d["loss_breakdown"] = calc["loss_breakdown"]
+                d["building_type"] = r.building_type
+                d["construction_period"] = r.construction_period
                 api_results.append(d)
             except Exception as item_err:
                 logger.error(f"Error mapping item {r.address}: {item_err}")
@@ -193,6 +195,8 @@ async def search_dpe(dpe_number: str):
                 calc = engine.calculate(prop)
                 d["recommended_works"] = engine.get_recommendations(prop)
                 d["loss_breakdown"] = calc["loss_breakdown"]
+                d["building_type"] = prop.building_type
+                d["construction_period"] = prop.construction_period
                 return {"count": 1, "results": [d]}
             except Exception as map_err:
                 logger.error(f"DPE Mapping Error: {map_err}")
@@ -232,6 +236,8 @@ class ReportRequest(BaseModel):
     address: str
     surface: float
     year: Any = "N/A"
+    construction_period: Optional[str] = "N/A"
+    building_type: Optional[str] = "Logement"
     ademe_dpe_number: Optional[str] = "N/A"
     current_label: str = "G"
     new_label: str = "G"

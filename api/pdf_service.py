@@ -136,17 +136,19 @@ class PDFReportGenerator:
         # Property Details Row
         details = [
             [
+                Paragraph("TYPE DE BÂTIMENT", self.metric_label_style),
                 Paragraph("SURFACE HABITABLE", self.metric_label_style),
-                Paragraph("ANNÉE DE CONSTRUCTION", self.metric_label_style),
+                Paragraph("PÉRIODE DE CONSTRUCTION", self.metric_label_style),
                 Paragraph("NUMÉRO DPE (ADEME)", self.metric_label_style)
             ],
             [
+                Paragraph(f"<b>{data.get('building_type', 'Logement')}</b>", self.body_style),
                 Paragraph(f"<b>{data.get('surface', 0)} m²</b>", self.body_style),
-                Paragraph(f"<b>{data.get('year', 'N/A')}</b>", self.body_style),
+                Paragraph(f"<b>{data.get('construction_period') or data.get('year') or 'N/A'}</b>", self.body_style),
                 Paragraph(f"<b>{data.get('ademe_dpe_number', 'N/A')}</b>", self.body_style)
             ]
         ]
-        t_details = Table(details, colWidths=[6*cm]*3)
+        t_details = Table(details, colWidths=[4.5*cm]*4)
         t_details.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
             ('TOPPADDING', (0,1), (-1,1), 2),

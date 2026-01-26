@@ -71,6 +71,7 @@ class PropertySchema(BaseModel):
     address: str = "Adresse Inconnue"
     ademe_dpe_number: Optional[str] = None
     construction_year: Optional[int] = None
+    construction_period: Optional[str] = None
     shab: float = 0.0
     altitude: Optional[float] = None
     climate_zone: Optional[ClimateZone] = None
@@ -229,6 +230,7 @@ class AdemeConnector:
             address=raw.get("adresse_brut", raw.get("adresse_complete_brut", "Unknown")),
             ademe_dpe_number=raw.get("numero_dpe"),
             construction_year=self._safe_int(raw.get("annee_construction")),
+            construction_period=raw.get("periode_construction"),
             shab=self._safe_float(raw.get("surface_habitable_logement"), 50.0), # Safer default
             altitude=self._safe_float(raw.get("classe_altitude")),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
@@ -237,7 +239,7 @@ class AdemeConnector:
             consumption_level=self._safe_float(raw.get("conso_5_usages_par_m2_ep", raw.get("consommation_energie_primaire_logement"))),
             ges_value=self._safe_float(raw.get("emission_ges_5_usages_par_m2")),
             date_etablissement=raw.get("date_etablissement_dpe"),
-            building_type=raw.get("type_batiment"),
+            building_type=raw.get("type_batiment", "Logement"),
             is_estimated=is_estimated
         )
 

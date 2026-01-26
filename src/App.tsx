@@ -49,6 +49,7 @@ interface PropertyData {
     ademe_dpe_number?: string;
     postcode?: string;
     city?: string;
+    constructionPeriod?: string;
     loss_breakdown?: {
         walls: number;
         windows: number;
@@ -174,9 +175,10 @@ export default function App() {
                     ademe_dpe_number: r.ademe_dpe_number,
                     surface: r.shab,
                     year: r.construction_year,
+                    constructionPeriod: r.construction_period,
                     initialCep: r.consumption_level || 350,
                     label: r.dpe_class_current,
-                    buildingType: r.building_type,
+                    buildingType: r.building_type || "Logement",
                     heatingType: r.systems?.[0]?.energy_source,
                     gesValue: r.ges_value || 10,
                     postcode: r.postcode || "59000",
@@ -210,9 +212,10 @@ export default function App() {
                     ademe_dpe_number: r.ademe_dpe_number,
                     surface: r.shab,
                     year: r.construction_year,
+                    constructionPeriod: r.construction_period,
                     initialCep: r.consumption_level || 350,
                     label: r.dpe_class_current,
-                    buildingType: r.building_type,
+                    buildingType: r.building_type || "Logement",
                     heatingType: r.systems?.[0]?.energy_source,
                     gesValue: r.ges_value || 10,
                     postcode: r.postcode || "59000",
@@ -479,7 +482,9 @@ export default function App() {
                     pam_amount: activeSim.pamAmount || 0,
                     tax_benefit: activeSim.taxBenefit || 0,
                     has_iti: activeSim.hasITI || false,
-                    user_profile: userProfile
+                    user_profile: isInvestor ? "investisseur" : "propriétaire",
+                    building_type: property.buildingType || "Logement",
+                    construction_period: property.constructionPeriod || "N/A"
                 })
             });
             if (!res.ok) {
@@ -566,9 +571,16 @@ export default function App() {
                                     {res.city && <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg">{res.city}</span>}
                                 </p>
                                 <div className="flex items-center gap-4 mt-2">
-                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><Home size={12} /> {res.surface} m²</span>
-                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><Building size={12} /> {res.year}</span>
-                                    {res.ademe_dpe_number && <span className="text-xs font-bold text-slate-400 flex items-center gap-1"><FileText size={12} /> {res.ademe_dpe_number}</span>}
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                        {res.buildingType?.toLowerCase().includes('appartement') ? <Building size={12} /> : <Home size={12} />}
+                                        {res.buildingType}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                        <TrendingUp size={12} /> {res.surface} m²
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                        <Layers size={12} /> {res.constructionPeriod || (res.year ? `Période ${res.year}` : 'Inconnu')}
+                                    </span>
                                 </div>
                             </div>
                             <div className={`px-4 py-2 rounded-lg text-xl font-black text-white ml-4 flex flex-col items-center justify-center min-w-[50px] shadow-sm`} style={{ backgroundColor: DPE_COLORS[res.label as DPEClass] }}>
@@ -592,7 +604,7 @@ export default function App() {
                     <div>
                         <h1 className="text-2xl font-black text-slate-800 truncate max-w-lg">{property?.address}</h1>
                         <p className="text-sm font-bold text-slate-400">
-                            {property?.buildingType || 'Logement'} • {property?.surface} m² • {property?.year ? `Période ${property.year}` : 'Année Inconnue'}
+                            {property?.buildingType} • {property?.surface} m² • {property?.constructionPeriod || (property?.year ? `Période ${property.year}` : 'Année Inconnue')}
                         </p>
                     </div>
                 </div>
