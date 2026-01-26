@@ -3,7 +3,10 @@ import copy
 import math
 from typing import Dict, List, Optional, Any
 from enum import Enum
-from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+try:
+    from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+except ImportError:
+    from ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

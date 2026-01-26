@@ -159,52 +159,30 @@ export default function App() {
         setError(null);
         setSuggestions([]);
         try {
-            const banRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(addressQuery)}&limit=1`);
-            const banData = await banRes.json();
-            if (!banData.features || banData.features.length === 0) {
-                setError("Adresse non reconnue.");
-                return;
-            }
-            const props = banData.features[0].properties;
-            const postcode = props.postcode;
-            const housenumber = props.housenumber || "";
-            const street = props.street || props.name;
+            const res = await fetch(`/api/search-address?q=${encodeURIComponent(addressQuery)}`);
+            if (!res.ok) throw new Error(`Serveur Error: ${res.status}`);
+            const data = await res.json();
 
-            const cleanText = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/rue |boulevard |avenue /g, "").replace(/-/g, " ");
-            const streetClean = cleanText(street);
-
-            const ademeUrl = `https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?q=${encodeURIComponent(streetClean)}&qs=code_postal_brut:${postcode}${housenumber ? ` AND numero_voie_ban:"${housenumber}"` : ''}&size=100`;
-            const ademeRes = await fetch(ademeUrl);
-            const ademeData = await ademeRes.json();
-
-            if (ademeData.results && ademeData.results.length > 0) {
-                const mapped = ademeData.results.map((r: any) => ({
-                    address: r.adresse_brut || r.adresse_complete_brut || "Inconnue",
-                    ademe_dpe_number: r.numero_dpe,
-                    surface: parseFloat(r.surface_habitable_logement || "0"),
-                    year: parseInt(r.annee_construction || "0"),
-                    initialCep: parseFloat(r.conso_5_usages_par_m2_ep || r.consommation_energie_primaire_logement) || 250,
-                    label: (r.etiquette_dpe as DPEClass) || 'G',
-                    buildingType: r.type_batiment || 'Maison',
-                    heatingType: r.type_energie_principale_chauffage || "Inconnu",
-                    gesLabel: r.etiquette_ges || "N/A",
-                    gesValue: parseFloat(r.emission_ges_5_usages_par_m2 || "0"),
-                    wallMaterials: r.qualite_isolation_murs || "Inconnu",
-                    glassType: r.qualite_isolation_menuiseries || "Inconnu",
-                    roofIsolation: r.qualite_isolation_plancher_haut_comble_perdu || "Non spécifié",
-                    floorIsolation: r.qualite_isolation_plancher_bas || "Non spécifié",
-                    heatingDetail: r.description_installation_chauffage_n1 || "",
-                    date_etablissement: r.date_etablissement_dpe,
-                    postcode: postcode,
-                    city: props.city || props.town || ""
-                }));
-                setSearchResults(mapped);
+            if (data.results && data.results.length > 0) {
+                setSearchResults(data.results.map((r: any) => ({
+                    address: r.address,
+                    ademe_dpe_number: r.ademe_dpe_number,
+                    surface: r.shab,
+                    year: r.construction_year,
+                    initialCep: r.consumption_level || 350,
+                    label: r.dpe_class_current,
+                    buildingType: r.building_type,
+                    heatingType: r.systems?.[0]?.energy_source,
+                    gesValue: r.ges_value || 10,
+                    postcode: "59000",
+                    recommended_works: r.recommended_works
+                })));
                 setView('results');
             } else {
                 setError("Aucun DPE trouvé.");
             }
         } catch (err) {
-            setError("Erreur réseau ADEME.");
+            setError("Erreur réseau API SPREA.");
         } finally {
             setLoading(false);
         }
@@ -229,7 +207,8 @@ export default function App() {
                     buildingType: r.building_type,
                     heatingType: r.systems?.[0]?.energy_source,
                     gesValue: r.ges_value || 10,
-                    postcode: "59000" // Fallback
+                    postcode: "59000",
+                    recommended_works: r.recommended_works
                 })));
                 setView('results');
             } else {
@@ -242,7 +221,7 @@ export default function App() {
         }
     };
 
-    const selectProperty = (p: PropertyData) => {
+    const selectProperty = (p: PropertyData & { recommended_works?: any[] }) => {
         // Full State Reset
         setActionsA(prev => prev.map(a => ({ ...a, active: false })));
         setActionsB(prev => prev.map(a => ({ ...a, active: false })));
@@ -252,7 +231,7 @@ export default function App() {
         setIncomeLevel('intermediaire');
         setTmi(30);
         setMonthlyRent(800);
-        setPurchasePrice(p.surface * 4200); // Dynamic baseline, user can edit
+        setPurchasePrice(p.surface * 4200);
 
         const year = p.year || 1970;
         const inferred = { ...p };
@@ -264,32 +243,22 @@ export default function App() {
         setProperty(inferred);
 
         // Intelligent Recommendations Logic
-        let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
-        if (inferred.roofIsolation?.toLowerCase().includes('bonne')) pRoof *= 0.35;
-        if (inferred.wallMaterials?.toLowerCase().includes('bonne')) pWalls *= 0.40;
-        if (inferred.glassType?.toLowerCase().includes('performant')) pWindows *= 0.50;
-        const total = pRoof + pWalls + pWindows + pFloor + pAir;
-
-        const losses = {
-            iti: (pWalls / total) * 100,
-            roof: (pRoof / total) * 100,
-            floor: (pFloor / total) * 100,
-            windows: (pWindows / total) * 100,
-            vmc: (pAir / total) * 100
-        };
-
-        const suggester = (a: RetrofitAction) => {
-            if (!property) return { ...a, suggested: false, active: false };
-            let isSuggested = false;
-            if (a.id === 'iti' && losses.iti > 20) isSuggested = true;
-            if (a.id === 'roof' && losses.roof > 20 && property.buildingType === 'MAISON') isSuggested = true;
-            if (a.id === 'floor_ceiling' && (losses.roof > 20 || losses.floor > 10)) isSuggested = true;
-            if (a.id === 'vmc' && losses.vmc > 15) isSuggested = true;
-            return { ...a, suggested: isSuggested, active: isSuggested };
-        };
-
-        setActionsA(prev => prev.map(suggester));
-        setActionsB(prev => prev.map(suggester));
+        if (p.recommended_works && p.recommended_works.length > 0) {
+            const recIds = p.recommended_works.map(r => r.id);
+            const applier = (a: RetrofitAction) => {
+                const isActive = recIds.includes(a.id);
+                return { ...a, suggested: isActive, active: isActive };
+            };
+            setActionsA(prev => prev.map(applier));
+            setActionsB(prev => prev.map(applier));
+        } else {
+            // Fallback to local logic
+            let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
+            const total = pRoof + pWalls + pWindows + pFloor + pAir;
+            const suggester = (a: RetrofitAction) => ({ ...a, suggested: false, active: false });
+            setActionsA(prev => prev.map(suggester));
+            setActionsB(prev => prev.map(suggester));
+        }
 
         setView('dashboard');
     };

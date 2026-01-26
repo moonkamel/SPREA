@@ -159,11 +159,14 @@ async def search_address(q: str):
             res_dict["recommended_works"] = engine.get_recommendations(res)
             # Use original index or update results list
         
-        # Mapping back to dict for API response to include extra field
         api_results = []
         for r in results:
             d = r.dict()
-            d["recommended_works"] = engine.get_recommendations(r)
+            try:
+                d["recommended_works"] = engine.get_recommendations(r)
+            except Exception as reco_err:
+                logger.error(f"Recommendation failed for {r.address}: {reco_err}")
+                d["recommended_works"] = []
             api_results.append(d)
             
         return {"count": len(api_results), "results": api_results}
@@ -178,7 +181,11 @@ async def search_dpe(dpe_number: str):
         prop = await ademe.search_by_dpe_number(dpe_number)
         if prop:
             d = prop.dict()
-            d["recommended_works"] = engine.get_recommendations(prop)
+            try:
+                d["recommended_works"] = engine.get_recommendations(prop)
+            except Exception as reco_err:
+                logger.error(f"Recommendation failed for DPE {dpe_number}: {reco_err}")
+                d["recommended_works"] = []
             return {"count": 1, "results": [d]}
         return {"count": 0, "results": []}
     except Exception as e:
