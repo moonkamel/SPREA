@@ -591,7 +591,9 @@ export default function App() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-slate-800 truncate max-w-lg">{property?.address}</h1>
-                        <p className="text-sm font-bold text-slate-400">{property?.surface} m² • {property?.year}</p>
+                        <p className="text-sm font-bold text-slate-400">
+                            {property?.buildingType || 'Logement'} • {property?.surface} m² • {property?.year ? `Période ${property.year}` : 'Année Inconnue'}
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
