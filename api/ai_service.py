@@ -1,4 +1,4 @@
-import google.generativeai as genai
+import httpx
 import os
 import logging
 from typing import Dict, Any, Optional
@@ -6,19 +6,19 @@ from typing import Dict, Any, Optional
 logger = logging.getLogger(__name__)
 
 # Configure Gemini
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCE-6F13a-lONeFdb2fufcVSuDTMW37Uus") # Use provided key as fallback or env
-genai.configure(api_key=GEMINI_KEY)
+GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCE-6F13a-lONeFdb2fufcVSuDTMW37Uus")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
 
 class AIService:
     def __init__(self, model_name: str = "gemini-1.5-flash"):
-        self.model = genai.GenerativeModel(model_name)
+        self.model_name = model_name
 
     async def generate_narrative(self, data: Dict[str, Any], user_profile: str = "propriétaire") -> str:
         """
-        Generates a personalized narrative for the renovation report.
+        Generates a personalized narrative for the renovation report using direct REST API.
         """
         try:
-            prompt = f"""
+            prompt_text = f"""
             Tu es un expert en rénovation énergétique pour SPREA (Intelligent Property). 
             Rédige une analyse synthétique et percutante (150-200 mots) pour un rapport de rénovation.
             
@@ -40,10 +40,24 @@ class AIService:
             5. Structure en 2 courts paragraphes : "L'Analyse de l'Expert" et "La Stratégie Conseillée".
             """
             
-            response = self.model.generate_content(prompt)
-            return response.text
+            payload = {
+                "contents": [
+                    {
+                        "parts": [{"text": prompt_text}]
+                    }
+                ]
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(GEMINI_URL, json=payload, timeout=30.0)
+                response.raise_for_status()
+                res_json = response.json()
+                
+                # Extract text from Gemini structure
+                return res_json['candidates'][0]['content']['parts'][0]['text']
+                
         except Exception as e:
-            logger.error(f"Gemini Error: {e}")
+            logger.error(f"Gemini REST Error: {e}")
             return "Une erreur est survenue lors de la génération de l'analyse personnalisée par l'IA. Veuillez consulter les chiffres techniques détaillés ci-dessous."
 
 ai_service = AIService()
