@@ -153,11 +153,6 @@ async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
         results = await ademe.search_by_address(q)
-        for res in results:
-            # Inject recommendations based on initial state
-            res_dict = res.dict()
-            res_dict["recommended_works"] = engine.get_recommendations(res)
-            # Use original index or update results list
         
         api_results = []
         for r in results:

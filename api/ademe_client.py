@@ -69,7 +69,7 @@ class SystemSchema(BaseModel):
 
 class PropertySchema(BaseModel):
     address: str
-    ademe_dpe_number: Optional[str] = Field(None, max_length=13)
+    ademe_dpe_number: Optional[str] = None
     construction_year: Optional[int] = None
     shab: float
     altitude: Optional[float] = None
