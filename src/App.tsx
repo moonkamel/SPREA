@@ -114,6 +114,7 @@ export default function App() {
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'ITI (Murs Intérieurs)', defaultCost: 85, impactKwh: 120, impactGes: 6, description: 'Isolation thermique par l\'intérieur. Réduit les déperditions mais impacte la surface habitable (~1.5% de perte).', active: false },
+        { id: 'roof', name: 'Isolation Toiture', defaultCost: 65, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture pour les maisons individuelles.', active: false },
         { id: 'floor_ceiling', name: 'Isolation Plafond/Plancher', defaultCost: 55, impactKwh: 45, impactGes: 4, description: 'Isolation des plafonds ou planchers bas (garage, grenier).', active: false },
         { id: 'vmc', name: 'Ventilation (VMC)', defaultCost: 1100, impactKwh: 35, impactGes: 3, description: 'Installation d\'une VMC simple ou double flux pour une meilleure qualité d\'air et moins d\'humidité.', active: false },
         { id: 'heating', name: 'Radiateur inertie', defaultCost: 650, impactKwh: 60, impactGes: 15, description: 'Remplacement des radiateurs énergivores par des modèles à inertie haute performance.', active: false },
@@ -243,8 +244,10 @@ export default function App() {
         };
 
         const suggester = (a: RetrofitAction) => {
+            if (!property) return { ...a, suggested: false, active: false };
             let isSuggested = false;
             if (a.id === 'iti' && losses.iti > 20) isSuggested = true;
+            if (a.id === 'roof' && losses.roof > 20 && property.buildingType === 'MAISON') isSuggested = true;
             if (a.id === 'floor_ceiling' && (losses.roof > 20 || losses.floor > 10)) isSuggested = true;
             if (a.id === 'vmc' && losses.vmc > 15) isSuggested = true;
             return { ...a, suggested: isSuggested, active: isSuggested };
@@ -299,6 +302,9 @@ export default function App() {
                 if (property.wallMaterials?.toLowerCase().includes('non isolé')) {
                     itemCost += 15 * sMur;
                 }
+            } else if (a.id === 'roof') {
+                // Roof area estimation: surface area
+                itemCost = a.defaultCost * property.surface * zoneCoeff;
             } else if (a.id === 'floor_ceiling') {
                 itemCost = a.defaultCost * property.surface * zoneCoeff;
             } else if (a.id === 'heating') {
@@ -341,6 +347,8 @@ export default function App() {
             if (a.id === 'iti') {
                 itemCost = a.defaultCost * sMur * zoneCoeff;
                 if (property.wallMaterials?.toLowerCase().includes('non isolé')) itemCost += 15 * sMur;
+            } else if (a.id === 'roof') {
+                itemCost = a.defaultCost * property.surface * zoneCoeff;
             } else if (a.id === 'floor_ceiling') {
                 itemCost = a.defaultCost * property.surface * zoneCoeff;
             } else if (a.id === 'heating') {
@@ -363,8 +371,14 @@ export default function App() {
         const rac = Math.max(0, cost - sub - ceeEst);
 
         // Eco-PTZ Logic
-        const cats = new Set(activeActions.map(a => {
-            if (['iti', 'floor_ceiling'].includes(a.id)) return 'isolation';
+        const activeCats = activeActions.filter(a => {
+            // Filter out roof for apartments just in case
+            if (a.id === 'roof' && property.buildingType !== 'MAISON') return false;
+            return true;
+        });
+
+        const cats = new Set(activeCats.map(a => {
+            if (['iti', 'roof', 'floor_ceiling'].includes(a.id)) return 'isolation';
             if (a.id === 'heating' || a.id === 'ecs') return 'heating';
             return 'other';
         })).size;
@@ -666,20 +680,22 @@ export default function App() {
                         </div>
 
                         <div className="space-y-3">
-                            {(activeScenario === 'A' ? actionsA : actionsB).map(a => (
-                                <div key={a.id} className="group relative">
-                                    <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
-                                        <div className="flex flex-col items-start gap-1">
-                                            <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
-                                            {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
+                            {(activeScenario === 'A' ? actionsA : actionsB)
+                                .filter(a => a.id !== 'roof' || property?.buildingType === 'MAISON')
+                                .map(a => (
+                                    <div key={a.id} className="group relative">
+                                        <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
+                                            <div className="flex flex-col items-start gap-1">
+                                                <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                                {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
+                                            </div>
+                                            <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
+                                        </button>
+                                        <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
+                                            <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
                                         </div>
-                                        <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
-                                    </button>
-                                    <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
-                                        <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </div>
                 </aside>
