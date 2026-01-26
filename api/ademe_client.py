@@ -163,9 +163,6 @@ class AdemeConnector:
                     filters.append(f"code_postal_brut:{postcode}")
                 if housenumber:
                     filters.append(f'numero_voie_ban:"{housenumber}"')
-                if street:
-                    # Stricter street match in qs
-                    filters.append(f'adresse_brut:"*{street_clean}*"')
                 
                 ademe_params = {
                     "q": street_clean,

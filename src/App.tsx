@@ -256,20 +256,24 @@ export default function App() {
         setProperty(inferred);
 
         // Intelligent Recommendations Logic
-        if (p.recommended_works && p.recommended_works.length > 0) {
-            const recIds = p.recommended_works.map(r => r.id);
-            const applier = (a: RetrofitAction) => {
-                const isActive = recIds.includes(a.id);
-                return { ...a, suggested: isActive, active: isActive };
-            };
-            setActionsA(prev => prev.map(applier));
-            setActionsB(prev => prev.map(applier));
-        } else {
-            // Fallback to local logic
-            const suggester = (a: RetrofitAction) => ({ ...a, suggested: false, active: false });
-            setActionsA(prev => prev.map(suggester));
-            setActionsB(prev => prev.map(suggester));
-        }
+        const recIds = p.recommended_works ? p.recommended_works.map(r => r.id) : [];
+        const breakdown = p.loss_breakdown;
+
+        const autoSelector = (a: RetrofitAction) => {
+            let isActive = recIds.includes(a.id);
+
+            // Heuristic based on real losses if present
+            if (breakdown) {
+                if (a.id === 'iti' && breakdown.walls > 100) isActive = true;
+                if (a.id === 'windows' && breakdown.windows > 30) isActive = true;
+                if (a.id === 'vmc' && breakdown.ventilation > 50) isActive = true;
+            }
+
+            return { ...a, suggested: isActive, active: isActive };
+        };
+
+        setActionsA(prev => prev.map(autoSelector));
+        setActionsB(prev => prev.map(autoSelector));
 
         setView('dashboard');
     };

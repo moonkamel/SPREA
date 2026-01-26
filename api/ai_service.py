@@ -52,9 +52,16 @@ class AIService:
                 response = await client.post(GEMINI_URL, json=payload, timeout=30.0)
                 response.raise_for_status()
                 res_json = response.json()
+                logger.info(f"Gemini Response: {res_json}")
                 
                 # Extract text from Gemini structure
-                return res_json['candidates'][0]['content']['parts'][0]['text']
+                if 'candidates' in res_json and len(res_json['candidates']) > 0:
+                    parts = res_json['candidates'][0].get('content', {}).get('parts', [])
+                    if parts:
+                        return parts[0].get('text', '')
+                
+                logger.error(f"Unexpected Gemini structure: {res_json}")
+                return "L'IA n'a pas pu générer l'analyse. Veuillez vérifier les paramètres."
                 
         except Exception as e:
             logger.error(f"Gemini REST Error: {e}")
