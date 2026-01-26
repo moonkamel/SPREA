@@ -3,8 +3,9 @@ import os
 import io
 import logging
 import json
-from typing import Optional, Dict, Any
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from typing import Optional, Dict, Any, List
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response
+from pydantic import BaseModel, Field
 import pdfplumber
 try:
     import pytesseract
@@ -208,8 +209,6 @@ async def simulate(data: SimulationRequest):
         logger.error(f"Simulation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-from pydantic import BaseModel
-from fastapi.responses import Response
 try:
     from api.pdf_service import pdf_service
 except ImportError:

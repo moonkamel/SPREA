@@ -229,8 +229,8 @@ class AdemeConnector:
             shab=self._safe_float(raw.get("surface_habitable_logement"), 50.0), # Safer default
             altitude=self._safe_float(raw.get("classe_altitude")),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
-            dpe_class_current=raw.get("etiquette_dpe"),
-            ges_class_current=raw.get("etiquette_ges"),
+            dpe_class_current=self._map_dpe_label(raw.get("etiquette_dpe")),
+            ges_class_current=self._map_dpe_label(raw.get("etiquette_ges")),
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment"),
             is_estimated=is_estimated
@@ -279,16 +279,23 @@ class AdemeConnector:
 
         return prop
 
-    def _map_climate_zone(self, zone: Optional[str]) -> Optional[ClimateZone]:
-        if not zone: return None
-        # Normalize: H1 instead of H1a if necessary, or direct match
-        try:
-            return ClimateZone(zone)
-        except ValueError:
-            # Handle possible differences in documentation vs actual values
-            if zone in ["H1", "H2", "H3"]:
-                matches = [z for z in ClimateZone if z.startswith(zone)]
                 return matches[0] if matches else None
+            return None
+
+    def _map_dpe_label(self, label: Optional[str]) -> Optional[DPEClass]:
+        if not label: return None
+        label = str(label).upper().strip()
+        try:
+            return DPEClass(label)
+        except ValueError:
+            # Handle exotic labels or "A+" etc.
+            if label.startswith("A"): return DPEClass.A
+            if label.startswith("B"): return DPEClass.B
+            if label.startswith("C"): return DPEClass.C
+            if label.startswith("D"): return DPEClass.D
+            if label.startswith("E"): return DPEClass.E
+            if label.startswith("F"): return DPEClass.F
+            if label.startswith("G"): return DPEClass.G
             return None
 
 # Example Usage (Commented out)
