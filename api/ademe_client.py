@@ -91,13 +91,13 @@ class AdemeConnector:
     BASE_URL = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
     BAN_URL = "https://api-adresse.data.gouv.fr/search/"
 
-    def __init__(self, timeout: int = 60):
+    def __init__(self, timeout: int = 8):
         self.timeout = timeout
 
     @retry(
         retry=retry_if_exception_type(httpx.HTTPStatusError),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        stop=stop_after_attempt(5)
+        wait=wait_exponential(multiplier=1, min=1, max=4),
+        stop=stop_after_attempt(2)
     )
     async def _make_request(self, client: httpx.AsyncClient, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
         response = await client.get(url, params=params, timeout=self.timeout)

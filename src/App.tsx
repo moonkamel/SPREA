@@ -178,8 +178,10 @@ export default function App() {
                     recommended_works: r.recommended_works
                 })));
                 setView('results');
+            } else if (data.error) {
+                setError("Le service ADEME est lent ou indisponible. Veuillez patienter 10s et réessayer.");
             } else {
-                setError("Aucun DPE trouvé.");
+                setError("Aucun DPE trouvé pour cette adresse.");
             }
         } catch (err) {
             setError("Erreur réseau API SPREA.");
