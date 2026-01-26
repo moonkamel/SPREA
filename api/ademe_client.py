@@ -76,6 +76,8 @@ class PropertySchema(BaseModel):
     climate_zone: Optional[ClimateZone] = None
     dpe_class_current: Optional[DPEClass] = None
     ges_class_current: Optional[DPEClass] = None
+    consumption_level: Optional[float] = None
+    ges_value: Optional[float] = None
     date_etablissement: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -231,6 +233,8 @@ class AdemeConnector:
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
             dpe_class_current=self._map_dpe_label(raw.get("etiquette_dpe")),
             ges_class_current=self._map_dpe_label(raw.get("etiquette_ges")),
+            consumption_level=self._safe_float(raw.get("conso_5_usages_par_m2_ep", raw.get("consommation_energie_primaire_logement"))),
+            ges_value=self._safe_float(raw.get("emission_ges_5_usages_par_m2")),
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment"),
             is_estimated=is_estimated
@@ -279,6 +283,13 @@ class AdemeConnector:
 
         return prop
 
+    def _map_climate_zone(self, zone: Optional[str]) -> Optional[ClimateZone]:
+        if not zone: return None
+        try:
+            return ClimateZone(zone)
+        except ValueError:
+            if zone in ["H1", "H2", "H3"]:
+                matches = [z for z in ClimateZone if z.startswith(zone)]
                 return matches[0] if matches else None
             return None
 
