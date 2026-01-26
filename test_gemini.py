@@ -4,7 +4,7 @@ import os
 
 # Get key from environment OR hardcoded fallback from ai_service
 GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBd7LfTgrf4OM6Z-6ygI0uDRiflmjJozxo")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={GEMINI_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_KEY}"
 
 async def test_gemini():
     print(f"Testing Gemini API with key: {GEMINI_KEY[:10]}...")

@@ -128,6 +128,7 @@ export default function App() {
         { id: 'vmc', name: 'Ventilation (VMC)', defaultCost: 1100, impactKwh: 35, impactGes: 3, description: 'Installation d\'une VMC simple ou double flux pour une meilleure qualité d\'air et moins d\'humidité.', active: false },
         { id: 'heating', name: 'Radiateur inertie', defaultCost: 650, impactKwh: 60, impactGes: 15, description: 'Remplacement des radiateurs énergivores par des modèles à inertie haute performance.', active: false },
         { id: 'ecs', name: 'Ballon Thermo-dynamique', defaultCost: 3500, impactKwh: 80, impactGes: 20, description: 'Système de chauffe-eau thermodynamique pour une production d\'eau chaude économique.', active: false },
+        { id: 'windows', name: 'Menuiseries PVC', defaultCost: 6500, impactKwh: 45, impactGes: 4, description: 'Remplacement des fenêtres simple vitrage par du double vitrage PVC haute performance.', active: false },
     ]);
 
     const [actionsB, setActionsB] = useState<RetrofitAction[]>([...actionsA]);
@@ -260,13 +261,19 @@ export default function App() {
         const breakdown = p.loss_breakdown;
 
         const autoSelector = (a: RetrofitAction) => {
-            let isActive = recIds.includes(a.id);
+            // Map backend IDs to frontend IDs
+            let isActive = recIds.includes(a.id) ||
+                (a.id === 'iti' && recIds.includes('iti_ossature')) ||
+                (a.id === 'heating' && recIds.includes('pac_air_eau')) ||
+                (a.id === 'roof' && recIds.includes('combles'));
 
-            // Heuristic based on real losses if present
+            // Heuristic based on real losses if present (safety fallback)
             if (breakdown) {
-                if (a.id === 'iti' && (breakdown.walls > 60 || p.label === 'G' || p.label === 'F')) isActive = true;
-                if (a.id === 'windows' && breakdown.windows > 25) isActive = true;
-                if (a.id === 'vmc' && (breakdown.ventilation > 40 || p.label === 'G')) isActive = true;
+                if (a.id === 'iti' && (breakdown.walls > 40 || p.label === 'G' || p.label === 'F' || p.label === 'D' || p.label === 'E')) isActive = true;
+                if (a.id === 'windows' && (breakdown.windows > 20 || p.label === 'G' || p.label === 'F')) isActive = true;
+                if (a.id === 'vmc' && (breakdown.ventilation > 30 || p.label === 'G' || p.label === 'F')) isActive = true;
+                if (a.id === 'heating' && (p.label === 'G' || p.label === 'F' || p.label === 'E')) isActive = true;
+                if (a.id === 'roof' && (p.buildingType?.toLowerCase().includes('maison'))) isActive = true;
             }
 
             return { ...a, suggested: isActive, active: isActive };
