@@ -6,7 +6,6 @@ import json
 from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response
 from pydantic import BaseModel, Field
-import pdfplumber
 try:
     import pytesseract
     from PIL import Image
@@ -67,6 +66,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     """Extracts text using pdfplumber with OCR fallback."""
+    import pdfplumber
     text = ""
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
