@@ -259,11 +259,11 @@ export default function App() {
         // Precise Auto-Selection with Greedy Grade Capping & Condo-Awareness
         const initialCep = p.initialCep || 350;
         const currentGrade = p.label || 'G';
-        const isApartment = p.buildingType?.toUpperCase().includes('APPARTEMENT');
+        const isApartment = p.buildingType?.toLowerCase().includes('appartement');
 
-        // Define Target: C (180) for D/E/F, D (250) for G
-        let targetCep = 180;
-        if (currentGrade === 'G') targetCep = 250;
+        // Define Target: C (150) for D/E/F, D (230) for G
+        let targetCep = 150;
+        if (currentGrade === 'G') targetCep = 230;
         if (['A', 'B', 'C'].includes(currentGrade)) targetCep = initialCep;
 
         let remainingReduction = initialCep - targetCep;
@@ -271,16 +271,16 @@ export default function App() {
         const breakdown = p.loss_breakdown;
 
         const processedActions = [...actionsA].map(a => {
+            // Roof works are only for houses
+            if (a.id === 'roof' && isApartment) return { ...a, suggested: false, active: false };
+
             // Check if suggested by backend OR technical loss
             let isSuggested = recIds.includes(a.id) ||
                 (a.id === 'iti' && recIds.includes('iti_ossature')) ||
                 (a.id === 'heating' && recIds.includes('pac_air_eau')) ||
                 (a.id === 'roof' && recIds.includes('combles'));
 
-            // Roof works are only for houses
-            if (a.id === 'roof' && isApartment) isSuggested = false;
-
-            if (breakdown && isSuggested !== false) {
+            if (breakdown) {
                 if (a.id === 'iti' && (breakdown.walls > 40)) isSuggested = true;
                 if (a.id === 'windows' && (breakdown.windows > 20)) isSuggested = true;
                 if (a.id === 'vmc' && (breakdown.ventilation > 30)) isSuggested = true;

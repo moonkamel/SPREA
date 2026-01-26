@@ -165,13 +165,11 @@ class AdemeConnector:
                     filters.append(f'nom_commune_ban:"{city.upper()}"')
                 if housenumber:
                     filters.append(f'numero_voie_ban:"{housenumber}"')
-                if street:
-                    # Clean street name for regex-like filter in qs
-                    s_clean = street.upper().replace("RUE ", "").replace("BD ", "").replace("AVENUE ", "").strip()
-                    filters.append(f'nom_voie_ban:"*{s_clean}*"')
                 
+                # We use a combined query for the street to handle variations (Rue Brûle-Maison vs Brûle-Maison)
+                # But we keep it in q to let the ADEME search engine rank it best.
                 ademe_params = {
-                    "q": f'"{housenumber}" "{street_clean}"'.strip(),
+                    "q": f'"{housenumber}" "{street_clean}"',
                     "qs": " AND ".join(filters) if filters else "",
                     "size": 100
                 }
