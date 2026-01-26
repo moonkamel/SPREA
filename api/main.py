@@ -134,9 +134,14 @@ def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
         logger.error(f"Error during LLM analysis: {e}")
         return {"error": "LLM analysis failed", "details": str(e)}
 
-# --- Endpoints ---
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
 
-@app.get("/search-address")
+@router.get("/")
+async def api_root():
+    return {"status": "online", "message": "SPREA API is running."}
+
+@router.get("/search-address")
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
@@ -146,7 +151,7 @@ async def search_address(q: str):
         logger.error(f"Address search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/search-dpe/{dpe_number}")
+@router.get("/search-dpe/{dpe_number}")
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
@@ -191,7 +196,7 @@ class ReportRequest(BaseModel):
     tax_benefit: Optional[float] = 0.0
     has_iti: Optional[bool] = False
 
-@app.post("/generate-report")
+@router.post("/generate-report")
 async def generate_report(data: ReportRequest):
     """Generates a PDF report from simulation results."""
     try:
@@ -205,7 +210,7 @@ async def generate_report(data: ReportRequest):
         logger.error(f"PDF Generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze-dpe")
+@router.post("/analyze-dpe")
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
     logger.info(f"Received PDF upload request: {file.filename}")
@@ -236,6 +241,8 @@ async def analyze_dpe(file: UploadFile = File(...)):
         "raw_text_length": len(raw_text),
         "data": extracted_data
     }
+
+app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn
