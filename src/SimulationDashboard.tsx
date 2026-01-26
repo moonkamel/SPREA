@@ -72,6 +72,7 @@ export default function SimulationDashboard() {
     const [postcode, setPostcode] = useState("59000");
     const [selectedWorks, setSelectedWorks] = useState<string[]>([]);
     const [simulation, setSimulation] = useState<SimulationResult | null>(null);
+    const [userProfile, setUserProfile] = useState<'propriétaire' | 'investisseur'>('propriétaire');
 
     // --- API Handlers ---
 
@@ -80,7 +81,7 @@ export default function SimulationDashboard() {
         if (!searchQuery) return;
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/search-address?q=${encodeURIComponent(searchQuery)}`);
+            const res = await fetch(`/api/search-address?q=${encodeURIComponent(searchQuery)}`);
             if (!res.ok) throw new Error("Erreur serveur");
             const data = await res.json();
             if (data.results && data.results.length > 0) {
@@ -108,7 +109,7 @@ export default function SimulationDashboard() {
         if (!dpeSearchQuery) return;
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
+            const res = await fetch(`/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
             if (!res.ok) throw new Error("Erreur serveur");
             const data = await res.json();
             if (data.results && data.results.length > 0) {
@@ -135,7 +136,7 @@ export default function SimulationDashboard() {
         if (!property) return;
         setSimulating(true);
         try {
-            const res = await fetch(`${API_BASE}/api/simulate`, {
+            const res = await fetch(`/api/simulate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -164,6 +165,45 @@ export default function SimulationDashboard() {
 
     const toggleWork = (id: string) => {
         setSelectedWorks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!property || !simulation) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/generate-report`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: property.address,
+                    surface: property.shab,
+                    year: property.construction_year,
+                    ademe_dpe_number: "N/A",
+                    current_label: simulation.initial_dpe,
+                    new_label: simulation.new_dpe,
+                    initial_cep: simulation.initial_cep,
+                    new_cep: simulation.new_cep,
+                    ges_value: 0,
+                    new_ges: 0,
+                    total_cost: simulation.total_cost,
+                    subsidies: simulation.subsidies,
+                    rest_to_pay: simulation.rest_to_pay,
+                    latent_gain: (simulation.gain_classes || 0) * 15000,
+                    annual_savings: 0,
+                    roi_years: 0,
+                    user_profile: userProfile
+                }),
+            });
+            if (!res.ok) throw new Error("Erreur PDF");
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Rapport_SPREA.pdf`;
+            document.body.appendChild(a); a.click(); a.remove();
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (view === 'landing') {
@@ -248,6 +288,18 @@ export default function SimulationDashboard() {
                         </div>
                     </div>
                 </div>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={handleDownloadPDF}
+                        disabled={loading || !simulation}
+                        className="h-14 px-8 rounded-2xl bg-blue-600 text-white font-black hover:bg-blue-700 transition-all flex items-center gap-3 shadow-lg shadow-blue-200"
+                    >
+                        {loading && <Loader2 className="animate-spin" size={18} />}
+                        <FileText size={18} />
+                        Télécharger Rapport IA
+                    </button>
+                    <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition-all">Retour</button>
+                </div>
 
                 <div className="flex items-center gap-8 px-8 border-l border-slate-100">
                     <div className="text-right">
@@ -286,9 +338,23 @@ export default function SimulationDashboard() {
                     <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
                         <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
                             <Users size={20} className="text-blue-600" />
-                            Profil Client
+                            Profil & Objectif
                         </h3>
                         <div className="space-y-6">
+                            <div className="flex gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
+                                <button
+                                    onClick={() => setUserProfile('propriétaire')}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'propriétaire' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    Patrimoine
+                                </button>
+                                <button
+                                    onClick={() => setUserProfile('investisseur')}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'investisseur' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    Performance
+                                </button>
+                            </div>
                             <div>
                                 <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-3">Revenu Fiscal (RFR)</label>
                                 <div className="relative">

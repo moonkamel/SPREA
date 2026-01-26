@@ -185,6 +185,20 @@ class AdemeConnector:
                 logger.error(f"Address search error: {e}")
                 return []
 
+    def _safe_float(self, val: Any, default: float = 0.0) -> float:
+        if val is None: return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
+    def _safe_int(self, val: Any, default: Optional[int] = None) -> Optional[int]:
+        if val is None: return default
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            return default
+
     def _map_to_internal(self, raw: Dict[str, Any]) -> PropertySchema:
         """Map flat ADEME JSON to structured PropertySchema with fallback logic."""
         
@@ -211,9 +225,9 @@ class AdemeConnector:
         prop = PropertySchema(
             address=raw.get("adresse_brut", raw.get("adresse_complete_brut", "Unknown")),
             ademe_dpe_number=raw.get("numero_dpe"),
-            construction_year=construction_year,
-            shab=float(raw.get("surface_habitable_logement", 0.0)),
-            altitude=raw.get("classe_altitude"),
+            construction_year=self._safe_int(raw.get("annee_construction")),
+            shab=self._safe_float(raw.get("surface_habitable_logement"), 50.0), # Safer default
+            altitude=self._safe_float(raw.get("classe_altitude")),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
             dpe_class_current=raw.get("etiquette_dpe"),
             ges_class_current=raw.get("etiquette_ges"),
@@ -224,23 +238,21 @@ class AdemeConnector:
 
         # Geopoint handling if present ([lat, lon])
         geopoint = raw.get("_geopoint")
-        if geopoint and len(geopoint) == 2:
-            prop.latitude = geopoint[0]
-            prop.longitude = geopoint[1]
+        if geopoint and isinstance(geopoint, list) and len(geopoint) == 2:
+            prop.latitude = self._safe_float(geopoint[0])
+            prop.longitude = self._safe_float(geopoint[1])
 
         # Mapping Walls
-        # If surface_murs is missing, we use a ratio of SHAB as estimate
         surface_murs = raw.get("surface_murs_exterieurs")
         if not surface_murs:
             shab = prop.shab
-            # Simple ratio estimate for walls: House ~ 1.5*SHAB, Apt ~ 0.8*SHAB
-            type_bat = raw.get("type_batiment", "").lower()
+            type_bat = (raw.get("type_batiment") or "").lower()
             ratio = 1.5 if "maison" in type_bat else 0.8
             surface_murs = shab * ratio
             is_estimated = True
 
         prop.walls.append(WallSchema(
-            surface=float(surface_murs),
+            surface=self._safe_float(surface_murs),
             u_value=u_wall,
             material=raw.get("type_materiau_mur_exterieur"),
             is_estimated=is_estimated
@@ -250,8 +262,8 @@ class AdemeConnector:
         surface_baies = raw.get("surface_baies_vitrees")
         if surface_baies:
             prop.windows.append(WindowSchema(
-                surface=float(surface_baies),
-                u_value=raw.get("u_baies_vitrees"),
+                surface=self._safe_float(surface_baies),
+                u_value=self._safe_float(raw.get("u_baies_vitrees")),
                 glazing_type=raw.get("type_vitrage"),
                 is_estimated=(raw.get("u_baies_vitrees") is None)
             ))
@@ -261,8 +273,8 @@ class AdemeConnector:
         if energy_source:
             prop.systems.append(SystemSchema(
                 system_type="chauffage",
-                energy_source=energy_source,
-                efficiency_etas=raw.get("ubat_w_par_m2_k") # Using Ubat as proxy if others missing
+                energy_source=str(energy_source),
+                efficiency_etas=self._safe_float(raw.get("ubat_w_par_m2_k"))
             ))
 
         return prop

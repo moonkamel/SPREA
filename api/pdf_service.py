@@ -164,6 +164,17 @@ class PDFReportGenerator:
         elements.append(Spacer(1, 10))
         elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#e2e8f0'), spaceBefore=10, spaceAfter=10))
 
+        # --- IA NARRATIVE SECTION ---
+        if data.get('ai_narrative'):
+            elements.append(Paragraph("ANALYSE DE NOTRE EXPERT IA", self.section_header_style))
+            # Format the narrative text (it might have "L'Analyse" and "La Stratégie" headers)
+            raw_text = data.get('ai_narrative')
+            # Simple bolding for common headers from prompt
+            formatted_text = raw_text.replace("L'Analyse de l'Expert", "<b>L'Analyse de l'Expert</b>").replace("La Stratégie Conseillée", "<b>La Stratégie Conseillée</b>")
+            
+            elements.append(Paragraph(formatted_text, ParagraphStyle('AIStyle', parent=self.body_style, leading=16, fontSize=11, backColor=colors.HexColor('#f8fafc'), borderPadding=10, borderRadius=8)))
+            elements.append(Spacer(1, 15))
+
         # --- OBJECTIFS ÉNERGÉTIQUES ---
         elements.append(Paragraph("OBJECTIFS ÉNERGÉTIQUES", self.section_header_style))
         

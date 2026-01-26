@@ -108,6 +108,7 @@ export default function App() {
     const [downloading, setDownloading] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
     const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
+    const [userProfile, setUserProfile] = useState<'propriétaire' | 'investisseur'>('propriétaire');
 
     // Investor States
     const [isInvestor, setIsInvestor] = useState(false);
@@ -215,7 +216,8 @@ export default function App() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`${API_BASE}/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
+            const res = await fetch(`/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
+            if (!res.ok) throw new Error(`Serveur Error: ${res.status}`);
             const data = await res.json();
             if (data.results && data.results.length > 0) {
                 setSearchResults(data.results.map((r: any) => ({
@@ -459,8 +461,7 @@ export default function App() {
         if (!property || !activeSim) return;
         setDownloading(true);
         try {
-            const API_TARGET = import.meta.env.VITE_API_URL || "";
-            const res = await fetch(`${API_TARGET}/api/generate-report`, {
+            const res = await fetch(`/api/generate-report`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -489,7 +490,8 @@ export default function App() {
                     eco_ptz_amount: activeSim.ecoPTZAmount || 0,
                     pam_amount: activeSim.pamAmount || 0,
                     tax_benefit: activeSim.taxBenefit || 0,
-                    has_iti: activeSim.hasITI || false
+                    has_iti: activeSim.hasITI || false,
+                    user_profile: userProfile
                 })
             });
             if (!res.ok) {
@@ -674,6 +676,24 @@ export default function App() {
                                 <button onClick={copyAToB} title="Copier A vers B" className="p-3 bg-white rounded-xl text-slate-400 hover:text-blue-600"><Copy size={16} /></button>
                             </div>
                         )}
+
+                        <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Objectif du Rapport</p>
+                            <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
+                                <button
+                                    onClick={() => setUserProfile('propriétaire')}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'propriétaire' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    Patrimoine
+                                </button>
+                                <button
+                                    onClick={() => setUserProfile('investisseur')}
+                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'investisseur' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    Performance
+                                </button>
+                            </div>
+                        </div>
 
                         <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Revenus du Ménage</p>

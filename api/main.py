@@ -37,6 +37,10 @@ else:
 # Initialize Connector & Engine
 ademe = AdemeConnector()
 engine = DPECalculator()
+try:
+    from api.ai_service import ai_service
+except ImportError:
+    from ai_service import ai_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -236,12 +240,22 @@ class ReportRequest(BaseModel):
     pam_amount: Optional[float] = 0.0
     tax_benefit: Optional[float] = 0.0
     has_iti: Optional[bool] = False
+    user_profile: Optional[str] = "propriétaire"
 
 @router.post("/generate-report")
 async def generate_report(data: ReportRequest):
-    """Generates a PDF report from simulation results."""
+    """Generates a PDF report from simulation results with AI narrative."""
     try:
-        pdf_bytes = pdf_service.generate(data.dict())
+        report_data = data.dict()
+        
+        # 1. Generate AI Narrative
+        logger.info(f"Generating AI narrative for profile: {data.user_profile}")
+        narrative = await ai_service.generate_narrative(report_data, data.user_profile)
+        report_data["ai_narrative"] = narrative
+        
+        # 2. Generate PDF
+        pdf_bytes = pdf_service.generate(report_data)
+        
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
