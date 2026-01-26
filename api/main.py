@@ -56,6 +56,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logger.error(f"Global Error on {request.url}: {exc}", exc_info=True)
+    return Response(
+        content=json.dumps({"detail": str(exc), "path": request.url.path}),
+        status_code=500,
+        media_type="application/json"
+    )
+
 @app.get("/")
 async def root():
     return {"status": "online", "message": "SPREA API is running. Use /docs for API documentation."}

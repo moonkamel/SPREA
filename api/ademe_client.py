@@ -68,10 +68,10 @@ class SystemSchema(BaseModel):
     is_estimated: bool = False
 
 class PropertySchema(BaseModel):
-    address: str
+    address: str = "Adresse Inconnue"
     ademe_dpe_number: Optional[str] = None
     construction_year: Optional[int] = None
-    shab: float
+    shab: float = 0.0
     altitude: Optional[float] = None
     climate_zone: Optional[ClimateZone] = None
     dpe_class_current: Optional[DPEClass] = None
