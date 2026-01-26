@@ -1,229 +1,204 @@
 import logging
 import copy
+import math
 from typing import Dict, List, Optional, Any
+from enum import Enum
 from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Physical Constants ---
+# --- 2025 Reference Data ---
 
 CLIMATE_DATA = {
-    "H1a": 2800,
-    "H1b": 2900,
-    "H1c": 3000,
-    "H2a": 2400,
-    "H2b": 2200,
-    "H2c": 2500,
-    "H2d": 2600,
+    "H1a": 2800, "H1b": 2900, "H1c": 3000,
+    "H2a": 2400, "H2b": 2200, "H2c": 2500, "H2d": 2600,
     "H3": 1900,
 }
 
-# Conversion factors (Final to Primary)
-# Based on 3CL-2021 and future 2026 reform
 ENERGY_CONVERSION = {
-    "electricity": 2.3, # Current standard
+    "electricity": 2.3,  # Millésime 2025 standard
     "gas": 1.0,
     "oil": 1.0,
     "wood": 1.0,
     "district_heating": 1.0,
 }
 
-# DPE Thresholds (kWh/m².year primary energy)
 DPE_THRESHOLDS = [
-    (70, DPEClass.A),
-    (110, DPEClass.B),
-    (180, DPEClass.C),
-    (250, DPEClass.D),
-    (330, DPEClass.E),
-    (420, DPEClass.F),
+    (70, DPEClass.A), (110, DPEClass.B), (180, DPEClass.C),
+    (250, DPEClass.D), (330, DPEClass.E), (420, DPEClass.F),
     (float('inf'), DPEClass.G)
 ]
 
-# --- Physics Classes ---
+K_REGION = {
+    "75": 1.30, "92": 1.30, "93": 1.30, "94": 1.30,  # Paris & Petite Couronne
+    "77": 1.15, "91": 1.15, "78": 1.15, "95": 1.15,  # Grande Couronne
+    "69": 1.12, "74": 1.12, "01": 1.12,              # AURA (Lyon, Annecy)
+    "06": 1.15, "83": 1.15, "13": 1.08,              # PACA
+    "33": 1.05, "44": 1.05, "35": 1.05,              # Atlantique
+    "67": 1.05,                                      # Grand Est
+    "59": 1.00, "62": 1.00, "80": 1.00,              # Nord
+    "2A": 1.20, "2B": 1.20,                          # Corse
+    "971": 1.35, "972": 1.35, "973": 1.35, "974": 1.35, "976": 1.35, # DOM
+}
+
+DEFAULT_K_REGION = 1.00
+K_LOGISTIQUE = {
+    "urbain_dense": 1.15,
+    "pavillonnaire": 1.00,
+    "rural_isole": 1.05
+}
+
+class ResourceProfile(str, Enum):
+    BLEU = "Très Modeste"
+    JAUNE = "Modeste"
+    VIOLET = "Intermédiaire"
+    ROSE = "Supérieur"
+
+# Simplified ANAH Plafonds 2025 (Hauts-de-France / Province basis)
+ANAH_PLAFONDS_PROVINCE = {
+    ResourceProfile.BLEU: 17000,
+    ResourceProfile.JAUNE: 22000,
+    ResourceProfile.VIOLET: 30000,
+}
+
+# --- Calculation Classes ---
+
+class GeographicWeighting:
+    @staticmethod
+    def get_localized_cost(base_cost: float, postcode: str, typo: str = "pavillonnaire") -> float:
+        dept = postcode[:2] if postcode else "59"
+        k_reg = K_REGION.get(dept, DEFAULT_K_REGION)
+        k_log = K_LOGISTIQUE.get(typo, 1.00)
+        return base_cost * k_reg * k_log
+
+class MaPrimeRenov2025:
+    @staticmethod
+    def get_profile(rfr: float, occupants: int = 1) -> ResourceProfile:
+        # Scale thresholds roughly based on occupants (demo logic)
+        multiplier = 1 + (occupants - 1) * 0.5
+        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.BLEU] * multiplier:
+            return ResourceProfile.BLEU
+        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.JAUNE] * multiplier:
+            return ResourceProfile.JAUNE
+        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.VIOLET] * multiplier:
+            return ResourceProfile.VIOLET
+        return ResourceProfile.ROSE
+
+    @staticmethod
+    def calc_subsidies(total_ht: float, profile: ResourceProfile, class_gain: int) -> float:
+        """Parcours Accompagné 2025 logic."""
+        if class_gain < 2: return 0.0
+        
+        # Max works amount for Accompanied Pathway (gain 4 classes = 70k)
+        max_works = 70000 if class_gain >= 4 else (40000 if class_gain >= 2 else 0)
+        eligible_base = min(total_ht, max_works)
+        
+        rates = {
+            ResourceProfile.BLEU: 0.90,
+            ResourceProfile.JAUNE: 0.80,
+            ResourceProfile.VIOLET: 0.60,
+            ResourceProfile.ROSE: 0.35
+        }
+        return eligible_base * rates[profile]
 
 class BuildingPhysics:
     @staticmethod
-    def calc_heat_loss_walls(area: float, u_value: float, b_coef: float = 1.0) -> float:
-        """D = U * A * b (W/K)"""
-        return u_value * area * b_coef
-
-    @staticmethod
-    def calc_heat_loss_windows(area: float, u_value: float, b_coef: float = 1.0) -> float:
-        """D = U * A * b (W/K)"""
-        return u_value * area * b_coef
-
-    @staticmethod
     def calc_heat_loss_ventilation(shab: float, hsp: float = 2.5, ventilation_type: str = "standard") -> float:
-        """
-        Simplified ventilation loss (D_vent = 0.34 * Q_vent).
-        Standard assumption: 0.6 volumes/hour for single flux.
-        """
         volume = shab * hsp
-        if ventilation_type == "vmc_sf_auto":
-            air_change_rate = 0.5
-        elif ventilation_type == "vmc_df":
-            air_change_rate = 0.2 # Heat recovery
-        else:
-            air_change_rate = 0.7 # Natural or leaky
-            
-        flow_rate = volume * air_change_rate
+        rates = {"vmc_sf_hygro_b": 0.4, "vmc_df": 0.15, "standard": 0.6}
+        flow_rate = volume * rates.get(ventilation_type, 0.6)
         return 0.34 * flow_rate
 
-class EnergyConsumption:
-    @staticmethod
-    def calc_heating_needs(total_heat_loss: float, dju: int, intermittency_factor: float = 0.8) -> float:
-        """
-        Q = D * DJU * 24 / 1000 (kWh/year)
-        Applying intermittency (reduction for vacancy/night set-back).
-        """
-        return (total_heat_loss * dju * 24 / 1000) * intermittency_factor
-
-    @staticmethod
-    def calc_final_energy(needs: float, system_efficiency: float) -> float:
-        """Conso Finale (kWh ef/year)"""
-        return needs / system_efficiency
-
-    @staticmethod
-    def calc_primary_energy(final_energy: float, energy_type: str, elec_coeff_2026: Optional[float] = None) -> float:
-        """Conso Primaire (kWh ep/year)"""
-        factor = ENERGY_CONVERSION.get(energy_type.lower(), 1.0)
-        
-        # Apply 2026 reform parameter if heating is electric
-        if energy_type.lower() == "electricity" and elec_coeff_2026 is not None:
-            factor = elec_coeff_2026
-            
-        return final_energy * factor
-
-# --- Orchestrator ---
-
 class DPECalculator:
-    def __init__(self, elec_coeff_2026: Optional[float] = None):
-        self.elec_coeff_2026 = elec_coeff_2026
+    def __init__(self):
         self.physics = BuildingPhysics()
-        self.consumption = EnergyConsumption()
+        self.geo = GeographicWeighting()
 
     def get_dpe_class(self, cep_m2: float) -> DPEClass:
         for threshold, dpe_class in DPE_THRESHOLDS:
-            if cep_m2 <= threshold:
-                return dpe_class
+            if cep_m2 <= threshold: return dpe_class
         return DPEClass.G
 
     def calculate(self, prop: PropertySchema) -> Dict[str, Any]:
-        # 1. Get DJU
-        dju = CLIMATE_DATA.get(prop.climate_zone, 2500) # Fallback to national median
-
-        # 2. Total Heat Loss
-        total_loss = 0.0
-        for wall in prop.walls:
-            total_loss += self.physics.calc_heat_loss_walls(wall.surface, wall.u_value or 1.5)
-        
-        for window in prop.windows:
-            total_loss += self.physics.calc_heat_loss_windows(window.surface, window.u_value or 3.0)
-            
-        # Add ventilation loss (assuming 2.5m ceiling)
+        dju = CLIMATE_DATA.get(prop.climate_zone, 2500)
+        total_loss = sum(w.surface * (w.u_value or 2.5) for w in prop.walls)
+        total_loss += sum(win.surface * (win.u_value or 3.5) for win in prop.windows)
         total_loss += self.physics.calc_heat_loss_ventilation(prop.shab)
 
-        # 3. Heating Needs
-        needs = self.consumption.calc_heating_needs(total_loss, dju)
-
-        # 4. Final & Primary Energy
-        # We simplify to 1 main heating system for the demo
-        if prop.systems:
-            main_sys = prop.systems[0]
-            efficiency = main_sys.efficiency_etas or 0.8 # Standard boiler
-            energy_type = main_sys.energy_source or "gas"
-        else:
-            efficiency = 0.8
-            energy_type = "gas"
-
-        ef = self.consumption.calc_final_energy(needs, efficiency)
-        ep = self.consumption.calc_primary_energy(ef, energy_type, self.elec_coeff_2026)
+        needs = (total_loss * dju * 24 / 1000) * 0.85 # Intermittency
         
+        main_sys = prop.systems[0] if prop.systems else None
+        eff = (main_sys.efficiency_etas or 0.8) if main_sys else 0.8
+        energy = (main_sys.energy_source or "gas").lower()
+        
+        ef = needs / eff
+        ep = ef * ENERGY_CONVERSION.get(energy, 1.0)
         cep_m2 = ep / prop.shab if prop.shab > 0 else 0
 
         return {
-            "total_heat_loss": round(total_loss, 2),
-            "heating_needs": round(needs, 2),
-            "final_energy": round(ef, 2),
-            "primary_energy": round(ep, 2),
             "cep_m2": round(cep_m2, 2),
-            "dpe_label": self.get_dpe_class(cep_m2)
+            "dpe_label": self.get_dpe_class(cep_m2),
+            "total_loss": round(total_loss, 2)
         }
 
-    def optimize_retrofit(self, prop: PropertySchema, target_class: str = 'D') -> Dict[str, Any]:
-        """
-        Logique Target Finder:
-        Simulates packages of work to find the cheapest way to reach target.
-        """
-        # Define Possible Works
-        works_catalog = [
-            {"name": "Isolation Murs (ITE)", "u_new": 0.25, "cost": 150, "unit": "m2_wall", "category": "wall"},
-            {"name": "Nouveaux Vitrages (Double)", "u_new": 1.1, "cost": 400, "unit": "m2_win", "category": "window"},
-            {"name": "Pompe à Chaleur (PAC)", "eff_new": 3.5, "energy_new": "electricity", "cost": 12000, "unit": "flat", "category": "system"}
-        ]
+    def simulate_retrofit(self, prop: PropertySchema, selections: List[str], rfr: float, postcode: str) -> Dict[str, Any]:
+        works_catalog = {
+            "ite_pse": {"name": "ITE PSE", "u_new": 0.25, "cost": 170, "unit": "m2_wall"},
+            "ite_bois": {"name": "ITE Fibre Bois", "u_new": 0.28, "cost": 220, "unit": "m2_wall"},
+            "iti_ossature": {"name": "ITI Ossature", "u_new": 0.30, "cost": 75, "unit": "m2_wall"},
+            "combles": {"name": "Isolation Combles", "u_new": 0.15, "cost": 32, "unit": "m2_comble"},
+            "pac_air_eau": {"name": "PAC Air/Eau", "eff_new": 3.5, "energy_new": "electricity", "cost": 12500, "unit": "flat"},
+            "windows_pvc": {"name": "Fenêtres PVC", "u_new": 1.3, "cost": 575, "unit": "unit_win"}
+        }
 
-        def get_total_cost(works_list, property_ref):
-            total = 0
-            for w in works_list:
-                if w["unit"] == "m2_wall":
-                    surface = sum(wall.surface for wall in property_ref.walls)
-                    total += surface * w["cost"]
-                elif w["unit"] == "m2_win":
-                    surface = sum(win.surface for win in property_ref.windows)
-                    total += surface * w["cost"]
-                elif w["unit"] == "flat":
-                    total += w["cost"]
-            return total
+        sim_prop = copy.deepcopy(prop)
+        total_cost = 0.0
+        applied_names = []
 
-        best_combo = None
-        min_cost = float('inf')
+        for key in selections:
+            if key not in works_catalog: continue
+            w = works_catalog[key]
+            applied_names.append(w["name"])
+            
+            # Localize cost
+            local_unit_cost = self.geo.get_localized_cost(w["cost"], postcode)
+            
+            if w["unit"] == "m2_wall":
+                surf = sum(wall.surface for wall in sim_prop.walls)
+                total_cost += surf * local_unit_cost
+                for wall in sim_prop.walls: wall.u_value = w["u_new"]
+            elif w["unit"] == "m2_comble":
+                surf = sim_prop.shab # Rough estimate
+                total_cost += surf * local_unit_cost
+                # No specific attic field in basic schema, simplified for demo
+            elif w["unit"] == "flat":
+                total_cost += local_unit_cost
+                sim_prop.systems = [SystemSchema(system_type="chauffage", energy_source=w["energy_new"], efficiency_etas=w["eff_new"])]
+            elif w["unit"] == "unit_win":
+                total_cost += 10 * local_unit_cost # Assume 10 windows
+                for win in sim_prop.windows: win.u_value = w["u_new"]
 
-        # Bruteforce simple combinations (1, 2 or all 3)
-        # In a real app, this would be more sophisticated (branch & bound)
-        import itertools
-        for r in range(1, len(works_catalog) + 1):
-            for combo in itertools.combinations(works_catalog, r):
-                # Deep copy property to simulate
-                sim_prop = copy.deepcopy(prop)
-                for work in combo:
-                    if work["category"] == "wall":
-                        for wall in sim_prop.walls:
-                            wall.u_value = work["u_new"]
-                    elif work["category"] == "window":
-                        for win in sim_prop.windows:
-                            win.u_value = work["u_new"]
-                    elif work["category"] == "system":
-                        sim_prop.systems = [SystemSchema(
-                            system_type="chauffage",
-                            energy_source=work["energy_new"],
-                            efficiency_etas=work["eff_new"]
-                        )]
-                
-                res = self.calculate(sim_prop)
-                cost = get_total_cost(combo, prop)
-                
-                # Check if target reached
-                current_label = res["dpe_label"].value
-                target_label = DPEClass(target_class).value
-                
-                # DPE labels are A < B < C... so 'D' is value 'D'
-                # We compare order: A=1, B=2, C=3, D=4
-                label_order = {v.value: i for i, v in enumerate(DPEClass)}
-                if label_order[current_label] <= label_order[target_class]:
-                    if cost < min_cost:
-                        min_cost = cost
-                        best_combo = {
-                            "works": [w["name"] for w in combo],
-                            "cost": cost,
-                            "new_label": res["dpe_label"],
-                            "new_cep": res["cep_m2"]
-                        }
+        initial_res = self.calculate(prop)
+        final_res = self.calculate(sim_prop)
+        
+        # Labels for class gain calc
+        labels = [v.value for v in DPEClass]
+        gain = labels.index(initial_res["dpe_label"]) - labels.index(final_res["dpe_label"])
+        
+        profile = MaPrimeRenov2025.get_profile(rfr)
+        subsidies = MaPrimeRenov2025.calc_subsidies(total_cost, profile, gain)
 
-        return best_combo or {"message": "Cible impossible avec ces travaux", "cost": 0}
-
-# Example Usage (Commented)
-# if __name__ == "__main__":
-#    calc = DPECalculator()
-#    # Load a property via connector and then run calc.calculate(prop)
+        return {
+            "initial_dpe": initial_res["dpe_label"],
+            "new_dpe": final_res["dpe_label"],
+            "initial_cep": initial_res["cep_m2"],
+            "new_cep": final_res["cep_m2"],
+            "total_cost": round(total_cost, 0),
+            "subsidies": round(subsidies, 0),
+            "rest_to_pay": round(total_cost - subsidies, 0),
+            "gain_classes": max(0, gain),
+            "applied_works": applied_names,
+            "profile": profile.value
+        }

@@ -14,9 +14,11 @@ except ImportError:
     OCR_AVAILABLE = False
 
 try:
-    from api.ademe_client import AdemeConnector
+    from api.ademe_client import AdemeConnector, PropertySchema
+    from api.engine import DPECalculator
 except ImportError:
-    from ademe_client import AdemeConnector
+    from ademe_client import AdemeConnector, PropertySchema
+    from engine import DPECalculator
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
@@ -32,8 +34,9 @@ else:
     LLM_AVAILABLE = False
     client = None
 
-# Initialize Connector
+# Initialize Connector & Engine
 ademe = AdemeConnector()
+engine = DPECalculator()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -156,9 +159,30 @@ async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
         results = await ademe.search_by_dpe_number(dpe_number)
-        return {"count": len(results), "results": results}
+        return {"count": 1 if results else 0, "results": [results] if results else []}
     except Exception as e:
         logger.error(f"DPE search failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class SimulationRequest(BaseModel):
+    property_data: PropertySchema
+    selected_works: List[str]
+    rfr: float
+    postcode: Optional[str] = "59000"
+
+@router.post("/simulate")
+async def simulate(data: SimulationRequest):
+    """Run 2025 technical-economic simulation."""
+    try:
+        res = engine.simulate_retrofit(
+            data.property_data, 
+            data.selected_works, 
+            data.rfr, 
+            data.postcode
+        )
+        return res
+    except Exception as e:
+        logger.error(f"Simulation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 from pydantic import BaseModel
