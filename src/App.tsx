@@ -73,6 +73,23 @@ const getAdjustedThresholds = (surface: number) => {
     }));
 };
 
+const getRegion = (postcode?: string) => {
+    if (!postcode) return 'METROPOLE';
+    return postcode.startsWith('97') ? 'OUTRE_MER' : 'METROPOLE';
+};
+
+const getRentalBanDate = (label: DPEClass, consumption: number, region: 'METROPOLE' | 'OUTRE_MER') => {
+    if (region === 'METROPOLE' && consumption > 450) {
+        return new Date('2023-01-01');
+    }
+    const banSchedule: Record<string, Partial<Record<DPEClass, string>>> = {
+        'METROPOLE': { 'G': '2025-01-01', 'F': '2028-01-01', 'E': '2034-01-01' },
+        'OUTRE_MER': { 'G': '2028-01-01', 'F': '2031-01-01' }
+    };
+    const dateStr = banSchedule[region]?.[label];
+    return dateStr ? new Date(dateStr) : null;
+};
+
 // --- Main Component ---
 
 export default function App() {
@@ -93,10 +110,12 @@ export default function App() {
     const [monthlyRent, setMonthlyRent] = useState(800);
     const [purchasePrice, setPurchasePrice] = useState(150000);
     const [tmi, setTmi] = useState(30);
+    const [isCopro, setIsCopro] = useState(false);
+    const [millièmes, setMillièmes] = useState(100);
 
     const [actionsA, setActionsA] = useState<RetrofitAction[]>([
         { id: 'iti', name: 'Isolation Toiture', defaultCost: 45, impactKwh: 65, impactGes: 4, description: 'Isolation des combles ou de la toiture (~45€/m²) pour réduire les déperditions par le haut.', active: false },
-        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'Isolation par l\'extérieur (~180€/m²) pour supprimer les ponts thermiques et protéger la façade.', active: false },
+        { id: 'ite', name: 'Isolation Murs (ITE)', defaultCost: 180, impactKwh: 140, impactGes: 8, description: 'ITE (~180€/m²). Inclut: isolant, enduit, échafaudage et installation sécurisée (~3.5k€ fixe).', active: false },
         { id: 'floor', name: 'Isolation Plancher', defaultCost: 60, impactKwh: 25, impactGes: 2, description: 'Isolation des planchers bas (~60€/m²) pour éviter les remontées de froid.', active: false },
         { id: 'windows', name: 'Menuiseries', defaultCost: 800, impactKwh: 35, impactGes: 2, description: 'Remplacement des fenêtres (~800€/unité) par du double ou triple vitrage haute performance.', active: false },
         { id: 'heatpump', name: 'Pompe à Chaleur', defaultCost: 14000, impactKwh: 220, impactGes: 35, description: 'Installation d\'un système Air-Eau (~14k€) pour un chauffage écologique et très économe.', active: false },
@@ -276,6 +295,12 @@ export default function App() {
             else if (a.id === 'windows') itemCost = (a.defaultCost + 150) * 6;
             else if (a.id === 'heatpump') itemCost = a.defaultCost + 1500;
 
+            if (isCopro) {
+                if (a.id !== 'windows') {
+                    itemCost = itemCost * (millièmes / 1000);
+                }
+            }
+
             cost += itemCost;
             cepRed += a.impactKwh * eff;
             gesRed += a.impactGes * eff;
@@ -299,6 +324,9 @@ export default function App() {
         const sub = cost * rate;
         const rest = cost - sub;
 
+        const region = getRegion(property.postcode);
+        const banDate = getRentalBanDate(current.label, property.initialCep, region);
+
         // Detailed work costs for UI
         const activeDetailedCosts = activeActions.map(a => {
             let itemCost = a.defaultCost;
@@ -315,12 +343,46 @@ export default function App() {
         const totalInvestment = purchasePrice + cost;
         const annualRent = monthlyRent * 12;
         const yieldBrut = (annualRent / totalInvestment) * 100;
-        const cashflow = monthlyRent - (rest / 240); // Simple 20y financing sim for cashflow feel
+        const cashflow = isInvestor ? (monthlyRent - (rest > 0 ? (rest * (0.045 / 12) * Math.pow(1 + (0.045 / 12), 84)) / (Math.pow(1 + (0.045 / 12), 84) - 1) : 0)) : 0;
+
+        // Waterfall Logic & Financing
+        const ceeEst = activeActions.length * 800; // Rough estimation
+        const rac = Math.max(0, cost - sub - ceeEst);
+
+        // Eco-PTZ Logic
+        const cats = new Set(activeActions.map(a => {
+            if (['iti', 'ite', 'windows', 'floor'].includes(a.id)) return 'isolation';
+            if (a.id === 'heatpump') return 'heating';
+            return 'other';
+        })).size;
+
+        let ecoPTZLimit = 0;
+        if (cats === 1) {
+            ecoPTZLimit = activeActions.some(a => a.id === 'windows') ? 7000 : 15000;
+        } else if (cats === 2) {
+            ecoPTZLimit = 25000;
+        } else if (cats >= 3) {
+            ecoPTZLimit = 30000;
+        }
+        // Simplified Global Performance check
+        if (target.label === 'A' || target.label === 'B' || target.label === 'C') {
+            if (activeActions.length >= 2) ecoPTZLimit = 50000;
+        }
+
+        const ecoPTZAmount = Math.min(rac, ecoPTZLimit);
+        const remainingAfterPTZ = rac - ecoPTZAmount;
+
+        // PAM Logic (Prêt Avance Mutation)
+        const pamLimit = purchasePrice * 0.2;
+        const pamEligible = isInvestor && remainingAfterPTZ > 5000;
+        const pamAmount = pamEligible ? Math.min(remainingAfterPTZ, pamLimit) : 0;
+        const pamDebt15y = pamAmount * Math.pow(1.04, 5);
 
         return {
             newCep, newGes, cost, sub, rest, taxBenefit,
             activeDetailedCosts,
             yieldBrut, cashflow, purchasePrice,
+            banDate, ecoPTZAmount, ecoPTZLimit, ceeEst, pamAmount, pamDebt15y, pamEligible,
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
@@ -334,8 +396,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, isCopro, millièmes, purchasePrice]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, isCopro, millièmes, purchasePrice]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -350,12 +412,20 @@ export default function App() {
                     address: property.address, surface: property.surface, year: property.year,
                     ademe_dpe_number: property.ademe_dpe_number, current_label: activeSim.currentLabel,
                     new_label: activeSim.newLabel, initial_cep: property.initialCep, new_cep: activeSim.newCep,
-                    ges_value: property.gesValue || 0, new_ges: activeSim.newGes, total_cost: activeSim.cost,
-                    subsidies: activeSim.sub, rest_to_pay: activeSim.rest, latent_gain: activeSim.gain,
+                    ges_value: property.gesValue || 0, new_ges: activeSim.newGes,
+                    total_cost: activeSim.cost,
+                    subsidies: activeSim.sub, rest_to_pay: Math.max(0, activeSim.cost - activeSim.sub - activeSim.ceeEst - activeSim.ecoPTZAmount - activeSim.pamAmount - (isInvestor ? activeSim.taxBenefit : 0)),
+                    latent_gain: activeSim.gain,
                     annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
                     detailed_costs: activeSim.activeDetailedCosts,
                     yield_brut: activeSim.yieldBrut, cashflow: activeSim.cashflow,
-                    purchase_price: purchasePrice
+                    purchase_price: purchasePrice,
+                    ban_date: activeSim.banDate?.toLocaleDateString('fr-FR'),
+                    cee_est: activeSim.ceeEst,
+                    eco_ptz_amount: activeSim.ecoPTZAmount,
+                    pam_amount: activeSim.pamAmount,
+                    is_copro: isCopro,
+                    tax_benefit: activeSim.taxBenefit
                 })
             });
             if (!res.ok) {
@@ -460,6 +530,14 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+                        {activeSim?.banDate && (
+                            <div className="hidden md:flex flex-col items-end px-3 border-r border-slate-200">
+                                <p className="text-[8px] font-black uppercase text-red-500">Loi Climat</p>
+                                <p className="text-[10px] font-black text-slate-700">
+                                    {(activeSim?.banDate || new Date()) <= new Date() ? 'INTERDIT' : `Interdiction en ${activeSim?.banDate?.getFullYear()}`}
+                                </p>
+                            </div>
+                        )}
                         <div className="text-right px-2">
                             <p className="text-[8px] font-black uppercase text-slate-400">Énergie</p>
                             <p className="text-sm font-black text-slate-600">{activeSim?.currentCepLabel}</p>
@@ -529,6 +607,32 @@ export default function App() {
                                     <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
                                 ))}
                             </div>
+                        </div>
+
+                        <div className="mb-8 p-6 bg-slate-50/50 rounded-[1.5rem] border border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">Copropriété</p>
+                                <button
+                                    onClick={() => setIsCopro(!isCopro)}
+                                    className={`w-12 h-6 rounded-full relative transition-colors ${isCopro ? 'bg-slate-900' : 'bg-slate-200'}`}
+                                >
+                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isCopro ? 'translate-x-6' : ''}`} />
+                                </button>
+                            </div>
+                            {isCopro && (
+                                <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Quote-part (millièmes)</p>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="number"
+                                            value={millièmes}
+                                            onChange={(e) => setMillièmes(Number(e.target.value))}
+                                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-slate-900"
+                                        />
+                                        <span className="text-xs font-bold text-slate-400">/1000</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-8 p-6 bg-blue-50/30 rounded-[1.5rem] border border-blue-100">
@@ -612,8 +716,8 @@ export default function App() {
                                     <div>
                                         <h3 className="text-2xl font-black text-slate-800">Objectif Performance</h3>
                                         <div className="flex gap-2 mt-2">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">E: {activeSim?.newCepLabel}</span>
-                                            <span className="px-3 py-1 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">C: {activeSim?.newGesLabel}</span>
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">{activeSim?.currentLabel} ➔ {activeSim?.newLabel}</span>
+                                            <span className="px-3 py-1 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">{activeSim?.currentCepLabel} ➔ {activeSim?.newCepLabel}</span>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -634,12 +738,12 @@ export default function App() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Simulation Financement</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Plan de Financement Stratégique</p>
                                     <div className="space-y-4">
                                         <div className="space-y-2 pb-4 border-b border-slate-50">
                                             {activeSim?.activeDetailedCosts.map((item: any, idx: number) => (
                                                 <div key={idx} className="flex justify-between text-xs font-bold text-slate-600">
-                                                    <span>{item.name}</span>
+                                                    <span>{item.name}{item.suggested && " (Conseillé)"}</span>
                                                     <span>{Math.round(item.cost).toLocaleString()} €</span>
                                                 </div>
                                             ))}
@@ -648,22 +752,49 @@ export default function App() {
                                                 <span>{Math.round(activeSim?.cost || 0).toLocaleString()} €</span>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between font-bold text-sm">
-                                            <span>Subventions (MaPrimeRénov')</span>
-                                            <span className="text-green-600">+{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
-                                        </div>
-                                        {isInvestor && (
-                                            <div className="flex justify-between font-bold text-sm text-blue-600">
-                                                <span>Gain Fiscal (TMI {tmi}%)</span>
-                                                <span>+{Math.round(activeSim?.taxBenefit || 0).toLocaleString()} €</span>
+
+                                        <div className="space-y-2 pb-4 border-b border-slate-50">
+                                            <div className="flex justify-between text-xs font-bold">
+                                                <span className="text-slate-500">Subvention MaPrimeRénov'</span>
+                                                <span className="text-green-600">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
                                             </div>
-                                        )}
-                                        <div className="flex justify-between text-2xl font-black pt-4 border-t border-slate-900 mt-4">
-                                            <span>{isInvestor ? 'Cout Net Final' : 'Reste à Charge'}</span>
-                                            <span>{Math.round(isInvestor ? (activeSim?.netInvestorCost || 0) : (activeSim?.rest || 0)).toLocaleString()} €</span>
+                                            <div className="flex justify-between text-xs font-bold">
+                                                <span className="text-slate-500">Prime CEE (Estimation)</span>
+                                                <span className="text-green-600">-{Math.round(activeSim?.ceeEst || 0).toLocaleString()} €</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 pb-4 border-b border-slate-50">
+                                            <div className="flex justify-between text-xs font-bold">
+                                                <span className="text-slate-500 flex items-center gap-1">Éco-PTZ (Bouquet {Math.round((activeSim?.ecoPTZLimit || 0) / 1000)}k)</span>
+                                                <span className="text-blue-600">-{Math.round(activeSim?.ecoPTZAmount || 0).toLocaleString()} €</span>
+                                            </div>
+                                            {(activeSim?.pamAmount || 0) > 0 && (
+                                                <div className="group relative">
+                                                    <div className="flex justify-between text-xs font-bold p-2 bg-blue-100/30 rounded-lg cursor-help">
+                                                        <span className="text-blue-700 flex items-center gap-1">Prêt Avance Mutation (PAM)</span>
+                                                        <span className="text-blue-700">-{Math.round(activeSim?.pamAmount || 0).toLocaleString()} €</span>
+                                                    </div>
+                                                    <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                                        Différé total pendant 10 ans. Intérêts cumulés proj. à 15 ans : {Math.round((activeSim?.pamDebt15y || 0) - (activeSim?.pamAmount || 0)).toLocaleString()} €.
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {isInvestor && (
+                                                <div className="flex justify-between text-xs font-bold">
+                                                    <span className="text-slate-500">Gain Fiscal (Déficit Foncier)</span>
+                                                    <span className="text-blue-600">-{Math.round(activeSim?.taxBenefit || 0).toLocaleString()} €</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex justify-between text-2xl font-black pt-4">
+                                            <span className="text-slate-800">Cout Final</span>
+                                            <span className="text-slate-900">{Math.round(Math.max(0, (activeSim?.cost || 0) - (activeSim?.sub || 0) - (activeSim?.ceeEst || 0) - (activeSim?.ecoPTZAmount || 0) - (activeSim?.pamAmount || 0) - (isInvestor ? (activeSim?.taxBenefit || 0) : 0))).toLocaleString()} €</span>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center justify-between">
                                         Valeur Verte (Resantise)
@@ -672,7 +803,7 @@ export default function App() {
                                     <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
                                     <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
                                     <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 3% à 7%.
+                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 4.5% par saut de classe.
                                     </div>
                                 </div>
 
@@ -687,14 +818,54 @@ export default function App() {
                                         <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-white text-slate-900 text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-slate-100">
                                             <p className="font-black text-blue-600 mb-2 uppercase">Méthodologie :</p>
                                             <p className="mb-2 italic">Rendement = (Loyer × 12) / (Prix Achat + Travaux)</p>
-                                            <p className="italic">Cashflow = Loyer - Mensualité Crédit (Travaux sur 20 ans)</p>
+                                            <p className="italic">Cashflow = Loyer - Mensualité Crédit (Travaux sur 84 mois à 4.5%).</p>
                                         </div>
                                     </div>
                                 )}
-                                tunic                            </div>
+
+                            </div>
                         </div>
                     )}
                 </main>
+            </div>
+        </div>
+    );
+}
+
+function AGVoteSimulator() {
+    const [votes, setVotes] = useState({ pour: 650, contre: 200, abstention: 150 });
+    const isAcceptedArt25 = votes.pour > 500;
+    const canLeverageArt25_1 = !isAcceptedArt25 && votes.pour >= 333;
+
+    return (
+        <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl">
+            <h3 className="text-xl font-black text-blue-400 mb-6 flex items-center gap-3">
+                <TrendingUp size={24} /> Simulateur de Vote AG
+            </h3>
+            <div className="space-y-6">
+                <div className="flex gap-2 h-4 bg-white/10 rounded-full overflow-hidden">
+                    <div className="bg-green-500 h-full transition-all" style={{ width: `${votes.pour / 10}%` }} />
+                    <div className="bg-red-500 h-full transition-all" style={{ width: `${votes.contre / 10}%` }} />
+                    <div className="bg-slate-500 h-full transition-all" style={{ width: `${votes.abstention / 10}%` }} />
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Pour</p>
+                        <input type="number" value={votes.pour} onChange={e => setVotes({ ...votes, pour: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-green-400 text-center outline-none" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Contre</p>
+                        <input type="number" value={votes.contre} onChange={e => setVotes({ ...votes, contre: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-red-400 text-center outline-none" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Abst.</p>
+                        <input type="number" value={votes.abstention} onChange={e => setVotes({ ...votes, abstention: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-slate-400 text-center outline-none" />
+                    </div>
+                </div>
+                <div className={`p-4 rounded-2xl border-2 font-bold text-xs text-center ${isAcceptedArt25 ? 'bg-green-500/10 border-green-500 text-green-400' : canLeverageArt25_1 ? 'bg-blue-500/10 border-blue-500 text-blue-400' : 'bg-red-500/10 border-red-500 text-red-400'}`}>
+                    {isAcceptedArt25 ? "Adopté (Majorité Art. 25)" : canLeverageArt25_1 ? "Passerelle Art. 25-1 possible (Majorité Simple)" : "Rejeté"}
+                </div>
+                <p className="text-[8px] text-slate-500 italic mt-2 text-center">Simule les tantièmes (sur 1000) requis pour la rénovation énergétique.</p>
             </div>
         </div>
     );

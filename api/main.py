@@ -178,6 +178,12 @@ class ReportRequest(BaseModel):
     yield_brut: Optional[float] = 0.0
     cashflow: Optional[float] = 0.0
     purchase_price: Optional[float] = 0.0
+    ban_date: Optional[str] = None
+    cee_est: Optional[float] = 0.0
+    eco_ptz_amount: Optional[float] = 0.0
+    pam_amount: Optional[float] = 0.0
+    is_copro: Optional[bool] = False
+    tax_benefit: Optional[float] = 0.0
 
 @app.post("/generate-report")
 async def generate_report(data: ReportRequest):
