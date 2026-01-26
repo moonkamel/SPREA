@@ -253,8 +253,6 @@ export default function App() {
             setActionsB(prev => prev.map(applier));
         } else {
             // Fallback to local logic
-            let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
-            const total = pRoof + pWalls + pWindows + pFloor + pAir;
             const suggester = (a: RetrofitAction) => ({ ...a, suggested: false, active: false });
             setActionsA(prev => prev.map(suggester));
             setActionsB(prev => prev.map(suggester));
