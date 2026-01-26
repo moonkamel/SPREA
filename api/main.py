@@ -142,7 +142,6 @@ def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
         logger.error(f"Error during LLM analysis: {e}")
         return {"error": "LLM analysis failed", "details": str(e)}
 
-from fastapi import APIRouter
 router = APIRouter(prefix="/api")
 
 @router.get("/")
@@ -153,40 +152,42 @@ async def api_root():
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
+        logger.info(f"Searching address: {q}")
         results = await ademe.search_by_address(q)
         
         api_results = []
         for r in results:
-            d = r.dict()
             try:
+                d = r.dict()
                 d["recommended_works"] = engine.get_recommendations(r)
-            except Exception as reco_err:
-                logger.error(f"Recommendation failed for {r.address}: {reco_err}")
-                d["recommended_works"] = []
-            api_results.append(d)
+                api_results.append(d)
+            except Exception as item_err:
+                logger.error(f"Error mapping item {r.address}: {item_err}")
+                continue
             
         return {"count": len(api_results), "results": api_results}
     except Exception as e:
-        logger.error(f"Address search failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Address search crash: {e}", exc_info=True)
+        return {"count": 0, "results": [], "error": str(e)}
 
 @router.get("/search-dpe/{dpe_number}")
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
+        logger.info(f"Searching DPE: {dpe_number}")
         prop = await ademe.search_by_dpe_number(dpe_number)
         if prop:
-            d = prop.dict()
             try:
+                d = prop.dict()
                 d["recommended_works"] = engine.get_recommendations(prop)
-            except Exception as reco_err:
-                logger.error(f"Recommendation failed for DPE {dpe_number}: {reco_err}")
-                d["recommended_works"] = []
-            return {"count": 1, "results": [d]}
+                return {"count": 1, "results": [d]}
+            except Exception as map_err:
+                logger.error(f"DPE Mapping Error: {map_err}")
+                return {"count": 1, "results": [prop.dict()]}
         return {"count": 0, "results": []}
     except Exception as e:
-        logger.error(f"DPE search failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"DPE search failed: {e}", exc_info=True)
+        return {"count": 0, "results": [], "error": str(e)}
 
 class SimulationRequest(BaseModel):
     property_data: PropertySchema
