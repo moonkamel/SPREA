@@ -283,7 +283,7 @@ class PDFReportGenerator:
 
         # Footer Legal Note
         elements.append(Spacer(1, 40))
-        elements.append(HRFlowable(width="30%", thickness=0.5, color=colors.HexColor('#94a3b8'), alignment=1))
+        elements.append(HRFlowable(width="30%", thickness=0.5, color=colors.HexColor('#94a3b8'), hAlign='CENTER'))
         elements.append(Spacer(1, 5))
         elements.append(Paragraph(
             "Ce document est une simulation basée sur la méthode 3CL-2021 et les prix marchés moyens 2024-2025. <br/>"
