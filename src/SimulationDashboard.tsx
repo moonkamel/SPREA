@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     TrendingUp,
     Euro,
@@ -6,7 +6,6 @@ import {
     Zap,
     Hammer,
     Search,
-    Upload,
     FileText,
     Loader2,
     ArrowRight,
@@ -253,8 +252,8 @@ export default function SimulationDashboard() {
                                     key={work.id}
                                     onClick={() => toggleWork(work.id)}
                                     className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all font-bold text-left ${selectedWorks.includes(work.id)
-                                            ? 'border-blue-600 bg-blue-50/50 text-blue-900 shadow-md'
-                                            : 'border-slate-100 hover:border-slate-200 text-slate-600'
+                                        ? 'border-blue-600 bg-blue-50/50 text-blue-900 shadow-md'
+                                        : 'border-slate-100 hover:border-slate-200 text-slate-600'
                                         }`}
                                 >
                                     <div>
