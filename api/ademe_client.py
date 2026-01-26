@@ -140,6 +140,7 @@ class AdemeConnector:
                 postcode = props.get("postcode")
                 housenumber = props.get("housenumber", "")
                 street = props.get("street") or props.get("name")
+                city = props.get("city", "")
                 
                 # Unaccent and clean for better matching
                 def clean_text(text: str) -> str:
@@ -163,7 +164,7 @@ class AdemeConnector:
                     filters.append(f'numero_voie_ban:"{housenumber}"')
                 
                 ademe_params = {
-                    "q": street_clean,
+                    "q": f"{street_clean} {city}".strip(),
                     "qs": " AND ".join(filters) if filters else "",
                     "size": 100
                 }

@@ -168,7 +168,9 @@ async def search_address(q: str):
         for r in results:
             try:
                 d = r.dict()
+                calc = engine.calculate(r)
                 d["recommended_works"] = engine.get_recommendations(r)
+                d["loss_breakdown"] = calc["loss_breakdown"]
                 api_results.append(d)
             except Exception as item_err:
                 logger.error(f"Error mapping item {r.address}: {item_err}")
@@ -188,7 +190,9 @@ async def search_dpe(dpe_number: str):
         if prop:
             try:
                 d = prop.dict()
+                calc = engine.calculate(prop)
                 d["recommended_works"] = engine.get_recommendations(prop)
+                d["loss_breakdown"] = calc["loss_breakdown"]
                 return {"count": 1, "results": [d]}
             except Exception as map_err:
                 logger.error(f"DPE Mapping Error: {map_err}")

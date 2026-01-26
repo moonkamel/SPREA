@@ -49,6 +49,11 @@ interface PropertyData {
     ademe_dpe_number?: string;
     postcode?: string;
     city?: string;
+    loss_breakdown?: {
+        walls: number;
+        windows: number;
+        ventilation: number;
+    }
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -174,8 +179,9 @@ export default function App() {
                     buildingType: r.building_type,
                     heatingType: r.systems?.[0]?.energy_source,
                     gesValue: r.ges_value || 10,
-                    postcode: "59000",
-                    recommended_works: r.recommended_works
+                    postcode: r.postcode || "59000",
+                    recommended_works: r.recommended_works,
+                    loss_breakdown: r.loss_breakdown
                 })));
                 setView('results');
             } else if (data.error) {
@@ -209,8 +215,9 @@ export default function App() {
                     buildingType: r.building_type,
                     heatingType: r.systems?.[0]?.energy_source,
                     gesValue: r.ges_value || 10,
-                    postcode: "59000",
-                    recommended_works: r.recommended_works
+                    postcode: r.postcode || "59000",
+                    recommended_works: r.recommended_works,
+                    loss_breakdown: r.loss_breakdown
                 })));
                 setView('results');
             } else {
@@ -267,6 +274,19 @@ export default function App() {
 
     const heatLoss = useMemo(() => {
         if (!property) return null;
+
+        if (property.loss_breakdown) {
+            const b = property.loss_breakdown;
+            const total = b.walls + b.windows + b.ventilation + 15; // + floor/ceiling fallback
+            return [
+                { id: 'roof', name: 'Toiture', val: (5 / total) * 100, color: '#3b82f6' },
+                { id: 'walls', name: 'Murs', val: (b.walls / total) * 100, color: '#60a5fa' },
+                { id: 'windows', name: 'Vitrage', val: (b.windows / total) * 100, color: '#93c5fd' },
+                { id: 'floor', name: 'Sols', val: (10 / total) * 100, color: '#bfdbfe' },
+                { id: 'vent', name: 'Air', val: (b.ventilation / total) * 100, color: '#dbeafe' },
+            ];
+        }
+
         let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
         if (property.roofIsolation?.toLowerCase().includes('bonne')) pRoof *= 0.35;
         if (property.wallMaterials?.toLowerCase().includes('bonne')) pWalls *= 0.40;
