@@ -161,16 +161,11 @@ class AdemeConnector:
                 filters = []
                 if postcode:
                     filters.append(f"code_postal_brut:{postcode}")
-                if housenumber:
-                    filters.append(f'numero_voie_ban:"{housenumber}"')
                 if city:
                     filters.append(f'nom_commune_ban:"{city.upper()}"')
-                if street:
-                    # Generic street match in the main query and specific in filters if possible
-                    filters.append(f'nom_voie_ban:"*{street_clean.upper()}*"')
                 
                 ademe_params = {
-                    "q": f'"{housenumber}" "{street_clean}"'.strip(),
+                    "q": f"{housenumber} {street_clean}".strip(),
                     "qs": " AND ".join(filters) if filters else "",
                     "size": 100
                 }
