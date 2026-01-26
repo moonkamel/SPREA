@@ -1,8 +1,10 @@
-# Vercel Trigger: Renamed entrypoint to main.py
 import os
 import io
 import logging
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response
 from pydantic import BaseModel, Field

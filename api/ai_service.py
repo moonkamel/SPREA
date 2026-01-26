@@ -6,8 +6,8 @@ from typing import Dict, Any, Optional
 logger = logging.getLogger(__name__)
 
 # Configure Gemini
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCE-6F13a-lONeFdb2fufcVSuDTMW37Uus")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBd7LfTgrf4OM6Z-6ygI0uDRiflmjJozxo")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
 
 class AIService:
     def __init__(self, model_name: str = "gemini-1.5-flash"):

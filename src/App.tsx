@@ -264,9 +264,9 @@ export default function App() {
 
             // Heuristic based on real losses if present
             if (breakdown) {
-                if (a.id === 'iti' && breakdown.walls > 100) isActive = true;
-                if (a.id === 'windows' && breakdown.windows > 30) isActive = true;
-                if (a.id === 'vmc' && breakdown.ventilation > 50) isActive = true;
+                if (a.id === 'iti' && (breakdown.walls > 60 || p.label === 'G' || p.label === 'F')) isActive = true;
+                if (a.id === 'windows' && breakdown.windows > 25) isActive = true;
+                if (a.id === 'vmc' && (breakdown.ventilation > 40 || p.label === 'G')) isActive = true;
             }
 
             return { ...a, suggested: isActive, active: isActive };
