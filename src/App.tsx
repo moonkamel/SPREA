@@ -256,31 +256,50 @@ export default function App() {
         }
         setProperty(inferred);
 
-        // Intelligent Recommendations Logic
+        // Precise Auto-Selection with Greedy Grade Capping
+        const initialCep = p.initialCep || 350;
+        const currentGrade = p.label || 'G';
+
+        // Define Target: C for D/E/F, D for G
+        let targetCep = 180; // Default target C
+        if (currentGrade === 'G') targetCep = 250; // Target D
+        if (['A', 'B', 'C'].includes(currentGrade)) targetCep = initialCep; // Target current
+
+        let remainingReduction = initialCep - targetCep;
         const recIds = p.recommended_works ? p.recommended_works.map(r => r.id) : [];
         const breakdown = p.loss_breakdown;
 
-        const autoSelector = (a: RetrofitAction) => {
-            // Map backend IDs to frontend IDs
-            let isActive = recIds.includes(a.id) ||
+        const processedActions = [...actionsA].map(a => {
+            // Check if suggested by backend OR technical loss
+            let isSuggested = recIds.includes(a.id) ||
                 (a.id === 'iti' && recIds.includes('iti_ossature')) ||
                 (a.id === 'heating' && recIds.includes('pac_air_eau')) ||
                 (a.id === 'roof' && recIds.includes('combles'));
 
-            // Heuristic based on real losses if present (safety fallback)
             if (breakdown) {
-                if (a.id === 'iti' && (breakdown.walls > 40 || p.label === 'G' || p.label === 'F' || p.label === 'D' || p.label === 'E')) isActive = true;
-                if (a.id === 'windows' && (breakdown.windows > 20 || p.label === 'G' || p.label === 'F')) isActive = true;
-                if (a.id === 'vmc' && (breakdown.ventilation > 30 || p.label === 'G' || p.label === 'F')) isActive = true;
-                if (a.id === 'heating' && (p.label === 'G' || p.label === 'F' || p.label === 'E')) isActive = true;
-                if (a.id === 'roof' && (p.buildingType?.toLowerCase().includes('maison'))) isActive = true;
+                if (a.id === 'iti' && (breakdown.walls > 40)) isSuggested = true;
+                if (a.id === 'windows' && (breakdown.windows > 20)) isSuggested = true;
+                if (a.id === 'vmc' && (breakdown.ventilation > 30)) isSuggested = true;
             }
+            return { ...a, suggested: isSuggested, active: false };
+        });
 
-            return { ...a, suggested: isActive, active: isActive };
-        };
+        // Greedy Selection: Isolation first, then heating
+        const priorityOrder = ['roof', 'iti', 'floor_ceiling', 'heating', 'windows', 'vmc'];
+        const sortedActions = processedActions.sort((a, b) => {
+            return priorityOrder.indexOf(a.id) - priorityOrder.indexOf(b.id);
+        });
 
-        setActionsA(prev => prev.map(autoSelector));
-        setActionsB(prev => prev.map(autoSelector));
+        const activeActions = sortedActions.map(a => {
+            if (remainingReduction > 0 && a.suggested) {
+                remainingReduction -= a.impactKwh;
+                return { ...a, active: true };
+            }
+            return a;
+        });
+
+        setActionsA(activeActions);
+        setActionsB(activeActions.map(a => ({ ...a, active: false })));
 
         setView('dashboard');
     };
