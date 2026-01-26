@@ -256,14 +256,15 @@ export default function App() {
         }
         setProperty(inferred);
 
-        // Precise Auto-Selection with Greedy Grade Capping
+        // Precise Auto-Selection with Greedy Grade Capping & Condo-Awareness
         const initialCep = p.initialCep || 350;
         const currentGrade = p.label || 'G';
+        const isApartment = p.buildingType?.toUpperCase().includes('APPARTEMENT');
 
-        // Define Target: C for D/E/F, D for G
-        let targetCep = 180; // Default target C
-        if (currentGrade === 'G') targetCep = 250; // Target D
-        if (['A', 'B', 'C'].includes(currentGrade)) targetCep = initialCep; // Target current
+        // Define Target: C (180) for D/E/F, D (250) for G
+        let targetCep = 180;
+        if (currentGrade === 'G') targetCep = 250;
+        if (['A', 'B', 'C'].includes(currentGrade)) targetCep = initialCep;
 
         let remainingReduction = initialCep - targetCep;
         const recIds = p.recommended_works ? p.recommended_works.map(r => r.id) : [];
@@ -276,18 +277,27 @@ export default function App() {
                 (a.id === 'heating' && recIds.includes('pac_air_eau')) ||
                 (a.id === 'roof' && recIds.includes('combles'));
 
-            if (breakdown) {
+            // Roof works are only for houses
+            if (a.id === 'roof' && isApartment) isSuggested = false;
+
+            if (breakdown && isSuggested !== false) {
                 if (a.id === 'iti' && (breakdown.walls > 40)) isSuggested = true;
                 if (a.id === 'windows' && (breakdown.windows > 20)) isSuggested = true;
                 if (a.id === 'vmc' && (breakdown.ventilation > 30)) isSuggested = true;
             }
-            return { ...a, suggested: isSuggested, active: false };
+            return { ...a, suggested: !!isSuggested, active: false };
         });
 
         // Greedy Selection: Isolation first, then heating
-        const priorityOrder = ['roof', 'iti', 'floor_ceiling', 'heating', 'windows', 'vmc'];
-        const sortedActions = processedActions.sort((a, b) => {
-            return priorityOrder.indexOf(a.id) - priorityOrder.indexOf(b.id);
+        // Use roof only for houses, prioritize ITI and others for apartments
+        const priorityOrder = isApartment
+            ? ['iti', 'floor_ceiling', 'heating', 'windows', 'vmc']
+            : ['roof', 'iti', 'floor_ceiling', 'heating', 'windows', 'vmc'];
+
+        const sortedActions = [...processedActions].sort((a, b) => {
+            const idxA = priorityOrder.indexOf(a.id);
+            const idxB = priorityOrder.indexOf(b.id);
+            return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
         });
 
         const activeActions = sortedActions.map(a => {
