@@ -832,7 +832,7 @@ export default function App() {
     );
 }
 
-function AGVoteSimulator() {
+export function AGVoteSimulator() {
     const [votes, setVotes] = useState({ pour: 650, contre: 200, abstention: 150 });
     const isAcceptedArt25 = votes.pour > 500;
     const canLeverageArt25_1 = !isAcceptedArt25 && votes.pour >= 333;
