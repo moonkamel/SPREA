@@ -23,6 +23,7 @@ interface PropertyData {
     construction_year?: number;
     dpe_class_current: DPEClass;
     consumption_level?: number;
+    recommended_works?: any[];
     walls: any[];
     windows: any[];
     systems: any[];
@@ -65,6 +66,7 @@ export default function SimulationDashboard() {
     const [loading, setLoading] = useState(false);
     const [simulating, setSimulating] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [dpeSearchQuery, setDpeSearchQuery] = useState("");
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [rfr, setRfr] = useState(25000);
     const [postcode, setPostcode] = useState("59000");
@@ -79,14 +81,47 @@ export default function SimulationDashboard() {
         setLoading(true);
         try {
             const res = await fetch(`${API_BASE}/api/search-address?q=${encodeURIComponent(searchQuery)}`);
+            if (!res.ok) throw new Error("Erreur serveur");
             const data = await res.json();
             if (data.results && data.results.length > 0) {
                 const raw = data.results[0];
                 setProperty(raw);
                 setPostcode(raw.address.match(/\d{5}/)?.[0] || "59000");
+                // Auto-select recommended works
+                if (raw.recommended_works) {
+                    setSelectedWorks(raw.recommended_works.map((w: any) => w.id));
+                }
                 setView('dashboard');
             } else {
                 alert("Aucun bien trouvé.");
+            }
+        } catch (err: any) {
+            console.error(err);
+            alert(`Erreur: ${err.message}. Veuillez vérifier que l'API est en ligne.`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDpeSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!dpeSearchQuery) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
+            if (!res.ok) throw new Error("Erreur serveur");
+            const data = await res.json();
+            if (data.results && data.results.length > 0) {
+                const raw = data.results[0];
+                setProperty(raw);
+                setPostcode(raw.address.match(/\d{5}/)?.[0] || "59000");
+                // Auto-select recommended works
+                if (raw.recommended_works) {
+                    setSelectedWorks(raw.recommended_works.map((w: any) => w.id));
+                }
+                setView('dashboard');
+            } else {
+                alert("Aucun DPE trouvé pour ce numéro.");
             }
         } catch (err: any) {
             console.error(err);
@@ -146,24 +181,43 @@ export default function SimulationDashboard() {
                     </header>
 
                     <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-blue-900/5 border border-slate-100">
-                        <form onSubmit={handleAddressSearch} className="relative group">
+                        <form onSubmit={handleAddressSearch} className="mb-6 relative group">
                             <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors">
                                 <Search size={28} />
                             </div>
                             <input
                                 type="text"
-                                placeholder="Entrez une adresse pour commencer..."
-                                className="w-full h-20 bg-slate-50 border-2 border-slate-100 rounded-3xl px-20 text-xl font-bold focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                placeholder="Recherche par adresse..."
+                                className="w-full h-16 bg-slate-50 border-2 border-slate-100 rounded-3xl px-16 text-lg font-bold focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="absolute right-4 top-4 h-12 px-8 bg-slate-900 text-white rounded-2xl font-bold flex items-center gap-3 hover:translate-x-1 transition-all active:scale-95 disabled:bg-slate-300 shadow-xl"
+                                className="absolute right-3 top-2 h-12 px-6 bg-slate-900 text-white rounded-2xl font-bold flex items-center gap-3 hover:translate-x-1 transition-all active:scale-95 disabled:bg-slate-300 shadow-xl"
                             >
-                                {loading ? <Loader2 className="animate-spin" size={20} /> : "Calculer"}
-                                {!loading && <ArrowRight size={20} />}
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : <ArrowRight size={20} />}
+                            </button>
+                        </form>
+
+                        <form onSubmit={handleDpeSearch} className="relative group">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
+                                <FileText size={24} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="N° DPE ADEME (Ex: 2134E...)"
+                                className="w-full h-16 bg-slate-50 border-2 border-slate-100 rounded-3xl px-16 text-lg font-bold focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
+                                value={dpeSearchQuery}
+                                onChange={(e) => setDpeSearchQuery(e.target.value)}
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="absolute right-3 top-2 h-12 px-6 bg-emerald-600 text-white rounded-2xl font-bold flex items-center gap-3 hover:translate-x-1 transition-all active:scale-95 disabled:bg-slate-300 shadow-xl"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : <ArrowRight size={20} />}
                             </button>
                         </form>
 
@@ -211,6 +265,24 @@ export default function SimulationDashboard() {
             <div className="max-w-[1440px] mx-auto grid grid-cols-1 gap-10 lg:grid-cols-12">
                 {/* Controls */}
                 <aside className="lg:col-span-4 space-y-8">
+                    <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
+                        <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
+                            <Zap size={20} className="text-emerald-500" />
+                            Travaux Conseillés
+                        </h3>
+                        <div className="space-y-4">
+                            {property?.recommended_works?.map((reco: any) => (
+                                <div key={reco.id} className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                                    <p className="font-black text-emerald-900 text-sm mb-1">{reco.name}</p>
+                                    <p className="text-xs text-emerald-700 leading-relaxed">{reco.reason}</p>
+                                </div>
+                            ))}
+                            {(!property?.recommended_works || property.recommended_works.length === 0) && (
+                                <p className="text-sm text-slate-400 font-bold text-center py-4 italic">Recherche en cours...</p>
+                            )}
+                        </div>
+                    </section>
+
                     <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
                         <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
                             <Users size={20} className="text-blue-600" />

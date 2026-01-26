@@ -123,9 +123,12 @@ class DPECalculator:
 
     def calculate(self, prop: PropertySchema) -> Dict[str, Any]:
         dju = CLIMATE_DATA.get(prop.climate_zone, 2500)
-        total_loss = sum(w.surface * (w.u_value or 2.5) for w in prop.walls)
-        total_loss += sum(win.surface * (win.u_value or 3.5) for win in prop.windows)
-        total_loss += self.physics.calc_heat_loss_ventilation(prop.shab)
+        
+        wall_loss = sum(w.surface * (w.u_value or 2.5) for w in prop.walls)
+        window_loss = sum(win.surface * (win.u_value or 3.5) for win in prop.windows)
+        vent_loss = self.physics.calc_heat_loss_ventilation(prop.shab)
+        
+        total_loss = wall_loss + window_loss + vent_loss
 
         needs = (total_loss * dju * 24 / 1000) * 0.85 # Intermittency
         
@@ -140,8 +143,56 @@ class DPECalculator:
         return {
             "cep_m2": round(cep_m2, 2),
             "dpe_label": self.get_dpe_class(cep_m2),
-            "total_loss": round(total_loss, 2)
+            "total_loss": round(total_loss, 2),
+            "loss_breakdown": {
+                "walls": round(wall_loss, 2),
+                "windows": round(window_loss, 2),
+                "ventilation": round(vent_loss, 2)
+            }
         }
+
+    def get_recommendations(self, prop: PropertySchema) -> List[Dict[str, Any]]:
+        """Identify best works based on losses and potential gain, prioritizing ROI and 'Kit Sortie de Passoire'."""
+        res = self.calculate(prop)
+        breakdown = res["loss_breakdown"]
+        dpe = res["dpe_label"]
+        
+        recos = []
+        
+        # Priority 1: Insulation (Cheapest gain)
+        recos.append({
+            "id": "combles",
+            "name": "Isolation des Combles",
+            "reason": "Le geste le plus rentable pour gagner rapidement en performance.",
+            "suggested": True
+        })
+        
+        # Priority 2: ITI if walls are a major loss (Cheaper than ITE)
+        if breakdown["walls"] > 50: # Major loss
+            recos.append({
+                "id": "iti_ossature",
+                "name": "Isolation des Murs (ITI)",
+                "reason": "Réduction massive des déperditions à moindre coût par rapport à l'extérieur.",
+                "suggested": True
+            })
+        elif breakdown["windows"] > breakdown["walls"] * 0.4:
+            recos.append({
+                "id": "windows_pvc",
+                "name": "Menuiseries PVC",
+                "reason": "Traitement des parois vitrées pour le confort thermique et acoustique.",
+                "suggested": True
+            })
+            
+        # Priority 3: Efficient Heating (if G/F)
+        if dpe in [DPEClass.G, DPEClass.F]:
+            recos.append({
+                "id": "pac_air_eau",
+                "name": "PAC Air/Eau",
+                "reason": "Indispensable pour décarboner et sortir durablement de l'état de passoire.",
+                "suggested": True
+            })
+            
+        return recos
 
     def simulate_retrofit(self, prop: PropertySchema, selections: List[str], rfr: float, postcode: str) -> Dict[str, Any]:
         works_catalog = {

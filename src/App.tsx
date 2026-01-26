@@ -74,6 +74,8 @@ const getAdjustedThresholds = (surface: number) => {
     }));
 };
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 const getRegion = (postcode?: string) => {
     if (!postcode) return 'METROPOLE';
     return postcode.startsWith('97') ? 'OUTRE_MER' : 'METROPOLE';
@@ -102,6 +104,7 @@ export default function App() {
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [incomeLevel, setIncomeLevel] = useState<IncomeLevel>('intermediaire');
+    const [dpeSearchQuery, setDpeSearchQuery] = useState("");
     const [downloading, setDownloading] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
     const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
@@ -202,6 +205,37 @@ export default function App() {
             }
         } catch (err) {
             setError("Erreur réseau ADEME.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDpeSearch = async () => {
+        if (!dpeSearchQuery) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_BASE}/api/search-dpe/${encodeURIComponent(dpeSearchQuery)}`);
+            const data = await res.json();
+            if (data.results && data.results.length > 0) {
+                setSearchResults(data.results.map((r: any) => ({
+                    address: r.address,
+                    ademe_dpe_number: r.ademe_dpe_number,
+                    surface: r.shab,
+                    year: r.construction_year,
+                    initialCep: r.consumption_level || 350,
+                    label: r.dpe_class_current,
+                    buildingType: r.building_type,
+                    heatingType: r.systems?.[0]?.energy_source,
+                    gesValue: r.ges_value || 10,
+                    postcode: "59000" // Fallback
+                })));
+                setView('results');
+            } else {
+                setError("Aucun DPE trouvé pour ce numéro.");
+            }
+        } catch (err) {
+            setError("Erreur réseau API.");
         } finally {
             setLoading(false);
         }
@@ -425,27 +459,37 @@ export default function App() {
         if (!property || !activeSim) return;
         setDownloading(true);
         try {
-            const res = await fetch('/api/generate-report', {
+            const API_TARGET = import.meta.env.VITE_API_URL || "";
+            const res = await fetch(`${API_TARGET}/api/generate-report`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    address: property.address, surface: property.surface, year: property.year,
-                    ademe_dpe_number: property.ademe_dpe_number, current_label: activeSim.currentLabel,
-                    new_label: activeSim.newLabel, initial_cep: property.initialCep, new_cep: activeSim.newCep,
-                    ges_value: property.gesValue || 0, new_ges: activeSim.newGes,
-                    total_cost: activeSim.cost,
-                    subsidies: activeSim.sub, rest_to_pay: Math.max(0, activeSim.cost - activeSim.sub - activeSim.ceeEst - activeSim.ecoPTZAmount - activeSim.pamAmount - (isInvestor ? activeSim.taxBenefit : 0)),
-                    latent_gain: activeSim.gain,
-                    annual_savings: activeSim.savings, roi_years: Math.round(activeSim.roi),
-                    detailed_costs: activeSim.activeDetailedCosts,
-                    yield_brut: activeSim.yieldBrut, cashflow: activeSim.cashflow,
-                    purchase_price: purchasePrice,
-                    ban_date: activeSim.banDate?.toLocaleDateString('fr-FR'),
-                    cee_est: activeSim.ceeEst,
-                    eco_ptz_amount: activeSim.ecoPTZAmount,
-                    pam_amount: activeSim.pamAmount,
-                    tax_benefit: activeSim.taxBenefit,
-                    has_iti: activeSim.hasITI
+                    address: property.address || "Adresse inconnue",
+                    surface: property.surface || 0,
+                    year: property.year || "N/A",
+                    ademe_dpe_number: property.ademe_dpe_number || "N/A",
+                    current_label: activeSim.currentLabel || "G",
+                    new_label: activeSim.newLabel || "G",
+                    initial_cep: property.initialCep || 0,
+                    new_cep: activeSim.newCep || 0,
+                    ges_value: property.gesValue || 0,
+                    new_ges: activeSim.newGes || 0,
+                    total_cost: activeSim.cost || 0,
+                    subsidies: activeSim.sub || 0,
+                    rest_to_pay: Math.max(0, (activeSim.cost || 0) - (activeSim.sub || 0) - (activeSim.ceeEst || 0) - (activeSim.ecoPTZAmount || 0)),
+                    latent_gain: activeSim.gain || 0,
+                    annual_savings: activeSim.savings || 0,
+                    roi_years: Math.round(activeSim.roi || 0),
+                    detailed_costs: activeSim.activeDetailedCosts || [],
+                    yield_brut: activeSim.yieldBrut || 0,
+                    cashflow: activeSim.cashflow || 0,
+                    purchase_price: purchasePrice || 0,
+                    ban_date: activeSim.banDate?.toLocaleDateString('fr-FR') || null,
+                    cee_est: activeSim.ceeEst || 0,
+                    eco_ptz_amount: activeSim.ecoPTZAmount || 0,
+                    pam_amount: activeSim.pamAmount || 0,
+                    tax_benefit: activeSim.taxBenefit || 0,
+                    has_iti: activeSim.hasITI || false
                 })
             });
             if (!res.ok) {
@@ -485,6 +529,18 @@ export default function App() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             {loading && <Loader2 className="animate-spin text-blue-600" size={24} />}
+                        </div>
+
+                        <div className="flex items-center bg-slate-100 rounded-2xl px-6 h-16 border-2 border-transparent focus-within:border-emerald-600 focus-within:bg-white transition-all mt-4">
+                            <FileText size={24} className="text-slate-400 mr-4" />
+                            <input
+                                type="text"
+                                placeholder="Numéro DPE ADEME (Ex: 2134E...)"
+                                className="flex-1 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
+                                value={dpeSearchQuery}
+                                onChange={(e) => setDpeSearchQuery(e.target.value)}
+                            />
+                            <button onClick={handleDpeSearch} className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-emerald-700 transition-colors">Vérifier</button>
                         </div>
                         {suggestions.length > 0 && (
                             <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden z-20 text-left">

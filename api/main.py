@@ -149,7 +149,20 @@ async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
         results = await ademe.search_by_address(q)
-        return {"count": len(results), "results": results}
+        for res in results:
+            # Inject recommendations based on initial state
+            res_dict = res.dict()
+            res_dict["recommended_works"] = engine.get_recommendations(res)
+            # Use original index or update results list
+        
+        # Mapping back to dict for API response to include extra field
+        api_results = []
+        for r in results:
+            d = r.dict()
+            d["recommended_works"] = engine.get_recommendations(r)
+            api_results.append(d)
+            
+        return {"count": len(api_results), "results": api_results}
     except Exception as e:
         logger.error(f"Address search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -158,8 +171,12 @@ async def search_address(q: str):
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
-        results = await ademe.search_by_dpe_number(dpe_number)
-        return {"count": 1 if results else 0, "results": [results] if results else []}
+        prop = await ademe.search_by_dpe_number(dpe_number)
+        if prop:
+            d = prop.dict()
+            d["recommended_works"] = engine.get_recommendations(prop)
+            return {"count": 1, "results": [d]}
+        return {"count": 0, "results": []}
     except Exception as e:
         logger.error(f"DPE search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -195,20 +212,20 @@ except ImportError:
 class ReportRequest(BaseModel):
     address: str
     surface: float
-    year: Any
+    year: Any = "N/A"
     ademe_dpe_number: Optional[str] = "N/A"
-    current_label: str
-    new_label: str
-    initial_cep: float
-    new_cep: float
-    ges_value: float
-    new_ges: float
-    total_cost: float
-    subsidies: float
-    rest_to_pay: float
-    latent_gain: float
-    annual_savings: float
-    roi_years: int
+    current_label: str = "G"
+    new_label: str = "G"
+    initial_cep: float = 0.0
+    new_cep: float = 0.0
+    ges_value: float = 0.0
+    new_ges: float = 0.0
+    total_cost: float = 0.0
+    subsidies: float = 0.0
+    rest_to_pay: float = 0.0
+    latent_gain: float = 0.0
+    annual_savings: float = 0.0
+    roi_years: int = 0
     detailed_costs: Optional[list] = []
     yield_brut: Optional[float] = 0.0
     cashflow: Optional[float] = 0.0
