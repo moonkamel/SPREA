@@ -74,7 +74,6 @@ const getAdjustedThresholds = (surface: number) => {
     }));
 };
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const getRegion = (postcode?: string) => {
     if (!postcode) return 'METROPOLE';

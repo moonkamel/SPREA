@@ -48,8 +48,6 @@ const DPE_COLORS: Record<DPEClass, string> = {
 
 const DPE_LABELS: DPEClass[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://sprea.onrender.com";
-
 const WORKS_CATALOG = [
     { id: 'ite_pse', name: 'ITE PSE (Standard)', category: 'Isolation' },
     { id: 'ite_bois', name: 'ITE Fibre de Bois (Eco)', category: 'Isolation' },
