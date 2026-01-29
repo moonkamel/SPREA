@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional
 logger = logging.getLogger(__name__)
 
 # Configure Gemini
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBd7LfTgrf4OM6Z-6ygI0uDRiflmjJozxo")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCLlZZd0RNX7EYm49yOD2jeAhlXCT9O2aE")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_KEY}"
 
 class AIService:

@@ -137,7 +137,7 @@ class DPECalculator:
         
         main_sys = prop.systems[0] if prop.systems else None
         eff = (main_sys.efficiency_etas or 0.8) if main_sys else 0.8
-        energy = (main_sys.energy_source or "gas").lower()
+        energy = (main_sys.energy_source or "gas").lower() if main_sys else "gas"
         
         ef = needs / eff
         ep = ef * ENERGY_CONVERSION.get(energy, 1.0)
@@ -155,43 +155,56 @@ class DPECalculator:
         }
 
     def get_recommendations(self, prop: PropertySchema) -> List[Dict[str, Any]]:
-        """Identify best works based on losses and potential gain, prioritizing ROI and 'Kit Sortie de Passoire'."""
+        """Identify best works based on losses and potential gain, prioritizing ROI and respect for property type."""
         res = self.calculate(prop)
         breakdown = res["loss_breakdown"]
         dpe = res["dpe_label"]
+        type_bat = (prop.building_type or "Maison").lower()
+        is_house = "maison" in type_bat
         
         recos = []
         
         # Priority 1: Insulation (Cheapest gain)
-        recos.append({
-            "id": "combles",
-            "name": "Isolation des Combles",
-            "reason": "Le geste le plus rentable pour gagner rapidement en performance.",
-            "suggested": True
-        })
+        # HOUSE ONLY: Attic insulation is a classic individual house gain.
+        if is_house:
+            recos.append({
+                "id": "combles",
+                "name": "Isolation des Combles",
+                "reason": "Le geste le plus rentable pour une maison individuelle afin de gagner rapidement en performance.",
+                "suggested": True
+            })
         
-        # Priority 2: ITI if walls are a major loss (Cheaper than ITE)
+        # Priority 2: Walls (ITI for apartments, ITI or ITE for houses)
+        # We suggest ITI by default as it's private.
         if breakdown["walls"] > 50: # Major loss
             recos.append({
                 "id": "iti_ossature",
                 "name": "Isolation des Murs (ITI)",
-                "reason": "Réduction massive des déperditions à moindre coût par rapport à l'extérieur.",
+                "reason": "Réduction des déperditions par l'intérieur, idéal pour un contrôle total sans accord de copropriété." if not is_house else "Solution rapide et efficace pour isoler les murs.",
                 "suggested": True
             })
-        elif breakdown["windows"] > breakdown["walls"] * 0.4:
+        
+        # Priority 3: Windows
+        if breakdown["windows"] > breakdown["walls"] * 0.3:
             recos.append({
                 "id": "windows_pvc",
                 "name": "Menuiseries PVC",
-                "reason": "Traitement des parois vitrées pour le confort thermique et acoustique.",
+                "reason": "Remplacement des fenêtres pour supprimer l'effet paroi froide et améliorer l'étanchéité.",
                 "suggested": True
             })
             
-        # Priority 3: Efficient Heating (if G/F)
+        # Priority 4: Efficient Heating (if G/F)
+        # For apartments, collective heating is tricky, but individual PAC is possible sometimes.
+        # For houses, PAC is the way to go.
         if dpe in [DPEClass.G, DPEClass.F]:
+            heating_reason = "Indispensable pour décarboner et sortir durablement de l'état de passoire."
+            if not is_house:
+                heating_reason = "Amélioration du système de chauffage individuel pour une meilleure efficacité énergétique."
+                
             recos.append({
                 "id": "pac_air_eau",
                 "name": "PAC Air/Eau",
-                "reason": "Indispensable pour décarboner et sortir durablement de l'état de passoire.",
+                "reason": heating_reason,
                 "suggested": True
             })
             
