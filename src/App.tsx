@@ -116,13 +116,23 @@ export default function App() {
     const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
     const [userProfile, setUserProfile] = useState<'propriétaire' | 'investisseur'>('propriétaire');
 
+    // Simplified Duration Mapping (days per work)
+    const DURATION_MAP: Record<string, number> = {
+        iti: 5,
+        roof: 7,
+        floor_ceiling: 3,
+        heating: 2,
+        vmc: 1,
+        ecs: 1,
+        windows: 2
+    };
+
     // New Precision Parameters
-    const [indexInsee, setIndexInsee] = useState(125.0);
     const [nbEtages, setNbEtages] = useState(0);
     const [hasAscenseur, setHasAscenseur] = useState(true);
     const [isUrbanDense, setIsUrbanDense] = useState(false);
     const [parkingCost, setParkingCost] = useState(35.0);
-    const [chantierDuration, setChantierDuration] = useState(5);
+    const [chantierDuration, setChantierDuration] = useState(5); // Now auto-updated
 
     // Investor States
     const [isInvestor, setIsInvestor] = useState(false);
@@ -359,13 +369,16 @@ export default function App() {
         let cost = 0, cepRed = 0, gesRed = 0;
         const thresholds = getAdjustedThresholds(property.surface);
 
-        // --- Technical Precision logic (Sanitized) ---
-        const safeIndex = (indexInsee || 120.0);
+        // --- Technical Precision logic (Automated) ---
+        const safeIndex = 131.0; // BT01 2024/2025 auto-selected
         const safeEtages = (nbEtages || 0);
         const safeParkingCost = (parkingCost || 0);
-        const safeDuration = (chantierDuration || 0);
 
-        const indexRatio = safeIndex > 20 ? (safeIndex / 120.0) : 1.0;
+        // Intelligent duration calculation
+        const autoDuration = activeActions.reduce((sum, a) => sum + (DURATION_MAP[a.id] || 0), 0);
+        const safeDuration = autoDuration || 1;
+
+        const indexRatio = safeIndex / 120.0;
 
         // Accessibility coefficient: +5% per floor if no elevator
         let coeffAccessibilite = 1.0;
@@ -376,7 +389,7 @@ export default function App() {
         // Urban Density coefficient (+10%)
         const coeffUrban = isUrbanDense ? 1.10 : 1.0;
 
-        // Logistics (Parking)
+        // Logistics (Stationnement)
         const logisticsCosts = isUrbanDense ? (safeParkingCost * safeDuration) : 0;
 
         // Smart Estimation: S_mur = 8 * sqrt(SHAB)
@@ -436,6 +449,9 @@ export default function App() {
         const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
         const sub = cost * rate;
         const rest = cost - sub;
+
+        // Auto-update duration state for UI (optional, but keep for logistics)
+        if (safeDuration !== chantierDuration) setChantierDuration(safeDuration);
 
         const region = getRegion(property.postcode);
         const banDate = getRentalBanDate(current.label, property.initialCep, region);
@@ -515,8 +531,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, indexInsee, nbEtages, hasAscenseur, isUrbanDense, parkingCost, chantierDuration]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, indexInsee, nbEtages, hasAscenseur, isUrbanDense, parkingCost, chantierDuration]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, nbEtages, hasAscenseur, isUrbanDense, parkingCost]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, nbEtages, hasAscenseur, isUrbanDense, parkingCost]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -753,21 +769,6 @@ export default function App() {
                             Précision
                         </h3>
                         <div className="space-y-4">
-                            <div className="group relative">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                                    Indice Coût Travaux (BT01)
-                                    <span className="cursor-help text-slate-300">?</span>
-                                </label>
-                                <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                    L'indice BT01 mesure l'évolution des coûts dans le bâtiment. Modifiez-le pour ajuster les prix selon l'inflation actuelle (Base 120).
-                                </div>
-                                <input
-                                    type="number"
-                                    value={indexInsee}
-                                    onChange={(e) => setIndexInsee(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
-                                    className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
-                                />
-                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="group relative">
                                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
@@ -816,22 +817,16 @@ export default function App() {
                                 </button>
                             </div>
                             {isUrbanDense && (
-                                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="group relative">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Parking (€/j)</label>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                            Stationnement (€/jour)
+                                            <span className="text-[8px] text-blue-500 font-bold uppercase italic">{chantierDuration} j. estimés</span>
+                                        </label>
                                         <input
                                             type="number"
                                             value={parkingCost}
                                             onChange={(e) => setParkingCost(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
-                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
-                                        />
-                                    </div>
-                                    <div className="group relative">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Durée (jours)</label>
-                                        <input
-                                            type="number"
-                                            value={chantierDuration}
-                                            onChange={(e) => setChantierDuration(e.target.value === '' ? '' as any : parseInt(e.target.value))}
                                             className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                         />
                                     </div>
@@ -1076,14 +1071,33 @@ export default function App() {
 
                                 <div className="space-y-6">
                                     <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group h-full">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-between">
-                                            Valeur Verte (Resantise)
-                                            <span className="cursor-help text-slate-300">?</span>
-                                        </p>
-                                        <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
-                                        <p className="text-xs font-bold text-slate-400 mt-2 italic">Plus-value IMMO estimée</p>
-                                        <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                            Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 4.5% par saut de classe.
+                                        <div className="flex items-center justify-between mb-6">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                Bilan Financier Estimé
+                                                <span className="cursor-help text-slate-300">?</span>
+                                            </p>
+                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                                Récapitulatif de l'investissement après déduction des aides publiques et privées.
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Investissement Brut (TTC)</div>
+                                                <div className="text-3xl font-black text-slate-800 tracking-tighter">{Math.round(activeSim?.cost || 0).toLocaleString()} €</div>
+                                            </div>
+
+                                            <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
+                                                <div className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Total des Aides Estimées</div>
+                                                <div className="text-3xl font-black text-green-700 tracking-tighter">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</div>
+                                                <p className="text-[8px] font-bold text-green-500 uppercase mt-1">MaPrimeRénov' + CEE inclus</p>
+                                            </div>
+
+                                            <div className="pt-4 border-t-2 border-slate-100">
+                                                <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Reste à Charge Final</div>
+                                                <div className="text-4xl font-black text-blue-700 tracking-tighter">{Math.round(activeSim?.rest || 0).toLocaleString()} €</div>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase mt-1 italic">Hors financements locaux ou prêts</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
