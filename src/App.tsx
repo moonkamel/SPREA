@@ -11,7 +11,6 @@ import {
     PieChart,
     Layers,
     Copy,
-    AlertTriangle,
     Zap
 } from 'lucide-react';
 
@@ -43,6 +42,7 @@ interface PropertyData {
     gesLabel?: string;
     gesValue?: number;
     wallMaterials?: string;
+    pricePerM2?: number; // Added for gain calculation
     glassType?: string;
     roofIsolation?: string;
     floorIsolation?: string;
@@ -520,7 +520,7 @@ export default function App() {
             netInvestorCost: rest - taxBenefit,
             savings: (cepRed * property.surface) * 0.228,
             roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
-            gain: property.surface * 4200 * (steps * 0.045),
+            gain: steps * (property.surface * (property.pricePerM2 || 4500) * 0.045), // 4.5% gain per DPE step
             currentLabel: current.label,
             newLabel: target.label,
             newCepLabel: target.cepL,
@@ -684,85 +684,67 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-slate-50 p-8 font-sans text-slate-900">
-            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
+            <header className="mb-6 flex flex-col xl:flex-row xl:items-center justify-between gap-6 rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-100">
                 <div className="flex items-center gap-6">
-                    <div className="rounded-xl bg-slate-900 p-4 text-white shadow-lg">
-                        {property?.buildingType?.includes('Appartement') ? <Building size={32} /> : <Home size={32} />}
+                    <div className="rounded-2xl bg-slate-900 p-5 text-white shadow-xl rotate-[-2deg]">
+                        {property?.buildingType?.includes('Appartement') ? <Building size={36} /> : <Home size={36} />}
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 truncate max-w-lg">{property?.address}</h1>
-                        <p className="text-sm font-bold text-slate-400">
-                            {property?.buildingType} • {property?.surface} m² • {property?.constructionPeriod || (property?.year ? `Période ${property.year}` : 'Année Inconnue')}
-                        </p>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-black text-slate-800 tracking-tight">{property?.address}</h1>
+                            {property?.label !== activeSim?.currentLabel && (
+                                <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded-lg border border-amber-100 uppercase tracking-tighter shadow-sm animate-pulse">Source ADEME: {property?.label}</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-4 mt-1">
+                            <p className="text-sm font-bold text-slate-400">
+                                {property?.buildingType} • {property?.surface} m² • {property?.constructionPeriod}
+                            </p>
+                            <div className="h-4 w-px bg-slate-200" />
+                            <div className="flex items-center gap-2 px-3 py-1 bg-blue-600 rounded-full text-white shadow-lg shadow-blue-200">
+                                <TrendingUp size={14} className="animate-bounce" />
+                                <span className="text-[11px] font-black uppercase tracking-tight">Plus-value IMMO: +{Math.round(activeSim?.gain || 0).toLocaleString()} €</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-[1.5rem] border border-slate-100">
                         {activeSim?.banDate && (
-                            <div className="hidden md:flex flex-col items-end px-3 border-r border-slate-200">
-                                <p className="text-[8px] font-black uppercase text-red-500">Loi Climat</p>
-                                <p className="text-[10px] font-black text-slate-700">
+                            <div className="flex flex-col items-end px-4 border-r border-slate-200">
+                                <p className="text-[9px] font-black uppercase text-red-500 tracking-widest">Loi Climat</p>
+                                <p className="text-[11px] font-extrabold text-slate-800">
                                     {(activeSim?.banDate || new Date()) <= new Date() ? 'INTERDIT' : `Interdiction en ${activeSim?.banDate?.getFullYear()}`}
                                 </p>
                             </div>
                         )}
-                        <div className="text-right px-2">
-                            <p className="text-[8px] font-black uppercase text-slate-400">Énergie</p>
-                            <p className="text-sm font-black text-slate-600">{activeSim?.currentCepLabel}</p>
+                        <div className="flex gap-4 px-2">
+                            <div className="text-right">
+                                <p className="text-[9px] font-black uppercase text-slate-400">Énergie</p>
+                                <p className="text-xs font-black text-slate-600">{activeSim?.currentCepLabel}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[9px] font-black uppercase text-slate-400">Climat</p>
+                                <p className="text-xs font-black text-slate-600">{activeSim?.currentGesLabel}</p>
+                            </div>
                         </div>
-                        <div className="w-px h-6 bg-slate-200" />
-                        <div className="text-right px-2">
-                            <p className="text-[8px] font-black uppercase text-slate-400">Climat</p>
-                            <p className="text-sm font-black text-slate-600">{activeSim?.currentGesLabel}</p>
-                        </div>
-                        <div className={`flex items-center justify-center rounded-xl h-12 w-12 text-2xl font-black text-white shadow-lg ml-2`} style={{ backgroundColor: DPE_COLORS[activeSim?.currentLabel || 'G'] }}>
+                        <div className={`flex items-center justify-center rounded-2xl h-14 w-14 text-3xl font-black text-white shadow-xl ml-2 scale-105 active:scale-95 transition-transform`} style={{ backgroundColor: DPE_COLORS[activeSim?.currentLabel || 'G'] }}>
                             {activeSim?.currentLabel}
                         </div>
                     </div>
-                    <button onClick={handleDownloadPDF} disabled={downloading} className="h-14 px-6 rounded-2xl bg-white border border-slate-200 text-blue-600 font-black hover:bg-blue-50 transition-all flex items-center gap-3">
-                        {downloading ? <Loader2 className="animate-spin" /> : <FileText size={18} />} PDF
-                    </button>
-                    <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-blue-600 hover:text-white transition-all text-xs uppercase tracking-widest">Retour</button>
+                    <div className="flex gap-3">
+                        <button onClick={handleDownloadPDF} disabled={downloading} className="h-14 px-8 rounded-2xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3 border border-blue-100 shadow-sm">
+                            {downloading ? <Loader2 className="animate-spin" /> : <FileText size={20} />}
+                            <span className="uppercase text-xs tracking-widest">PDF</span>
+                        </button>
+                        <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-slate-900 hover:text-white transition-all text-[10px] uppercase tracking-widest border border-slate-200">Retour</button>
+                    </div>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                <aside className="lg:col-span-4 space-y-6">
-                    <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
-                            </div>
-                        </div>
-
-                        {compareMode && (
-                            <div className="flex gap-2 mb-6 p-2 bg-slate-100 rounded-2xl">
-                                <button onClick={() => setActiveScenario('A')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'A' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario A</button>
-                                <button onClick={() => setActiveScenario('B')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'B' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario B</button>
-                                <button onClick={copyAToB} title="Copier A vers B" className="p-3 bg-white rounded-xl text-slate-400 hover:text-blue-600"><Copy size={16} /></button>
-                            </div>
-                        )}
-
-                        <div className="space-y-3">
-                            {(activeScenario === 'A' ? actionsA : actionsB)
-                                .filter(a => a.id !== 'roof' || property?.buildingType === 'MAISON')
-                                .map(a => (
-                                    <div key={a.id} className="group relative">
-                                        <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
-                                            <div className="flex flex-col items-start gap-1">
-                                                <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
-                                                {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
-                                            </div>
-                                            <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
-                                        </button>
-                                        <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
-                                            <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                        </div>
-                    </section>
-
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 max-w-[1600px] mx-auto">
+                {/* Sidebar: Secondary Settings */}
+                <aside className="lg:col-span-3 space-y-6 order-2 lg:order-1">
                     <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
                         <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-800 uppercase tracking-tight">
                             <Zap size={24} className="text-blue-500" />
@@ -775,9 +757,6 @@ export default function App() {
                                         Nombre d'étages
                                         <span className="cursor-help text-slate-300">?</span>
                                     </label>
-                                    <div className="absolute left-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        Nombre d'étages à franchir pour accéder au logement. Impacte les coûts de manutention.
-                                    </div>
                                     <input
                                         type="number"
                                         value={nbEtages}
@@ -785,14 +764,8 @@ export default function App() {
                                         className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                     />
                                 </div>
-                                <div className="flex flex-col justify-end group relative">
-                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                                        Ascenseur
-                                        <span className="cursor-help text-slate-300">?</span>
-                                    </label>
-                                    <div className="absolute right-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        Si "NON", une pénalité de 5% par étage est appliquée pour la manutention.
-                                    </div>
+                                <div className="flex flex-col justify-end">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ascenseur</label>
                                     <button
                                         onClick={() => setHasAscenseur(!hasAscenseur)}
                                         className={`w-full h-12 rounded-2xl border-2 font-black text-[10px] uppercase transition-all ${hasAscenseur ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
@@ -801,14 +774,8 @@ export default function App() {
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 group relative">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    Zone Urbaine Dense
-                                    <span className="cursor-help text-slate-300">?</span>
-                                </span>
-                                <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                    Active une pénalité de 10% pour les difficultés de stationnement et d'accès en centre-ville.
-                                </div>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zone Urbaine</span>
                                 <button
                                     onClick={() => setIsUrbanDense(!isUrbanDense)}
                                     className={`w-12 h-6 rounded-full relative transition-all ${isUrbanDense ? 'bg-blue-600' : 'bg-slate-300'}`}
@@ -817,363 +784,214 @@ export default function App() {
                                 </button>
                             </div>
                             {isUrbanDense && (
-                                <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div className="group relative">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
-                                            Stationnement (€/jour)
-                                            <span className="text-[8px] text-blue-500 font-bold uppercase italic">{chantierDuration} j. estimés</span>
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={parkingCost}
-                                            onChange={(e) => setParkingCost(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
-                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
-                                        />
-                                    </div>
+                                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 animate-in zoom-in-95 duration-200">
+                                    <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                        Stationnement (€/j)
+                                        <span className="text-[8px] bg-blue-100 px-2 py-0.5 rounded text-blue-500">{chantierDuration} j.</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={parkingCost}
+                                        onChange={(e) => setParkingCost(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
+                                        className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                    />
                                 </div>
                             )}
                         </div>
                     </section>
 
-                    <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex items-center gap-3 text-xl font-black text-blue-400"><PieChart size={24} /> Déperditions Thermiques</h3>
-                            <div className="group relative">
-                                <span className="cursor-help text-slate-500 text-[10px] font-black uppercase border border-slate-700 px-2 py-1 rounded-lg hover:border-blue-400 hover:text-blue-400 transition-colors">?</span>
-                                <div className="absolute right-0 top-full mt-2 w-48 p-3 bg-slate-800 text-[10px] font-bold text-slate-300 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-white/5">
-                                    Répartition des pertes de chaleur par éléments. Plus le % est élevé, plus l'isolation de cette paroi est prioritaire.
+                    <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
+                        <div className="space-y-6">
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">Profil du Rapport</p>
+                                <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
+                                    {(['propriétaire', 'investisseur'] as const).map(p => (
+                                        <button key={p} onClick={() => setUserProfile(p)} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === p ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>{p === 'propriétaire' ? 'Patrimoine' : 'Performance'}</button>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
-                        <div className="space-y-4">
-                            {heatLoss?.map(item => (
-                                <div key={item.id}>
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1">
-                                        <span>{item.name}</span>
-                                        <span>{Math.round(item.val)}%</span>
-                                    </div>
-                                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                                        <div className="h-full rounded-full transition-all" style={{ width: `${item.val}%`, backgroundColor: item.color }} />
-                                    </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1">Revenus du Ménage</p>
+                                <p className="text-[8px] font-bold text-blue-500 uppercase mb-3 ml-1">Taux MaPrimeRénov'</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
+                                        <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Objectif du Rapport</p>
-                            <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
-                                <button
-                                    onClick={() => setUserProfile('propriétaire')}
-                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'propriétaire' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
-                                >
-                                    Patrimoine
-                                </button>
-                                <button
-                                    onClick={() => setUserProfile('investisseur')}
-                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'investisseur' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
-                                >
-                                    Performance
-                                </button>
                             </div>
-                        </div>
-
-                        <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Revenus du Ménage</p>
-                            <p className="text-[8px] font-bold text-blue-500 uppercase mb-3">Impacte le taux MaPrimeRénov'</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
-                                    <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="mb-8 p-6 bg-blue-50/30 rounded-[1.5rem] border border-blue-100">
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Profil Investisseur</p>
-                                <button
-                                    onClick={() => setIsInvestor(!isInvestor)}
-                                    className={`w-12 h-6 rounded-full relative transition-colors ${isInvestor ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                >
-                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isInvestor ? 'translate-x-6' : ''}`} />
-                                </button>
-                            </div>
-
-                            {isInvestor && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    {/* ... rest of investor fields ... */}
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Taux d'imposition (TMI)</p>
-                                        <div className="flex gap-1">
-                                            {[0, 11, 30, 41, 45].map(v => (
-                                                <button
-                                                    key={v}
-                                                    onClick={() => setTmi(v)}
-                                                    className={`flex-1 py-1 rounded-lg text-[10px] font-black border ${tmi === v ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-100'}`}
-                                                >
-                                                    {v}%
-                                                </button>
-                                            ))}
+                            {userProfile === 'investisseur' && (
+                                <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100 animate-in slide-in-from-top-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4 ml-1">Paramètres Locatifs</p>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase mb-1 ml-1">TMI (%)</p>
+                                            <div className="flex gap-1">
+                                                {[0, 11, 30, 41, 45].map(v => <button key={v} onClick={() => setTmi(v)} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black border transition-all ${tmi === v ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-50'}`}>{v}%</button>)}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Prix d'Achat du Bien (€)</p>
-                                        <input
-                                            type="number"
-                                            value={purchasePrice}
-                                            onChange={(e) => setPurchasePrice(Number(e.target.value))}
-                                            className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-blue-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Loyer Mensuel Estimé</p>
-                                        <input
-                                            type="number"
-                                            value={monthlyRent}
-                                            onChange={(e) => setMonthlyRent(Number(e.target.value))}
-                                            className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-sm font-black text-slate-700 outline-none focus:border-blue-600"
-                                        />
+                                        <div>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase mb-1 ml-1">Prix d'Achat (€)</p>
+                                            <input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(Number(e.target.value))} className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-4 text-xs font-black focus:border-blue-600 outline-none" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase mb-1 ml-1">Loyer (€/mois)</p>
+                                            <input type="number" value={monthlyRent} onChange={(e) => setMonthlyRent(Number(e.target.value))} className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-4 text-xs font-black focus:border-blue-600 outline-none" />
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </section>
                 </aside>
 
-                <main className="lg:col-span-8">
-                    {compareMode ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <ComparisonCard title="Scénario A" sim={simA} active={activeScenario === 'A'} onSelect={() => setActiveScenario('A')} />
-                            <ComparisonCard title="Scénario B" sim={simB} active={activeScenario === 'B'} onSelect={() => setActiveScenario('B')} />
+                <main className="lg:col-span-9 space-y-8 order-1 lg:order-2">
+                    {/* 1. DPE Chart Section */}
+                    <section className="rounded-[2.5rem] bg-white p-10 shadow-sm border border-slate-100 relative overflow-hidden group">
+                        <div className="mb-10 flex items-center justify-between relative z-10">
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Objectif Amélioration Énergétique</h3>
+                                <div className="flex gap-2 mt-2">
+                                    <span className="px-3 py-1.5 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase border border-blue-100 shadow-sm">{activeSim?.currentLabel} ➔ {activeSim?.newLabel}</span>
+                                    <span className="px-3 py-1.5 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase border border-green-100 shadow-sm">{Math.round(activeSim?.newCep || 0)} kWh/m².an</span>
+                                </div>
+                            </div>
+                            <div className="text-right p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                                <p className="text-4xl font-black text-slate-900 tracking-tighter">Budget {Math.round(activeSim?.rest || 0).toLocaleString()} €</p>
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1 italic italic">Reste à charge estimé</p>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="space-y-6">
-                            <section className="rounded-3xl bg-white p-10 shadow-sm border border-slate-100 relative overflow-hidden">
-                                <div className="mb-10 flex items-center justify-between relative z-10">
-                                    <div>
-                                        <h3 className="text-2xl font-black text-slate-800">Objectif Performance</h3>
-                                        <div className="flex gap-2 mt-2">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">{activeSim?.currentLabel} ➔ {activeSim?.newLabel}</span>
-                                            <span className="px-3 py-1 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase">{activeSim?.currentCepLabel} ➔ {activeSim?.newCepLabel}</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-5xl font-black text-blue-600 tracking-tighter">{Math.round(activeSim?.newCep || 0)}</p>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">kWh/m².an</p>
-                                    </div>
+                        <div className="grid grid-cols-7 gap-3 h-20 relative z-10">
+                            {getAdjustedThresholds(property?.surface || 100).map(t => (
+                                <div key={t.label} className="relative flex items-center justify-center font-black text-white text-2xl rounded-2xl shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: DPE_COLORS[t.label as DPEClass] }}>
+                                    {t.label}
+                                    {activeSim?.currentLabel === t.label && <div className="absolute -top-12 flex flex-col items-center"><div className="w-2.5 h-2.5 rounded-full bg-slate-800 ring-4 ring-slate-100" /><div className="h-6 w-0.5 bg-slate-800" /></div>}
+                                    {activeSim?.newLabel === t.label && <div className="absolute -bottom-14 flex flex-col items-center animate-bounce"><div className="h-6 w-0.5 bg-blue-600" /><div className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100" /></div>}
                                 </div>
-                                <div className="grid grid-cols-7 gap-2 h-16 relative z-10">
-                                    {getAdjustedThresholds(property?.surface || 100).map(t => (
-                                        <div key={t.label} className="relative flex items-center justify-center font-black text-white text-xl rounded-lg shadow-md" style={{ backgroundColor: DPE_COLORS[t.label as DPEClass] }}>
-                                            {t.label}
-                                            {activeSim?.currentLabel === t.label && <div className="absolute -top-10 flex flex-col items-center"><div className="w-2 h-2 rounded-full bg-slate-800" /><div className="h-4 w-0.5 bg-slate-800" /></div>}
-                                            {activeSim?.newLabel === t.label && <div className="absolute -bottom-12 flex flex-col items-center animate-bounce"><div className="h-4 w-0.5 bg-blue-600" /><div className="w-2 h-2 rounded-full bg-blue-600" /></div>}
-                                        </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 2. Middle Row: Actions + Heat Loss */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <section className="rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-100 h-full">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
+                                    <Layers size={24} className="text-blue-500" />
+                                    Actions de Rénovation
+                                </h3>
+                                <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white ring-4 ring-blue-50' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Comparatif {compareMode ? 'ON' : 'OFF'}</button>
+                            </div>
+
+                            {compareMode && (
+                                <div className="flex gap-2 mb-6 p-1.5 bg-slate-100 rounded-2xl">
+                                    {(['A', 'B'] as const).map(s => (
+                                        <button key={s} onClick={() => setActiveScenario(s)} className={`flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeScenario === s ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' : 'text-slate-400'}`}>Scénario {s}</button>
                                     ))}
+                                    <button onClick={copyAToB} title="Copier A vers B" className="p-2 bg-white rounded-xl text-slate-400 hover:text-blue-600 transition-colors shadow-sm"><Copy size={16} /></button>
                                 </div>
-                            </section>
+                            )}
 
-                            {/* Moved Configuration Section */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                    <div className="flex gap-4 mb-6">
-                                        <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 group relative">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
-                                                Profil Pris en Compte
-                                                <span className="cursor-help text-slate-300">?</span>
-                                            </p>
-                                            <div className="absolute left-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                                Ajuste la perspective du rapport selon si vous habitez le bien (Patrimoine) ou si vous le louez (Performance).
-                                            </div>
-                                            <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
-                                                <button
-                                                    onClick={() => setUserProfile('propriétaire')}
-                                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'propriétaire' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
-                                                >
-                                                    Patrimoine
-                                                </button>
-                                                <button
-                                                    onClick={() => setUserProfile('investisseur')}
-                                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'investisseur' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
-                                                >
-                                                    Performance
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 group relative">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
-                                                Revenus du Ménage
-                                                <span className="cursor-help text-slate-300">?</span>
-                                            </p>
-                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                                Les plafonds MaPrimeRénov' varient selon vos revenus. Choisissez votre catégorie pour une estimation précise des aides.
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-1 px-1">
-                                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
-                                                    <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100 group relative">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
-                                                Paramètres Investisseur
-                                                <span className="cursor-help text-blue-300">?</span>
-                                            </p>
-                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                                Activez pour calculer la rentabilité brute, le gain fiscal et le cashflow de votre projet locatif.
-                                            </div>
-                                            <button
-                                                onClick={() => setIsInvestor(!isInvestor)}
-                                                className={`w-12 h-6 rounded-full relative transition-colors ${isInvestor ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                            >
-                                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isInvestor ? 'translate-x-6' : ''}`} />
+                            <div className="grid grid-cols-1 gap-3 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                                {(activeScenario === 'A' ? actionsA : actionsB)
+                                    .filter(a => a.id !== 'roof' || property?.buildingType === 'MAISON')
+                                    .map(a => (
+                                        <div key={a.id} className="group relative">
+                                            <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/30' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 hover:bg-white'}`}>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <span className={`font-black text-sm uppercase tracking-tight ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                                    {a.suggested && <span className="text-[7px] font-black uppercase tracking-widest text-blue-500 bg-blue-100 px-2 py-0.5 rounded-md">Recommandation Prioritaire</span>}
+                                                </div>
+                                                <div className={`h-6 w-11 rounded-full shrink-0 relative transition-all ${a.active ? 'bg-blue-600 shadow-md shadow-blue-100' : 'bg-slate-300'}`}>
+                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${a.active ? 'left-6' : 'left-1'}`} />
+                                                </div>
                                             </button>
                                         </div>
+                                    ))}
+                            </div>
+                        </section>
 
-                                        {isInvestor && (
-                                            <div className="grid grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">TMI (%)</p>
-                                                    <select
-                                                        value={tmi}
-                                                        onChange={(e) => setTmi(Number(e.target.value))}
-                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
-                                                    >
-                                                        {[0, 11, 30, 41, 45].map(v => <option key={v} value={v}>{v}%</option>)}
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Prix Achat (€)</p>
-                                                    <input
-                                                        type="number"
-                                                        value={purchasePrice}
-                                                        onChange={(e) => setPurchasePrice(Number(e.target.value))}
-                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Loyer (€/mois)</p>
-                                                    <input
-                                                        type="number"
-                                                        value={monthlyRent}
-                                                        onChange={(e) => setMonthlyRent(Number(e.target.value))}
-                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
+                        <section className="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-2xl h-full flex flex-col border-r-[12px] border-blue-600/20">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="flex items-center gap-3 text-xl font-black text-blue-300 uppercase tracking-tight"><PieChart size={24} /> Déperditions Thermiques</h3>
+                                <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-[9px] font-bold text-slate-400 uppercase">Impact Direct</div>
+                            </div>
+                            <div className="space-y-6 flex-1">
+                                {heatLoss?.map(item => (
+                                    <div key={item.id} className="group cursor-default">
+                                        <div className="flex justify-between text-[11px] font-black uppercase tracking-wider mb-2 text-slate-300 group-hover:text-blue-300 transition-colors">
+                                            <span>{item.name}</span>
+                                            <span className="text-white bg-white/10 px-2 py-0.5 rounded-lg">{Math.round(item.val)}%</span>
+                                        </div>
+                                        <div className="h-3 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                                            <div className="h-full rounded-full transition-all duration-700 ease-out shadow-sm" style={{ width: `${item.val}%`, backgroundColor: item.color }} />
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
+                            </div>
+                            <div className="mt-8 pt-6 border-t border-white/5 text-[9px] font-medium text-slate-500 leading-relaxed italic">
+                                * Ces données proviennent du rapport ADEME et indiquent les zones de pertes de chaleur prioritaires avant travaux.
+                            </div>
+                        </section>
+                    </div>
 
-                                <div className="space-y-6">
-                                    <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group h-full">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                Bilan Financier Estimé
-                                                <span className="cursor-help text-slate-300">?</span>
+                    {/* 3. Bottom Row: Strategy & Financing */}
+                    <section className="rounded-[2.5rem] bg-white p-10 shadow-sm border-2 border-green-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full blur-[100px] -mr-32 -mt-32 opacity-50 transition-opacity" />
+                        <h3 className="text-2xl font-black text-slate-800 mb-10 uppercase tracking-tighter flex items-center gap-4">
+                            <div className="h-8 w-2 bg-green-500 rounded-full" />
+                            Plan de Financement Stratégique
+                        </h3>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
+                            <div className="lg:col-span-1 space-y-6">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Détails des Investissements</p>
+                                <div className="space-y-3">
+                                    {activeSim?.activeDetailedCosts.map((item: any, idx: number) => (
+                                        <div key={idx} className="flex justify-between items-center group">
+                                            <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition-colors">{item.name}{item.suggested && <span className="text-[8px] text-blue-500 ml-2 italic">*</span>}</span>
+                                            <span className="text-sm font-black text-slate-800">{Math.round(item.cost).toLocaleString()} €</span>
+                                        </div>
+                                    ))}
+                                    <div className="pt-4 mt-4 border-t-2 border-slate-100 flex justify-between items-end">
+                                        <span className="text-xs font-black uppercase text-slate-400">Total Investissement</span>
+                                        <span className="text-2xl font-black text-slate-900">{Math.round(activeSim?.cost || 0).toLocaleString()} €</span>
+                                    </div>
+                                    {activeSim?.hasITI && (
+                                        <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-2">
+                                            <p className="text-[9px] font-bold text-amber-800 leading-tight">
+                                                <b>Note ITI :</b> Prévoir une perte de ~1.5% de surface Carrez.
                                             </p>
-                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                                Récapitulatif de l'investissement après déduction des aides publiques et privées.
-                                            </div>
                                         </div>
+                                    )}
+                                </div>
+                            </div>
 
-                                        <div className="space-y-6">
-                                            <div>
-                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Investissement Brut (TTC)</div>
-                                                <div className="text-3xl font-black text-slate-800 tracking-tighter">{Math.round(activeSim?.cost || 0).toLocaleString()} €</div>
-                                            </div>
-
-                                            <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
-                                                <div className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Total des Aides Estimées</div>
-                                                <div className="text-3xl font-black text-green-700 tracking-tighter">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</div>
-                                                <p className="text-[8px] font-bold text-green-500 uppercase mt-1">MaPrimeRénov' + CEE inclus</p>
-                                            </div>
-
-                                            <div className="pt-4 border-t-2 border-slate-100">
-                                                <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Reste à Charge Final</div>
-                                                <div className="text-4xl font-black text-blue-700 tracking-tighter">{Math.round(activeSim?.rest || 0).toLocaleString()} €</div>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase mt-1 italic">Hors financements locaux ou prêts</p>
-                                            </div>
-                                        </div>
+                            <div className="lg:col-span-1 space-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest border-b border-green-100 pb-2">Aides & Subventions</p>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-slate-500">MaPrimeRénov'</span>
+                                        <span className="text-lg font-black text-green-600">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-slate-500">Primes CEE (Est.)</span>
+                                        <span className="text-lg font-black text-green-600">-{Math.round(activeSim?.ceeEst || 0).toLocaleString()} €</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-bold text-slate-500">Éco-PTZ (Capped)</span>
+                                        <span className="text-lg font-black text-blue-600">-{Math.round(activeSim?.ecoPTZAmount || 0).toLocaleString()} €</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Plan de Financement Stratégique</p>
-                                    <div className="space-y-4">
-                                        <div className="space-y-2 pb-4 border-b border-slate-50">
-                                            {activeSim?.activeDetailedCosts.map((item: any, idx: number) => (
-                                                <div key={idx} className="flex justify-between text-xs font-bold text-slate-600">
-                                                    <span>{item.name}{item.suggested && " (Conseillé)"}</span>
-                                                    <span>{Math.round(item.cost).toLocaleString()} €</span>
-                                                </div>
-                                            ))}
-                                            <div className="flex justify-between text-base font-black pt-2 text-slate-800">
-                                                <span>Investissement Brut</span>
-                                                <span>{Math.round(activeSim?.cost || 0).toLocaleString()} €</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2 pb-4 border-b border-slate-50">
-                                            <div className="flex justify-between text-xs font-bold">
-                                                <span className="text-slate-500">Subvention MaPrimeRénov'</span>
-                                                <span className="text-green-600">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
-                                            </div>
-                                            <div className="flex justify-between text-xs font-bold">
-                                                <span className="text-slate-500">Prime CEE (Estimation)</span>
-                                                <span className="text-green-600">-{Math.round(activeSim?.ceeEst || 0).toLocaleString()} €</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2 pb-4 border-b border-slate-50">
-                                            <div className="flex justify-between text-xs font-bold">
-                                                <span className="text-slate-500 flex items-center gap-1">Éco-PTZ (Bouquet {Math.round((activeSim?.ecoPTZLimit || 0) / 1000)}k)</span>
-                                                <span className="text-blue-600">-{Math.round(activeSim?.ecoPTZAmount || 0).toLocaleString()} €</span>
-                                            </div>
-                                            {(activeSim?.pamAmount || 0) > 0 && (
-                                                <div className="group relative">
-                                                    <div className="flex justify-between text-xs font-bold p-2 bg-blue-100/30 rounded-lg cursor-help">
-                                                        <span className="text-blue-700 flex items-center gap-1">Prêt Avance Mutation (PAM)</span>
-                                                        <span className="text-blue-700">-{Math.round(activeSim?.pamAmount || 0).toLocaleString()} €</span>
-                                                    </div>
-                                                    <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                                        Différé total pendant 10 ans. Intérêts cumulés proj. à 15 ans : {Math.round((activeSim?.pamDebt15y || 0) - (activeSim?.pamAmount || 0)).toLocaleString()} €.
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {isInvestor && (
-                                                <div className="flex justify-between text-xs font-bold">
-                                                    <span className="text-slate-500">Gain Fiscal (Déficit Foncier)</span>
-                                                    <span className="text-blue-600">-{Math.round(activeSim?.taxBenefit || 0).toLocaleString()} €</span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex justify-between text-2xl font-black pt-4">
-                                            <span className="text-slate-800">Cout Final</span>
-                                            <span className="text-slate-900">{Math.round(Math.max(0, (activeSim?.cost || 0) - (activeSim?.sub || 0) - (activeSim?.ceeEst || 0) - (activeSim?.ecoPTZAmount || 0))).toLocaleString()} €</span>
-                                        </div>
-                                        {activeSim?.hasITI && (
-                                            <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
-                                                <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                                                <p className="text-[10px] font-bold text-amber-800 leading-relaxed">
-                                                    <b>Attention :</b> L'isolation des murs par l'intérieur (ITI) fera perdre environ 1.5% de surface Carrez.
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-
+                            <div className="lg:col-span-1 flex flex-col justify-center items-center text-center p-8 bg-blue-600 rounded-[2.5rem] shadow-2xl shadow-blue-200">
+                                <p className="text-[11px] font-black text-blue-100 uppercase tracking-widest mb-4">Reste à Charge Final</p>
+                                <p className="text-5xl font-black text-white tracking-tighter mb-2">{Math.round(activeSim?.rest || 0).toLocaleString()} €</p>
+                                <p className="text-[9px] font-bold text-blue-200 uppercase tracking-tight italic opacity-80">Soit {Math.round((activeSim?.rest / activeSim?.cost) * 100)}% de l'investissement initial</p>
+                                <button className="mt-8 w-full py-4 bg-white text-blue-600 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-50 transition-all shadow-xl">Simuler Financier</button>
                             </div>
                         </div>
-                    )}
+                    </section>
                 </main>
             </div>
         </div>
