@@ -1,7 +1,7 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, PageBreak
 from reportlab.lib.units import cm
 from io import BytesIO
 
@@ -293,6 +293,27 @@ class PDFReportGenerator:
             ('BOTTOMPADDING', (0,0), (-1,0), 4),
         ]))
         elements.append(t_roi)
+
+        # --- FOCUS AIDES (New Page) ---
+        if data.get('focus_mpr') or data.get('focus_cee') or data.get('focus_eco_ptz'):
+            elements.append(PageBreak())
+            elements.append(Paragraph("DÉTAILS DES AIDES FINANCIÈRES", self.section_header_style))
+            elements.append(Spacer(1, 10))
+            
+            if data.get('focus_mpr'):
+                elements.append(Paragraph("FOCUS MAPRIMERÉNOV'", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#2563eb'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_mpr'), self.body_style))
+                elements.append(Spacer(1, 12))
+            
+            if data.get('focus_cee'):
+                elements.append(Paragraph("FOCUS PRIMES CEE", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#16a34a'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_cee'), self.body_style))
+                elements.append(Spacer(1, 12))
+                
+            if data.get('focus_eco_ptz'):
+                elements.append(Paragraph("FOCUS ÉCO-PRÊT À TAUX ZÉRO", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#3b82f6'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_eco_ptz'), self.body_style))
+                elements.append(Spacer(1, 12))
 
         # Footer Legal Note
         elements.append(Spacer(1, 40))

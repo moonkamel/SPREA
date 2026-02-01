@@ -470,6 +470,11 @@ export default function App() {
             return { name: a.name, cost: itemCost * indexRatio * coeffAccessibilite * coeffUrban, suggested: a.suggested };
         });
 
+        // Add logisticsCosts (parking) to detailed list if any
+        if (logisticsCosts > 0) {
+            activeDetailedCosts.push({ name: "Frais de Stationnement", cost: logisticsCosts, suggested: false });
+        }
+
         // Investor Metrics
         const taxBenefit = isInvestor ? rest * (tmi / 100 + 0.172) : 0;
         const totalInvestment = purchasePrice + cost;
@@ -568,7 +573,10 @@ export default function App() {
                     has_iti: activeSim.hasITI || false,
                     user_profile: isInvestor ? "investisseur" : "propriétaire",
                     building_type: property.buildingType || "Logement",
-                    construction_period: property.constructionPeriod || "N/A"
+                    construction_period: property.constructionPeriod || "N/A",
+                    focus_mpr: "MaPrimeRénov' est l’aide principale de l’État pour la rénovation énergétique. Pour être éligible, le logement doit être construit depuis plus de 15 ans. Le montant dépend du gain de classe DPE : une rénovation globale (au moins 2 classes) déclenche des forfaits bien plus élevés.",
+                    focus_cee: "Les Certificats d’Économie d’Énergie sont financés par les 'pollueurs-payeurs'. Cette prime est cumulable avec MaPrimeRénov'. Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.",
+                    focus_eco_ptz: "L’Éco-Prêt à Taux Zéro permet de financer les travaux sans avance de trésorerie. La durée de remboursement peut aller jusqu'à 20 ans pour les rénovations globales. Il est distribué par la plupart des banques françaises sur présentation des devis RGE."
                 })
             });
             if (!res.ok) {

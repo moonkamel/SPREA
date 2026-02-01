@@ -281,6 +281,9 @@ class ReportRequest(BaseModel):
     tax_benefit: Optional[float] = 0.0
     has_iti: Optional[bool] = False
     user_profile: Optional[str] = "propriétaire"
+    focus_mpr: Optional[str] = None
+    focus_cee: Optional[str] = None
+    focus_eco_ptz: Optional[str] = None
 
 @router.post("/generate-report")
 async def generate_report(data: ReportRequest):
