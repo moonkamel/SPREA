@@ -8,54 +8,60 @@ from io import BytesIO
 class PremiumPDFReport(SimpleDocTemplate):
     def __init__(self, filename, **kw):
         super().__init__(filename, **kw)
-        self.header_color = colors.HexColor('#0f172a')  # Slate 900
-        self.accent_color = colors.HexColor('#22c55e')  # Emerald 500
-        self.text_muted = colors.HexColor('#64748b')
+        self.header_color = colors.HexColor('#0A192F')  # Obsidian Navy
+        self.accent_color = colors.HexColor('#2ECC71')  # Electric Emerald
+        self.alert_red = colors.HexColor('#E74C3C')
+        self.text_muted = colors.HexColor('#7F8C8D')
 
     def draw_house_icon(self, x, y, size):
-        self.canv.setStrokeColor(colors.white)
-        self.canv.setLineWidth(1.5)
+        self.canv.setStrokeColor(self.accent_color)
+        self.canv.setLineWidth(2)
         p = self.canv.beginPath()
-        # Roof
-        p.moveTo(x, y + size * 0.6)
+        # Modern House Outline
+        p.moveTo(x, y + size * 0.4)
         p.lineTo(x + size / 2, y + size)
-        p.lineTo(x + size, y + size * 0.6)
-        # Walls
-        p.moveTo(x + size * 0.15, y + size * 0.6)
-        p.lineTo(x + size * 0.15, y)
-        p.lineTo(x + size * 0.85, y)
-        p.lineTo(x + size * 0.85, y + size * 0.6)
+        p.lineTo(x + size, y + size * 0.4)
+        p.moveTo(x + size * 0.2, y + size * 0.4)
+        p.lineTo(x + size * 0.2, y)
+        p.lineTo(x + size * 0.8, y)
+        p.lineTo(x + size * 0.8, y + size * 0.4)
+        # Arrow part
+        p.moveTo(x + size * 0.5, y + size * 0.2)
+        p.lineTo(x + size * 0.5, y + size * 0.6)
+        p.lineTo(x + size * 0.4, y + size * 0.5)
+        p.moveTo(x + size * 0.5, y + size * 0.6)
+        p.lineTo(x + size * 0.6, y + size * 0.5)
         self.canv.drawPath(p, stroke=1, fill=0)
 
     def beforePage(self):
         self.canv.saveState()
         # Top Bar (Header Background)
         self.canv.setFillColor(self.header_color)
-        self.canv.rect(0, A4[1]-2.5*cm, A4[0], 2.5*cm, fill=1, stroke=0)
+        self.canv.rect(0, A4[1]-2.8*cm, A4[0], 2.8*cm, fill=1, stroke=0)
         
-        # Decorative dynamic shape (emerald triangle)
+        # Decorative emerald triangle accent
         self.canv.setFillColor(self.accent_color)
         p = self.canv.beginPath()
         p.moveTo(A4[0], A4[1])
-        p.lineTo(A4[0], A4[1]-2.5*cm)
-        p.lineTo(A4[0]-4*cm, A4[1])
+        p.lineTo(A4[0], A4[1]-2.8*cm)
+        p.lineTo(A4[0]-5*cm, A4[1])
         self.canv.drawPath(p, fill=1, stroke=0)
 
-        # House Icon
-        self.draw_house_icon(A4[0]-1.8*cm, A4[1]-1.5*cm, 0.8*cm)
+        # House Icon with Arrow
+        self.draw_house_icon(A4[0]-1.8*cm, A4[1]-1.6*cm, 0.8*cm)
         
         # Logo Text in Header
         self.canv.setFillColor(colors.white)
-        self.canv.setFont('Helvetica-Bold', 22)
-        self.canv.drawString(1.5*cm, A4[1]-1.2*cm, "SPREA")
-        self.canv.setFont('Helvetica-Bold', 8)
-        self.canv.setFillColor(colors.HexColor('#94a3b8'))
-        self.canv.drawString(1.5*cm, A4[1]-1.65*cm, "INTELLIGENT PROPERTY REPORT")
+        self.canv.setFont('Helvetica-Bold', 26)
+        self.canv.drawString(1.5*cm, A4[1]-1.3*cm, "SPREA")
+        self.canv.setFont('Helvetica-Bold', 9)
+        self.canv.setFillColor(colors.HexColor('#7F8C8D'))
+        self.canv.drawString(1.5*cm, A4[1]-1.8*cm, "INTELLIGENT PROPERTY REPORT")
         
         # Bottom branding
         self.canv.setFont('Helvetica-Bold', 7)
         self.canv.setFillColor(colors.HexColor('#94a3b8'))
-        self.canv.drawString(1.5*cm, 0.8*cm, "S P R E A   |   A N A L Y S E   S T R A T É G I Q U E")
+        self.canv.drawString(1.5*cm, 0.8*cm, "S P R E A   |   A N A L Y S E   F I N T E C H")
         self.canv.drawRightString(A4[0]-1.5*cm, 0.8*cm, f"PAGE {self.canv.getPageNumber()}")
         
         self.canv.restoreState()
@@ -63,301 +69,186 @@ class PremiumPDFReport(SimpleDocTemplate):
 class PDFReportGenerator:
     def __init__(self):
         self.styles = getSampleStyleSheet()
-        self.title_style = ParagraphStyle(
-            'TitleStyle',
-            parent=self.styles['Heading1'],
-            fontSize=18,
-            textColor=colors.HexColor('#1e293b'),
-            spaceAfter=2,
-            fontName='Helvetica-Bold',
-            alignment=0,
-            leading=22
-        )
+        self.colors = {
+            'navy': colors.HexColor('#0A192F'),
+            'emerald': colors.HexColor('#2ECC71'),
+            'white': colors.white,
+            'slate': colors.HexColor('#7F8C8D'),
+            'red': colors.HexColor('#E74C3C'),
+            'pale_red': colors.HexColor('#fee2e2'),
+            'glass_bg': colors.HexColor('#f8fafc'),
+            'blue_accent': colors.HexColor('#3B82F6')
+        }
         self.section_header_style = ParagraphStyle(
             'SectionHeader',
-            parent=self.styles['Heading2'],
-            fontSize=14,
-            textColor=colors.HexColor('#0f172a'), # Slate 900
-            spaceBefore=14,
-            spaceAfter=8,
+            fontSize=16,
+            textColor=self.colors['navy'],
+            spaceBefore=20,
+            spaceAfter=12,
             fontName='Helvetica-Bold',
-            borderPadding=(0, 0, 4, 0),
             alignment=0,
-            textTransform='uppercase'
+            textTransform='uppercase',
+            letterSpacing=1.5
         )
         self.body_style = ParagraphStyle(
             'BodyStyle',
-            parent=self.styles['BodyText'],
-            fontSize=9,
-            textColor=colors.HexColor('#334155'), # Slate 700
-            leading=12
+            fontSize=10,
+            textColor=self.colors['navy'],
+            leading=14
         )
         self.card_label_style = ParagraphStyle(
             'CardLabel',
-            fontSize=7,
+            fontSize=8,
             fontName='Helvetica-Bold',
-            textColor=colors.HexColor('#64748b'),
+            textColor=self.colors['slate'],
             textTransform='uppercase',
             alignment=0
         )
         self.card_value_style = ParagraphStyle(
             'CardValue',
-            fontSize=16,
+            fontSize=18,
             fontName='Helvetica-Bold',
-            textColor=colors.HexColor('#0f172a'),
+            textColor=self.colors['navy'],
             alignment=0
         )
-        self.metric_label_style = ParagraphStyle(
-            'MetricLabel',
-            parent=self.body_style,
-            fontSize=8,
+        self.enormous_gain_style = ParagraphStyle(
+            'EnormousGain',
+            fontSize=34,
             fontName='Helvetica-Bold',
-            textColor=colors.HexColor('#94a3b8'),
-            textTransform='uppercase',
-            letterSpacing=0.5
+            textColor=self.colors['emerald'],
+            alignment=0
         )
-        self.badge_style = ParagraphStyle(
-            'BadgeText',
-            parent=self.body_style,
-            fontSize=32,
+        self.hero_badge_style = ParagraphStyle(
+            'HeroBadgeText',
+            fontSize=42,
             textColor=colors.white,
             fontName='Helvetica-Bold',
-            alignment=1,
-            leading=34
-        )
-        self.net_cost_style = ParagraphStyle(
-            'NetCostStyle',
-            parent=self.body_style,
-            fontSize=22,
-            textColor=colors.HexColor('#2563eb'),
-            fontName='Helvetica-Bold',
-            alignment=2
+            alignment=1
         )
 
     def get_dpe_color(self, label):
         colors_map = {
-            'A': '#22c55e', 'B': '#84cc16', 'C': '#bef264', 'D': '#facc15', 
+            'A': '#22c55e', 'B': '#84cc16', 'C': '#2ECC71', 'D': '#facc15', 
             'E': '#fb923c', 'F': '#f87171', 'G': '#dc2626',
         }
         return colors.HexColor(colors_map.get(str(label).upper(), '#cbd5e1'))
 
-    def create_metric_card(self, label, value, color_hex='#f8fafc'):
-        """Creates a modern card widget for a single metric."""
+    def create_glass_card(self, label, value):
         data = [[Paragraph(label, self.card_label_style)], [Paragraph(value, self.card_value_style)]]
-        t = Table(data, colWidths=[4.2*cm])
+        t = Table(data, colWidths=[4.8*cm])
         t.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(color_hex)),
-            ('ROUNDEDCORNERS', [8, 8, 8, 8]),
-            ('TOPPADDING', (0,0), (-1,-1), 8),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-            ('LEFTPADDING', (0,0), (-1,-1), 12),
+            ('BACKGROUND', (0,0), (-1,-1), self.colors['glass_bg']),
+            ('ROUNDEDCORNERS', [12, 12, 12, 12]),
+            ('TOPPADDING', (0,0), (-1,-1), 12),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 12),
+            ('LEFTPADDING', (0,0), (-1,-1), 15),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
         ]))
         return t
 
-    def create_hero_dpe_badge(self, label):
-        """Creates a large, prominent DPE badge."""
-        color = self.get_dpe_color(label)
-        data = [[Paragraph(str(label).upper(), self.badge_style)]]
-        t = Table(data, colWidths=[2.2*cm], rowHeights=[2.2*cm])
-        t.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), color),
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('ROUNDEDCORNERS', [10, 10, 10, 10]),
-        ]))
-        return t
-
-    def create_energy_bar(self, current_val, target_val, max_val=500):
-        """Creates a visual bar chart comparison for energy consumption."""
-        bar_width = 6*cm
+    def create_energy_visualization(self, current_val, target_val, max_val=500):
+        bar_width = 8*cm
         current_w = (min(current_val, max_val) / max_val) * bar_width
         target_w = (min(target_val, max_val) / max_val) * bar_width
         
         def bar(w, color):
             return Table([['']], colWidths=[w], rowHeights=[0.4*cm], style=[
                 ('BACKGROUND', (0,0), (-1,-1), color),
-                ('ROUNDEDCORNERS', [2, 2, 2, 2]),
+                ('ROUNDEDCORNERS', [4, 4, 4, 4]),
             ])
 
         data = [
-            [Paragraph("CONSOMMATION ACTUELLE", self.card_label_style), bar(current_w, colors.HexColor('#ef4444')), Paragraph(f"<b>{current_val:.0f}</b>", self.body_style)],
-            [Paragraph("APRÈS TRAVAUX", self.card_label_style), bar(target_w, colors.HexColor('#22c55e')), Paragraph(f"<b>{target_val:.0f}</b>", self.body_style)]
+            [Paragraph("CONSOMMATION ACTUELLE", self.card_label_style), bar(current_w, self.colors['red']), Paragraph(f"<b>{current_val:.0f}</b>", self.body_style)],
+            [Paragraph("APRÈS TRAVAUX", self.card_label_style), bar(target_w, self.colors['emerald']), Paragraph(f"<b>{target_val:.0f}</b>", self.body_style)]
         ]
-        t = Table(data, colWidths=[3.5*cm, 6*cm, 1.5*cm])
-        t.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ]))
+        t = Table(data, colWidths=[4*cm, 8*cm, 1.5*cm])
+        t.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('BOTTOMPADDING', (0,0), (-1,-1), 6)]))
         return t
 
     def generate(self, data: dict) -> bytes:
         buffer = BytesIO()
-        doc = PremiumPDFReport(
-            buffer, 
-            pagesize=A4, 
-            rightMargin=1.5*cm, 
-            leftMargin=1.5*cm, 
-            topMargin=3.0*cm, 
-            bottomMargin=2*cm
-        )
+        doc = PremiumPDFReport(buffer, pagesize=A4, rightMargin=1.5*cm, leftMargin=1.5*cm, topMargin=3.2*cm, bottomMargin=2*cm)
         elements = []
 
-        # --- HERO SECTION ---
-        elements.append(Spacer(1, -2.2*cm)) # Move into the header area
-        elements.append(Paragraph(data.get('address', 'ADRESSE DU BIEN'), self.title_style))
-        elements.append(Spacer(1, 1.5*cm))
+        # --- HERO ADDRESS ---
+        elements.append(Spacer(1, -2.2*cm))
+        elements.append(Paragraph(data.get('address', '').upper(), ParagraphStyle('Addr', fontSize=20, textColor=colors.white, fontName='Helvetica-Bold')))
+        elements.append(Spacer(1, 1.8*cm))
         
-        # Metric Cards Row 1
-        card_row1 = [
-            [
-                self.create_metric_card("Surface", f"{data.get('surface', 0)} m²"),
-                self.create_metric_card("Type", data.get('building_type', 'Logement')),
-                self.create_metric_card("Construction", data.get('construction_period') or 'N/A')
-            ]
-        ]
-        t_cards1 = Table(card_row1, colWidths=[4.8*cm, 4.8*cm, 4.8*cm])
-        elements.append(t_cards1)
-
+        # Section 1: Property Snapshot
+        cards = [[self.create_glass_card("Surface", f"{data.get('surface', 0)} m²"), 
+                  self.create_glass_card("Type", data.get('building_type', 'Logement')), 
+                  self.create_glass_card("Construction", data.get('construction_period') or 'N/A')]]
+        elements.append(Table(cards, colWidths=[5.4*cm]*3))
+        
         if data.get('ban_date'):
-            elements.append(Spacer(1, 10))
+            elements.append(Spacer(1, 15))
             elements.append(Paragraph(
                 f"<b>ALERTE LOCATION :</b> Interdit à la mise en location dès le <u>{data.get('ban_date')}</u>", 
-                ParagraphStyle('Alert', parent=self.body_style, textColor=colors.HexColor('#b91c1c'), fontSize=9.5, fontName='Helvetica-Bold', backColor=colors.HexColor('#fee2e2'), borderPadding=8, borderRadius=6)
+                ParagraphStyle('AlertBanner', fontSize=11, textColor=colors.white, fontName='Helvetica-Bold', alignment=1, backColor=self.colors['red'], borderPadding=12, borderRadius=8)
             ))
-        
-        elements.append(Spacer(1, 10))
 
-        # --- ENERGY PERFORMANCE (HERO) ---
+        # Section 2: Energy Performance Target
         elements.append(Paragraph("Objectif Performance Énergétique", self.section_header_style))
         
-        hero_data = [
-            [
-                self.create_hero_dpe_badge(data.get('new_label', 'G')),
-                [
-                    Paragraph("VALEUR ESTIMÉE DU GAIN", self.metric_label_style),
-                    Paragraph(f"<font size='24' color='#22c55e'><b>+{data.get('latent_gain', 0):,.0f} €</b></font>", self.body_style),
-                    Spacer(1, 4),
-                    Paragraph(f"Économie : <b>{round(data.get('annual_savings', 0)):,.0f}€/an</b>", self.body_style),
-                    Spacer(1, 10),
-                    self.create_energy_bar(data.get('initial_cep', 400), data.get('new_cep', 100))
-                ]
-            ]
-        ]
-        t_hero = Table(hero_data, colWidths=[3*cm, 12*cm])
-        t_hero.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('LEFTPADDING', (1,0), (1,0), 20),
-        ]))
-        elements.append(t_hero)
+        # Multi-stage SVG-like Badge
+        label = data.get('new_label', 'G')
+        color = self.get_dpe_color(label)
+        dpe_badge = Table([[Paragraph(str(label), self.hero_badge_style)]], colWidths=[2.8*cm], rowHeights=[2.8*cm])
+        dpe_badge.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), color), ('ROUNDEDCORNERS', [15, 15, 15, 15]), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('VALIGN', (0,0), (-1,-1), 'MIDDLE')]))
         
-        # --- IA NARRATIVE ---
-        if data.get('ai_narrative'):
-            elements.append(Paragraph("Analyse de l'Expert SPREA", self.section_header_style))
-            raw_text = data.get('ai_narrative')
-            formatted_text = raw_text.replace("L'Analyse de l'Expert", "<b>L'Analyse</b>").replace("La Stratégie Conseillée", "<b>La Stratégie</b>")
-            elements.append(Paragraph(formatted_text, ParagraphStyle('AIStyle', parent=self.body_style, leading=13, fontSize=9.5, backColor=colors.HexColor('#f1f5f9'), borderPadding=10, borderRadius=6)))
+        hero_data = [[dpe_badge, [
+            Paragraph("VALEUR ESTIMÉE DU GAIN", self.card_label_style),
+            Paragraph(f"+{data.get('latent_gain', 0):,.0f} €", self.enormous_gain_style),
+            Paragraph(f"Économie : <b>{round(data.get('annual_savings', 0)):,.0f}€/an</b>", self.body_style),
+            Spacer(1, 12),
+            self.create_energy_visualization(data.get('initial_cep', 400), data.get('new_cep', 100))
+        ]]]
+        elements.append(Table(hero_data, colWidths=[4*cm, 13*cm], style=[('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (1,0), (1,0), 25)]))
 
-        # --- PLAN DE FINANCEMENT ---
-        elements.append(Paragraph("Plan de Financement", self.section_header_style))
-        
+        # Section 3: IA Analysis
+        if data.get('ai_narrative') and "Erreur" not in data.get('ai_narrative'):
+            elements.append(Paragraph("Analyse Stratégique SPREA", self.section_header_style))
+            elements.append(Paragraph(data.get('ai_narrative'), ParagraphStyle('AI', leading=14, fontSize=10, backColor=colors.HexColor('#f0f9ff'), borderPadding=15, borderRadius=10)))
+
+        # Section 4: Key Metrics
+        elements.append(Spacer(1, 15))
+        metrics = [[
+            self.create_glass_card("Rentabilité Brut", f"{data.get('yield_brut', 0):.1f} %"),
+            self.create_glass_card("Payback Travaux", f"{data.get('roi_years', 0)} ans"),
+            self.create_glass_card("DPE ADEME", data.get('ademe_dpe_number', 'N/A')[:10])
+        ]]
+        elements.append(Table(metrics, colWidths=[5.4*cm]*3))
+
+        # Section 5: Financial Breakdown
+        elements.append(Paragraph("Plan de Financement Global", self.section_header_style))
         fin_rows = []
-        
-        # Purchase Price (Investor view)
         if data.get('purchase_price', 0) > 0:
-            fin_rows.append([Paragraph("Prix d'Acquisition du bien", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} €</b>", self.body_style)])
-
-        # Detailed Works
-        detailed = data.get('detailed_costs', [])
-        for item in detailed:
-            name = item.get('name', 'Travaux')
-            if item.get('suggested'): name = f"<b>{name}</b> <font color='#2563eb' size='7'>(Conseillé)</font>"
-            fin_rows.append([Paragraph(name, self.body_style), Paragraph(f"<b>{item.get('cost', 0):,.0f} €</b>", self.body_style)])
-            
-        fin_rows.append([HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9')), HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9'))])
+            fin_rows.append([Paragraph("<b>PRIX D'ACQUISITION DU BIEN</b>", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} €</b>", self.body_style)])
+        
+        for item in data.get('detailed_costs', []):
+            fin_rows.append([Paragraph(item.get('name', 'Travaux'), self.body_style), Paragraph(f"{item.get('cost', 0):,.0f} €", self.body_style)])
+        
+        fin_rows.append([HRFlowable(width="100%", thickness=1, color=self.colors['navy']), HRFlowable(width="100%", thickness=1, color=self.colors['navy'])])
         fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} €</b>", self.body_style)])
         
         fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
-        fin_rows.append([Paragraph("<b>AIDES & SUBVENTIONS</b>", self.metric_label_style), ""])
-        fin_rows.append([Paragraph("MaPrimeRénov'", self.body_style), Paragraph(f"<font color='#22c55e'>- {data.get('subsidies', 0):,.0f} €</font>", self.body_style)])
-        
+        fin_rows.append([Paragraph("AIDES & DÉDUCTIONS ESTIMÉES", self.card_label_style), ""])
+        fin_rows.append([Paragraph("MaPrimeRénov'", self.body_style), Paragraph(f"<font color='#2ECC71'>- {data.get('subsidies', 0):,.0f} €</font>", self.body_style)])
         if data.get('cee_est'):
-            fin_rows.append([Paragraph("Primes CEE", self.body_style), Paragraph(f"<font color='#64748b'><i>(À percevoir)</i> {data.get('cee_est', 0):,.0f} €</font>", self.body_style)])
+            fin_rows.append([Paragraph("Primes CEE (à percevoir)", self.body_style), Paragraph(f"{data.get('cee_est', 0):,.0f} €", self.body_style)])
         
-        if data.get('tax_benefit'):
-            fin_rows.append([Paragraph("Avantage Fiscal", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} €</font>", self.body_style)])
-
-        t_fin = Table(fin_rows, colWidths=[12.5*cm, 5.5*cm])
-        t_fin.setStyle(TableStyle([
-            ('LINEBELOW', (0,0), (-1,-2), 0.1, colors.HexColor('#f1f5f9')),
-            ('ALIGN', (1,0), (1,-1), 'RIGHT'),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-            ('TOPPADDING', (0,0), (-1,-1), 5),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
-        ]))
+        t_fin = Table(fin_rows, colWidths=[12*cm, 5*cm])
+        t_fin.setStyle(TableStyle([('ALIGN', (1,0), (1,-1), 'RIGHT'), ('BOTTOMPADDING', (0,0), (-1,-1), 6), ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#fcfcfc')])]))
         elements.append(t_fin)
         
-        # Reste à Charge (Highlight Card)
-        elements.append(Spacer(1, 8))
-        net_table = [[
-            Paragraph("RESTE À CHARGE FINAL", self.metric_label_style), 
-            Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", self.net_cost_style)
-        ]]
-        t_net = Table(net_table, colWidths=[10*cm, 8*cm])
-        t_net.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#eff6ff')),
-            ('ALIGN', (1,0), (1,-1), 'RIGHT'),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-            ('TOPPADDING', (0,0), (-1,-1), 12),
-            ('LEFTPADDING', (0,0), (-1,-1), 15),
-            ('RIGHTPADDING', (0,0), (-1,-1), 15),
-            ('ROUNDEDCORNERS', [8, 8, 8, 8]),
-        ]))
-        elements.append(t_net)
-
-        # Performance Metrics Row
+        # Result Box
         elements.append(Spacer(1, 10))
-        roi_row = [
-            [
-                self.create_metric_card("Rentabilité Brut", f"{data.get('yield_brut', 0):.1f} %", '#f0fdf4'),
-                self.create_metric_card("Payback Travaux", f"{data.get('roi_years', 0)} ans", '#f0f9ff'),
-                self.create_metric_card("DPE ADEME", data.get('ademe_dpe_number', 'N/A')[:10], '#f8fafc')
-            ]
-        ]
-        t_roi = Table(roi_row, colWidths=[4.8*cm, 4.8*cm, 4.8*cm])
-        elements.append(t_roi)
-
-        # --- FOCUS AIDES (New Page) ---
-        if data.get('focus_mpr') or data.get('focus_cee') or data.get('focus_eco_ptz'):
-            elements.append(PageBreak())
-            elements.append(Paragraph("DÉTAILS DES AIDES FINANCIÈRES", self.section_header_style))
-            elements.append(Spacer(1, 10))
-            
-            if data.get('focus_mpr'):
-                elements.append(Paragraph("FOCUS MAPRIMERÉNOV'", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#2563eb'), spaceAfter=5)))
-                elements.append(Paragraph(data.get('focus_mpr'), self.body_style))
-                elements.append(Spacer(1, 12))
-            
-            if data.get('focus_cee'):
-                elements.append(Paragraph("FOCUS PRIMES CEE", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#16a34a'), spaceAfter=5)))
-                elements.append(Paragraph(data.get('focus_cee'), self.body_style))
-                elements.append(Spacer(1, 12))
-                
-            if data.get('focus_eco_ptz'):
-                elements.append(Paragraph("FOCUS ÉCO-PRÊT À TAUX ZÉRO", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#3b82f6'), spaceAfter=5)))
-                elements.append(Paragraph(data.get('focus_eco_ptz'), self.body_style))
-                elements.append(Spacer(1, 12))
-
-        # Footer Legal Note (if it fits)
-        elements.append(Spacer(1, 15))
-        elements.append(HRFlowable(width="30%", thickness=0.5, color=colors.HexColor('#94a3b8'), hAlign='CENTER'))
-        elements.append(Spacer(1, 5))
-        elements.append(Paragraph(
-            "Ce document est une simulation basée sur la méthode 3CL-2021 et les prix marchés moyens 2024-2025. <br/>"
-            "Il ne remplace pas un audit énergétique réglementaire ou un devis d'artisan certifié RGE.",
-            ParagraphStyle('Legal', parent=self.body_style, fontSize=7, alignment=1, textColor=colors.HexColor('#64748b'), leading=9)
-        ))
+        res_box = [[Paragraph("RESTE À CHARGE FINAL", ParagraphStyle('RL', fontSize=10, textColor=colors.white, fontName='Helvetica-Bold')), 
+                    Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", ParagraphStyle('RV', fontSize=24, textColor=colors.white, fontName='Helvetica-Bold', alignment=2))]]
+        t_res = Table(res_box, colWidths=[10*cm, 7*cm])
+        t_res.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), self.colors['blue_accent']), ('ROUNDEDCORNERS', [10, 10, 10, 10]), ('TOPPADDING', (0,0), (-1,-1), 15), ('BOTTOMPADDING', (0,0), (-1,-1), 15), ('LEFTPADDING', (0,0), (-1,-1), 20), ('RIGHTPADDING', (0,0), (-1,-1), 20)]))
+        elements.append(t_res)
 
         doc.build(elements)
         buffer.seek(0)
