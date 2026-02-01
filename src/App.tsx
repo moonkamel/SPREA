@@ -261,6 +261,13 @@ export default function App() {
         setMonthlyRent(800);
         setPurchasePrice(p.surface * 4200);
 
+        // Reset Precision/Urban parameters
+        setNbEtages(0);
+        setHasAscenseur(true);
+        setIsUrbanDense(false);
+        setParkingCost(35.0);
+        setChantierDuration(5);
+
         const year = p.year || (p.constructionPeriod?.includes('1948') ? 1940 : 1970);
         const inferred = { ...p };
         if (!p.wallMaterials || p.wallMaterials === "Inconnu") {
@@ -442,7 +449,12 @@ export default function App() {
         const current = getInfos(property.initialCep, property.gesValue || 20);
         const target = getInfos(newCep, newGes);
         const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
-        const rate = steps >= 2 ? { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 }[incomeLevel] : 0.25;
+
+        // Refined MPR logic: Global renovation (2+ steps) vs Gestures (1 step)
+        const globalRates: Record<IncomeLevel, number> = { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 };
+        const gestureRates: Record<IncomeLevel, number> = { tres_modeste: 0.5, modeste: 0.35, intermediaire: 0.2, superieur: 0.05 };
+
+        const rate = steps >= 2 ? globalRates[incomeLevel] : gestureRates[incomeLevel];
         const sub = cost * rate;
         const rest = cost - sub;
 
