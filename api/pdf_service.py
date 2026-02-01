@@ -56,8 +56,8 @@ class PDFReportGenerator:
             parent=self.styles['Heading2'],
             fontSize=16,
             textColor=colors.HexColor('#1e293b'), # Slate 800
-            spaceBefore=20,
-            spaceAfter=12,
+            spaceBefore=12,
+            spaceAfter=8,
             fontName='Helvetica-Bold',
             borderPadding=(0, 0, 8, 0),
             alignment=0
@@ -163,8 +163,8 @@ class PDFReportGenerator:
                 ParagraphStyle('Alert', parent=self.body_style, textColor=colors.HexColor('#dc2626'), fontSize=9, fontName='Helvetica-Bold')
             ))
         
-        elements.append(Spacer(1, 10))
-        elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#e2e8f0'), spaceBefore=10, spaceAfter=10))
+        elements.append(Spacer(1, 5))
+        elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#e2e8f0'), spaceBefore=5, spaceAfter=5))
 
         # --- IA NARRATIVE SECTION ---
         if data.get('ai_narrative'):
@@ -174,8 +174,8 @@ class PDFReportGenerator:
             # Simple bolding for common headers from prompt
             formatted_text = raw_text.replace("L'Analyse de l'Expert", "<b>L'Analyse de l'Expert</b>").replace("La Stratégie Conseillée", "<b>La Stratégie Conseillée</b>")
             
-            elements.append(Paragraph(formatted_text, ParagraphStyle('AIStyle', parent=self.body_style, leading=16, fontSize=11, backColor=colors.HexColor('#f8fafc'), borderPadding=10, borderRadius=8)))
-            elements.append(Spacer(1, 15))
+            elements.append(Paragraph(formatted_text, ParagraphStyle('AIStyle', parent=self.body_style, leading=14, fontSize=10, backColor=colors.HexColor('#f8fafc'), borderPadding=8, borderRadius=8)))
+            elements.append(Spacer(1, 10))
 
         # --- OBJECTIFS ÉNERGÉTIQUES ---
         elements.append(Paragraph("OBJECTIFS ÉNERGÉTIQUES", self.section_header_style))
@@ -233,36 +233,43 @@ class PDFReportGenerator:
         fin_rows.append([HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9')), HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9'))])
         fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} €</b>", self.body_style)])
         
+        # Grants vs Financing Section in Table
+        fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
+        fin_rows.append([Paragraph("<b>AIDES & SUBVENTIONS (DÉDUITES)</b>", self.metric_label_style), ""])
         fin_rows.append([Paragraph("MaPrimeRénov' (Estimation)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('subsidies', 0):,.0f} €</font>", self.body_style)])
-        if data.get('cee_est'):
-            fin_rows.append([Paragraph("Certificats Économie Énergie (CEE)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('cee_est', 0):,.0f} €</font>", self.body_style)])
-        if data.get('tax_benefit'):
-            fin_rows.append([Paragraph("Gain Fiscal (Déficit Foncier)", self.body_style), Paragraph(f"<font color='#2563eb'>- {data.get('tax_benefit', 0):,.0f} €</font>", self.body_style)])
         
-        # Financing
+        # We don't subtract CEE from rest_to_pay to match UI, but we list it
+        if data.get('cee_est'):
+            fin_rows.append([Paragraph("Primes CEE (Estimation)", self.body_style), Paragraph(f"<font color='#64748b'><i>(À percevoir)</i> {data.get('cee_est', 0):,.0f} €</font>", self.body_style)])
+        
+        if data.get('tax_benefit'):
+            fin_rows.append([Paragraph("Avantage Fiscal (Déficit Foncier)", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} €</font>", self.body_style)])
+
         if data.get('eco_ptz_amount'):
-            fin_rows.append([Paragraph("Éco-Prêt à Taux Zéro (Eco-PTZ)", self.body_style), Paragraph(f"- {data.get('eco_ptz_amount', 0):,.0f} €", self.body_style)])
+            fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
+            fin_rows.append([Paragraph("<b>FINANCEMENT (À REMBOURSER)</b>", self.metric_label_style), ""])
+            fin_rows.append([Paragraph("Éco-Prêt à Taux Zéro (Eco-PTZ)", self.body_style), Paragraph(f"{data.get('eco_ptz_amount', 0):,.0f} €", self.body_style)])
 
         t_fin = Table(fin_rows, colWidths=[13*cm, 5*cm])
         t_fin.setStyle(TableStyle([
             ('LINEBELOW', (0,0), (-1,-2), 0.1, colors.HexColor('#f1f5f9')),
             ('ALIGN', (1,0), (1,-1), 'RIGHT'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
         ]))
         elements.append(t_fin)
         
         # Net Charge Highlight
-        elements.append(Spacer(1, 10))
-        net_table = [[Paragraph("RESTE À CHARGE NET", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", self.net_cost_style)]]
+        elements.append(Spacer(1, 5))
+        net_table = [[Paragraph("RESTE À CHARGE FINAL", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", self.net_cost_style)]]
         t_net = Table(net_table, colWidths=[11*cm, 7*cm])
         t_net.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#eff6ff')),
             ('ALIGN', (1,0), (1,-1), 'RIGHT'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 14),
-            ('TOPPADDING', (0,0), (-1,-1), 14),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('TOPPADDING', (0,0), (-1,-1), 10),
             ('LINEBELOW', (0,0), (-1,-1), 2, colors.HexColor('#2563eb')),
         ]))
         elements.append(t_net)
@@ -315,8 +322,8 @@ class PDFReportGenerator:
                 elements.append(Paragraph(data.get('focus_eco_ptz'), self.body_style))
                 elements.append(Spacer(1, 12))
 
-        # Footer Legal Note
-        elements.append(Spacer(1, 40))
+        # Footer Legal Note (if it fits)
+        elements.append(Spacer(1, 15))
         elements.append(HRFlowable(width="30%", thickness=0.5, color=colors.HexColor('#94a3b8'), hAlign='CENTER'))
         elements.append(Spacer(1, 5))
         elements.append(Paragraph(

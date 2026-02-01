@@ -557,7 +557,7 @@ export default function App() {
                     new_ges: activeSim.newGes || 0,
                     total_cost: activeSim.cost || 0,
                     subsidies: activeSim.sub || 0,
-                    rest_to_pay: Math.max(0, (activeSim.cost || 0) - (activeSim.sub || 0) - (activeSim.ceeEst || 0) - (activeSim.ecoPTZAmount || 0)),
+                    rest_to_pay: activeSim.rest || 0,
                     latent_gain: activeSim.gain || 0,
                     annual_savings: activeSim.savings || 0,
                     roi_years: Math.round(activeSim.roi || 0),
@@ -662,6 +662,7 @@ export default function App() {
                                     {res.address}
                                     {res.city && <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg">{res.city}</span>}
                                 </p>
+                                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5">DPE N° {res.ademe_dpe_number}</p>
                                 <div className="flex items-center gap-4 mt-2">
                                     <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
                                         {res.buildingType?.toLowerCase().includes('appartement') ? <Building size={12} /> : <Home size={12} />}
