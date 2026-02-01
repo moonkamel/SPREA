@@ -47,10 +47,10 @@ class PremiumPDFReport(SimpleDocTemplate):
         # Logo Text in Header
         self.canv.setFillColor(colors.white)
         self.canv.setFont('Helvetica-Bold', 22)
-        self.canv.drawString(1.5*cm, A4[1]-1.4*cm, "SPREA")
+        self.canv.drawString(1.5*cm, A4[1]-1.2*cm, "SPREA")
         self.canv.setFont('Helvetica-Bold', 8)
         self.canv.setFillColor(colors.HexColor('#94a3b8'))
-        self.canv.drawString(1.5*cm, A4[1]-1.85*cm, "INTELLIGENT PROPERTY REPORT")
+        self.canv.drawString(1.5*cm, A4[1]-1.65*cm, "INTELLIGENT PROPERTY REPORT")
         
         # Bottom branding
         self.canv.setFont('Helvetica-Bold', 7)
@@ -66,12 +66,12 @@ class PDFReportGenerator:
         self.title_style = ParagraphStyle(
             'TitleStyle',
             parent=self.styles['Heading1'],
-            fontSize=22,
-            textColor=colors.white,
+            fontSize=18,
+            textColor=colors.HexColor('#1e293b'),
             spaceAfter=2,
             fontName='Helvetica-Bold',
             alignment=0,
-            leading=26
+            leading=22
         )
         self.section_header_style = ParagraphStyle(
             'SectionHeader',
@@ -136,8 +136,8 @@ class PDFReportGenerator:
 
     def get_dpe_color(self, label):
         colors_map = {
-            'A': '#22c55e', 'B': '#84cc16', 'C': '#eab308', 'D': '#f59e0b', 
-            'E': '#f97316', 'F': '#ef4444', 'G': '#b91c1c',
+            'A': '#22c55e', 'B': '#84cc16', 'C': '#bef264', 'D': '#facc15', 
+            'E': '#fb923c', 'F': '#f87171', 'G': '#dc2626',
         }
         return colors.HexColor(colors_map.get(str(label).upper(), '#cbd5e1'))
 
@@ -217,6 +217,14 @@ class PDFReportGenerator:
         ]
         t_cards1 = Table(card_row1, colWidths=[4.8*cm, 4.8*cm, 4.8*cm])
         elements.append(t_cards1)
+
+        if data.get('ban_date'):
+            elements.append(Spacer(1, 10))
+            elements.append(Paragraph(
+                f"<b>ALERTE LOCATION :</b> Interdit à la mise en location dès le <u>{data.get('ban_date')}</u>", 
+                ParagraphStyle('Alert', parent=self.body_style, textColor=colors.HexColor('#b91c1c'), fontSize=9.5, fontName='Helvetica-Bold', backColor=colors.HexColor('#fee2e2'), borderPadding=8, borderRadius=6)
+            ))
+        
         elements.append(Spacer(1, 10))
 
         # --- ENERGY PERFORMANCE (HERO) ---
@@ -242,13 +250,6 @@ class PDFReportGenerator:
         ]))
         elements.append(t_hero)
         
-        if data.get('ban_date'):
-            elements.append(Spacer(1, 10))
-            elements.append(Paragraph(
-                f"<b>ALERTE LOCATION :</b> Interdit à la mise en location dès le <u>{data.get('ban_date')}</u>", 
-                ParagraphStyle('Alert', parent=self.body_style, textColor=colors.HexColor('#dc2626'), fontSize=9, fontName='Helvetica-Bold', backColor=colors.HexColor('#fee2e2'), borderPadding=6, borderRadius=4)
-            ))
-
         # --- IA NARRATIVE ---
         if data.get('ai_narrative'):
             elements.append(Paragraph("Analyse de l'Expert SPREA", self.section_header_style))
@@ -260,6 +261,11 @@ class PDFReportGenerator:
         elements.append(Paragraph("Plan de Financement", self.section_header_style))
         
         fin_rows = []
+        
+        # Purchase Price (Investor view)
+        if data.get('purchase_price', 0) > 0:
+            fin_rows.append([Paragraph("Prix d'Acquisition du bien", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} €</b>", self.body_style)])
+
         # Detailed Works
         detailed = data.get('detailed_costs', [])
         for item in detailed:
@@ -285,7 +291,9 @@ class PDFReportGenerator:
             ('LINEBELOW', (0,0), (-1,-2), 0.1, colors.HexColor('#f1f5f9')),
             ('ALIGN', (1,0), (1,-1), 'RIGHT'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
         ]))
         elements.append(t_fin)
         
