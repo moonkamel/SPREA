@@ -987,7 +987,7 @@ export default function App() {
                             <div className="lg:col-span-1 flex flex-col justify-center items-center text-center p-8 bg-blue-600 rounded-[2.5rem] shadow-2xl shadow-blue-200">
                                 <p className="text-[11px] font-black text-blue-100 uppercase tracking-widest mb-4">Reste à Charge Final</p>
                                 <p className="text-5xl font-black text-white tracking-tighter mb-2">{Math.round(activeSim?.rest || 0).toLocaleString()} €</p>
-                                <p className="text-[9px] font-bold text-blue-200 uppercase tracking-tight italic opacity-80">Soit {Math.round((activeSim?.rest / activeSim?.cost) * 100)}% de l'investissement initial</p>
+                                <p className="text-[9px] font-bold text-blue-200 uppercase tracking-tight italic opacity-80">Soit {Math.round(((activeSim?.rest || 0) / (activeSim?.cost || 1)) * 100)}% de l'investissement initial</p>
                                 <button className="mt-8 w-full py-4 bg-white text-blue-600 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-50 transition-all shadow-xl">Simuler Financier</button>
                             </div>
                         </div>
@@ -998,60 +998,3 @@ export default function App() {
     );
 }
 
-export function AGVoteSimulator() {
-    const [votes, setVotes] = useState({ pour: 650, contre: 200, abstention: 150 });
-    const isAcceptedArt25 = votes.pour > 500;
-    const canLeverageArt25_1 = !isAcceptedArt25 && votes.pour >= 333;
-
-    return (
-        <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl">
-            <h3 className="text-xl font-black text-blue-400 mb-6 flex items-center gap-3">
-                <TrendingUp size={24} /> Simulateur de Vote AG
-            </h3>
-            <div className="space-y-6">
-                <div className="flex gap-2 h-4 bg-white/10 rounded-full overflow-hidden">
-                    <div className="bg-green-500 h-full transition-all" style={{ width: `${votes.pour / 10}%` }} />
-                    <div className="bg-red-500 h-full transition-all" style={{ width: `${votes.contre / 10}%` }} />
-                    <div className="bg-slate-500 h-full transition-all" style={{ width: `${votes.abstention / 10}%` }} />
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Pour</p>
-                        <input type="number" value={votes.pour} onChange={e => setVotes({ ...votes, pour: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-green-400 text-center outline-none" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Contre</p>
-                        <input type="number" value={votes.contre} onChange={e => setVotes({ ...votes, contre: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-red-400 text-center outline-none" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Abst.</p>
-                        <input type="number" value={votes.abstention} onChange={e => setVotes({ ...votes, abstention: Number(e.target.value) })} className="w-full bg-transparent text-xl font-black text-slate-400 text-center outline-none" />
-                    </div>
-                </div>
-                <div className={`p-4 rounded-2xl border-2 font-bold text-xs text-center ${isAcceptedArt25 ? 'bg-green-500/10 border-green-500 text-green-400' : canLeverageArt25_1 ? 'bg-blue-500/10 border-blue-500 text-blue-400' : 'bg-red-500/10 border-red-500 text-red-400'}`}>
-                    {isAcceptedArt25 ? "Adopté (Majorité Art. 25)" : canLeverageArt25_1 ? "Passerelle Art. 25-1 possible (Majorité Simple)" : "Rejeté"}
-                </div>
-                <p className="text-[8px] text-slate-500 italic mt-2 text-center">Simule les tantièmes (sur 1000) requis pour la rénovation énergétique.</p>
-            </div>
-        </div>
-    );
-}
-
-function ComparisonCard({ title, sim, active, onSelect }: any) {
-    return (
-        <button onClick={onSelect} className={`w-full text-left p-8 bg-white rounded-[2.5rem] border-4 transition-all ${active ? 'border-blue-600 shadow-xl scale-[1.02]' : 'border-white opacity-60 hover:opacity-100 shadow-sm'}`}>
-            <div className="flex justify-between items-center mb-10">
-                <h4 className="text-xl font-black text-slate-800">{title}</h4>
-                <div className="px-4 py-2 rounded-xl text-2xl font-black text-white" style={{ backgroundColor: DPE_COLORS[(sim?.newLabel || 'G') as DPEClass] }}>{sim?.newLabel}</div>
-            </div>
-            <div className="space-y-4">
-                <div className="flex justify-between text-sm font-bold"><span>Investissement Brut</span><span>{Math.round(sim?.cost || 0).toLocaleString()} €</span></div>
-                <div className="flex justify-between text-sm font-bold text-green-600"><span>Subventions</span><span>+{Math.round(sim?.sub || 0).toLocaleString()} €</span></div>
-                <div className="flex justify-between text-lg font-black pt-4 border-t border-slate-100"><span>Reste à Charge</span><span>{Math.round(sim?.rest || 0).toLocaleString()} €</span></div>
-                <div className="mt-6 flex items-center gap-2 p-3 bg-blue-50 rounded-xl text-blue-600 font-black text-[10px] uppercase tracking-widest">
-                    <TrendingUp size={14} /> Économies : {Math.round(sim?.savings || 0).toLocaleString()} €/an
-                </div>
-            </div>
-        </button>
-    );
-}
