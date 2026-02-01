@@ -11,7 +11,9 @@ import {
     PieChart,
     Layers,
     Copy,
-    AlertTriangle
+    AlertTriangle,
+    Hammer,
+    Zap
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -114,6 +116,14 @@ export default function App() {
     const [compareMode, setCompareMode] = useState(false);
     const [activeScenario, setActiveScenario] = useState<'A' | 'B'>('A');
     const [userProfile, setUserProfile] = useState<'propriétaire' | 'investisseur'>('propriétaire');
+
+    // New Precision Parameters
+    const [indexInsee, setIndexInsee] = useState(125.0);
+    const [nbEtages, setNbEtages] = useState(0);
+    const [hasAscenseur, setHasAscenseur] = useState(true);
+    const [isUrbanDense, setIsUrbanDense] = useState(false);
+    const [parkingCost, setParkingCost] = useState(35.0);
+    const [chantierDuration, setChantierDuration] = useState(5);
 
     // Investor States
     const [isInvestor, setIsInvestor] = useState(false);
@@ -350,6 +360,21 @@ export default function App() {
         let cost = 0, cepRed = 0, gesRed = 0;
         const thresholds = getAdjustedThresholds(property.surface);
 
+        // --- Technical Precision logic ---
+        const indexRatio = indexInsee > 20 ? (indexInsee / 120.0) : 1.0;
+
+        // Accessibility coefficient: +5% per floor if no elevator
+        let coeffAccessibilite = 1.0;
+        if (nbEtages > 0 && !hasAscenseur) {
+            coeffAccessibilite += (nbEtages * 0.05);
+        }
+
+        // Urban Density coefficient (+10%)
+        const coeffUrban = isUrbanDense ? 1.10 : 1.0;
+
+        // Logistics (Parking)
+        const logisticsCosts = isUrbanDense ? (parkingCost * chantierDuration) : 0;
+
         // Smart Estimation: S_mur = 8 * sqrt(SHAB)
         const sMur = 8 * Math.sqrt(property.surface);
 
@@ -383,10 +408,12 @@ export default function App() {
                 itemCost = a.defaultCost * zoneCoeff;
             }
 
-            cost += itemCost;
+            cost += (itemCost * indexRatio * coeffAccessibilite * coeffUrban);
             cepRed += a.impactKwh * eff;
             gesRed += a.impactGes * eff;
         });
+
+        cost += logisticsCosts;
 
         const newCep = Math.max(35, property.initialCep - cepRed);
         const newGes = Math.max(2, (property.gesValue || 20) - gesRed);
@@ -424,7 +451,7 @@ export default function App() {
             } else if (a.id === 'vmc' || a.id === 'ecs') {
                 itemCost = a.defaultCost * zoneCoeff;
             }
-            return { name: a.name, cost: itemCost, suggested: a.suggested };
+            return { name: a.name, cost: itemCost * indexRatio * coeffAccessibilite * coeffUrban, suggested: a.suggested };
         });
 
         // Investor Metrics
@@ -484,8 +511,8 @@ export default function App() {
         };
     };
 
-    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice]);
-    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice]);
+    const simA = useMemo(() => compute(actionsA.filter(a => a.active)), [actionsA, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, indexInsee, nbEtages, hasAscenseur, isUrbanDense, parkingCost, chantierDuration]);
+    const simB = useMemo(() => compute(actionsB.filter(a => a.active)), [actionsB, property, incomeLevel, tmi, isInvestor, monthlyRent, purchasePrice, indexInsee, nbEtages, hasAscenseur, isUrbanDense, parkingCost, chantierDuration]);
 
     const activeSim = activeScenario === 'A' ? simA : simB;
 
@@ -681,6 +708,109 @@ export default function App() {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 <aside className="lg:col-span-4 space-y-6">
+                    <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="flex items-center gap-4 text-xl font-black text-slate-800"><Hammer size={24} className="text-blue-600" /> Scénarios</h3>
+                            <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
+                        </div>
+
+                        {compareMode && (
+                            <div className="flex gap-2 mb-6 p-2 bg-slate-100 rounded-2xl">
+                                <button onClick={() => setActiveScenario('A')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'A' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario A</button>
+                                <button onClick={() => setActiveScenario('B')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'B' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario B</button>
+                                <button onClick={copyAToB} title="Copier A vers B" className="p-3 bg-white rounded-xl text-slate-400 hover:text-blue-600"><Copy size={16} /></button>
+                            </div>
+                        )}
+
+                        <div className="space-y-3">
+                            {(activeScenario === 'A' ? actionsA : actionsB)
+                                .filter(a => a.id !== 'roof' || property?.buildingType === 'MAISON')
+                                .map(a => (
+                                    <div key={a.id} className="group relative">
+                                        <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
+                                            <div className="flex flex-col items-start gap-1">
+                                                <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
+                                                {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
+                                            </div>
+                                            <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
+                                        </button>
+                                        <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
+                                            <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    </section>
+
+                    <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
+                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-800">
+                            <Zap size={24} className="text-blue-500" />
+                            Paramètres de Précision
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Indice INSEE (BT01/BT40)</label>
+                                <input
+                                    type="number"
+                                    value={indexInsee}
+                                    onChange={(e) => setIndexInsee(parseFloat(e.target.value))}
+                                    className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nombre d'étages</label>
+                                    <input
+                                        type="number"
+                                        value={nbEtages}
+                                        onChange={(e) => setNbEtages(parseInt(e.target.value))}
+                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                    />
+                                </div>
+                                <div className="flex flex-col justify-end">
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ascenseur</label>
+                                    <button
+                                        onClick={() => setHasAscenseur(!hasAscenseur)}
+                                        className={`w-full h-12 rounded-2xl border-2 font-black text-[10px] uppercase transition-all ${hasAscenseur ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
+                                    >
+                                        {hasAscenseur ? 'OUI' : 'NON'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zone Urbaine Dense</span>
+                                <button
+                                    onClick={() => setIsUrbanDense(!isUrbanDense)}
+                                    className={`w-12 h-6 rounded-full relative transition-all ${isUrbanDense ? 'bg-blue-600' : 'bg-slate-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isUrbanDense ? 'left-7' : 'left-1'}`} />
+                                </button>
+                            </div>
+                            {isUrbanDense && (
+                                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Parking (€/j)</label>
+                                        <input
+                                            type="number"
+                                            value={parkingCost}
+                                            onChange={(e) => setParkingCost(parseFloat(e.target.value))}
+                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Durée (jours)</label>
+                                        <input
+                                            type="number"
+                                            value={chantierDuration}
+                                            onChange={(e) => setChantierDuration(parseInt(e.target.value))}
+                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
                     <div className="rounded-3xl bg-slate-900 p-8 text-white shadow-xl">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="flex items-center gap-3 text-xl font-black text-blue-400"><PieChart size={24} /> Déperditions Thermiques</h3>
@@ -707,19 +837,6 @@ export default function App() {
                     </div>
 
                     <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="flex items-center gap-4 text-xl font-black text-slate-800"><Layers size={24} className="text-blue-600" /> Scénarios</h3>
-                            <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
-                        </div>
-
-                        {compareMode && (
-                            <div className="flex gap-2 mb-6 p-2 bg-slate-100 rounded-2xl">
-                                <button onClick={() => setActiveScenario('A')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'A' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario A</button>
-                                <button onClick={() => setActiveScenario('B')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeScenario === 'B' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Scénario B</button>
-                                <button onClick={copyAToB} title="Copier A vers B" className="p-3 bg-white rounded-xl text-slate-400 hover:text-blue-600"><Copy size={16} /></button>
-                            </div>
-                        )}
-
                         <div className="mb-6 p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Objectif du Rapport</p>
                             <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
@@ -748,7 +865,6 @@ export default function App() {
                             </div>
                         </div>
 
-
                         <div className="mb-8 p-6 bg-blue-50/30 rounded-[1.5rem] border border-blue-100">
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Profil Investisseur</p>
@@ -762,6 +878,7 @@ export default function App() {
 
                             {isInvestor && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    {/* ... rest of investor fields ... */}
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Taux d'imposition (TMI)</p>
                                         <div className="flex gap-1">
@@ -796,25 +913,6 @@ export default function App() {
                                     </div>
                                 </div>
                             )}
-                        </div>
-
-                        <div className="space-y-3">
-                            {(activeScenario === 'A' ? actionsA : actionsB)
-                                .filter(a => a.id !== 'roof' || property?.buildingType === 'MAISON')
-                                .map(a => (
-                                    <div key={a.id} className="group relative">
-                                        <button onClick={() => toggleAction(a.id)} className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${a.active ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
-                                            <div className="flex flex-col items-start gap-1">
-                                                <span className={`font-bold ${a.active ? 'text-blue-700' : 'text-slate-700'}`}>{a.name}</span>
-                                                {a.suggested && <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 bg-blue-100/50 px-2 py-0.5 rounded-md">Conseillé</span>}
-                                            </div>
-                                            <div className={`h-6 w-10 rounded-full shrink-0 transition-colors ${a.active ? 'bg-blue-600' : 'bg-slate-200'}`} />
-                                        </button>
-                                        <div className="hidden group-hover:block absolute left-full ml-3 top-0 w-48 p-4 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-in-from-left-2 duration-200">
-                                            <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">{a.description}</p>
-                                        </div>
-                                    </div>
-                                ))}
                         </div>
                     </div>
                 </aside>
