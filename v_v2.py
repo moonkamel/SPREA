@@ -6,11 +6,10 @@ from reportlab.lib.units import cm
 from io import BytesIO
 
 class PremiumPDFReport(SimpleDocTemplate):
-    def __init__(self, filename, property_address="", **kw):
+    def __init__(self, filename, **kw):
         super().__init__(filename, **kw)
         self.header_color = colors.HexColor('#0f172a')  # Slate 900
         self.accent_color = colors.HexColor('#2563eb')  # Blue 600
-        self.property_address = property_address
 
     def beforePage(self):
         self.canv.saveState()
@@ -21,20 +20,15 @@ class PremiumPDFReport(SimpleDocTemplate):
         # Logo Text in Header
         self.canv.setFillColor(colors.white)
         self.canv.setFont('Helvetica-Bold', 18)
-        self.canv.drawString(1.5*cm, A4[1]-1.0*cm, "SPREA") # Moved up slightly
+        self.canv.drawString(1.5*cm, A4[1]-1.4*cm, "SPREA")
         self.canv.setFont('Helvetica', 8)
         self.canv.setFillColor(colors.HexColor('#94a3b8'))
-        self.canv.drawString(4.0*cm, A4[1]-0.95*cm, "INTELLIGENT PROPERTY REPORT")
+        self.canv.drawString(4.0*cm, A4[1]-1.35*cm, "INTELLIGENT PROPERTY REPORT")
         
-        # Fixed Address in Header (Lower part)
-        self.canv.setFillColor(colors.white)
-        self.canv.setFont('Helvetica-Bold', 12)
-        self.canv.drawString(1.5*cm, A4[1]-1.8*cm, str(self.property_address).upper())
-
         # Bottom branding
         self.canv.setFont('Helvetica-Bold', 8)
         self.canv.setFillColor(colors.HexColor('#cbd5e1'))
-        self.canv.drawString(1.5*cm, 0.8*cm, "SPREA - ANALYSE DE RENOVATION ENERGETIQUE")
+        self.canv.drawString(1.5*cm, 0.8*cm, "SPREA - ANALYSE DE R├ëNOVATION ├ëNERG├ëTIQUE")
         self.canv.drawRightString(A4[0]-1.5*cm, 0.8*cm, f"PAGE {self.canv.getPageNumber()}")
         
         # Decorative accent line at bottom
@@ -47,9 +41,6 @@ class PremiumPDFReport(SimpleDocTemplate):
 class PDFReportGenerator:
     def __init__(self):
         self.styles = getSampleStyleSheet()
-        self.setup_styles()
-
-    def setup_styles(self):
         self.title_style = ParagraphStyle(
             'TitleStyle',
             parent=self.styles['Heading1'],
@@ -113,6 +104,7 @@ class PDFReportGenerator:
         return colors.HexColor(colors_map.get(str(label).upper(), '#cbd5e1'))
 
     def create_dpe_badge(self, label):
+        """Creates a small badge representation for DPE labels."""
         color = self.get_dpe_color(label)
         data = [[Paragraph(str(label).upper(), self.badge_style)]]
         t = Table(data, colWidths=[1.4*cm], rowHeights=[1.4*cm])
@@ -126,13 +118,7 @@ class PDFReportGenerator:
 
     def generate(self, data: dict) -> bytes:
         buffer = BytesIO()
-        address_to_use = data.get('address', 'ADRESSE DU BIEN').upper()
-        
-        class FixedPremiumPDFReport(PremiumPDFReport):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, property_address=address_to_use, **kwargs)
-
-        doc = FixedPremiumPDFReport(
+        doc = PremiumPDFReport(
             buffer, 
             pagesize=A4, 
             rightMargin=1.5*cm, 
@@ -142,20 +128,22 @@ class PDFReportGenerator:
         )
         elements = []
 
-        # --- HERO / ADDRESS SPACE ---
-        elements.append(Spacer(1, 1.2*cm)) # Just space, address is handled in beforePage
+        # --- COVER / ADDRESS SECTION ---
+        elements.append(Spacer(1, -2.1*cm)) # Move into the header area
+        elements.append(Paragraph(data.get('address', 'ADRESSE DU BIEN'), self.title_style))
+        elements.append(Spacer(1, 1.8*cm))
         
         # Property Details Row
         details = [
             [
-                Paragraph("TYPE DE BATIMENT", self.metric_label_style),
+                Paragraph("TYPE DE B├éTIMENT", self.metric_label_style),
                 Paragraph("SURFACE HABITABLE", self.metric_label_style),
-                Paragraph("PERIODE DE CONSTRUCTION", self.metric_label_style),
-                Paragraph("NUMERO DPE (ADEME)", self.metric_label_style)
+                Paragraph("P├ëRIODE DE CONSTRUCTION", self.metric_label_style),
+                Paragraph("NUM├ëRO DPE (ADEME)", self.metric_label_style)
             ],
             [
                 Paragraph(f"<b>{data.get('building_type', 'Logement')}</b>", self.body_style),
-                Paragraph(f"<b>{data.get('surface', 0)} m2</b>", self.body_style),
+                Paragraph(f"<b>{data.get('surface', 0)} m┬▓</b>", self.body_style),
                 Paragraph(f"<b>{data.get('construction_period') or data.get('year') or 'N/A'}</b>", self.body_style),
                 Paragraph(f"<b>{data.get('ademe_dpe_number', 'N/A')}</b>", self.body_style)
             ]
@@ -171,7 +159,7 @@ class PDFReportGenerator:
         if data.get('ban_date'):
             elements.append(Spacer(1, 12))
             elements.append(Paragraph(
-                f"<b>ALERTE LOCATION :</b> Interdit a la mise en location des le <u>{data.get('ban_date')}</u>", 
+                f"<b>ALERTE LOCATION :</b> Interdit ├á la mise en location d├¿s le <u>{data.get('ban_date')}</u>", 
                 ParagraphStyle('Alert', parent=self.body_style, textColor=colors.HexColor('#dc2626'), fontSize=9, fontName='Helvetica-Bold')
             ))
         
@@ -181,35 +169,38 @@ class PDFReportGenerator:
         # --- IA NARRATIVE SECTION ---
         if data.get('ai_narrative'):
             elements.append(Paragraph("ANALYSE DE NOTRE EXPERT IA", self.section_header_style))
+            # Format the narrative text (it might have "L'Analyse" and "La Strat├®gie" headers)
             raw_text = data.get('ai_narrative')
-            formatted_text = raw_text.replace("L'Analyse de l'Expert", "<b>L'Analyse de l'Expert</b>").replace("La Strategie Conseillee", "<b>La Strategie Conseillee</b>")
+            # Simple bolding for common headers from prompt
+            formatted_text = raw_text.replace("L'Analyse de l'Expert", "<b>L'Analyse de l'Expert</b>").replace("La Strat├®gie Conseill├®e", "<b>La Strat├®gie Conseill├®e</b>")
+            
             elements.append(Paragraph(formatted_text, ParagraphStyle('AIStyle', parent=self.body_style, leading=14, fontSize=10, backColor=colors.HexColor('#f8fafc'), borderPadding=8, borderRadius=8)))
             elements.append(Spacer(1, 10))
 
-        # --- OBJECTIFS ENERGETIQUES ---
-        elements.append(Paragraph("OBJECTIFS ENERGETIQUES", self.section_header_style))
+        # --- OBJECTIFS ├ëNERG├ëTIQUES ---
+        elements.append(Paragraph("OBJECTIFS ├ëNERG├ëTIQUES", self.section_header_style))
         
         perf_data = [
             [
                 Paragraph("SITUATION ACTUELLE", self.metric_label_style),
                 Spacer(1, 1),
-                Paragraph("APRES TRAVAUX", self.metric_label_style),
+                Paragraph("APR├êS TRAVAUX", self.metric_label_style),
                 Spacer(1, 1),
-                Paragraph("GAIN ESTIME", self.metric_label_style)
+                Paragraph("GAIN ESTIM├ë", self.metric_label_style)
             ],
             [
                 self.create_dpe_badge(data.get('current_label', 'G')),
-                Paragraph("<font size='20'>></font>", ParagraphStyle('Arrow', parent=self.body_style, alignment=1, textColor=colors.HexColor('#94a3b8'))),
+                Paragraph("<font size='20'>Ô×ö</font>", ParagraphStyle('Arrow', parent=self.body_style, alignment=1, textColor=colors.HexColor('#94a3b8'))),
                 self.create_dpe_badge(data.get('new_label', 'G')),
                 Spacer(1, 1),
-                Paragraph(f"<font color='#16a34a' size='24'><b>-{round(data.get('annual_savings', 0)):,.0f}E/an</b></font>", ParagraphStyle('Gain', parent=self.body_style, alignment=2))
+                Paragraph(f"<font color='#16a34a' size='24'><b>-{round(data.get('annual_savings', 0)):,.0f}Ôé¼/an</b></font>", ParagraphStyle('Gain', parent=self.body_style, alignment=2))
             ],
             [
-                Paragraph(f"<b>{data.get('initial_cep', 0):.1f}</b> kWh/m2.an", self.body_style),
+                Paragraph(f"<b>{data.get('initial_cep', 0):.1f}</b> kWh/m┬▓.an", self.body_style),
                 Spacer(1, 1),
-                Paragraph(f"<b>{data.get('new_cep', 0):.1f}</b> kWh/m2.an", self.body_style),
+                Paragraph(f"<b>{data.get('new_cep', 0):.1f}</b> kWh/m┬▓.an", self.body_style),
                 Spacer(1, 1),
-                Paragraph("Economie d'energie annuelle", ParagraphStyle('Small', parent=self.body_style, fontSize=8, alignment=2))
+                Paragraph("├ëconomie d'├®nergie annuelle", ParagraphStyle('Small', parent=self.body_style, fontSize=8, alignment=2))
             ]
         ]
         
@@ -217,40 +208,47 @@ class PDFReportGenerator:
         t_perf.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('SPAN', (4,0), (4,0)), # Gain Title area
+            ('SPAN', (4,1), (4,1)), # Gain Value
+            ('SPAN', (4,2), (4,2)), # Gain Label
         ]))
         elements.append(t_perf)
 
         # --- PLAN DE FINANCEMENT ---
-        elements.append(Paragraph("PLAN DE FINANCEMENT STRATEGIQUE", self.section_header_style))
+        elements.append(Paragraph("PLAN DE FINANCEMENT STRAT├ëGIQUE", self.section_header_style))
         
         fin_rows = []
         if data.get('purchase_price', 0) > 0:
-            fin_rows.append([Paragraph("<b>Prix d'Acquisition du bien</b>", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} E</b>", self.body_style)])
+            fin_rows.append([Paragraph("<b>Prix d'Acquisition du bien</b>", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} Ôé¼</b>", self.body_style)])
             fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
 
+        # Detailed Works
         detailed = data.get('detailed_costs', [])
         for item in detailed:
             name = item.get('name', 'Travaux')
-            if item.get('suggested'): name = f"{name} <font color='#2563eb' size='8'>(Conseille)</font>"
-            fin_rows.append([Paragraph(name, self.body_style), f"{item.get('cost', 0):,.0f} E"])
+            if item.get('suggested'): name = f"{name} <font color='#2563eb' size='8'>(Conseill├®)</font>"
+            fin_rows.append([Paragraph(name, self.body_style), f"{item.get('cost', 0):,.0f} Ôé¼"])
             
+        # Totals and Grants
         fin_rows.append([HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9')), HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9'))])
-        fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} E</b>", self.body_style)])
+        fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} Ôé¼</b>", self.body_style)])
         
+        # Grants vs Financing Section in Table
         fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
-        fin_rows.append([Paragraph("<b>AIDES & SUBVENTIONS (DEDUITES)</b>", self.metric_label_style), ""])
-        fin_rows.append([Paragraph("MaPrimeRenov' (Estimation)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('subsidies', 0):,.0f} E</font>", self.body_style)])
+        fin_rows.append([Paragraph("<b>AIDES & SUBVENTIONS (D├ëDUITES)</b>", self.metric_label_style), ""])
+        fin_rows.append([Paragraph("MaPrimeR├®nov' (Estimation)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('subsidies', 0):,.0f} Ôé¼</font>", self.body_style)])
         
+        # We don't subtract CEE from rest_to_pay to match UI, but we list it
         if data.get('cee_est'):
-            fin_rows.append([Paragraph("Primes CEE (Estimation)", self.body_style), Paragraph(f"<font color='#64748b'><i>(A percevoir)</i> {data.get('cee_est', 0):,.0f} E</font>", self.body_style)])
+            fin_rows.append([Paragraph("Primes CEE (Estimation)", self.body_style), Paragraph(f"<font color='#64748b'><i>(├Ç percevoir)</i> {data.get('cee_est', 0):,.0f} Ôé¼</font>", self.body_style)])
         
         if data.get('tax_benefit'):
-            fin_rows.append([Paragraph("Avantage Fiscal (Deficit Foncier)", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} E</font>", self.body_style)])
+            fin_rows.append([Paragraph("Avantage Fiscal (D├®ficit Foncier)", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} Ôé¼</font>", self.body_style)])
 
         if data.get('eco_ptz_amount'):
             fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
-            fin_rows.append([Paragraph("<b>FINANCEMENT (A REMBOURSER)</b>", self.metric_label_style), ""])
-            fin_rows.append([Paragraph("Eco-Pret a Taux Zero (Eco-PTZ)", self.body_style), Paragraph(f"{data.get('eco_ptz_amount', 0):,.0f} E", self.body_style)])
+            fin_rows.append([Paragraph("<b>FINANCEMENT (├Ç REMBOURSER)</b>", self.metric_label_style), ""])
+            fin_rows.append([Paragraph("├ëco-Pr├¬t ├á Taux Z├®ro (Eco-PTZ)", self.body_style), Paragraph(f"{data.get('eco_ptz_amount', 0):,.0f} Ôé¼", self.body_style)])
 
         t_fin = Table(fin_rows, colWidths=[13*cm, 5*cm])
         t_fin.setStyle(TableStyle([
@@ -264,7 +262,7 @@ class PDFReportGenerator:
         
         # Net Charge Highlight
         elements.append(Spacer(1, 5))
-        net_table = [[Paragraph("RESTE A CHARGE FINAL", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} E", self.net_cost_style)]]
+        net_table = [[Paragraph("RESTE ├Ç CHARGE FINAL", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} Ôé¼", self.net_cost_style)]]
         t_net = Table(net_table, colWidths=[11*cm, 7*cm])
         t_net.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#eff6ff')),
@@ -276,14 +274,21 @@ class PDFReportGenerator:
         ]))
         elements.append(t_net)
         
+        if data.get('has_iti'):
+             elements.append(Spacer(1, 8))
+             elements.append(Paragraph(
+                 "<i>* Note : L'isolation par l'int├®rieur (ITI) g├®n├¿re une perte d'environ 1.5% de surface Carrez.</i>", 
+                 ParagraphStyle('SmallAlert', parent=self.body_style, fontSize=7, textColor=colors.HexColor('#92400e'), alignment=1)
+             ))
+
         # --- PERFORMANCE DE L'INVESTISSEMENT ---
         elements.append(Paragraph("PERFORMANCE DE L'INVESTISSEMENT", self.section_header_style))
         
         roi_cells = [
-            [Paragraph("RENTABILITE BRUT", self.metric_label_style), Paragraph("PLUS-VALUE ESTIMEE", self.metric_label_style), Paragraph("PAYBACK TRAVAUX", self.metric_label_style)],
+            [Paragraph("RENTABILIT├ë BRUT", self.metric_label_style), Paragraph("PLUS-VALUE ESTIM├ëE", self.metric_label_style), Paragraph("PAYBACK TRAVAUX", self.metric_label_style)],
             [
                 Paragraph(f"<font size='18'><b>{data.get('yield_brut', 0):.1f} %</b></font>", self.body_style), 
-                Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} E</b></font>", self.body_style), 
+                Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} Ôé¼</b></font>", self.body_style), 
                 Paragraph(f"<font size='18'><b>{data.get('roi_years', 0)} ans</b></font>", self.body_style)
             ]
         ]
@@ -295,6 +300,37 @@ class PDFReportGenerator:
             ('BOTTOMPADDING', (0,0), (-1,0), 4),
         ]))
         elements.append(t_roi)
+
+        # --- FOCUS AIDES (New Page) ---
+        if data.get('focus_mpr') or data.get('focus_cee') or data.get('focus_eco_ptz'):
+            elements.append(PageBreak())
+            elements.append(Paragraph("D├ëTAILS DES AIDES FINANCI├êRES", self.section_header_style))
+            elements.append(Spacer(1, 10))
+            
+            if data.get('focus_mpr'):
+                elements.append(Paragraph("FOCUS MAPRIMER├ëNOV'", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#2563eb'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_mpr'), self.body_style))
+                elements.append(Spacer(1, 12))
+            
+            if data.get('focus_cee'):
+                elements.append(Paragraph("FOCUS PRIMES CEE", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#16a34a'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_cee'), self.body_style))
+                elements.append(Spacer(1, 12))
+                
+            if data.get('focus_eco_ptz'):
+                elements.append(Paragraph("FOCUS ├ëCO-PR├èT ├Ç TAUX Z├ëRO", ParagraphStyle('FocusTitle', parent=self.body_style, fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#3b82f6'), spaceAfter=5)))
+                elements.append(Paragraph(data.get('focus_eco_ptz'), self.body_style))
+                elements.append(Spacer(1, 12))
+
+        # Footer Legal Note (if it fits)
+        elements.append(Spacer(1, 15))
+        elements.append(HRFlowable(width="30%", thickness=0.5, color=colors.HexColor('#94a3b8'), hAlign='CENTER'))
+        elements.append(Spacer(1, 5))
+        elements.append(Paragraph(
+            "Ce document est une simulation bas├®e sur la m├®thode 3CL-2021 et les prix march├®s moyens 2024-2025. <br/>"
+            "Il ne remplace pas un audit ├®nerg├®tique r├®glementaire ou un devis d'artisan certifi├® RGE.",
+            ParagraphStyle('Legal', parent=self.body_style, fontSize=7, alignment=1, textColor=colors.HexColor('#64748b'), leading=9)
+        ))
 
         doc.build(elements)
         buffer.seek(0)
