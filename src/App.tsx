@@ -12,7 +12,6 @@ import {
     Layers,
     Copy,
     AlertTriangle,
-    Hammer,
     Zap
 } from 'lucide-react';
 
@@ -360,20 +359,25 @@ export default function App() {
         let cost = 0, cepRed = 0, gesRed = 0;
         const thresholds = getAdjustedThresholds(property.surface);
 
-        // --- Technical Precision logic ---
-        const indexRatio = indexInsee > 20 ? (indexInsee / 120.0) : 1.0;
+        // --- Technical Precision logic (Sanitized) ---
+        const safeIndex = (indexInsee || 120.0);
+        const safeEtages = (nbEtages || 0);
+        const safeParkingCost = (parkingCost || 0);
+        const safeDuration = (chantierDuration || 0);
+
+        const indexRatio = safeIndex > 20 ? (safeIndex / 120.0) : 1.0;
 
         // Accessibility coefficient: +5% per floor if no elevator
         let coeffAccessibilite = 1.0;
-        if (nbEtages > 0 && !hasAscenseur) {
-            coeffAccessibilite += (nbEtages * 0.05);
+        if (safeEtages > 0 && !hasAscenseur) {
+            coeffAccessibilite += (safeEtages * 0.05);
         }
 
         // Urban Density coefficient (+10%)
         const coeffUrban = isUrbanDense ? 1.10 : 1.0;
 
         // Logistics (Parking)
-        const logisticsCosts = isUrbanDense ? (parkingCost * chantierDuration) : 0;
+        const logisticsCosts = isUrbanDense ? (safeParkingCost * safeDuration) : 0;
 
         // Smart Estimation: S_mur = 8 * sqrt(SHAB)
         const sMur = 8 * Math.sqrt(property.surface);
@@ -710,8 +714,9 @@ export default function App() {
                 <aside className="lg:col-span-4 space-y-6">
                     <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="flex items-center gap-4 text-xl font-black text-slate-800"><Hammer size={24} className="text-blue-600" /> Scénarios</h3>
-                            <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setCompareMode(!compareMode)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${compareMode ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>Comparatif</button>
+                            </div>
                         </div>
 
                         {compareMode && (
@@ -743,32 +748,50 @@ export default function App() {
                     </section>
 
                     <section className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-800">
+                        <h3 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-800 uppercase tracking-tight">
                             <Zap size={24} className="text-blue-500" />
-                            Paramètres de Précision
+                            Précision
                         </h3>
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Indice INSEE (BT01/BT40)</label>
+                            <div className="group relative">
+                                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                    Indice Coût Travaux (BT01)
+                                    <span className="cursor-help text-slate-300">?</span>
+                                </label>
+                                <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                    L'indice BT01 mesure l'évolution des coûts dans le bâtiment. Modifiez-le pour ajuster les prix selon l'inflation actuelle (Base 120).
+                                </div>
                                 <input
                                     type="number"
                                     value={indexInsee}
-                                    onChange={(e) => setIndexInsee(parseFloat(e.target.value))}
+                                    onChange={(e) => setIndexInsee(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
                                     className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nombre d'étages</label>
+                                <div className="group relative">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                        Nombre d'étages
+                                        <span className="cursor-help text-slate-300">?</span>
+                                    </label>
+                                    <div className="absolute left-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                        Nombre d'étages à franchir pour accéder au logement. Impacte les coûts de manutention.
+                                    </div>
                                     <input
                                         type="number"
                                         value={nbEtages}
-                                        onChange={(e) => setNbEtages(parseInt(e.target.value))}
+                                        onChange={(e) => setNbEtages(e.target.value === '' ? '' as any : parseInt(e.target.value))}
                                         className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                     />
                                 </div>
-                                <div className="flex flex-col justify-end">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ascenseur</label>
+                                <div className="flex flex-col justify-end group relative">
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                        Ascenseur
+                                        <span className="cursor-help text-slate-300">?</span>
+                                    </label>
+                                    <div className="absolute right-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                        Si "NON", une pénalité de 5% par étage est appliquée pour la manutention.
+                                    </div>
                                     <button
                                         onClick={() => setHasAscenseur(!hasAscenseur)}
                                         className={`w-full h-12 rounded-2xl border-2 font-black text-[10px] uppercase transition-all ${hasAscenseur ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
@@ -777,8 +800,14 @@ export default function App() {
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zone Urbaine Dense</span>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 group relative">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    Zone Urbaine Dense
+                                    <span className="cursor-help text-slate-300">?</span>
+                                </span>
+                                <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[10px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                    Active une pénalité de 10% pour les difficultés de stationnement et d'accès en centre-ville.
+                                </div>
                                 <button
                                     onClick={() => setIsUrbanDense(!isUrbanDense)}
                                     className={`w-12 h-6 rounded-full relative transition-all ${isUrbanDense ? 'bg-blue-600' : 'bg-slate-300'}`}
@@ -788,21 +817,21 @@ export default function App() {
                             </div>
                             {isUrbanDense && (
                                 <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div>
+                                    <div className="group relative">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Parking (€/j)</label>
                                         <input
                                             type="number"
                                             value={parkingCost}
-                                            onChange={(e) => setParkingCost(parseFloat(e.target.value))}
+                                            onChange={(e) => setParkingCost(e.target.value === '' ? '' as any : parseFloat(e.target.value))}
                                             className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="group relative">
                                         <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Durée (jours)</label>
                                         <input
                                             type="number"
                                             value={chantierDuration}
-                                            onChange={(e) => setChantierDuration(parseInt(e.target.value))}
+                                            onChange={(e) => setChantierDuration(e.target.value === '' ? '' as any : parseInt(e.target.value))}
                                             className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
                                         />
                                     </div>
@@ -950,6 +979,116 @@ export default function App() {
                                 </div>
                             </section>
 
+                            {/* Moved Configuration Section */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                                    <div className="flex gap-4 mb-6">
+                                        <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 group relative">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                                                Profil Pris en Compte
+                                                <span className="cursor-help text-slate-300">?</span>
+                                            </p>
+                                            <div className="absolute left-0 bottom-full mb-2 w-48 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                                Ajuste la perspective du rapport selon si vous habitez le bien (Patrimoine) ou si vous le louez (Performance).
+                                            </div>
+                                            <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
+                                                <button
+                                                    onClick={() => setUserProfile('propriétaire')}
+                                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'propriétaire' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                >
+                                                    Patrimoine
+                                                </button>
+                                                <button
+                                                    onClick={() => setUserProfile('investisseur')}
+                                                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${userProfile === 'investisseur' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                >
+                                                    Performance
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 group relative">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                                                Revenus du Ménage
+                                                <span className="cursor-help text-slate-300">?</span>
+                                            </p>
+                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                                Les plafonds MaPrimeRénov' varient selon vos revenus. Choisissez votre catégorie pour une estimation précise des aides.
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-1 px-1">
+                                                {(['tres_modeste', 'modeste', 'intermediaire', 'superieur'] as IncomeLevel[]).map(l => (
+                                                    <button key={l} onClick={() => setIncomeLevel(l)} className={`px-2 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all border-2 ${incomeLevel === l ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-50'}`}>{l.replace('_', ' ')}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100 group relative">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                                                Paramètres Investisseur
+                                                <span className="cursor-help text-blue-300">?</span>
+                                            </p>
+                                            <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-slate-900 text-[9px] font-bold text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                                Activez pour calculer la rentabilité brute, le gain fiscal et le cashflow de votre projet locatif.
+                                            </div>
+                                            <button
+                                                onClick={() => setIsInvestor(!isInvestor)}
+                                                className={`w-12 h-6 rounded-full relative transition-colors ${isInvestor ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isInvestor ? 'translate-x-6' : ''}`} />
+                                            </button>
+                                        </div>
+
+                                        {isInvestor && (
+                                            <div className="grid grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">TMI (%)</p>
+                                                    <select
+                                                        value={tmi}
+                                                        onChange={(e) => setTmi(Number(e.target.value))}
+                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
+                                                    >
+                                                        {[0, 11, 30, 41, 45].map(v => <option key={v} value={v}>{v}%</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Prix Achat (€)</p>
+                                                    <input
+                                                        type="number"
+                                                        value={purchasePrice}
+                                                        onChange={(e) => setPurchasePrice(Number(e.target.value))}
+                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Loyer (€/mois)</p>
+                                                    <input
+                                                        type="number"
+                                                        value={monthlyRent}
+                                                        onChange={(e) => setMonthlyRent(Number(e.target.value))}
+                                                        className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-black text-slate-700 outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group h-full">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+                                            Valeur Verte (Resantise)
+                                            <span className="cursor-help text-slate-300">?</span>
+                                        </p>
+                                        <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
+                                        <p className="text-xs font-bold text-slate-400 mt-2 italic">Plus-value IMMO estimée</p>
+                                        <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                            Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 4.5% par saut de classe.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-green-500 shadow-sm">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Plan de Financement Stratégique</p>
@@ -1017,33 +1156,6 @@ export default function App() {
                                     </div>
                                 </div>
 
-                                <div className="p-8 bg-white rounded-3xl border-l-[12px] border-l-blue-600 shadow-sm relative group">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center justify-between">
-                                        Valeur Verte (Resantise)
-                                        <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
-                                    </p>
-                                    <div className="text-4xl font-black text-blue-700 tracking-tighter">+{Math.round(activeSim?.gain || 0).toLocaleString()} €</div>
-                                    <p className="text-xs font-bold text-slate-400 mt-4 italic">Gain de valeur IMMO estimé</p>
-                                    <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-slate-900 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                        Estimation de la plus-value immobilière générée par l'amélioration du DPE. Un saut de classe énergétique augmente généralement le prix de vente de 4.5% par saut de classe.
-                                    </div>
-                                </div>
-
-                                {isInvestor && (
-                                    <div className="p-8 bg-slate-900 rounded-3xl border-l-[12px] border-l-blue-400 shadow-xl relative group">
-                                        <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-6 flex items-center justify-between">
-                                            Rentabilité Brut
-                                            <span className="cursor-help opacity-40 hover:opacity-100 transition-opacity">?</span>
-                                        </p>
-                                        <div className="text-4xl font-black text-white tracking-tighter">{activeSim?.yieldBrut.toFixed(1)} %</div>
-                                        <p className="text-xs font-bold text-blue-400 mt-4 italic">Cashflow : {Math.round(activeSim?.cashflow || 0)} €/mois</p>
-                                        <div className="absolute bottom-full left-0 mb-4 w-64 p-4 bg-white text-slate-900 text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-slate-100">
-                                            <p className="font-black text-blue-600 mb-2 uppercase">Méthodologie :</p>
-                                            <p className="mb-2 italic">Rendement = (Loyer × 12) / (Prix Achat + Travaux)</p>
-                                            <p className="italic">Cashflow = Loyer - Mensualité Crédit (Travaux sur 84 mois à 4.5%).</p>
-                                        </div>
-                                    </div>
-                                )}
 
                             </div>
                         </div>
