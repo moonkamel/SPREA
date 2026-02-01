@@ -210,42 +210,72 @@ class DPECalculator:
             
         return recos
 
-    def simulate_retrofit(self, prop: PropertySchema, selections: List[str], rfr: float, postcode: str) -> Dict[str, Any]:
+    def simulate_retrofit(self, prop: PropertySchema, selections: List[str], rfr: float, postcode: str, **kwargs) -> Dict[str, Any]:
         works_catalog = {
-            "ite_pse": {"name": "ITE PSE", "u_new": 0.25, "cost": 170, "unit": "m2_wall"},
-            "ite_bois": {"name": "ITE Fibre Bois", "u_new": 0.28, "cost": 220, "unit": "m2_wall"},
-            "iti_ossature": {"name": "ITI Ossature", "u_new": 0.30, "cost": 75, "unit": "m2_wall"},
-            "combles": {"name": "Isolation Combles", "u_new": 0.15, "cost": 32, "unit": "m2_comble"},
-            "pac_air_eau": {"name": "PAC Air/Eau", "eff_new": 3.5, "energy_new": "electricity", "cost": 12500, "unit": "flat"},
-            "windows_pvc": {"name": "Fenêtres PVC", "u_new": 1.3, "cost": 575, "unit": "unit_win"}
+            "ite_pse": {"name": "ITE PSE", "u_new": 0.25, "cost": 170, "unit": "m2_wall", "base_index": 120.0},
+            "ite_bois": {"name": "ITE Fibre Bois", "u_new": 0.28, "cost": 220, "unit": "m2_wall", "base_index": 120.0},
+            "iti_ossature": {"name": "ITI Ossature", "u_new": 0.30, "cost": 75, "unit": "m2_wall", "base_index": 115.0},
+            "combles": {"name": "Isolation Combles", "u_new": 0.15, "cost": 32, "unit": "m2_comble", "base_index": 110.0},
+            "pac_air_eau": {"name": "PAC Air/Eau", "eff_new": 3.5, "energy_new": "electricity", "cost": 12500, "unit": "flat", "base_index": 125.0},
+            "windows_pvc": {"name": "Fenêtres PVC", "u_new": 1.3, "cost": 575, "unit": "unit_win", "base_index": 118.0}
         }
 
         sim_prop = copy.deepcopy(prop)
         total_cost = 0.0
         applied_names = []
+        
+        # 1. Technical Parameters Extraction
+        extra_params = kwargs.get('params', {})
+        current_insee = extra_params.get('index_insee', 1.0)
+        nb_etages = extra_params.get('nb_etages', 0)
+        has_ascenseur = extra_params.get('has_ascenseur', True)
+        is_urban_dense = extra_params.get('is_urban_dense', False)
+        parking_cost_day = extra_params.get('parking_cost', 0)
+        duration_days = extra_params.get('chantier_duration', 5)
+
+        # 2. Global Multipliers
+        coeff_accessibilite = 1.0
+        if nb_etages > 0 and not has_ascenseur:
+            coeff_accessibilite += (nb_etages * 0.05) # +5% per floor
+        
+        if is_urban_dense:
+            coeff_accessibilite += 0.10 # +10% for dense urban
+            
+        frais_logistiques = 0
+        if is_urban_dense: # Simplified logic: if urban, parking is likely payant
+             frais_logistiques += (duration_days * parking_cost_day)
 
         for key in selections:
             if key not in works_catalog: continue
             w = works_catalog[key]
             applied_names.append(w["name"])
             
-            # Localize cost
-            local_unit_cost = self.geo.get_localized_cost(w["cost"], postcode)
+            # 3. New Formula Logic
+            # Price = (Base_Price * (Current_Index / Base_Index)) * Coeffs
+            # If current_insee is 1.0 (demo mode), we skip index ratio or assume 1.0
+            index_ratio = (current_insee / w["base_index"]) if current_insee > 20 else 1.0
+            
+            base_unit_cost = w["cost"]
+            localized_unit_cost = self.geo.get_localized_cost(base_unit_cost, postcode)
+            
+            # Apply INSEE and Accessibility
+            final_unit_cost = (localized_unit_cost * index_ratio) * coeff_accessibilite
             
             if w["unit"] == "m2_wall":
                 surf = sum(wall.surface for wall in sim_prop.walls)
-                total_cost += surf * local_unit_cost
+                total_cost += surf * final_unit_cost
                 for wall in sim_prop.walls: wall.u_value = w["u_new"]
             elif w["unit"] == "m2_comble":
                 surf = sim_prop.shab # Rough estimate
-                total_cost += surf * local_unit_cost
-                # No specific attic field in basic schema, simplified for demo
+                total_cost += surf * final_unit_cost
             elif w["unit"] == "flat":
-                total_cost += local_unit_cost
+                total_cost += final_unit_cost
                 sim_prop.systems = [SystemSchema(system_type="chauffage", energy_source=w["energy_new"], efficiency_etas=w["eff_new"])]
             elif w["unit"] == "unit_win":
-                total_cost += 10 * local_unit_cost # Assume 10 windows
+                total_cost += 10 * final_unit_cost # Assume 10 windows
                 for win in sim_prop.windows: win.u_value = w["u_new"]
+
+        total_cost += frais_logistiques
 
         initial_res = self.calculate(prop)
         final_res = self.calculate(sim_prop)

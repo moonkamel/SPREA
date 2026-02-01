@@ -213,16 +213,33 @@ class SimulationRequest(BaseModel):
     selected_works: List[str]
     rfr: float
     postcode: Optional[str] = "59000"
+    # New Precision Parameters
+    index_insee: Optional[float] = 125.0
+    nb_etages: Optional[int] = 0
+    has_ascenseur: Optional[bool] = True
+    is_urban_dense: Optional[bool] = False
+    parking_cost: Optional[float] = 35.0
+    chantier_duration: Optional[int] = 5
 
 @router.post("/simulate")
 async def simulate(data: SimulationRequest):
     """Run 2025 technical-economic simulation."""
     try:
+        # Pass extra params as a dict
+        params = {
+            "index_insee": data.index_insee,
+            "nb_etages": data.nb_etages,
+            "has_ascenseur": data.has_ascenseur,
+            "is_urban_dense": data.is_urban_dense,
+            "parking_cost": data.parking_cost,
+            "chantier_duration": data.chantier_duration
+        }
         res = engine.simulate_retrofit(
             data.property_data, 
             data.selected_works, 
             data.rfr, 
-            data.postcode
+            data.postcode,
+            params=params
         )
         return res
     except Exception as e:

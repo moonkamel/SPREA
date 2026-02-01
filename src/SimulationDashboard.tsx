@@ -72,6 +72,14 @@ export default function SimulationDashboard() {
     const [simulation, setSimulation] = useState<SimulationResult | null>(null);
     const [userProfile, setUserProfile] = useState<'propriétaire' | 'investisseur'>('propriétaire');
 
+    // --- Precision Parameters ---
+    const [indexInsee, setIndexInsee] = useState(125.0);
+    const [nbEtages, setNbEtages] = useState(0);
+    const [hasAscenseur, setHasAscenseur] = useState(true);
+    const [isUrbanDense, setIsUrbanDense] = useState(false);
+    const [parkingCost, setParkingCost] = useState(35.0);
+    const [chantierDuration, setChantierDuration] = useState(5);
+
     // --- API Handlers ---
 
     const handleAddressSearch = async (e: React.FormEvent) => {
@@ -141,7 +149,13 @@ export default function SimulationDashboard() {
                     property_data: property,
                     selected_works: selectedWorks,
                     rfr: rfr,
-                    postcode: postcode
+                    postcode: postcode,
+                    index_insee: indexInsee,
+                    nb_etages: nbEtages,
+                    has_ascenseur: hasAscenseur,
+                    is_urban_dense: isUrbanDense,
+                    parking_cost: parkingCost,
+                    chantier_duration: chantierDuration
                 }),
             });
             const data = await res.json();
@@ -159,7 +173,7 @@ export default function SimulationDashboard() {
         } else {
             setSimulation(null);
         }
-    }, [selectedWorks, rfr, postcode]);
+    }, [selectedWorks, rfr, postcode, indexInsee, nbEtages, hasAscenseur, isUrbanDense, parkingCost, chantierDuration]);
 
     const toggleWork = (id: string) => {
         setSelectedWorks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -317,7 +331,103 @@ export default function SimulationDashboard() {
                 <aside className="lg:col-span-4 space-y-8">
                     <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
                         <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
-                            <Zap size={20} className="text-emerald-500" />
+                            <Hammer size={20} className="text-blue-600" />
+                            Actions 2025
+                        </h3>
+                        <div className="space-y-3">
+                            {WORKS_CATALOG.map((work) => (
+                                <button
+                                    key={work.id}
+                                    onClick={() => toggleWork(work.id)}
+                                    className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all font-bold text-left ${selectedWorks.includes(work.id)
+                                        ? 'border-blue-600 bg-blue-50/50 text-blue-900 shadow-md'
+                                        : 'border-slate-100 hover:border-slate-200 text-slate-600'
+                                        }`}
+                                >
+                                    <div>
+                                        <p className="text-sm opacity-50 mb-0.5">{work.category}</p>
+                                        {work.name}
+                                    </div>
+                                    <div className={`h-6 w-6 rounded-lg flex items-center justify-center border-2 transition-all ${selectedWorks.includes(work.id) ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200'
+                                        }`}>
+                                        {selectedWorks.includes(work.id) && <Zap size={14} fill="white" />}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
+                        <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
+                            <Zap size={20} className="text-blue-500" />
+                            Paramètres de Précision
+                        </h3>
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Indice INSEE (Ex: BT01)</label>
+                                <input
+                                    type="number"
+                                    value={indexInsee}
+                                    onChange={(e) => setIndexInsee(parseFloat(e.target.value))}
+                                    className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-md font-black focus:border-blue-600 transition-all outline-none"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Étage</label>
+                                    <input
+                                        type="number"
+                                        value={nbEtages}
+                                        onChange={(e) => setNbEtages(parseInt(e.target.value))}
+                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-md font-black focus:border-blue-600 transition-all outline-none"
+                                    />
+                                </div>
+                                <div className="flex flex-col justify-end">
+                                    <button
+                                        onClick={() => setHasAscenseur(!hasAscenseur)}
+                                        className={`h-12 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${hasAscenseur ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-red-50 border-red-500 text-red-700'}`}
+                                    >
+                                        {hasAscenseur ? 'Ascenseur' : 'Sans Asc.'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zone Urbaine Dense</span>
+                                <button
+                                    onClick={() => setIsUrbanDense(!isUrbanDense)}
+                                    className={`w-12 h-6 rounded-full relative transition-all ${isUrbanDense ? 'bg-blue-600' : 'bg-slate-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isUrbanDense ? 'left-7' : 'left-1'}`} />
+                                </button>
+                            </div>
+                            {isUrbanDense && (
+                                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Parking (€/j)</label>
+                                        <input
+                                            type="number"
+                                            value={parkingCost}
+                                            onChange={(e) => setParkingCost(parseFloat(e.target.value))}
+                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Durée (jours)</label>
+                                        <input
+                                            type="number"
+                                            value={chantierDuration}
+                                            onChange={(e) => setChantierDuration(parseInt(e.target.value))}
+                                            className="w-full h-10 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-sm font-black focus:border-blue-600 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
+                        <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
+                            <FileText size={20} className="text-emerald-500" />
                             Travaux Conseillés
                         </h3>
                         <div className="space-y-4">
@@ -354,7 +464,7 @@ export default function SimulationDashboard() {
                                 </button>
                             </div>
                             <div>
-                                <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-3">Revenu Fiscal (RFR)</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Revenu Fiscal (RFR)</label>
                                 <div className="relative">
                                     <input
                                         type="number"
@@ -366,7 +476,7 @@ export default function SimulationDashboard() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-3">Département</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Département</label>
                                 <input
                                     type="text"
                                     value={postcode}
@@ -374,34 +484,6 @@ export default function SimulationDashboard() {
                                     className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 text-lg font-black focus:border-blue-600 transition-all outline-none"
                                 />
                             </div>
-                        </div>
-                    </section>
-
-                    <section className="rounded-[2rem] bg-white p-8 shadow-lg border border-slate-100">
-                        <h3 className="mb-6 flex items-center gap-3 text-lg font-black text-slate-800 uppercase tracking-tight">
-                            <Hammer size={20} className="text-blue-600" />
-                            Actions 2025
-                        </h3>
-                        <div className="space-y-3">
-                            {WORKS_CATALOG.map((work) => (
-                                <button
-                                    key={work.id}
-                                    onClick={() => toggleWork(work.id)}
-                                    className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all font-bold text-left ${selectedWorks.includes(work.id)
-                                        ? 'border-blue-600 bg-blue-50/50 text-blue-900 shadow-md'
-                                        : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                                        }`}
-                                >
-                                    <div>
-                                        <p className="text-sm opacity-50 mb-0.5">{work.category}</p>
-                                        {work.name}
-                                    </div>
-                                    <div className={`h-6 w-6 rounded-lg flex items-center justify-center border-2 transition-all ${selectedWorks.includes(work.id) ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200'
-                                        }`}>
-                                        {selectedWorks.includes(work.id) && <Zap size={14} fill="white" />}
-                                    </div>
-                                </button>
-                            ))}
                         </div>
                     </section>
                 </aside>
