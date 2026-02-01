@@ -202,7 +202,7 @@ class PDFReportGenerator:
                 Paragraph("<font size='20'>></font>", ParagraphStyle('Arrow', parent=self.body_style, alignment=1, textColor=colors.HexColor('#94a3b8'))),
                 self.create_dpe_badge(data.get('new_label', 'G')),
                 Spacer(1, 1),
-                Paragraph(f"<font color='#16a34a' size='24'><b>-{round(data.get('annual_savings', 0)):,.0f}E/an</b></font>", ParagraphStyle('Gain', parent=self.body_style, alignment=2))
+                Paragraph(f"<font color='#16a34a' size='24'><b>-{round(data.get('annual_savings', 0)):,.0f} €/an</b></font>", ParagraphStyle('Gain', parent=self.body_style, alignment=2))
             ],
             [
                 Paragraph(f"<b>{data.get('initial_cep', 0):.1f}</b> kWh/m2.an", self.body_style),
@@ -225,32 +225,32 @@ class PDFReportGenerator:
         
         fin_rows = []
         if data.get('purchase_price', 0) > 0:
-            fin_rows.append([Paragraph("<b>Prix d'Acquisition du bien</b>", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} E</b>", self.body_style)])
+            fin_rows.append([Paragraph("<b>Prix d'Acquisition du bien</b>", self.body_style), Paragraph(f"<b>{data.get('purchase_price', 0):,.0f} €</b>", self.body_style)])
             fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
 
         detailed = data.get('detailed_costs', [])
         for item in detailed:
             name = item.get('name', 'Travaux')
             if item.get('suggested'): name = f"{name} <font color='#2563eb' size='8'>(Conseille)</font>"
-            fin_rows.append([Paragraph(name, self.body_style), f"{item.get('cost', 0):,.0f} E"])
+            fin_rows.append([Paragraph(name, self.body_style), f"{item.get('cost', 0):,.0f} €"])
             
         fin_rows.append([HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9')), HRFlowable(width="100%", thickness=1, color=colors.HexColor('#f1f5f9'))])
-        fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} E</b>", self.body_style)])
+        fin_rows.append([Paragraph("<b>TOTAL TRAVAUX (BRUT)</b>", self.body_style), Paragraph(f"<b>{data.get('total_cost', 0):,.0f} €</b>", self.body_style)])
         
         fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
         fin_rows.append([Paragraph("<b>AIDES & SUBVENTIONS (DEDUITES)</b>", self.metric_label_style), ""])
-        fin_rows.append([Paragraph("MaPrimeRenov' (Estimation)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('subsidies', 0):,.0f} E</font>", self.body_style)])
+        fin_rows.append([Paragraph("MaPrimeRenov' (Estimation)", self.body_style), Paragraph(f"<font color='#16a34a'>- {data.get('subsidies', 0):,.0f} €</font>", self.body_style)])
         
         if data.get('cee_est'):
-            fin_rows.append([Paragraph("Primes CEE (Estimation)", self.body_style), Paragraph(f"<font color='#64748b'><i>(A percevoir)</i> {data.get('cee_est', 0):,.0f} E</font>", self.body_style)])
+            fin_rows.append([Paragraph("Primes CEE (Estimation)", self.body_style), Paragraph(f"<font color='#64748b'><i>(A percevoir)</i> {data.get('cee_est', 0):,.0f} €</font>", self.body_style)])
         
         if data.get('tax_benefit'):
-            fin_rows.append([Paragraph("Avantage Fiscal (Deficit Foncier)", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} E</font>", self.body_style)])
+            fin_rows.append([Paragraph("Avantage Fiscal (Deficit Foncier)", self.body_style), Paragraph(f"<font color='#64748b'><i>(Indirect)</i> {data.get('tax_benefit', 0):,.0f} €</font>", self.body_style)])
 
         if data.get('eco_ptz_amount'):
             fin_rows.append([Spacer(1, 5), Spacer(1, 5)])
             fin_rows.append([Paragraph("<b>FINANCEMENT (A REMBOURSER)</b>", self.metric_label_style), ""])
-            fin_rows.append([Paragraph("Eco-Pret a Taux Zero (Eco-PTZ)", self.body_style), Paragraph(f"{data.get('eco_ptz_amount', 0):,.0f} E", self.body_style)])
+            fin_rows.append([Paragraph("Eco-Pret a Taux Zero (Eco-PTZ)", self.body_style), Paragraph(f"{data.get('eco_ptz_amount', 0):,.0f} €", self.body_style)])
 
         t_fin = Table(fin_rows, colWidths=[13*cm, 5*cm])
         t_fin.setStyle(TableStyle([
@@ -264,7 +264,7 @@ class PDFReportGenerator:
         
         # Net Charge Highlight
         elements.append(Spacer(1, 5))
-        net_table = [[Paragraph("RESTE A CHARGE FINAL", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} E", self.net_cost_style)]]
+        net_table = [[Paragraph("RESTE A CHARGE FINAL", self.metric_label_style), Paragraph(f"{data.get('rest_to_pay', 0):,.0f} €", self.net_cost_style)]]
         t_net = Table(net_table, colWidths=[11*cm, 7*cm])
         t_net.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#eff6ff')),
@@ -283,7 +283,7 @@ class PDFReportGenerator:
             [Paragraph("RENTABILITE BRUT", self.metric_label_style), Paragraph("PLUS-VALUE ESTIMEE", self.metric_label_style), Paragraph("PAYBACK TRAVAUX", self.metric_label_style)],
             [
                 Paragraph(f"<font size='18'><b>{data.get('yield_brut', 0):.1f} %</b></font>", self.body_style), 
-                Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} E</b></font>", self.body_style), 
+                Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} €</b></font>", self.body_style), 
                 Paragraph(f"<font size='18'><b>{data.get('roi_years', 0)} ans</b></font>", self.body_style)
             ]
         ]
