@@ -15,6 +15,9 @@ interface Zone {
     email: boolean;
     active: boolean;
     last_checked_on: string | null;
+    // Zones of the other agents of the agency are shown too
+    mine?: boolean;
+    owner?: string | null;
 }
 
 interface Hit {
@@ -138,18 +141,18 @@ export default function AlertsPage() {
                                     {zones.map(z => (
                                         <li key={z.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
                                             <div>
-                                                <p className="text-ink">{z.name}</p>
+                                                <p className="text-ink">{z.name}{z.mine === false && z.owner && <span className="text-xs text-faint"> · zone de {z.owner}</span>}</p>
                                                 <p className="text-xs text-faint">
                                                     Rayon {z.radius_m >= 1000 ? `${(z.radius_m / 1000).toFixed(1).replace('.', ',')} km` : `${z.radius_m} m`} ·
                                                     classes {z.labels.replace(/,/g, ', ')}{z.kind ? ` · ${z.kind}s` : ''}
                                                     {z.last_checked_on && ` · vérifiée le ${new Date(z.last_checked_on).toLocaleDateString('fr-FR')}`}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-4 text-sm text-muted">
+                                            {z.mine !== false && <div className="flex items-center gap-4 text-sm text-muted">
                                                 <label className="flex items-center gap-2">Active <Switch checked={z.active} onChange={v => updateZone(z, { active: v })} label="Alerte active" /></label>
                                                 <label className="flex items-center gap-2">Email <Switch checked={z.email} onChange={v => updateZone(z, { email: v })} label="Email du matin" /></label>
                                                 <button type="button" onClick={() => deleteZone(z)} className="p-2 text-faint hover:text-coral" aria-label="Supprimer"><Trash2 size={16} /></button>
-                                            </div>
+                                            </div>}
                                         </li>
                                     ))}
                                 </ul>

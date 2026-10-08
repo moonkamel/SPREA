@@ -17,7 +17,21 @@ interface PublicConfig {
     plans?: Partial<Record<Plan, string | null>>;
 }
 
-export type Plan = 'solo_monthly' | 'solo_yearly';
+export type Plan = 'solo_monthly' | 'solo_yearly' | 'agence_monthly' | 'agence_yearly';
+
+// Agence offer: number of agents and agency name
+export interface AgencyOrder { seats: number; agency_name: string }
+
+export interface Team {
+    id: string;
+    name: string;
+    kind: 'agence' | 'reseau';
+    role: 'owner' | 'admin' | 'agent';
+    seats: number;
+    active: boolean;
+    subscription_status: string | null;
+    network: string | null;
+}
 
 interface ReportSummary {
     id: string;
@@ -33,6 +47,7 @@ interface Me {
     subscription_current_period_end: string | null;
     has_billing_account: boolean;
     reports: ReportSummary[];
+    team: Team | null;
 }
 
 export interface ReportRequest {
@@ -58,7 +73,8 @@ interface AccountContextValue {
     session: Session | null;
     me: Me | null;
     requestReport: (req: ReportRequest) => Promise<void>;
-    startSubscription: (plan?: Plan) => void;
+    startSubscription: (plan?: Plan, order?: AgencyOrder) => void;
+    refreshMe: () => Promise<Me | null>;
     openLogin: (reason?: string) => void;
     openAccount: () => void;
     authedFetch: (url: string, init?: RequestInit) => Promise<Response>;
@@ -75,6 +91,18 @@ const loadPending = (): ReportRequest | null => {
 };
 const clearPending = () => {
     try { localStorage.removeItem(PENDING_KEY); } catch { /* storage unavailable */ }
+};
+
+// Invitation link opened before signing in (the magic link comes back to "/")
+const JOIN_KEY = 'sprea_join_token';
+export const saveJoinToken = (token: string) => {
+    try { localStorage.setItem(JOIN_KEY, token); } catch { /* storage unavailable */ }
+};
+const loadJoinToken = (): string | null => {
+    try { return localStorage.getItem(JOIN_KEY); } catch { return null; }
+};
+const clearJoinToken = () => {
+    try { localStorage.removeItem(JOIN_KEY); } catch { /* storage unavailable */ }
 };
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -99,7 +127,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const [notice, setNotice] = useState<string | null>(null);
     const [pending, setPending] = useState<ReportRequest | null>(null);
     // Purchase waiting for the CGV acceptance
-    const [purchase, setPurchase] = useState<{ plan: Plan } | null>(null);
+    const [purchase, setPurchase] = useState<{ plan: Plan; order?: AgencyOrder } | null>(null);
     const supabase = useRef<SupabaseClient | null>(null);
 
     // Fresh access token (supabase-js refreshes it when needed)
@@ -150,11 +178,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         refreshMe();
     }, [authedFetch, downloadReport, refreshMe]);
 
-    const subscribe = useCallback(async (plan: Plan) => {
+    const subscribe = useCallback(async (plan: Plan, order?: AgencyOrder) => {
         const res = await authedFetch('/api/billing/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accept_terms: true, plan }),
+            body: JSON.stringify({ accept_terms: true, plan, ...(order || {}) }),
         });
         if (!res.ok) { setNotice(await errorMessage(res)); return; }
         window.location.assign((await res.json()).checkout_url);
@@ -172,13 +200,30 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         await createReport(req, false);
     }, [session, me, refreshMe, createReport]);
 
-    const startSubscription = useCallback((plan: Plan = 'solo_monthly') => {
+    const startSubscription = useCallback((plan: Plan = 'solo_monthly', order?: AgencyOrder) => {
         if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement sera disponible très prochainement."); return; }
         if (!session) { setLoginReason("Créez votre compte avec votre email professionnel : vous choisirez ensuite votre formule."); return; }
         if (me?.is_pro) { setShowAccount(true); return; }
         setShowAccount(false);
-        setPurchase({ plan });
+        setPurchase({ plan, order });
     }, [config, session, me]);
+
+    // Invitation to an agency opened before signing in: accepted once signed in
+    const acceptPendingInvitation = useCallback(async () => {
+        const token = loadJoinToken();
+        if (!token) return;
+        clearJoinToken();
+        const res = await authedFetch('/api/team/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+        });
+        if (!res.ok) { setNotice(await errorMessage(res)); return; }
+        const data = await res.json();
+        await refreshMe();
+        setNotice(`Bienvenue dans l'équipe ${data.team?.name || ''} : tous les outils SPREA sont débloqués.`);
+        navigate('/');
+    }, [authedFetch, refreshMe]);
 
     // Back from Stripe Checkout: wait until the payment is confirmed
     const handleCheckoutReturn = useCallback(async () => {
@@ -246,8 +291,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         setLoginReason(null);
         refreshMe();
         handleCheckoutReturn();
+        acceptPendingInvitation();
         setPending(loadPending());
-    }, [signedInUser, refreshMe, handleCheckoutReturn]);
+    }, [signedInUser, refreshMe, handleCheckoutReturn, acceptPendingInvitation]);
 
     // Checkout return without a session (should not happen, but be explicit)
     useEffect(() => {
@@ -257,7 +303,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [config]);
 
     const value: AccountContextValue = {
-        config, session, me, requestReport, startSubscription, authedFetch,
+        config, session, me, requestReport, startSubscription, authedFetch, refreshMe,
         openLogin: (reason?: string) => setLoginReason(reason || ''),
         openAccount: () => { setShowAccount(true); refreshMe(); },
     };
@@ -319,10 +365,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
             {purchase && (
                 <PurchaseModal
                     plan={purchase.plan}
+                    order={purchase.order}
                     price={config?.plans?.[purchase.plan] ?? null}
                     onClose={() => setPurchase(null)}
                     onConfirm={async () => {
-                        await subscribe(purchase.plan);
+                        await subscribe(purchase.plan, purchase.order);
                         setPurchase(null);
                     }}
                 />
@@ -436,6 +483,8 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
     );
 }
 
+export const ROLE_NAMES = { owner: "Titulaire de l'abonnement", admin: 'Responsable', agent: 'Agent' } as const;
+
 function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
     me: Me | null;
     onClose: () => void;
@@ -461,7 +510,17 @@ function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout
                     <p className="text-sm text-muted">{me.email}</p>
 
                     <div className="rounded-xl border border-line bg-raised p-5">
-                        {me.is_pro ? (
+                        {me.team ? (
+                            <>
+                                <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> {me.team.name}</p>
+                                <p className="text-sm text-muted mt-1">
+                                    {ROLE_NAMES[me.team.role]}{me.team.network ? ` · réseau ${me.team.network}` : ''} · {me.team.active ? 'abonnement actif' : 'abonnement inactif'}
+                                </p>
+                                <Button variant="secondary" onClick={() => { onClose(); navigate('/equipe'); }} className="mt-3 w-full h-10">
+                                    {me.team.role === 'agent' ? 'Mon équipe' : "Gérer l'équipe"}
+                                </Button>
+                            </>
+                        ) : me.is_pro ? (
                             <>
                                 <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement actif</p>
                                 <p className="text-sm text-muted mt-1">Tous les outils inclus{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
@@ -521,10 +580,22 @@ function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout
     );
 }
 
-const PLAN_NAMES: Record<Plan, string> = { solo_monthly: 'Solo · mensuel', solo_yearly: 'Solo · annuel' };
+const PLAN_NAMES: Record<Plan, string> = {
+    solo_monthly: 'Solo · mensuel', solo_yearly: 'Solo · annuel',
+    agence_monthly: 'Agence · mensuel', agence_yearly: 'Agence · annuel',
+};
 
-function PurchaseModal({ plan, price, onClose, onConfirm }: {
+// "59 € / mois" × 4 agents -> "236 € / mois"
+const multiply = (price: string, n: number) => {
+    const m = price.match(/^([\d\s.,]+)\s*€(.*)$/);
+    if (!m) return price;
+    const total = Number(m[1].replace(/\s/g, '').replace(',', '.')) * n;
+    return `${total.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} €${m[2]}`;
+};
+
+function PurchaseModal({ plan, order, price, onClose, onConfirm }: {
     plan: Plan;
+    order?: AgencyOrder;
     price: string | null | undefined;
     onClose: () => void;
     onConfirm: () => Promise<void>;
@@ -536,9 +607,12 @@ function PurchaseModal({ plan, price, onClose, onConfirm }: {
     return (
         <Modal title={`Abonnement ${PLAN_NAMES[plan]}`} onClose={onClose}>
             <div className="rounded-xl border border-line bg-raised p-5 mb-5">
-                <p className="font-serif text-3xl text-ink">{price || '–'}<span className="font-sans text-xs text-faint ml-2">HT</span></p>
+                <p className="font-serif text-3xl text-ink">{price && order ? multiply(price, order.seats) : price || '–'}<span className="font-sans text-xs text-faint ml-2">HT</span></p>
+                {order && <p className="text-sm text-ink-soft mt-1">{order.agency_name} · {order.seats} agents × {price}</p>}
                 <p className="text-sm text-muted mt-2">
-                    Tous les outils SPREA, sans limite. Sans engagement, résiliable à tout moment depuis votre compte.
+                    {order
+                        ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajustez le nombre d'agents à tout moment."
+                        : 'Tous les outils SPREA, sans limite.'} Sans engagement, résiliable à tout moment depuis votre compte.
                     Satisfait ou remboursé pendant 14 jours. Facture avec TVA.
                 </p>
             </div>

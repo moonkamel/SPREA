@@ -27,7 +27,7 @@ try:
     from api.ai_service import ai_service, parse_stored
     from api.auth import User, current_user
     from api.dvf import market_price
-    from api.billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
+    from api.billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
     from api.ratelimit import ai_limiter, search_limiter
@@ -38,7 +38,7 @@ except ImportError:
     from ai_service import ai_service, parse_stored
     from auth import User, current_user
     from dvf import market_price
-    from billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
+    from billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
     from ratelimit import ai_limiter, search_limiter
@@ -52,7 +52,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-08.4"
+TERMS_VERSION = "2026-10-08.5"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -78,8 +78,28 @@ def optional_billing_dep() -> Optional[Billing]:
 
 # --- Helpers ---
 
+def org_active(profile: Optional[Dict[str, Any]]) -> bool:
+    """Access through the user's agency, or the network the agency belongs to
+    (the store adds org / org_parent to the profile)."""
+    if not profile:
+        return False
+    return any((o or {}).get("subscription_status") in PRO_ACTIVE_STATUSES
+               for o in (profile.get("org"), profile.get("org_parent")))
+
+
 def is_pro(profile: Optional[Dict[str, Any]]) -> bool:
-    return bool(profile) and profile.get("subscription_status") in PRO_ACTIVE_STATUSES
+    return bool(profile) and (profile.get("subscription_status") in PRO_ACTIVE_STATUSES or org_active(profile))
+
+
+def team_summary(profile: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    org = profile.get("org")
+    if not org:
+        return None
+    parent = profile.get("org_parent")
+    return {"id": org["id"], "name": org["name"], "kind": org["kind"], "role": profile.get("org_role"),
+            "seats": org.get("seats"), "active": org_active(profile),
+            "subscription_status": org.get("subscription_status"),
+            "network": parent["name"] if parent else None}
 
 
 SUBSCRIBERS_ONLY = "Réservé aux abonnés SPREA."
@@ -152,13 +172,18 @@ async def mark_report_paid(store: SupabaseStore, report: Dict[str, Any], session
 async def sync_subscription(store: SupabaseStore, billing: Billing, subscription_id: str,
                             user_id: Optional[str] = None) -> None:
     """Copies the current state of a subscription (fetched from Stripe, so event
-    ordering does not matter) to the owner's profile."""
+    ordering does not matter) to the owner's profile, or to the organization
+    for an agency subscription (metadata org_id)."""
     sub = await billing.get_subscription(subscription_id)
+    metadata = sub.get("metadata") or {}
+    if metadata.get("org_id"):
+        await sync_org_subscription(store, billing, sub)
+        return
     profile = await store.get_profile(user_id) if user_id else None
     if not profile:
         profile = await store.get_profile_by_customer(sub["customer"])
-    if not profile and (sub.get("metadata") or {}).get("user_id"):
-        profile = await store.get_profile(sub["metadata"]["user_id"])
+    if not profile and metadata.get("user_id"):
+        profile = await store.get_profile(metadata["user_id"])
     if not profile:
         logger.error(f"No profile for subscription {subscription_id}")
         return
@@ -171,6 +196,34 @@ async def sync_subscription(store: SupabaseStore, billing: Billing, subscription
         "subscription_status": sub["status"],
         "subscription_current_period_end": iso_from_timestamp(subscription_period_end(sub)),
     })
+
+
+async def sync_org_subscription(store: SupabaseStore, billing: Billing, sub: Dict[str, Any]) -> None:
+    metadata = sub.get("metadata") or {}
+    org = await store.get_org(metadata["org_id"])
+    if not org:
+        logger.error(f"No organization for subscription {sub['id']}")
+        return
+    if org.get("stripe_subscription_id") not in (None, sub["id"]) and sub["status"] not in PRO_ACTIVE_STATUSES:
+        return
+    items = (sub.get("items") or {}).get("data") or []
+    fields = {
+        "stripe_subscription_id": sub["id"],
+        "subscription_status": sub["status"],
+        "subscription_current_period_end": iso_from_timestamp(subscription_period_end(sub)),
+    }
+    if items and items[0].get("quantity"):
+        fields["seats"] = items[0]["quantity"]
+    await store.update_org(org["id"], fields)
+    # The owner's Solo plan is replaced by the agency one: unused time credited
+    owner_id = metadata.get("user_id")
+    if sub["status"] in PRO_ACTIVE_STATUSES and owner_id:
+        owner = await store.get_profile(owner_id)
+        solo = (owner or {}).get("subscription_id")
+        if solo and solo != sub["id"] and owner.get("subscription_status") in PRO_ACTIVE_STATUSES:
+            await billing.cancel_subscription(solo, prorate=True)
+            await store.update_profile(owner_id, {"subscription_status": "canceled"})
+            logger.info("Solo plan replaced by an agency subscription")
 
 
 def report_summary(report: Dict[str, Any]) -> Dict[str, Any]:
@@ -215,10 +268,16 @@ class DeleteAccountRequest(BaseModel):
     confirm: bool = False
 
 
+MIN_AGENCY_SEATS, MAX_AGENCY_SEATS = 2, 50
+
+
 class SubscribeRequest(BaseModel):
     # CGV accepted and immediate start of the subscription requested
     accept_terms: bool = False
-    plan: Literal["solo_monthly", "solo_yearly"] = "solo_monthly"
+    plan: Literal["solo_monthly", "solo_yearly", "agence_monthly", "agence_yearly"] = "solo_monthly"
+    # Agence: number of agents and name of the agency
+    seats: int = Field(1, ge=1, le=MAX_AGENCY_SEATS)
+    agency_name: Optional[str] = Field(None, max_length=120)
 
 
 def terms_acceptance() -> Dict[str, str]:
@@ -259,6 +318,7 @@ async def me(user: User = Depends(current_user), store: SupabaseStore = Depends(
     return {
         "email": user.email,
         "is_pro": is_pro(profile),
+        "team": team_summary(profile),
         "subscription_status": profile.get("subscription_status"),
         "subscription_current_period_end": profile.get("subscription_current_period_end"),
         "has_billing_account": bool(profile.get("stripe_customer_id")),
@@ -282,13 +342,29 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
     if not data.confirm:
         raise HTTPException(status_code=400, detail="Confirmez la suppression du compte.")
     profile = await store.get_profile(user.id) or {}
+    org = profile.get("org")
+    org_subscription = None
+    if org:
+        members = await store.list_members(org["id"])
+        if profile.get("org_role") == "owner":
+            if len(members) > 1:
+                raise HTTPException(status_code=400, detail="Retirez d'abord les membres de votre agence (page Équipe) : leur accès dépend de votre abonnement.")
+            if org.get("stripe_subscription_id") and org.get("subscription_status") not in ENDED_SUBSCRIPTION_STATUSES:
+                org_subscription = org["stripe_subscription_id"]
+        else:
+            # The requests received stay with the agency
+            owner = next((m["user_id"] for m in members if m["role"] == "owner"), None)
+            if owner:
+                await store.transfer_contacts(user.id, owner)
 
     # 1. Stop billing first: abort if Stripe cannot be reached
     subscription_id = profile.get("subscription_id")
-    if subscription_id and profile.get("subscription_status") not in ENDED_SUBSCRIPTION_STATUSES:
-        if billing is None:
-            raise HTTPException(status_code=503, detail="Suppression impossible pour le moment, réessayez plus tard.")
-        await billing.cancel_subscription(subscription_id)
+    running = [sid for sid in (subscription_id if profile.get("subscription_status") not in ENDED_SUBSCRIPTION_STATUSES else None,
+                               org_subscription) if sid]
+    if running and billing is None:
+        raise HTTPException(status_code=503, detail="Suppression impossible pour le moment, réessayez plus tard.")
+    for sid in running:
+        await billing.cancel_subscription(sid)
 
     # 2. Keep the proof of purchases, without personal data
     deleted_at = datetime.now(timezone.utc).isoformat()
@@ -304,6 +380,15 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
         "paid_at": r.get("paid_at"),
         "account_deleted_at": deleted_at,
     } for r in await store.paid_reports(user.id)]
+    if org_subscription:
+        archive.append({
+            "kind": "subscription",
+            "stripe_customer_id": customer_id,
+            "subscription_id": org_subscription,
+            "terms_version": profile.get("terms_version"),
+            "terms_accepted_at": profile.get("terms_accepted_at"),
+            "account_deleted_at": deleted_at,
+        })
     if subscription_id:
         archive.append({
             "kind": "subscription",
@@ -324,7 +409,10 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
     if archive:
         await store.archive_purchases(archive)
 
-    # 3. Delete the user: profile and reports are removed by cascade
+    # 3. Delete the user: profile and reports are removed by cascade (and the
+    # agency of an owner without members)
+    if org and profile.get("org_role") == "owner":
+        await store.delete_org(org["id"])
     await store.delete_user(user.id)
     logger.info("Account deleted")
     return {"deleted": True}
@@ -401,13 +489,35 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
 async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
                     store: SupabaseStore = Depends(store_dep), billing: Billing = Depends(billing_dep)):
     profile = await store.ensure_profile(user.id, user.email)
-    if is_pro(profile):
-        raise HTTPException(status_code=400, detail="Votre abonnement Pro est déjà actif.")
     if not data.accept_terms:
         raise HTTPException(status_code=400, detail=TERMS_REQUIRED)
+    agency = data.plan in AGENCY_PLANS
+    org = profile.get("org")
+    if org_active(profile):
+        raise HTTPException(status_code=400, detail="Votre accès est déjà fourni par votre agence.")
+    org_id = None
+    if agency:
+        name = (data.agency_name or "").strip()
+        if len(name) < 2:
+            raise HTTPException(status_code=400, detail="Indiquez le nom de votre agence.")
+        if data.seats < MIN_AGENCY_SEATS:
+            raise HTTPException(status_code=400, detail=f"La formule Agence commence à {MIN_AGENCY_SEATS} agents.")
+        if org and profile.get("org_role") != "owner":
+            raise HTTPException(status_code=400, detail="Vous faites déjà partie d'une agence.")
+        if org:
+            # Checkout started earlier but not paid: same agency
+            await store.update_org(org["id"], {"name": name, "seats": data.seats})
+            org_id = org["id"]
+        else:
+            org_id = (await store.create_org({"name": name, "kind": "agence", "seats": data.seats}))["id"]
+            await store.add_member(org_id, user.id, "owner")
+    elif profile.get("subscription_status") in PRO_ACTIVE_STATUSES:
+        raise HTTPException(status_code=400, detail="Votre abonnement est déjà actif.")
     await store.update_profile(user.id, terms_acceptance())
     customer_id = await ensure_customer(store, billing, user, profile)
-    return {"checkout_url": await billing.subscription_checkout(user.id, customer_id, data.plan)}
+    url = await billing.subscription_checkout(user.id, customer_id, data.plan,
+                                              quantity=data.seats if agency else 1, org_id=org_id)
+    return {"checkout_url": url}
 
 
 @router.post("/billing/portal")

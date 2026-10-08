@@ -40,6 +40,7 @@ export default function CgvPage() {
 
                 <Article n={5} title="Compte et utilisateurs">
                     <p>L'accès aux services nécessite un compte, créé à partir d'une adresse email professionnelle ; la connexion s'effectue par un lien envoyé à cette adresse. Chaque compte est personnel et réservé à un seul utilisateur : le partage d'un accès entre plusieurs personnes est interdit, chaque utilisateur supplémentaire devant disposer de son propre abonnement ou d'une place dans une formule Agence ou Réseau.</p>
+                    <p><b>Formules Agence et Réseau.</b> Le titulaire de l'abonnement invite les utilisateurs de son agence, dans la limite des places souscrites, et peut les retirer à tout moment ; un utilisateur retiré perd l'accès fourni par l'agence. Au sein d'une agence, les zones d'alerte sont visibles de tous ses membres, et le titulaire et les responsables voient les demandes de rappel reçues par chacun. Les demandes reçues et les courriers d'un utilisateur qui quitte l'agence sont transférés au titulaire, l'agence restant responsable de ces données (article 14). Un réseau voit les chiffres de ses agences, pas les coordonnées des personnes.</p>
                     <p>Le Client est responsable de l'accès à sa messagerie et de l'usage fait de son compte. Il peut le supprimer à tout moment depuis l'espace « Mon compte » ; ses rapports et données ne sont alors plus accessibles.</p>
                 </Article>
 

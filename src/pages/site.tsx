@@ -27,7 +27,8 @@ const NAV_LINK = 'px-2 sm:px-3 py-2 text-sm text-muted hover:text-ink transition
 function Nav() {
     const { me } = useAccount();
     const links: [string, string, boolean][] = me?.is_pro
-        ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false], ['/observatoire', 'Observatoire', false]]
+        ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
+            me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Démo', true], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     return (
         <>

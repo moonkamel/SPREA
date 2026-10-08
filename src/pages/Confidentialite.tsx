@@ -40,6 +40,12 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Mesures précontractuelles prises à la demande de la personne</td>
                             </tr>
                             <tr>
+                                <td className={td}>Équipe d'agence (formules Agence et Réseau)</td>
+                                <td className={td}>Email des membres invités, rôle, date d'arrivée ; pour une invitation, email et date d'expiration (le lien n'est conservé que sous forme chiffrée)</td>
+                                <td className={td}>Donner accès aux membres de l'agence, partager alertes et demandes de rappel au sein de l'agence</td>
+                                <td className={td}>Exécution du contrat conclu avec l'agence</td>
+                            </tr>
+                            <tr>
                                 <td className={td}>Compte</td>
                                 <td className={td}>Adresse email, identifiant de compte, dates de connexion</td>
                                 <td className={td}>Créer le compte et permettre la connexion par lien email</td>
@@ -92,6 +98,7 @@ export default function ConfidentialitePage() {
                 <ul className="list-disc pl-5 space-y-1">
                     <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Demandes de rappel laissées sur une page d'agence : jusqu'à leur suppression par l'agence, à la suppression de son compte ou au plus tard 3 ans après leur envoi. Pour exercer vos droits, adressez-vous à l'agence indiquée sur la page, ou à nous : nous transmettrons.</li>
+                    <li>Invitations non acceptées : 30 jours après leur expiration (7 jours après l'envoi).</li>
                     <li>Demandes de devis : 3 ans après la demande si elle n'aboutit pas à un contrat.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>
                     <li>Après suppression du compte, trace minimale des achats et des acceptations (date, montant, références de paiement, version des CGV ou des conditions de la carte de prospection acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
