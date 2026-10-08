@@ -27,12 +27,19 @@ l'abonnement Pro.
 
 ## 2. Stripe
 
+Commencer en mode test (clés `sk_test_…`), puis refaire ces étapes en mode live.
+
 1. **Catalogue de produits** : créer
-   - « Rapport SPREA » : prix unique (ex. 39 €) → `STRIPE_PRICE_REPORT`
-   - « SPREA Pro » : prix récurrent mensuel (ex. 49 €) → `STRIPE_PRICE_PRO`
-2. **Développeurs > Clés API** : `STRIPE_SECRET_KEY`.
+   - « Rapport SPREA » : prix unique de 39 € → `STRIPE_PRICE_REPORT`
+   - « SPREA Pro » : prix récurrent mensuel de 49 € → `STRIPE_PRICE_PRO`
+
+   Pour chaque prix, choisir **« Taxes incluses »** (le site affiche des prix
+   TTC) et, sur le produit, le code fiscal « Services fournis par voie
+   électronique » (`txcd_10000000`).
+2. **Développeurs > Clés API** : `STRIPE_SECRET_KEY`. La clé publique
+   (`pk_…`) n'est pas utilisée : le paiement se fait sur la page Stripe Checkout.
 3. **Développeurs > Webhooks** : ajouter l'endpoint
-   `https://<votre-site>/api/stripe/webhook` avec les événements
+   `https://sprea.vercel.app/api/stripe/webhook` avec les événements
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
    - `customer.subscription.created`
@@ -42,15 +49,27 @@ l'abonnement Pro.
    puis copier le secret de signature dans `STRIPE_WEBHOOK_SECRET`.
 4. **Paramètres > Portail client** : activer l'annulation d'abonnement et
    l'historique des factures.
-5. **Paramètres > Facturation** : vérifier les mentions légales des factures
-   (raison sociale, SIRET, TVA). La TVA n'est pas calculée automatiquement :
-   prévoir des prix TTC ou activer Stripe Tax.
+5. **Paramètres > Facturation > Factures** : renseigner raison sociale,
+   adresse, SIRET et numéro de TVA (ou la mention de franchise en base), et
+   activer l'envoi des factures et reçus par email.
+6. **Paramètres > Facturation > Abonnements et emails** : activer les
+   relances automatiques (Smart Retries) et les emails en cas d'échec de
+   paiement ou de carte expirée.
+7. **TVA (Stripe Tax)**, si la société est assujettie à la TVA :
+   - Paramètres > Taxes : adresse d'origine, puis ajouter l'immatriculation
+     **France** ;
+   - mettre `STRIPE_AUTOMATIC_TAX=true` dans Vercel.
+
+   Stripe calcule alors la TVA selon l'adresse du client, et les
+   professionnels peuvent saisir leur numéro de TVA (affiché sur la facture).
+   Stripe Tax est facturé 0,5 % par transaction. En franchise en base de TVA
+   (micro-entreprise), laisser `STRIPE_AUTOMATIC_TAX` vide.
 
 ## 3. Vercel
 
 Renseigner toutes les variables de `.env.example` dans
 **Project Settings > Environment Variables**, avec `PUBLIC_APP_URL` égal à
-l'URL publique du site. Commencer avec les clés Stripe de test
+l'URL publique du site (`https://sprea.vercel.app`). Commencer avec les clés Stripe de test
 (`sk_test_…`), puis passer aux clés live une fois le parcours vérifié.
 
 ## Test local du webhook

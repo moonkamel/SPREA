@@ -394,3 +394,28 @@ def test_account_deletion_aborts_if_subscription_cannot_be_canceled(env):
 
 def test_account_deletion_requires_login():
     assert TestClient(main.app).request("DELETE", "/api/me", json={"confirm": True}).status_code == 401
+
+
+@pytest.mark.parametrize("automatic_tax", [False, True])
+def test_checkout_tax_parameters(automatic_tax):
+    import asyncio
+
+    from api.billing import Billing
+
+    billing = Billing("sk_test_x", "whsec", "price_r", "price_p", "https://sprea.vercel.app", automatic_tax=automatic_tax)
+    sent = []
+
+    async def fake_create(params):
+        sent.append(params)
+        return {"id": "cs_1", "url": "https://checkout.stripe.test/cs_1"}
+
+    billing.client.v1.checkout.sessions.create_async = fake_create
+    asyncio.run(billing.report_checkout("r1", "u1", "cus_1"))
+    asyncio.run(billing.subscription_checkout("u1", "cus_1"))
+    for params in sent:
+        assert params["success_url"].startswith("https://sprea.vercel.app/?")
+        assert ("automatic_tax" in params) is automatic_tax
+        if automatic_tax:
+            assert params["automatic_tax"] == {"enabled": True}
+            assert params["tax_id_collection"] == {"enabled": True}
+            assert params["customer_update"] == {"address": "auto", "name": "auto"}
