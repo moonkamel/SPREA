@@ -85,6 +85,10 @@ class PropertySchema(BaseModel):
     longitude: Optional[float] = None
     building_type: Optional[str] = None # Maison, Appartement, etc.
     postcode: Optional[str] = None
+    city: Optional[str] = None
+    # Equipment as described by the DPE (heating, hot water, ventilation...),
+    # short labels used by the report; absent fields are None
+    details: Dict[str, Optional[str]] = {}
     # Per-element insulation quality and heat losses, when the DPE provides them
     insulation_quality: Dict[str, Optional[str]] = {}
     dpe_losses: Optional[Dict[str, Optional[float]]] = None
@@ -178,6 +182,8 @@ class AdemeConnector:
                     # We might not have exact coords from ADEME, so we use BAN's
                     if not mapped.postcode:
                         mapped.postcode = postcode
+                    if not mapped.city:
+                        mapped.city = city or None
                     if not mapped.latitude:
                         mapped.latitude = coords[1]
                         mapped.longitude = coords[0]
@@ -243,8 +249,26 @@ class AdemeConnector:
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment", "Logement"),
             postcode=str(raw.get("code_postal_ban") or raw.get("code_postal_brut") or "") or None,
+            city=raw.get("nom_commune_ban") or raw.get("nom_commune_brut"),
             is_estimated=is_estimated
         )
+
+        def label(*keys: str) -> Optional[str]:
+            for key in keys:
+                value = raw.get(key)
+                if value not in (None, ""):
+                    return str(value)[:120]
+            return None
+
+        cost = self._safe_float(raw.get("cout_total_5_usages"), None)
+        prop.details = {
+            "floor": label("numero_etage_appartement"),
+            "heating_system": label("type_generateur_chauffage_principal", "type_generateur_n1_installation_n1"),
+            "heating_installation": label("type_installation_chauffage"),
+            "hot_water_system": label("type_generateur_n1_ecs_n1", "type_generateur_ecs_principal"),
+            "ventilation": label("type_ventilation"),
+            "dpe_annual_cost": f"{round(cost)}" if cost else None,
+        }
 
         # Insulation quality per element (DPE 2021 fields, absent from older records)
         prop.insulation_quality = {

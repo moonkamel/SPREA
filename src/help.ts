@@ -68,23 +68,23 @@ export const HELP = {
     },
     cost: {
         title: 'Coût des travaux',
-        text: "Estimation TTC des travaux choisis, fourniture et pose comprises, ajustée à votre région et aux contraintes du chantier.",
+        text: "Estimation TTC des travaux choisis, fourniture et pose comprises, ajustée à votre région et aux contraintes du chantier. Affichée en fourchette : les devis varient selon le bâtiment et l'artisan, seuls des devis fixent le prix réel.",
     },
     mpr: {
         title: "MaPrimeRénov'",
-        text: "Principale aide de l'État (Anah). En rénovation d'ampleur (au moins 2 classes gagnées et 2 travaux d'isolation), elle couvre un pourcentage des travaux, plafonné. Sinon, elle est versée en forfaits par type de travaux.",
+        text: "Principale aide de l'État (Anah). En rénovation d'ampleur (logement classé E, F ou G, au moins 2 classes gagnées et 2 travaux d'isolation), elle couvre 10 à 80 % des travaux selon vos revenus, dans la limite de 30 000 ou 40 000 € HT de dépenses. Hors rénovation d'ampleur, depuis le 1er septembre 2026, seule la pompe à chaleur reste financée « par geste ».",
     },
     pathway: {
         title: "Rénovation d'ampleur",
-        text: "Le « parcours accompagné » de MaPrimeRénov' finance les projets qui font gagner au moins 2 classes. Il est plus généreux mais impose un Accompagnateur Rénov' qui vous suit du diagnostic à la fin du chantier.",
+        text: "Le « parcours accompagné » de MaPrimeRénov' finance les projets qui font gagner au moins 2 classes à un logement classé E, F ou G. Il impose un rendez-vous France Rénov' puis un Accompagnateur Rénov' qui vous suit du diagnostic à la fin du chantier. Une maison ne peut pas y garder un chauffage au gaz ou au fioul.",
     },
     cee: {
         title: "Primes CEE",
-        text: "Primes « certificats d'économies d'énergie » versées par les fournisseurs d'énergie. Elles s'ajoutent à MaPrimeRénov' par geste, mais pas à la rénovation d'ampleur, qui les intègre déjà.",
+        text: "Primes « certificats d'économies d'énergie » versées par les fournisseurs d'énergie. Hors rénovation d'ampleur, ce sont désormais les seules aides pour l'isolation, les fenêtres, la ventilation et le chauffe-eau. Montants indicatifs : ils varient selon l'offre. Elles ne se cumulent pas avec la rénovation d'ampleur, qui les intègre déjà.",
     },
     rest: {
         title: 'Reste à charge',
-        text: "Ce que vous payez réellement : coût des travaux moins les aides. Il peut être financé sans intérêts par l'Éco-PTZ.",
+        text: "Ce que vous payez réellement : coût des travaux moins les aides, en fourchette selon les devis. Il peut être financé sans intérêts par l'Éco-PTZ.",
     },
     ecoPtz: {
         title: 'Éco-prêt à taux zéro',

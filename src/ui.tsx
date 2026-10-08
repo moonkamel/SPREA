@@ -8,6 +8,12 @@ import { HELP, type HelpTopic } from './help';
 export const eur = (n: number | null | undefined) =>
     `${Math.round(n || 0).toLocaleString('fr-FR')} €`;
 
+// Estimates rounded to the hundred euros, shown as a range
+export const eurRange = (low: number | null | undefined, high: number | null | undefined) => {
+    const r = (n: number | null | undefined) => Math.round((n || 0) / 100) * 100;
+    return r(low) === r(high) ? eur(r(low)) : `${r(low).toLocaleString('fr-FR')} à ${eur(r(high))}`;
+};
+
 export const num = (n: number | null | undefined) => Math.round(n || 0).toLocaleString('fr-FR');
 
 // --- DPE labels (official 2021 colours) ---

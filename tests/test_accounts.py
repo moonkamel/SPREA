@@ -115,7 +115,7 @@ BOB = User(id="22222222-2222-2222-2222-222222222222", email="bob@example.com")
 
 @pytest.fixture
 def env(monkeypatch):
-    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     store, billing = FakeStore(), FakeBilling()
     state = {"user": ALICE}
     main.app.dependency_overrides[accounts.store_dep] = lambda: store
@@ -167,8 +167,9 @@ def test_report_purchase_flow_with_webhook(env):
     assert res.status_code == 200
     assert res.content.startswith(b"%PDF")
     assert "Rapport_SPREA_1_rue_de_l_Eglise_Lille.pdf" in res.headers["content-disposition"]
-    # Narrative generated once and stored
-    assert store.reports[report_id]["narrative"]
+    # Without an API key the rule-based analysis is used and not stored,
+    # so the report gets Claude's analysis once a key is configured
+    assert store.reports[report_id]["narrative"] is None
 
     reports = client.get("/api/me").json()["reports"]
     assert [r["id"] for r in reports] == [report_id]
@@ -419,3 +420,31 @@ def test_checkout_tax_parameters(automatic_tax):
             assert params["automatic_tax"] == {"enabled": True}
             assert params["tax_id_collection"] == {"enabled": True}
             assert params["customer_update"] == {"address": "auto", "name": "auto"}
+
+
+def test_claude_analysis_is_generated_once_and_stored(env, monkeypatch):
+    import httpx
+    from api.ai_service import ai_service
+
+    client, store, billing, state = env
+    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
+    calls = []
+    sections = {k: f"Texte {k} pour ce logement de 85 m²." for k in ("verdict", "diagnostic", "strategie", "financement", "profil")}
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(200, json={"content": [{"type": "tool_use", "name": "rediger_analyse",
+                                                      "input": {**sections, "vigilance": ["Premier point à vérifier.", "Second point à vérifier."]}}]})
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setattr(ai_service, "transport", httpx.MockTransport(handler))
+    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
+    assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
+    assert json.loads(store.reports[report_id]["narrative"])["source"] == "claude"
+    # Second download reuses the stored analysis
+    assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
+    assert len(calls) == 1
+    # The street address is never sent
+    prompt = json.loads(calls[0].content)["messages"][0]["content"]
+    assert "rue de l" not in prompt and "Église" not in prompt
+    assert "surface_m2" in prompt

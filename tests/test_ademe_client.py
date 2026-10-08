@@ -55,3 +55,13 @@ def test_dpe_losses_with_doors_counted_as_bridges():
                deperditions_ponts_thermiques=20, deperditions_portes=5)
     prop = AdemeConnector()._map_to_internal(raw)
     assert prop.dpe_losses == {"walls": 120, "roof": 90, "floor": 40, "windows": 35, "air": 60, "bridges": 25}
+
+
+def test_city_and_equipment_details():
+    raw = {**RAW, "nom_commune_ban": "Paris", "type_ventilation": "VMC simple flux autoréglable",
+           "type_installation_chauffage": "installation individuelle", "cout_total_5_usages": 1234.6}
+    prop = AdemeConnector()._map_to_internal(raw)
+    assert prop.city == "Paris"
+    assert prop.details["ventilation"] == "VMC simple flux autoréglable"
+    assert prop.details["dpe_annual_cost"] == "1235"
+    assert AdemeConnector()._map_to_internal(RAW).details["ventilation"] is None

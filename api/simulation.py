@@ -13,10 +13,10 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 try:
-    from api.aids import ResourceProfile, compute_aids, get_profile
+    from api.aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from api.envelope import Envelope
 except ImportError:
-    from aids import ResourceProfile, compute_aids, get_profile
+    from aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from envelope import Envelope
 
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
@@ -105,22 +105,24 @@ LOAN_MONTHS = 84
 #   window   -> per window (price per dwelling given for a typical 8 windows)
 #   radiator -> one per 15 m2
 #   flat     -> one per dwelling
+# range: low / high multipliers around the central cost (quotes vary with the
+# building, access and the craftsman; heat pumps and ventilation vary most)
 WORKS_CATALOG = [
-    {"id": "iti", "name": "Isolation des murs (par l'intérieur)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
+    {"id": "iti", "range": (0.85, 1.25), "name": "Isolation des murs (par l'intérieur)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
      "description": "Doublage isolant posé côté intérieur des murs donnant sur l'extérieur. Efficace, mais réduit un peu la surface habitable."},
-    {"id": "roof", "name": "Isolation de la toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
+    {"id": "roof", "range": (0.85, 1.25), "name": "Isolation de la toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
      "description": "Isolation des combles ou des rampants. Souvent le geste le plus rentable dans une maison : la chaleur monte."},
-    {"id": "floor_ceiling", "name": "Isolation du plancher bas", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
+    {"id": "floor_ceiling", "range": (0.85, 1.3), "name": "Isolation du plancher bas", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
      "description": "Isolant posé sous le plancher, côté cave, garage ou vide sanitaire. Supprime l'effet « sol froid »."},
-    {"id": "vmc", "name": "Ventilation mécanique (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
+    {"id": "vmc", "range": (0.8, 1.35), "name": "Ventilation mécanique (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
      "description": "Renouvelle l'air en continu et en limitant les pertes de chaleur. Indispensable après isolation pour éviter l'humidité."},
-    {"id": "pac_air_eau", "name": "Pompe à chaleur air/eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
+    {"id": "pac_air_eau", "range": (0.85, 1.25), "name": "Pompe à chaleur air/eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
      "description": "Remplace une chaudière gaz ou fioul : environ trois fois moins d'énergie consommée. Utilise vos radiateurs à eau ou votre plancher chauffant."},
-    {"id": "heating", "name": "Radiateurs électriques à inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
+    {"id": "heating", "range": (0.85, 1.2), "name": "Radiateurs électriques à inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
      "description": "Remplacent d'anciens convecteurs électriques, avec une chaleur plus douce et mieux régulée. Utile seulement si le logement est déjà chauffé à l'électricité."},
-    {"id": "ecs", "name": "Chauffe-eau thermodynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
+    {"id": "ecs", "range": (0.85, 1.2), "name": "Chauffe-eau thermodynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
      "description": "Produit l'eau chaude avec une petite pompe à chaleur : deux à trois fois moins d'électricité qu'un ballon classique."},
-    {"id": "windows", "name": "Fenêtres double vitrage", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
+    {"id": "windows", "range": (0.8, 1.3), "name": "Fenêtres double vitrage", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
      "description": "Remplacement des fenêtres anciennes ou en simple vitrage. Plus de confort, moins de courants d'air et de bruit."},
 ]
 WORKS_BY_ID = {w["id"]: w for w in WORKS_CATALOG}
@@ -194,6 +196,16 @@ def rental_ban_date(label: str, final_consumption: float, postcode: Optional[str
     schedule = {"G": date(2028, 1, 1), "F": date(2031, 1, 1)} if overseas else \
         {"G": date(2025, 1, 1), "F": date(2028, 1, 1), "E": date(2034, 1, 1)}
     return schedule.get(label)
+
+
+def rental_status(ban: Optional[date], today: Optional[date] = None) -> str:
+    """Plain-language rental status under the Loi Climat schedule."""
+    today = today or date.today()
+    if ban is None:
+        return "Louable sans limite de date"
+    if ban <= today:
+        return f"Location interdite depuis le {ban.strftime('%d/%m/%Y')}"
+    return f"Louable jusqu'au {ban.strftime('%d/%m/%Y')}"
 
 
 def normalize_energy(source: Optional[str]) -> str:
@@ -336,12 +348,19 @@ def simulate(data: SimulationInput) -> Dict:
         if w["zone"]:
             item *= zone
         item *= index_ratio * coeff_access * coeff_urban
-        detailed_costs.append({"id": w["id"], "name": w["name"], "cost": item, "suggested": w["id"] in data.suggested_works})
+        low, high = w["range"]
+        detailed_costs.append({"id": w["id"], "name": w["name"], "cost": item, "cost_low": item * low,
+                               "cost_high": item * high, "quantity": quantity, "unit": w["unit"],
+                               "days": w["days"], "suggested": w["id"] in data.suggested_works})
         aid_works.append({"id": w["id"], "cost_ttc": item, "quantity": quantity})
 
     if logistics > 0:
-        detailed_costs.append({"id": "parking", "name": "Stationnement des artisans", "cost": logistics, "suggested": False})
+        detailed_costs.append({"id": "parking", "name": "Stationnement des artisans", "cost": logistics,
+                               "cost_low": logistics, "cost_high": logistics, "quantity": duration, "unit": "day",
+                               "days": 0, "suggested": False})
     cost = sum(d["cost"] for d in detailed_costs)
+    cost_low = sum(d["cost_low"] for d in detailed_costs)
+    cost_high = sum(d["cost_high"] for d in detailed_costs)
 
     new_cep = perf["new_cep"]
     new_ges = perf["new_ges"]
@@ -359,8 +378,17 @@ def simulate(data: SimulationInput) -> Dict:
         profile = get_profile(data.rfr, data.occupants, prop.postcode)
     else:
         profile = INCOME_LEVELS.get(data.income_level, ResourceProfile.VIOLET)
-    aids = compute_aids(aid_works, profile, current["label"], target["label"])
+    house = is_house(prop.building_type)
+    aids = compute_aids(aid_works, profile, current["label"], target["label"], house, energy)
     rest = max(0.0, cost - aids["mpr"] - aids["cee"])
+
+    # Range: the same works priced low / high (aids follow the cost in rénovation d'ampleur)
+    def rest_for(bound: str) -> float:
+        scaled = [{**a, "cost_ttc": d[bound]} for a, d in zip(aid_works, detailed_costs)]
+        res = compute_aids(scaled, profile, current["label"], target["label"], house, energy)
+        total = sum(d[bound] for d in detailed_costs)
+        return max(0.0, total - res["mpr"] - res["cee"])
+    rest_low, rest_high = rest_for("cost_low"), rest_for("cost_high")
 
     # Éco-PTZ: ceiling depends on the number of work categories
     categories = set()
@@ -373,7 +401,12 @@ def simulate(data: SimulationInput) -> Dict:
             categories.add("heating")
         else:
             categories.add("other")
-    eco_ptz_limit = {0: 0, 1: 15000, 2: 25000}.get(len(categories), 30000)
+    if aids["pathway"] == "accompagne":
+        # Éco-PTZ "performance énergétique globale", paired with MaPrimeRénov'
+        eco_ptz_limit, eco_ptz_months = 50000, 240
+    else:
+        eco_ptz_limit = {0: 0, 1: 15000, 2: 25000}.get(len(categories), 30000)
+        eco_ptz_months = 180
     eco_ptz_amount = min(rest, eco_ptz_limit)
 
     # Savings on the energy bill, in final energy at current prices
@@ -403,16 +436,25 @@ def simulate(data: SimulationInput) -> Dict:
         "gain_classes": steps,
         "thresholds": thresholds,
         "cost": cost,
+        "cost_low": cost_low,
+        "cost_high": cost_high,
         "detailed_costs": detailed_costs,
         "duration_days": duration,
         "subsidies": aids["mpr"],
         "cee_est": aids["cee"],
         "aid_pathway": aids["pathway"],
         "aid_notes": aids["notes"],
+        "aid_blockers": aids["blockers"],
+        "aid_per_work": aids["per_work"],
+        "aid_rules": RULES_LABEL,
         "income_profile": profile.value,
         "rest_to_pay": rest,
+        "rest_to_pay_low": rest_low,
+        "rest_to_pay_high": rest_high,
         "eco_ptz_limit": eco_ptz_limit,
         "eco_ptz_amount": eco_ptz_amount,
+        "eco_ptz_months": eco_ptz_months if eco_ptz_amount else 0,
+        "eco_ptz_monthly": eco_ptz_amount / eco_ptz_months if eco_ptz_amount else 0.0,
         "heating_energy": energy,
         "initial_final_consumption": final_before,
         "new_final_consumption": final_after,
@@ -430,8 +472,31 @@ def simulate(data: SimulationInput) -> Dict:
         "cashflow": cashflow,
         "ban_date": ban.isoformat() if ban else None,
         "new_ban_date": new_ban.isoformat() if new_ban else None,
+        "rental_status": rental_status(ban),
+        "new_rental_status": rental_status(new_ban),
         "has_iti": any(w["id"] == "iti" for w in works),
     }
+
+
+def single_work_effects(data: SimulationInput) -> Dict[str, Dict[str, float]]:
+    """Effect of each selected work on its own: primary consumption and bill
+    saving. Used by the report to explain what each work brings."""
+    prop = data.property
+    energy = normalize_energy(prop.heating_energy)
+    base = projected_performance(prop, [])
+    bill_before = _total(base["balance"]["before"], ENERGY_PRICES_EUR_KWH) * prop.surface
+    effects = {}
+    for work in dict.fromkeys(data.works):
+        if work not in WORKS_BY_ID:
+            continue
+        perf = projected_performance(prop, [work])
+        bill_after = _total(perf["balance"]["after"], ENERGY_PRICES_EUR_KWH) * prop.surface
+        effects[work] = {
+            "cep_saved": max(0.0, prop.initial_cep - perf["new_cep"]),
+            "bill_saving": max(0.0, bill_before - bill_after),
+            "heating_need_reduction": perf["envelope"].heating_reduction([work]),
+        }
+    return effects
 
 
 # --- Work suggestions ---

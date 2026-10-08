@@ -198,6 +198,9 @@ function Simulator() {
                     building_type: property.buildingType || null,
                     construction_period: property.constructionPeriod || null,
                     dpe_date: property.dpeDate || null,
+                    city: property.city || null,
+                    postcode: property.postcode || null,
+                    details: property.details || null,
                 },
                 simulation,
             });

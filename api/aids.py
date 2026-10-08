@@ -1,10 +1,25 @@
-"""MaPrimeRénov' rules (barème 2025, Anah). Keep in sync with src/aids.ts.
+"""MaPrimeRénov' and CEE rules, as applicable to files filed from 1 September 2026.
 
-These figures change every year: check them against the official Anah guide
-before each update.
+Sources: Anah (guide des aides 2026), décret n° 2025-956 du 8 septembre 2025,
+décret n° 2026-822 du 25 août 2026 and its arrêtés (JO du 27 août 2026).
+Main points:
+- Resource ceilings revised on 1 January 2026.
+- Rénovation d'ampleur: dwellings rated E, F or G, at least 2 classes gained,
+  at least 2 insulation works; 80 / 60 / 45 / 10 % of an expense ceiling of
+  30 000 € HT (2 classes) or 40 000 € HT (3 classes or more). No more
+  "sortie de passoire" bonus. A house may not keep gas, oil or coal heating.
+  CEE are valued by the Anah inside the pathway (not cumulable).
+- MaPrimeRénov' par geste: only heat pumps (other than air/air), district
+  heating connection, energy audit and oil tank removal are still funded,
+  and only for the Très modeste, Modeste and Intermédiaire categories.
+  Insulation, windows, ventilation and water heaters only get CEE premiums.
+
+These figures change often: check them against the Anah before each update.
 """
 from enum import Enum
 from typing import Dict, List, Optional
+
+RULES_LABEL = "barème MaPrimeRénov' en vigueur au 1er septembre 2026"
 
 
 class ResourceProfile(str, Enum):
@@ -21,49 +36,62 @@ TVA_RENOVATION = 0.055
 
 IDF_DEPARTMENTS = {"75", "77", "78", "91", "92", "93", "94", "95"}
 
-# Revenu fiscal de référence ceilings for households of 1 to 5 people
-# (Très modeste, Modeste, Intermédiaire), then the increment per extra person.
+# Revenu fiscal de référence ceilings (1 January 2026) for households of 1 to 5
+# people (Très modeste, Modeste, Intermédiaire), then the increment per extra person.
 RFR_CEILINGS = {
     "province": {
         "table": [
-            (17173, 22015, 30844),
-            (25115, 32197, 45340),
-            (30206, 38719, 54592),
-            (35285, 45234, 63844),
-            (40388, 51775, 73098),
+            (17363, 22259, 31185),
+            (25393, 32553, 45842),
+            (30540, 39148, 55196),
+            (35676, 45735, 64550),
+            (40835, 52348, 73907),
         ],
-        "per_extra": (5094, 6525, 9254),
+        "per_extra": (5151, 6598, 9357),
     },
     "idf": {
         "table": [
-            (23768, 28933, 40404),
-            (34884, 42463, 59394),
-            (41893, 51000, 71060),
-            (48914, 59549, 83637),
-            (55961, 68123, 95758),
+            (24031, 29253, 40851),
+            (35270, 42933, 60051),
+            (42357, 51564, 71846),
+            (49455, 60208, 84562),
+            (56580, 68877, 96817),
         ],
-        "per_extra": (7038, 8568, 12122),
+        "per_extra": (7116, 8663, 12257),
     },
 }
 
-ACCOMPAGNE_RATES = {
+PROFILE_ORDER = [ResourceProfile.BLEU, ResourceProfile.JAUNE, ResourceProfile.VIOLET, ResourceProfile.ROSE]
+
+# --- Rénovation d'ampleur ---
+
+AMPLEUR_LABELS = {"E", "F", "G"}
+AMPLEUR_RATES = {
     ResourceProfile.BLEU: 0.80,
     ResourceProfile.JAUNE: 0.60,
     ResourceProfile.VIOLET: 0.45,
     ResourceProfile.ROSE: 0.10,
 }
-
-# Bonus when a "passoire" (F/G) reaches at least class D.
-PASSOIRE_BONUS = 0.10
-
 # Total public aid cannot exceed this share of the TTC cost.
-ACCOMPAGNE_ECRETEMENT = {
+AMPLEUR_ECRETEMENT = {
     ResourceProfile.BLEU: 1.0,
     ResourceProfile.JAUNE: 0.8,
     ResourceProfile.VIOLET: 0.6,
     ResourceProfile.ROSE: 0.5,
 }
 
+# Works counted as "isolation" for the rénovation d'ampleur requirement.
+INSULATION_WORKS = {"iti", "iti_ossature", "ite_pse", "ite_bois", "roof", "combles", "floor_ceiling", "windows", "windows_pvc"}
+FOSSIL_ENERGIES = {"gas", "oil"}
+# Works that remove gas or oil heating
+FOSSIL_REPLACEMENTS = {"pac_air_eau"}
+
+# --- MaPrimeRénov' par geste ---
+
+# Fixed amounts (Très modeste, Modeste, Intermédiaire, Supérieur).
+GESTURE_FORFAITS = {
+    "pac_air_eau": (5000, 4000, 3000, 0),
+}
 GESTURE_ECRETEMENT = {
     ResourceProfile.BLEU: 0.9,
     ResourceProfile.JAUNE: 0.75,
@@ -71,24 +99,20 @@ GESTURE_ECRETEMENT = {
     ResourceProfile.ROSE: 0.4,
 }
 
-# Fixed amounts per unit (Très modeste, Modeste, Intermédiaire, Supérieur).
-# Works with no entry are not funded by MaPrimeRénov' par geste.
-GESTURE_FORFAITS = {
-    "iti": {"unit": "m2", "amounts": (25, 20, 15, 0), "max_units": 100},
-    "iti_ossature": {"unit": "m2", "amounts": (25, 20, 15, 0), "max_units": 100},
-    "ite_pse": {"unit": "m2", "amounts": (75, 60, 40, 0), "max_units": 100},
-    "ite_bois": {"unit": "m2", "amounts": (75, 60, 40, 0), "max_units": 100},
-    "roof": {"unit": "m2", "amounts": (25, 20, 15, 0), "max_units": 100},
-    "windows": {"unit": "unit", "amounts": (100, 80, 40, 0)},
-    "windows_pvc": {"unit": "unit", "amounts": (100, 80, 40, 0)},
-    "ecs": {"unit": "flat", "amounts": (1200, 800, 400, 0)},
-    "pac_air_eau": {"unit": "flat", "amounts": (5000, 4000, 3000, 0)},
+# --- CEE premiums (estimates) ---
+
+# Indicative market values: (Très modeste / Modeste, other households), per
+# unit. Actual premiums depend on the energy supplier's offer.
+CEE_ESTIMATES = {
+    "iti": ("m2", (14, 8)),
+    "roof": ("m2", (14, 8)),
+    "floor_ceiling": ("m2", (18, 10)),
+    "windows": ("unit", (60, 35)),
+    "vmc": ("flat", (300, 150)),
+    "ecs": ("flat", (150, 100)),
+    # "Coup de pouce chauffage": only when it replaces a gas or oil boiler
+    "pac_air_eau": ("flat", (4000, 2500)),
 }
-
-# Works counted as "isolation" for the parcours accompagné requirement.
-INSULATION_WORKS = {"iti", "iti_ossature", "ite_pse", "ite_bois", "roof", "combles", "floor_ceiling", "windows", "windows_pvc"}
-
-PROFILE_ORDER = [ResourceProfile.BLEU, ResourceProfile.JAUNE, ResourceProfile.VIOLET, ResourceProfile.ROSE]
 
 
 def is_idf(postcode: Optional[str]) -> bool:
@@ -109,13 +133,11 @@ def get_profile(rfr: float, occupants: int = 1, postcode: Optional[str] = None) 
     return ResourceProfile.ROSE
 
 
-def accompagne_ceiling_ht(class_gain: int) -> float:
-    if class_gain >= 4:
-        return 70000
-    if class_gain == 3:
-        return 55000
-    if class_gain == 2:
+def ampleur_ceiling_ht(class_gain: int) -> float:
+    if class_gain >= 3:
         return 40000
+    if class_gain == 2:
+        return 30000
     return 0
 
 
@@ -123,39 +145,79 @@ def class_gain(current: str, target: str) -> int:
     return max(0, LABELS.index(current) - LABELS.index(target))
 
 
-def compute_aids(works: List[Dict], profile: ResourceProfile, current_label: str, target_label: str) -> Dict:
-    """works: list of {"id", "cost_ttc", "quantity"}. Returns MPR and CEE amounts."""
+def cee_estimate(work: Dict, profile: ResourceProfile, energy: Optional[str]) -> float:
+    rule = CEE_ESTIMATES.get(work["id"])
+    if not rule:
+        return 0.0
+    if work["id"] == "pac_air_eau" and energy not in FOSSIL_ENERGIES:
+        return 0.0
+    unit, amounts = rule
+    amount = amounts[0] if profile in (ResourceProfile.BLEU, ResourceProfile.JAUNE) else amounts[1]
+    return amount * (1 if unit == "flat" else work["quantity"])
+
+
+def ampleur_blockers(works: List[Dict], current_label: str, target_label: str,
+                     house: bool = False, energy: Optional[str] = None) -> List[str]:
+    """Reasons why the rénovation d'ampleur is not available (empty list: eligible)."""
+    reasons = []
+    ids = {w["id"] for w in works}
+    if current_label not in AMPLEUR_LABELS:
+        reasons.append(f"La rénovation d'ampleur est réservée aux logements classés E, F ou G (celui-ci est classé {current_label}).")
+    gain = class_gain(current_label, target_label)
+    if gain < 2:
+        reasons.append("La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.")
+    if sum(1 for w in works if w["id"] in INSULATION_WORKS) < 2:
+        reasons.append("La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).")
+    if house and energy in FOSSIL_ENERGIES and not ids & FOSSIL_REPLACEMENTS:
+        reasons.append("Depuis le 1er septembre 2026, une maison ne peut plus conserver un chauffage au gaz ou au fioul en rénovation d'ampleur.")
+    return reasons
+
+
+def compute_aids(works: List[Dict], profile: ResourceProfile, current_label: str, target_label: str,
+                 house: bool = False, energy: Optional[str] = None) -> Dict:
+    """works: list of {"id", "cost_ttc", "quantity"}. Returns MPR and CEE amounts,
+    per work for the gesture pathway, and explanations."""
     notes: List[str] = []
     total_ttc = sum(w["cost_ttc"] for w in works)
+    empty = {"mpr": 0.0, "cee": 0.0, "pathway": "none", "notes": notes, "per_work": {}, "blockers": []}
     if total_ttc <= 0:
-        return {"mpr": 0.0, "cee": 0.0, "pathway": "none", "notes": notes}
+        return empty
 
+    blockers = ampleur_blockers(works, current_label, target_label, house, energy)
     gain = class_gain(current_label, target_label)
-    insulation_count = sum(1 for w in works if w["id"] in INSULATION_WORKS)
+    if not blockers:
+        eligible_ht = min(total_ttc / (1 + TVA_RENOVATION), ampleur_ceiling_ht(gain))
+        mpr = min(eligible_ht * AMPLEUR_RATES[profile], total_ttc * AMPLEUR_ECRETEMENT[profile])
+        notes.append("CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.")
+        return {"mpr": mpr, "cee": 0.0, "pathway": "accompagne", "notes": notes, "per_work": {}, "blockers": []}
 
-    if gain >= 2:
-        if insulation_count >= 2:
-            eligible_ht = min(total_ttc / (1 + TVA_RENOVATION), accompagne_ceiling_ht(gain))
-            passoire_exit = current_label in ("F", "G") and LABELS.index(target_label) <= LABELS.index("D")
-            rate = ACCOMPAGNE_RATES[profile] + (PASSOIRE_BONUS if passoire_exit else 0)
-            mpr = min(eligible_ht * rate, total_ttc * ACCOMPAGNE_ECRETEMENT[profile])
-            # CEE are valued by the Anah inside the parcours accompagné: not cumulable.
-            return {"mpr": mpr, "cee": 0.0, "pathway": "accompagne", "notes": notes}
-        notes.append("Le parcours accompagné exige au moins deux gestes d'isolation : aides calculées par geste.")
-
+    # Gesture pathway: only heat pumps still get MaPrimeRénov', CEE for the rest
     idx = PROFILE_ORDER.index(profile)
-    mpr = 0.0
-    cee = 0.0
+    per_work: Dict[str, Dict[str, float]] = {}
     for w in works:
         forfait = GESTURE_FORFAITS.get(w["id"])
-        if not forfait:
-            continue
-        qty = 1 if forfait["unit"] == "flat" else min(w["quantity"], forfait.get("max_units", float("inf")))
-        mpr += forfait["amounts"][idx] * qty
-        cee += 800  # Rough CEE estimate per eligible work
+        mpr_w = float(forfait[idx]) if forfait else 0.0
+        per_work[w["id"]] = {"mpr": mpr_w, "cee": cee_estimate(w, profile, energy)}
+    mpr = sum(v["mpr"] for v in per_work.values())
+    cee = sum(v["cee"] for v in per_work.values())
     cap = total_ttc * GESTURE_ECRETEMENT[profile]
-    mpr = min(mpr, cap)
-    cee = min(cee, max(0.0, cap - mpr))
+    if mpr + cee > cap:
+        # Écrêtement: MaPrimeRénov' is reduced first
+        excess = mpr + cee - cap
+        cut = min(excess, mpr)
+        mpr -= cut
+        cee -= excess - cut
+        scale_mpr = mpr / sum(v["mpr"] for v in per_work.values()) if mpr else 0
+        total_cee = sum(v["cee"] for v in per_work.values())
+        scale_cee = cee / total_cee if total_cee else 0
+        for v in per_work.values():
+            v["mpr"] *= scale_mpr
+            v["cee"] *= scale_cee
+
     if profile == ResourceProfile.ROSE:
-        notes.append("Les ménages aux revenus supérieurs ne sont pas éligibles à MaPrimeRénov' par geste.")
-    return {"mpr": mpr, "cee": cee, "pathway": "geste" if mpr + cee > 0 else "none", "notes": notes}
+        notes.append("Les ménages aux revenus supérieurs n'ont pas accès à MaPrimeRénov' par geste.")
+    elif any(w["id"] in INSULATION_WORKS or w["id"] in ("vmc", "ecs") for w in works):
+        notes.append("Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau "
+                     "ne sont plus financés par MaPrimeRénov' par geste : seules les primes CEE s'appliquent.")
+    return {"mpr": mpr, "cee": cee, "pathway": "geste" if mpr + cee > 0 else "none", "notes": notes,
+            "per_work": per_work, "blockers": blockers}

@@ -38,6 +38,9 @@ export interface ReportRequest {
         building_type?: string | null;
         construction_period?: string | null;
         dpe_date?: string | null;
+        city?: string | null;
+        postcode?: string | null;
+        details?: Record<string, string | null> | null;
     };
     simulation: object;
 }
