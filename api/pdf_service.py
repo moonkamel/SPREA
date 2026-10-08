@@ -55,7 +55,6 @@ FONT_DIR = os.path.join(os.path.dirname(__file__), 'fonts')
 def _register_fonts():
     fonts = {
         'Inter': 'Inter-Regular.ttf',
-        'Inter-Medium': 'Inter-Medium.ttf',
         'Inter-SemiBold': 'Inter-SemiBold.ttf',
         'Serif': 'SourceSerif4-Regular.ttf',
         'Serif-SemiBold': 'SourceSerif4-Semibold.ttf',
