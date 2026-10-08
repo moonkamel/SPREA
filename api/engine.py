@@ -2,11 +2,12 @@ import logging
 import copy
 import math
 from typing import Dict, List, Optional, Any
-from enum import Enum
 try:
     from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+    from api.aids import get_profile, compute_aids
 except ImportError:
     from ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
+    from aids import get_profile, compute_aids
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +22,7 @@ CLIMATE_DATA = {
 }
 
 ENERGY_CONVERSION = {
-    "electricity": 2.3,  # Millésime 2025 standard
+    "electricity": 1.9,  # Coefficient DPE en vigueur depuis le 1er janvier 2026 (2.3 avant)
     "gas": 1.0,
     "oil": 1.0,
     "wood": 1.0,
@@ -53,20 +54,18 @@ K_LOGISTIQUE = {
     "rural_isole": 1.05
 }
 
-class ResourceProfile(str, Enum):
-    BLEU = "Très Modeste"
-    JAUNE = "Modeste"
-    VIOLET = "Intermédiaire"
-    ROSE = "Supérieur"
-
-# Simplified ANAH Plafonds 2025 (Hauts-de-France / Province basis)
-ANAH_PLAFONDS_PROVINCE = {
-    ResourceProfile.BLEU: 17000,
-    ResourceProfile.JAUNE: 22000,
-    ResourceProfile.VIOLET: 30000,
-}
-
 # --- Calculation Classes ---
+
+def normalize_energy(source: Optional[str]) -> str:
+    """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys."""
+    s = (source or "gas").lower()
+    if s in ENERGY_CONVERSION: return s
+    if "lectri" in s: return "electricity"
+    if "gaz" in s or "gpl" in s or "propane" in s: return "gas"
+    if "fioul" in s: return "oil"
+    if "bois" in s or "granul" in s: return "wood"
+    if "seau" in s: return "district_heating"
+    return "gas"
 
 class GeographicWeighting:
     @staticmethod
@@ -75,36 +74,6 @@ class GeographicWeighting:
         k_reg = K_REGION.get(dept, DEFAULT_K_REGION)
         k_log = K_LOGISTIQUE.get(typo, 1.00)
         return base_cost * k_reg * k_log
-
-class MaPrimeRenov2025:
-    @staticmethod
-    def get_profile(rfr: float, occupants: int = 1) -> ResourceProfile:
-        # Scale thresholds roughly based on occupants (demo logic)
-        multiplier = 1 + (occupants - 1) * 0.5
-        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.BLEU] * multiplier:
-            return ResourceProfile.BLEU
-        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.JAUNE] * multiplier:
-            return ResourceProfile.JAUNE
-        if rfr <= ANAH_PLAFONDS_PROVINCE[ResourceProfile.VIOLET] * multiplier:
-            return ResourceProfile.VIOLET
-        return ResourceProfile.ROSE
-
-    @staticmethod
-    def calc_subsidies(total_ht: float, profile: ResourceProfile, class_gain: int) -> float:
-        """Parcours Accompagné 2025 logic."""
-        if class_gain < 2: return 0.0
-        
-        # Max works amount for Accompanied Pathway (gain 4 classes = 70k)
-        max_works = 70000 if class_gain >= 4 else (40000 if class_gain >= 2 else 0)
-        eligible_base = min(total_ht, max_works)
-        
-        rates = {
-            ResourceProfile.BLEU: 0.90,
-            ResourceProfile.JAUNE: 0.80,
-            ResourceProfile.VIOLET: 0.60,
-            ResourceProfile.ROSE: 0.35
-        }
-        return eligible_base * rates[profile]
 
 class BuildingPhysics:
     @staticmethod
@@ -137,7 +106,7 @@ class DPECalculator:
         
         main_sys = prop.systems[0] if prop.systems else None
         eff = (main_sys.efficiency_etas or 0.8) if main_sys else 0.8
-        energy = (main_sys.energy_source or "gas").lower() if main_sys else "gas"
+        energy = normalize_energy(main_sys.energy_source) if main_sys else "gas"
         
         ef = needs / eff
         ep = ef * ENERGY_CONVERSION.get(energy, 1.0)
@@ -223,6 +192,7 @@ class DPECalculator:
         sim_prop = copy.deepcopy(prop)
         total_cost = 0.0
         applied_names = []
+        aid_works = []
         
         # 1. Technical Parameters Extraction
         extra_params = kwargs.get('params', {})
@@ -232,6 +202,7 @@ class DPECalculator:
         is_urban_dense = extra_params.get('is_urban_dense', False)
         parking_cost_day = extra_params.get('parking_cost', 0)
         duration_days = extra_params.get('chantier_duration', 5)
+        occupants = extra_params.get('occupants', 1)
 
         # 2. Global Multipliers
         coeff_accessibilite = 1.0
@@ -262,18 +233,24 @@ class DPECalculator:
             final_unit_cost = (localized_unit_cost * index_ratio) * coeff_accessibilite
             
             if w["unit"] == "m2_wall":
-                surf = sum(wall.surface for wall in sim_prop.walls)
-                total_cost += surf * final_unit_cost
+                quantity = sum(wall.surface for wall in sim_prop.walls)
+                item_cost = quantity * final_unit_cost
                 for wall in sim_prop.walls: wall.u_value = w["u_new"]
             elif w["unit"] == "m2_comble":
-                surf = sim_prop.shab # Rough estimate
-                total_cost += surf * final_unit_cost
+                quantity = sim_prop.shab # Rough estimate
+                item_cost = quantity * final_unit_cost
             elif w["unit"] == "flat":
-                total_cost += final_unit_cost
+                quantity = 1
+                item_cost = final_unit_cost
                 sim_prop.systems = [SystemSchema(system_type="chauffage", energy_source=w["energy_new"], efficiency_etas=w["eff_new"])]
             elif w["unit"] == "unit_win":
-                total_cost += 10 * final_unit_cost # Assume 10 windows
+                quantity = 10 # Assume 10 windows
+                item_cost = quantity * final_unit_cost
                 for win in sim_prop.windows: win.u_value = w["u_new"]
+            else:
+                continue
+            total_cost += item_cost
+            aid_works.append({"id": key, "cost_ttc": item_cost, "quantity": quantity})
 
         total_cost += frais_logistiques
 
@@ -284,8 +261,10 @@ class DPECalculator:
         labels = [v.value for v in DPEClass]
         gain = labels.index(initial_res["dpe_label"]) - labels.index(final_res["dpe_label"])
         
-        profile = MaPrimeRenov2025.get_profile(rfr)
-        subsidies = MaPrimeRenov2025.calc_subsidies(total_cost, profile, gain)
+        profile = get_profile(rfr, occupants, postcode)
+        aids = compute_aids(aid_works, profile, initial_res["dpe_label"], final_res["dpe_label"])
+        subsidies = aids["mpr"]
+        cee = aids["cee"]
 
         return {
             "initial_dpe": initial_res["dpe_label"],
@@ -294,7 +273,10 @@ class DPECalculator:
             "new_cep": final_res["cep_m2"],
             "total_cost": round(total_cost, 0),
             "subsidies": round(subsidies, 0),
-            "rest_to_pay": round(total_cost - subsidies, 0),
+            "cee_est": round(cee, 0),
+            "rest_to_pay": round(max(0.0, total_cost - subsidies - cee), 0),
+            "aid_pathway": aids["pathway"],
+            "aid_notes": aids["notes"],
             "gain_classes": max(0, gain),
             "applied_works": applied_names,
             "profile": profile.value

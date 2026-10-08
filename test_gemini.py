@@ -2,8 +2,8 @@ import httpx
 import asyncio
 import os
 
-# Get key from environment OR hardcoded fallback from ai_service
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBd7LfTgrf4OM6Z-6ygI0uDRiflmjJozxo")
+# Key must be provided via the GEMINI_API_KEY environment variable
+GEMINI_KEY = os.environ["GEMINI_API_KEY"]
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_KEY}"
 
 async def test_gemini():

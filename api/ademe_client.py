@@ -275,7 +275,9 @@ class AdemeConnector:
             prop.systems.append(SystemSchema(
                 system_type="chauffage",
                 energy_source=str(energy_source),
-                efficiency_etas=self._safe_float(raw.get("ubat_w_par_m2_k"))
+                # ADEME does not expose the generator efficiency: leave it unset so the
+                # engine applies its default (ubat_w_par_m2_k is an envelope U value).
+                efficiency_etas=None
             ))
 
         return prop

@@ -2,11 +2,15 @@ import os
 import io
 import logging
 import json
+import re
+import time
+import unicodedata
+from collections import defaultdict, deque
 from dotenv import load_dotenv
 
 load_dotenv()
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Request, Depends
 from pydantic import BaseModel, Field
 try:
     import pytesseract
@@ -51,21 +55,50 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="SPREA DPE PDF Parser")
 
 from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Frontend and API are served from the same origin on Vercel, so CORS is only
+# needed for extra origins explicitly listed in ALLOWED_ORIGINS (comma separated).
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+if ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     logger.error(f"Global Error on {request.url}: {exc}", exc_info=True)
     return Response(
-        content=json.dumps({"detail": str(exc), "path": request.url.path}),
+        content=json.dumps({"detail": "Erreur interne du serveur.", "path": request.url.path}),
         status_code=500,
         media_type="application/json"
     )
+
+# --- Rate limiting ---
+# In-memory sliding window per client IP. Protects the paid endpoints (LLM calls)
+# from abuse. On serverless platforms memory is per instance, so this is a
+# best-effort guard, not a hard quota.
+
+class RateLimiter:
+    def __init__(self, max_calls: int, period_seconds: int):
+        self.max_calls = max_calls
+        self.period = period_seconds
+        self.calls: Dict[str, deque] = defaultdict(deque)
+
+    def __call__(self, request: Request):
+        forwarded = request.headers.get("x-forwarded-for", "")
+        ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+        now = time.monotonic()
+        window = self.calls[ip]
+        while window and now - window[0] > self.period:
+            window.popleft()
+        if len(window) >= self.max_calls:
+            raise HTTPException(status_code=429, detail="Trop de requêtes, veuillez réessayer plus tard.")
+        window.append(now)
+
+search_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SEARCH_PER_MIN", "30")), period_seconds=60)
+ai_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_AI_PER_HOUR", "10")), period_seconds=3600)
 
 @app.get("/")
 async def root():
@@ -151,7 +184,7 @@ def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
         return json.loads(response.choices[0].message.content)
     except Exception as e:
         logger.error(f"Error during LLM analysis: {e}")
-        return {"error": "LLM analysis failed", "details": str(e)}
+        return {"error": "LLM analysis failed"}
 
 router = APIRouter(prefix="/api")
 
@@ -159,7 +192,7 @@ router = APIRouter(prefix="/api")
 async def api_root():
     return {"status": "online", "message": "SPREA API is running."}
 
-@router.get("/search-address")
+@router.get("/search-address", dependencies=[Depends(search_limiter)])
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
@@ -183,9 +216,9 @@ async def search_address(q: str):
         return {"count": len(api_results), "results": api_results}
     except Exception as e:
         logger.error(f"Address search crash: {e}", exc_info=True)
-        return {"count": 0, "results": [], "error": str(e)}
+        return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/search-dpe/{dpe_number}")
+@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter)])
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
@@ -206,7 +239,7 @@ async def search_dpe(dpe_number: str):
         return {"count": 0, "results": []}
     except Exception as e:
         logger.error(f"DPE search failed: {e}", exc_info=True)
-        return {"count": 0, "results": [], "error": str(e)}
+        return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
 class SimulationRequest(BaseModel):
     property_data: PropertySchema
@@ -220,8 +253,9 @@ class SimulationRequest(BaseModel):
     is_urban_dense: Optional[bool] = False
     parking_cost: Optional[float] = 35.0
     chantier_duration: Optional[int] = 5
+    occupants: Optional[int] = Field(1, ge=1, le=20)
 
-@router.post("/simulate")
+@router.post("/simulate", dependencies=[Depends(search_limiter)])
 async def simulate(data: SimulationRequest):
     """Run 2025 technical-economic simulation."""
     try:
@@ -232,7 +266,8 @@ async def simulate(data: SimulationRequest):
             "has_ascenseur": data.has_ascenseur,
             "is_urban_dense": data.is_urban_dense,
             "parking_cost": data.parking_cost,
-            "chantier_duration": data.chantier_duration
+            "chantier_duration": data.chantier_duration,
+            "occupants": data.occupants
         }
         res = engine.simulate_retrofit(
             data.property_data, 
@@ -243,8 +278,8 @@ async def simulate(data: SimulationRequest):
         )
         return res
     except Exception as e:
-        logger.error(f"Simulation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Simulation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="La simulation a échoué.")
 
 try:
     from api.pdf_service import pdf_service
@@ -285,7 +320,12 @@ class ReportRequest(BaseModel):
     focus_cee: Optional[str] = None
     focus_eco_ptz: Optional[str] = None
 
-@router.post("/generate-report")
+def safe_filename(text: str) -> str:
+    """ASCII-only filename, safe to put in a Content-Disposition header."""
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^A-Za-z0-9]+", "_", ascii_text).strip("_")[:80] or "bien"
+
+@router.post("/generate-report", dependencies=[Depends(ai_limiter)])
 async def generate_report(data: ReportRequest):
     """Generates a PDF report from simulation results with AI narrative."""
     try:
@@ -302,13 +342,13 @@ async def generate_report(data: ReportRequest):
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=Rapport_SPREA_{data.address.replace(' ', '_')}.pdf"}
+            headers={"Content-Disposition": f"attachment; filename=Rapport_SPREA_{safe_filename(data.address)}.pdf"}
         )
     except Exception as e:
-        logger.error(f"PDF Generation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"PDF Generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="La génération du rapport a échoué.")
 
-@router.post("/analyze-dpe")
+@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter)])
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
     logger.info(f"Received PDF upload request: {file.filename}")

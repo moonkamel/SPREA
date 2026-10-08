@@ -12,11 +12,11 @@ import {
     Layers,
     Zap
 } from 'lucide-react';
+import { computeAids, type AidWork, type IncomeLevel } from './aids';
 
 // --- Types & Constants ---
 
 type DPEClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
-type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
 
 interface RetrofitAction {
     id: string;
@@ -404,6 +404,18 @@ export default function App() {
         if (['75', '77', '78', '91', '92', '93', '94', '95'].includes(dept)) zoneCoeff = 1.2; // IDF
         if (['23', '36', '15'].includes(dept)) zoneCoeff = 0.9; // Rural examples
 
+        // Number of windows, used both for cost display and per-window aid amounts
+        const windowCount = Math.max(4, Math.round(property.surface / 12));
+
+        const getQuantity = (id: string) => {
+            if (id === 'iti') return sMur;
+            if (id === 'roof' || id === 'floor_ceiling') return property.surface;
+            if (id === 'windows') return windowCount;
+            return 1;
+        };
+
+        const aidWorks: AidWork[] = [];
+
         activeActions.forEach(a => {
             let itemCost = a.defaultCost;
             let eff = 1.0;
@@ -428,7 +440,9 @@ export default function App() {
                 itemCost = a.defaultCost * zoneCoeff;
             }
 
-            cost += (itemCost * indexRatio * coeffAccessibilite * coeffUrban);
+            const finalItemCost = itemCost * indexRatio * coeffAccessibilite * coeffUrban;
+            cost += finalItemCost;
+            aidWorks.push({ id: a.id, costTTC: finalItemCost, quantity: getQuantity(a.id) });
             cepRed += a.impactKwh * eff;
             gesRed += a.impactGes * eff;
         });
@@ -450,13 +464,12 @@ export default function App() {
         const target = getInfos(newCep, newGes);
         const steps = Math.max(0, ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(target.label) - ['G', 'F', 'E', 'D', 'C', 'B', 'A'].indexOf(current.label));
 
-        // Refined MPR logic: Global renovation (2+ steps) vs Gestures (1 step)
-        const globalRates: Record<IncomeLevel, number> = { tres_modeste: 0.8, modeste: 0.6, intermediaire: 0.45, superieur: 0.3 };
-        const gestureRates: Record<IncomeLevel, number> = { tres_modeste: 0.5, modeste: 0.35, intermediaire: 0.2, superieur: 0.05 };
-
-        const rate = steps >= 2 ? globalRates[incomeLevel] : gestureRates[incomeLevel];
-        const sub = cost * rate;
-        const rest = cost - sub;
+        // MaPrimeRénov' (parcours accompagné or par geste) + CEE, with Anah ceilings
+        const aids = computeAids(aidWorks, incomeLevel, current.label, target.label);
+        const sub = aids.mpr;
+        const ceeEst = aids.cee;
+        // Parking costs are not eligible works but are part of what the owner pays
+        const rest = Math.max(0, cost - sub - ceeEst);
 
         // Auto-update duration state for UI (optional, but keep for logistics)
         if (safeDuration !== chantierDuration) setChantierDuration(safeDuration);
@@ -494,9 +507,7 @@ export default function App() {
         const yieldBrut = (annualRent / totalInvestment) * 100;
         const cashflow = isInvestor ? (monthlyRent - (rest > 0 ? (rest * (0.045 / 12) * Math.pow(1 + (0.045 / 12), 84)) / (Math.pow(1 + (0.045 / 12), 84) - 1) : 0)) : 0;
 
-        // Waterfall Logic & Financing
-        const ceeEst = activeActions.length * 800; // Rough estimation
-        const rac = Math.max(0, cost - sub - ceeEst);
+        const rac = rest;
 
         // Eco-PTZ Logic
         const activeCats = activeActions.filter(a => {
@@ -531,8 +542,10 @@ export default function App() {
             banDate, ecoPTZAmount, ecoPTZLimit, ceeEst,
             pamAmount: 0, pamDebt15y: 0, pamEligible: false, // Disabled for now to simplify
             netInvestorCost: rest - taxBenefit,
+            aidPathway: aids.pathway,
+            aidNotes: aids.notes,
             savings: (cepRed * property.surface) * 0.228,
-            roi: (cost - sub - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
+            roi: (rest - taxBenefit) / ((cepRed * property.surface) * 0.228 || 1),
             gain: steps * (property.surface * (property.pricePerM2 || 4500) * 0.045), // 4.5% gain per DPE step
             currentLabel: current.label,
             newLabel: target.label,
@@ -587,7 +600,7 @@ export default function App() {
                     building_type: property.buildingType || "Logement",
                     construction_period: property.constructionPeriod || "N/A",
                     focus_mpr: "MaPrimeRénov' est l’aide principale de l’État pour la rénovation énergétique. Pour être éligible, le logement doit être construit depuis plus de 15 ans. Le montant dépend du gain de classe DPE : une rénovation globale (au moins 2 classes) déclenche des forfaits bien plus élevés.",
-                    focus_cee: "Les Certificats d’Économie d’Énergie sont financés par les 'pollueurs-payeurs'. Cette prime est cumulable avec MaPrimeRénov'. Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.",
+                    focus_cee: "Les Certificats d’Économie d’Énergie sont financés par les 'pollueurs-payeurs'. Cette prime est cumulable avec MaPrimeRénov' par geste, mais pas avec le parcours accompagné (l'Anah les valorise elle-même). Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.",
                     focus_eco_ptz: "L’Éco-Prêt à Taux Zéro permet de financer les travaux sans avance de trésorerie. La durée de remboursement peut aller jusqu'à 20 ans pour les rénovations globales. Il est distribué par la plupart des banques françaises sur présentation des devis RGE."
                 })
             });
@@ -996,7 +1009,7 @@ export default function App() {
                                         <span className="text-sm font-bold text-slate-500 flex items-center gap-1 cursor-help italic">MaPrimeRénov' <span className="text-[10px]">ⓘ</span></span>
                                         <span className="text-lg font-black text-green-600">-{Math.round(activeSim?.sub || 0).toLocaleString()} €</span>
                                         <div className="absolute bottom-full left-0 mb-2 w-64 p-4 bg-slate-900 text-[10px] font-medium text-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 leading-relaxed">
-                                            <b>MaPrimeRénov' :</b> Aide principale de l'Anah. Calculée selon votre Revenu Fiscal de Référence (RFR). Les barèmes vont de "Bleu" (très modeste) à "Rose" (supérieur).
+                                            <b>MaPrimeRénov' :</b> Aide principale de l'Anah, selon la catégorie de revenus du foyer. Rénovation d'ampleur (gain de 2 classes et 2 gestes d'isolation minimum) : % du montant HT plafonné. Sinon, forfaits par geste. Barème 2025.
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center group relative">
@@ -1014,6 +1027,12 @@ export default function App() {
                                         </div>
                                     </div>
                                 </div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
+                                    {activeSim?.aidPathway === 'accompagne' ? "Parcours accompagné (rénovation d'ampleur)" : activeSim?.aidPathway === 'geste' ? 'MaPrimeRénov\' par geste' : 'Aucune aide éligible'}
+                                </p>
+                                {activeSim?.aidNotes?.map((n: string) => (
+                                    <p key={n} className="text-[9px] text-amber-600 leading-relaxed">{n}</p>
+                                ))}
                             </div>
 
                             <div className="lg:col-span-1 flex flex-col justify-center items-center text-center p-8 bg-blue-600 rounded-[2.5rem] shadow-2xl shadow-blue-200">
@@ -1045,7 +1064,7 @@ export default function App() {
                                 <div className="h-1 w-10 bg-green-500 rounded-full" />
                                 <h4 className="text-sm font-black text-slate-800 uppercase">Focus Primes CEE</h4>
                                 <p className="text-[10px] text-slate-500 leading-relaxed">
-                                    Les Certificats d'Économie d'Énergie sont financés par les "pollueurs-payeurs". Cette prime est cumulable avec MaPrimeRénov'. Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.
+                                    Les Certificats d'Économie d'Énergie sont financés par les "pollueurs-payeurs". Cette prime est cumulable avec MaPrimeRénov' par geste, mais pas avec le parcours accompagné (l'Anah les valorise elle-même). Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.
                                 </p>
                             </div>
                             <div className="space-y-4">
@@ -1057,6 +1076,9 @@ export default function App() {
                             </div>
                         </div>
                     </section>
+                    <p className="text-[10px] text-slate-400 leading-relaxed text-center max-w-3xl mx-auto px-4">
+                        Simulation indicative fondée sur les données publiques ADEME et des coûts moyens de marché. Elle ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+                    </p>
                 </main>
             </div>
         </div>

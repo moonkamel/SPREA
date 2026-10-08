@@ -296,6 +296,16 @@ class PDFReportGenerator:
         ]))
         elements.append(t_roi)
 
+        # Legal disclaimer
+        elements.append(Spacer(1, 18))
+        elements.append(Paragraph(
+            "Simulation indicative fondée sur les données publiques ADEME et des coûts moyens de marché. "
+            "Ce document ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. "
+            "Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' "
+            "ou un Accompagnateur Rénov' avant tout engagement.",
+            ParagraphStyle('Disclaimer', parent=self.body_style, fontSize=7, leading=9, textColor=colors.HexColor('#94a3b8'))
+        ))
+
         doc.build(elements)
         buffer.seek(0)
         return buffer.read()

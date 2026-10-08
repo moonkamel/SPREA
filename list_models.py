@@ -2,7 +2,7 @@ import httpx
 import asyncio
 import os
 
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBd7LfTgrf4OM6Z-6ygI0uDRiflmjJozxo")
+GEMINI_KEY = os.environ["GEMINI_API_KEY"]
 MODELS_URL = f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_KEY}"
 
 async def list_models():
