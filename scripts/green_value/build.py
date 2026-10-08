@@ -423,6 +423,8 @@ def fit(in_dir: str, out_path: str) -> None:
             },
             "departments": departments,
         }
+    import os
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=1, sort_keys=True)
     log(f"Written {out_path}")

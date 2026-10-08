@@ -342,10 +342,12 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     if not simulation.property.price_per_m2 and meta.get("insee_code"):
         # Local DVF price for the green value, when the page did not provide it
         market = await market_price(meta["insee_code"], simulation.property.building_type,
-                                    meta.get("latitude"), meta.get("longitude"))
+                                    meta.get("latitude"), meta.get("longitude"), simulation.property.surface)
         if market:
             simulation.property.price_per_m2 = market["price_per_m2"]
             simulation.property.price_source = market["source"]
+    if not simulation.property.insee_code and meta.get("insee_code"):
+        simulation.property.insee_code = meta["insee_code"]
     content = build_report(meta, simulation)
     analysis = parse_stored(report.get("narrative"))
     if not analysis:

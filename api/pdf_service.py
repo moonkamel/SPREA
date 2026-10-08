@@ -471,11 +471,12 @@ class PDFReportGenerator:
 
         roi = sim['roi_years']
         roi_text = '–' if roi is None else ("moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}ans")
-        green = f"+{NBSP}{eur_r(sim['latent_gain'], 500)}" if sim['latent_gain'] else '–'
+        green = (f"+{NBSP}{eur_r(sim['latent_gain'], 500)} <font size='7.5' color='#8A93A3'>"
+                 f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if sim['latent_gain'] else '–'
         after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
         secondary = rows_table([
             kv('Retour sur investissement', roi_text),
-            kv('Valeur verte du bien' + (" <font size='7.5' color='#8A93A3'>(indicative, voir section 5)</font>" if report['price_is_default'] else ''), green),
+            kv('Valeur verte du bien' + (" <font size='7.5' color='#8A93A3'>(prix local par défaut)</font>" if report['price_is_default'] else ''), green),
             kv('Location aujourd\'hui', text(sim['rental_status'])),
             kv('Location après travaux', f"<font color='{after_color}'>{text(sim['new_rental_status'])}</font>"),
         ], [CONTENT_W * 0.5 - 24, CONTENT_W * 0.5])
@@ -643,15 +644,26 @@ class PDFReportGenerator:
     def _value(self, report: Dict[str, Any]) -> List[Any]:
         sim = report['sim']
         roi = sim['roi_years']
-        rows = [
-            kv('Retour sur investissement', '–' if roi is None else f"environ {round(roi)}{NBSP}ans"),
-            kv('Valeur verte estimée', f"+{NBSP}{eur_r(sim['latent_gain'], 500)}" if sim['latent_gain'] else '–'),
-        ]
-        out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 4),
-                          Paragraph(f"Valeur verte : écart de prix constaté entre classes DPE, appliqué sur {eur(report['price_per_m2'])}/m²"
-                                    + (" (prix par défaut, faute de ventes connues à proximité)." if report['price_is_default']
-                                       else f" : {text(report['price_source'])}." if report.get('price_source') else " (prix saisi)."),
-                                    S['small'])]
+        rows = [kv('Retour sur investissement', '–' if roi is None else f"environ {round(roi)}{NBSP}ans")]
+        if sim['latent_gain']:
+            rows += [
+                kv('Prix de marché local', f"{eur(report['price_per_m2'])}/m²" + (" <font size='7.5' color='#8A93A3'>(par défaut)</font>" if report['price_is_default'] else '')),
+                kv('Valeur verte estimée', f"<b>+{NBSP}{eur_r(sim['latent_gain'], 500)}</b>"),
+                kv('Fourchette', f"{eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)}"),
+            ]
+        else:
+            rows.append(kv('Valeur verte estimée', '–'))
+        notes = []
+        if report.get('price_source') and not report['price_is_default']:
+            notes.append(f"Prix local : {text(report['price_source'])}.")
+        elif report['price_is_default']:
+            notes.append("Prix local : valeur par défaut, faute de ventes connues à proximité.")
+        if sim.get('green_value_basis'):
+            notes.append(f"Valeur verte : {text(sim['green_value_basis'])}.")
+            if sim['green_value_method'] in ('department', 'national'):
+                notes.append("Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, "
+                             "surface, époque de construction et date de vente comparables. Fourchette : intervalle de confiance à 95 %.")
+        out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 4)] + [Paragraph(n, S['small']) for n in notes]
         if report['is_investor']:
             inv_w = CONTENT_W / 4
             inv = Table([[

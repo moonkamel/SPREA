@@ -455,7 +455,7 @@ def test_report_uses_local_dvf_price_for_green_value(env, monkeypatch):
     store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
     seen = {}
 
-    async def fake_price(insee, building_type, lat=None, lon=None):
+    async def fake_price(insee, building_type, lat=None, lon=None, surface=None):
         seen.update(insee=insee, lat=lat)
         return {"price_per_m2": 3100, "source": "prix médian DVF de 42 ventes de maisons à Lille (2024-2025)"}
 

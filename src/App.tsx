@@ -143,7 +143,7 @@ function Simulator() {
         const done = (patch: Partial<PropertyData> = {}) => setProperty(current =>
             current && current.ademe_dpe_number === p.ademe_dpe_number ? { ...current, ...patch, priceLookupDone: true } : current);
         if (!p.inseeCode) return done();
-        const params = new URLSearchParams({ insee: p.inseeCode, building_type: p.buildingType || '' });
+        const params = new URLSearchParams({ insee: p.inseeCode, building_type: p.buildingType || '', surface: String(p.surface || '') });
         if (p.latitude != null && p.longitude != null) {
             params.set('lat', String(p.latitude));
             params.set('lon', String(p.longitude));
@@ -182,6 +182,7 @@ function Simulator() {
                 construction_period: property.constructionPeriod ?? null,
                 price_per_m2: property.pricePerM2 ?? null,
                 price_source: property.priceSource ?? null,
+                insee_code: property.inseeCode ?? null,
                 heating_energy: property.heatingType ?? null,
                 final_consumption: property.finalConsumption ?? null,
                 insulation_quality: property.insulationQuality ?? null,

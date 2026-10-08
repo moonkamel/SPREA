@@ -234,11 +234,14 @@ async def search_dpe(dpe_number: str):
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
 @router.get("/market-price", dependencies=[Depends(search_limiter)])
-async def get_market_price(insee: str, building_type: str = "", lat: Optional[float] = None, lon: Optional[float] = None):
-    """Local price per m2 from DVF sales, for the green value. None when unknown."""
+async def get_market_price(insee: str, building_type: str = "", lat: Optional[float] = None, lon: Optional[float] = None,
+                           surface: Optional[float] = None):
+    """Local price per m2 of comparable DVF sales, for the green value. None when unknown."""
     if not re.fullmatch(r"[0-9][0-9AB][0-9]{3}", insee.upper()):
         raise HTTPException(status_code=400, detail="Code commune invalide.")
-    result = await market_price(insee, building_type, lat, lon)
+    if surface is not None and not 5 <= surface <= 10000:
+        surface = None
+    result = await market_price(insee, building_type, lat, lon, surface)
     return result or {"price_per_m2": None}
 
 @router.get("/works")
