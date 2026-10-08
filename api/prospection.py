@@ -50,6 +50,29 @@ def _point(value: Optional[str]) -> Optional[Tuple[float, float]]:
         return None
 
 
+def dwelling_detail(r: Dict) -> Optional[str]:
+    """Address complement, else the floor of an apartment. ADEME returns the
+    floor as a number and the complement as free text."""
+    complement = str(r.get("complement_adresse_logement") or "").strip()
+    if complement:
+        return complement[:80]
+    floor = r.get("numero_etage_appartement")
+    if (r.get("type_batiment") or "").lower() != "appartement" or floor in (None, ""):
+        return None
+    try:
+        n = int(float(floor))
+    except (TypeError, ValueError):
+        return str(floor)[:20]
+    return "RDC" if n == 0 else f"{n}e étage"
+
+
+def _surface(r: Dict) -> float:
+    try:
+        return float(r.get("surface_habitable_logement") or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def group_by_address(rows: List[Dict], labels: set) -> List[Dict]:
     """One entry per address; per dwelling (floor/complement + surface), the latest DPE only."""
     latest: Dict[Tuple, Dict] = {}
@@ -59,8 +82,8 @@ def group_by_address(rows: List[Dict], labels: set) -> List[Dict]:
             continue
         address_key = r.get("identifiant_ban") or r.get("adresse_ban") or ""
         dwelling = (address_key, (r.get("type_batiment") or "").lower(),
-                    (r.get("complement_adresse_logement") or r.get("numero_etage_appartement") or "").strip().lower(),
-                    round(float(r.get("surface_habitable_logement") or 0)))
+                    (dwelling_detail(r) or "").lower(),
+                    round(_surface(r)))
         current = latest.get(dwelling)
         if current is None or (r.get("date_etablissement_dpe") or "") > (current.get("date_etablissement_dpe") or ""):
             latest[dwelling] = {**r, "_point": point}
@@ -83,7 +106,7 @@ def group_by_address(rows: List[Dict], labels: set) -> List[Dict]:
             "surface": r.get("surface_habitable_logement"),
             "date": (r.get("date_etablissement_dpe") or "")[:10] or None,
             "period": r.get("periode_construction"),
-            "detail": r.get("complement_adresse_logement") or r.get("numero_etage_appartement"),
+            "detail": dwelling_detail(r),
         })
     out = []
     for entry in addresses.values():
