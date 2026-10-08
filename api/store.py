@@ -48,10 +48,23 @@ class SupabaseStore:
             "POST", "profiles", params={"on_conflict": "id"}, json={"id": user_id, "email": email},
             prefer="resolution=merge-duplicates,return=representation",
         )
-        return rows[0]
+        return await self._with_org(rows[0])
 
     async def get_profile(self, user_id: str) -> Optional[Dict[str, Any]]:
-        return await self._one("profiles", {"id": f"eq.{user_id}"})
+        return await self._with_org(await self._one("profiles", {"id": f"eq.{user_id}"}))
+
+    async def _with_org(self, profile: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Adds the user's organization (org, org_role) and its network
+        (org_parent): their subscriptions also give access."""
+        if not profile:
+            return profile
+        membership = await self.get_membership(profile["id"])
+        if membership:
+            org = await self.get_org(membership["org_id"])
+            profile["org"] = org
+            profile["org_role"] = membership["role"]
+            profile["org_parent"] = await self.get_org(org["parent_id"]) if org and org.get("parent_id") else None
+        return profile
 
     async def get_profile_by_customer(self, customer_id: str) -> Optional[Dict[str, Any]]:
         return await self._one("profiles", {"stripe_customer_id": f"eq.{customer_id}"})
@@ -187,6 +200,105 @@ class SupabaseStore:
     async def list_hits(self, user_id: str, limit: int = 300) -> List[Dict[str, Any]]:
         return await self._request("GET", "alert_hits", params={
             "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.desc,received_on.desc", "limit": str(limit)})
+
+    # --- Teams: organizations, memberships, invitations (009_teams.sql) ---
+
+    @staticmethod
+    def _in(ids: List[str]) -> str:
+        return f"in.({','.join(ids)})"
+
+    async def create_org(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "organizations", json=row, prefer="return=representation")
+        return rows[0]
+
+    async def get_org(self, org_id: str) -> Optional[Dict[str, Any]]:
+        return await self._one("organizations", {"id": f"eq.{org_id}"})
+
+    async def update_org(self, org_id: str, fields: Dict[str, Any]) -> None:
+        await self._request("PATCH", "organizations", params={"id": f"eq.{org_id}"}, json=fields)
+
+    async def delete_org(self, org_id: str) -> None:
+        await self._request("DELETE", "organizations", params={"id": f"eq.{org_id}"})
+
+    async def child_orgs(self, parent_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "organizations", params={
+            "parent_id": f"eq.{parent_id}", "select": "*", "order": "name.asc"})
+
+    async def get_membership(self, user_id: str) -> Optional[Dict[str, Any]]:
+        return await self._one("memberships", {"user_id": f"eq.{user_id}"})
+
+    async def add_member(self, org_id: str, user_id: str, role: str) -> None:
+        await self._request("POST", "memberships", json={"org_id": org_id, "user_id": user_id, "role": role})
+
+    async def update_member(self, org_id: str, user_id: str, fields: Dict[str, Any]) -> None:
+        await self._request("PATCH", "memberships", params={"org_id": f"eq.{org_id}", "user_id": f"eq.{user_id}"}, json=fields)
+
+    async def remove_member(self, org_id: str, user_id: str) -> None:
+        await self._request("DELETE", "memberships", params={"org_id": f"eq.{org_id}", "user_id": f"eq.{user_id}"})
+
+    async def list_members(self, org_id: str) -> List[Dict[str, Any]]:
+        """Members with their email, oldest first."""
+        members = await self._request("GET", "memberships", params={
+            "org_id": f"eq.{org_id}", "select": "user_id,role,created_at", "order": "created_at.asc"})
+        if members:
+            profiles = await self._request("GET", "profiles", params={
+                "id": self._in([m["user_id"] for m in members]), "select": "id,email"})
+            emails = {p["id"]: p.get("email") for p in profiles}
+            for m in members:
+                m["email"] = emails.get(m["user_id"])
+        return members
+
+    async def create_invitation(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        # A new invitation to the same email replaces the previous one
+        rows = await self._request("POST", "invitations", params={"on_conflict": "org_id,email"}, json=row,
+                                   prefer="resolution=merge-duplicates,return=representation")
+        return rows[0]
+
+    async def get_invitation(self, token_hash: str) -> Optional[Dict[str, Any]]:
+        return await self._one("invitations", {"token_hash": f"eq.{token_hash}"})
+
+    async def list_invitations(self, org_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "invitations", params={
+            "org_id": f"eq.{org_id}", "accepted_at": "is.null", "select": "id,email,role,expires_at,created_at",
+            "order": "created_at.desc"})
+
+    async def accept_invitation(self, invitation_id: str) -> None:
+        await self._request("PATCH", "invitations", params={"id": f"eq.{invitation_id}"}, json={"accepted_at": "now()"})
+
+    async def delete_invitation(self, org_id: str, invitation_id: str) -> List[Dict[str, Any]]:
+        return await self._request("DELETE", "invitations", params={"id": f"eq.{invitation_id}", "org_id": f"eq.{org_id}"},
+                                   prefer="return=representation")
+
+    async def list_links_for_users(self, user_ids: List[str]) -> List[Dict[str, Any]]:
+        return await self._request("GET", "prospect_links", params={
+            "user_id": self._in(user_ids), "select": "code,user_id,dpe_number,address,label,created_at,visits,last_visit_at",
+            "order": "created_at.desc", "limit": "2000"})
+
+    async def list_leads_for_users(self, user_ids: List[str]) -> List[Dict[str, Any]]:
+        return await self._request("GET", "leads", params={
+            "user_id": self._in(user_ids), "select": "*", "order": "created_at.desc", "limit": "1000"})
+
+    async def list_zones_for_users(self, user_ids: List[str]) -> List[Dict[str, Any]]:
+        return await self._request("GET", "alert_zones", params={
+            "user_id": self._in(user_ids), "select": "*", "order": "created_at.asc"})
+
+    async def list_hits_for_users(self, user_ids: List[str], limit: int = 500) -> List[Dict[str, Any]]:
+        return await self._request("GET", "alert_hits", params={
+            "user_id": self._in(user_ids), "select": "*", "order": "created_at.desc,received_on.desc", "limit": str(limit)})
+
+    async def transfer_contacts(self, from_user: str, to_user: str) -> None:
+        """An agent leaves the agency: their letters' links and the requests
+        received go to the agency owner (the agency is the controller)."""
+        links = await self._request("GET", "prospect_links", params={"user_id": f"eq.{from_user}", "select": "code,dpe_number"})
+        for link in links:
+            existing = await self.get_link_for_dpe(to_user, link["dpe_number"])
+            if existing:
+                # The owner already has a link for this dwelling: requests move to it
+                await self._request("PATCH", "leads", params={"code": f"eq.{link['code']}"}, json={"code": existing["code"]})
+                await self._request("DELETE", "prospect_links", params={"code": f"eq.{link['code']}"})
+            else:
+                await self.update_link(link["code"], {"user_id": to_user})
+        await self._request("PATCH", "leads", params={"user_id": f"eq.{from_user}"}, json={"user_id": to_user})
 
     # --- Account deletion ---
 

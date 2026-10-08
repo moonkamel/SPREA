@@ -27,7 +27,8 @@ PRO_CHECKOUT_MESSAGE = (
 )
 
 # Subscription plans: Stripe lookup keys
-PLANS = ("solo_monthly", "solo_yearly")
+PLANS = ("solo_monthly", "solo_yearly", "agence_monthly", "agence_yearly")
+AGENCY_PLANS = ("agence_monthly", "agence_yearly")
 VAT_RATE_KEY = "tva20"
 
 
@@ -150,20 +151,24 @@ class Billing:
         })
         return {"id": session["id"], "url": session["url"]}
 
-    async def subscription_checkout(self, user_id: str, customer_id: str, plan: str = "solo_monthly") -> str:
-        line = {"price": await self.plan_price(plan), "quantity": 1}
+    async def subscription_checkout(self, user_id: str, customer_id: str, plan: str = "solo_monthly",
+                                    quantity: int = 1, org_id: Optional[str] = None) -> str:
+        """Solo: one seat on the user's profile. Agence: one seat per agent,
+        the subscription belongs to the organization (metadata org_id)."""
+        line: Dict[str, Any] = {"price": await self.plan_price(plan), "quantity": quantity}
         if not self.automatic_tax:
             # Prices excluding VAT: add the VAT rate ourselves
             rate = await self.vat_rate()
             if rate:
                 line["tax_rates"] = [rate]
+        metadata = {"kind": "subscription", "user_id": user_id, "plan": plan, **({"org_id": org_id} if org_id else {})}
         session = await self.client.v1.checkout.sessions.create_async(params={
             "mode": "subscription",
             "customer": customer_id,
             "client_reference_id": user_id,
             "line_items": [line],
-            "metadata": {"kind": "subscription", "user_id": user_id, "plan": plan},
-            "subscription_data": {"metadata": {"user_id": user_id, "plan": plan}},
+            "metadata": metadata,
+            "subscription_data": {"metadata": metadata},
             "allow_promotion_codes": True,
             # Professionals: company name and VAT number on the invoice
             "tax_id_collection": {"enabled": True},
@@ -183,10 +188,21 @@ class Billing:
         })
         return session["url"]
 
-    async def cancel_subscription(self, subscription_id: str) -> None:
-        """Immediate cancellation (account deletion). Already canceled: nothing to do."""
+    async def update_seats(self, subscription_id: str, seats: int) -> None:
+        """Changes the number of agents of an agency subscription, prorated."""
+        sub = as_dict(await self.client.v1.subscriptions.retrieve_async(subscription_id))
+        item = sub["items"]["data"][0]
+        await self.client.v1.subscriptions.update_async(subscription_id, params={
+            "items": [{"id": item["id"], "quantity": seats}],
+            "proration_behavior": "create_prorations",
+        })
+
+    async def cancel_subscription(self, subscription_id: str, prorate: bool = False) -> None:
+        """Immediate cancellation (account deletion, or a Solo plan replaced by an
+        agency subscription: then the unused time is credited). Already canceled:
+        nothing to do."""
         try:
-            await self.client.v1.subscriptions.cancel_async(subscription_id)
+            await self.client.v1.subscriptions.cancel_async(subscription_id, params={"prorate": True} if prorate else None)
         except stripe.InvalidRequestError as e:
             logger.info(f"Subscription {subscription_id} not cancelable: {e.user_message or e.code}")
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Loader2, ShieldCheck, X } from 'lucide-react';
 import { Button, Segmented } from '../ui';
-import { useAccount, type Plan } from '../account';
+import { useAccount, type AgencyOrder, type Plan } from '../account';
 import { Link } from '../router';
 import { PageShell } from './site';
 
@@ -32,7 +32,7 @@ const FAQ = [
     },
     {
         q: 'Comment équiper toute mon agence ?',
-        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Demandez votre devis : nous ouvrons les accès de votre équipe et vous ajustez le nombre d'agents à tout moment, facturé au prorata.",
+        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Après le paiement, invitez vos agents par email depuis la page Équipe : chacun a son propre accès. Vous ajustez le nombre d'agents à tout moment, facturé au prorata.",
     },
     {
         q: "D'où viennent les données ?",
@@ -44,6 +44,7 @@ export default function PricingPage() {
     const { config, me, startSubscription } = useAccount();
     const [billing, setBilling] = useState<Billing>('monthly');
     const [quote, setQuote] = useState<'agence' | 'reseau' | null>(null);
+    const [agencyOpen, setAgencyOpen] = useState(false);
     const plan: Plan = billing === 'monthly' ? 'solo_monthly' : 'solo_yearly';
     const soloPrice = (config?.plans?.[plan] || (billing === 'monthly' ? '79 € / mois' : '790 € / an')).split(' / ')[0];
     const per = billing === 'monthly' ? 'par mois' : 'par an';
@@ -68,7 +69,9 @@ export default function PricingPage() {
             price: billing === 'monthly' ? '59 €' : '590 €',
             unit: `par agent, ${per} · HT`,
             note: '2 agents minimum · gestion de l\'équipe',
-            cta: <Button variant="secondary" onClick={() => setQuote('agence')} className="mt-8 w-full">Équiper mon agence</Button>,
+            cta: me?.is_pro
+                ? <Button variant="secondary" disabled className="mt-8 w-full">Abonnement actif</Button>
+                : <Button variant="secondary" onClick={() => setAgencyOpen(true)} className="mt-8 w-full">Équiper mon agence</Button>,
             highlighted: false,
         },
         {
@@ -153,6 +156,10 @@ export default function PricingPage() {
             </section>
 
             {quote && <QuoteDialog offer={quote} onClose={() => setQuote(null)} />}
+            {agencyOpen && (
+                <AgencyDialog billing={billing} onClose={() => setAgencyOpen(false)} onQuote={() => { setAgencyOpen(false); setQuote('agence'); }}
+                    onConfirm={order => { setAgencyOpen(false); startSubscription(billing === 'monthly' ? 'agence_monthly' : 'agence_yearly', order); }} />
+            )}
         </PageShell>
     );
 }
@@ -213,6 +220,39 @@ function QuoteDialog({ offer, onClose }: { offer: 'agence' | 'reseau'; onClose: 
                         <p className="text-xs text-faint">Vos coordonnées servent uniquement à répondre à votre demande et sont supprimées au bout de 3 ans sans suite.</p>
                     </form>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function AgencyDialog({ billing, onClose, onConfirm, onQuote }: {
+    billing: Billing;
+    onClose: () => void;
+    onConfirm: (order: AgencyOrder) => void;
+    onQuote: () => void;
+}) {
+    const [name, setName] = useState('');
+    const [seats, setSeats] = useState(3);
+    const unit = billing === 'monthly' ? 59 : 590;
+    const valid = name.trim().length >= 2 && seats >= 2 && seats <= 50;
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-panel border border-line rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+                <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
+                <h2 className="text-2xl text-ink pr-8">Équiper mon agence</h2>
+                <form className="mt-6 space-y-4" onSubmit={e => { e.preventDefault(); if (valid) onConfirm({ agency_name: name.trim(), seats }); }}>
+                    <input required autoFocus placeholder="Nom de l'agence" value={name} onChange={e => setName(e.target.value)} className={FIELD} aria-label="Nom de l'agence" />
+                    <label className="flex items-center justify-between gap-3 text-sm text-ink-soft">
+                        Nombre d'agents, vous compris
+                        <input type="number" min={2} max={50} value={seats} onChange={e => setSeats(Math.max(0, Number(e.target.value) || 0))} className={`${FIELD} w-24`} aria-label="Nombre d'agents" />
+                    </label>
+                    <div className="rounded-xl border border-line bg-raised p-4 flex items-baseline justify-between">
+                        <span className="text-sm text-muted">{seats} × {unit} € HT</span>
+                        <span className="font-serif text-2xl text-ink">{(seats * unit).toLocaleString('fr-FR')} € <span className="font-sans text-xs text-faint">HT / {billing === 'monthly' ? 'mois' : 'an'}</span></span>
+                    </div>
+                    <Button type="submit" disabled={!valid} className="w-full">Continuer</Button>
+                    <p className="text-xs text-faint">Plus de 50 agents, ou besoin d'un bon de commande ? <button type="button" onClick={onQuote} className="underline text-brass">Demandez un devis</button>.</p>
+                </form>
             </div>
         </div>
     );

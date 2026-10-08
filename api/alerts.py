@@ -144,8 +144,17 @@ async def require_pro_map(store: SupabaseStore, user: User) -> None:
 @router.get("/alerts")
 async def list_alerts(user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     await require_pro_map(store, user)
-    return {"zones": await store.list_zones(user.id), "hits": await store.list_hits(user.id),
-            "email_enabled": email_configured()}
+    # Within an agency, every member sees the zones and DPE of the others
+    profile = await store.ensure_profile(user.id, user.email)
+    if profile.get("org"):
+        members = {m["user_id"]: m.get("email") for m in await store.list_members(profile["org"]["id"])}
+        zones = [{**z, "mine": z["user_id"] == user.id, "owner": members.get(z["user_id"])}
+                 for z in await store.list_zones_for_users(list(members))]
+        hits = await store.list_hits_for_users(list(members))
+    else:
+        zones = [{**z, "mine": True, "owner": None} for z in await store.list_zones(user.id)]
+        hits = await store.list_hits(user.id)
+    return {"zones": zones, "hits": hits, "email_enabled": email_configured()}
 
 
 @router.post("/alerts/zones")

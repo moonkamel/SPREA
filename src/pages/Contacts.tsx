@@ -23,6 +23,8 @@ interface Lead {
     consent_at: string;
     address: string | null;
     dpe_number: string | null;
+    // Agent who received it (agency view of its owner and admins)
+    agent?: string | null;
 }
 
 interface LinkStat {
@@ -187,7 +189,7 @@ export default function ContactsPage() {
                                         <li key={l.id} className="py-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
                                             <div className="min-w-0">
                                                 <p className="text-ink font-medium">{l.name}</p>
-                                                <p className="text-sm text-muted">{l.address} · {date(l.created_at)}</p>
+                                                <p className="text-sm text-muted">{l.address} · {date(l.created_at)}{l.agent ? ` · reçue par ${l.agent}` : ''}</p>
                                                 <div className="mt-1 flex flex-wrap gap-4 text-sm">
                                                     {l.phone && <a href={`tel:${l.phone.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-1.5 text-brass-light"><Phone size={14} />{l.phone}</a>}
                                                     {l.email && <a href={`mailto:${l.email}`} className="flex items-center gap-1.5 text-brass-light"><Mail size={14} />{l.email}</a>}

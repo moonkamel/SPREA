@@ -33,15 +33,110 @@ class FakeStore:
         self.leads = []
         self.zones = {}
         self.hits = []
+        self.orgs = {}
+        self.memberships = {}
+        self.invitations = {}
+
+    def _with_org(self, profile):
+        m = self.memberships.get(profile["id"])
+        if m:
+            org = self.orgs.get(m["org_id"])
+            profile["org"] = dict(org) if org else None
+            profile["org_role"] = m["role"]
+            parent = self.orgs.get(org.get("parent_id")) if org else None
+            profile["org_parent"] = dict(parent) if parent else None
+        return profile
 
     async def ensure_profile(self, user_id, email):
         profile = self.profiles.setdefault(user_id, {"id": user_id})
         profile["email"] = email
-        return dict(profile)
+        return self._with_org(dict(profile))
 
     async def get_profile(self, user_id):
         p = self.profiles.get(user_id)
-        return dict(p) if p else None
+        return self._with_org(dict(p)) if p else None
+
+    # --- Teams ---
+
+    async def create_org(self, row):
+        org = {"id": str(uuid.uuid4()), "parent_id": None, "stripe_subscription_id": None, "subscription_status": None, **row}
+        self.orgs[org["id"]] = org
+        return dict(org)
+
+    async def get_org(self, org_id):
+        o = self.orgs.get(org_id)
+        return dict(o) if o else None
+
+    async def update_org(self, org_id, fields):
+        self.orgs[org_id].update(fields)
+
+    async def delete_org(self, org_id):
+        self.orgs.pop(org_id, None)
+        self.memberships = {u: m for u, m in self.memberships.items() if m["org_id"] != org_id}
+
+    async def child_orgs(self, parent_id):
+        return [dict(o) for o in self.orgs.values() if o.get("parent_id") == parent_id]
+
+    async def get_membership(self, user_id):
+        m = self.memberships.get(user_id)
+        return dict(m) if m else None
+
+    async def add_member(self, org_id, user_id, role):
+        assert user_id not in self.memberships
+        self.memberships[user_id] = {"user_id": user_id, "org_id": org_id, "role": role, "created_at": f"2026-10-08T10:{len(self.memberships):02d}:00Z"}
+
+    async def update_member(self, org_id, user_id, fields):
+        self.memberships[user_id].update(fields)
+
+    async def remove_member(self, org_id, user_id):
+        self.memberships.pop(user_id, None)
+
+    async def list_members(self, org_id):
+        ms = sorted((m for m in self.memberships.values() if m["org_id"] == org_id), key=lambda m: m["created_at"])
+        return [{**m, "email": (self.profiles.get(m["user_id"]) or {}).get("email")} for m in ms]
+
+    async def create_invitation(self, row):
+        for k, i in list(self.invitations.items()):
+            if i["org_id"] == row["org_id"] and i["email"] == row["email"]:
+                del self.invitations[k]
+        inv = {"id": str(uuid.uuid4()), "created_at": "2026-10-08T10:00:00Z", **row}
+        self.invitations[inv["id"]] = inv
+        return dict(inv)
+
+    async def get_invitation(self, token_hash):
+        return next((dict(i) for i in self.invitations.values() if i["token_hash"] == token_hash), None)
+
+    async def list_invitations(self, org_id):
+        return [dict(i) for i in self.invitations.values() if i["org_id"] == org_id and not i.get("accepted_at")]
+
+    async def accept_invitation(self, invitation_id):
+        self.invitations[invitation_id]["accepted_at"] = "2026-10-08T11:00:00Z"
+
+    async def delete_invitation(self, org_id, invitation_id):
+        i = self.invitations.get(invitation_id)
+        if not i or i["org_id"] != org_id:
+            return []
+        return [self.invitations.pop(invitation_id)]
+
+    async def list_links_for_users(self, user_ids):
+        return [dict(l) for l in self.links.values() if l["user_id"] in user_ids]
+
+    async def list_leads_for_users(self, user_ids):
+        return [dict(l) for l in self.leads if l["user_id"] in user_ids]
+
+    async def list_zones_for_users(self, user_ids):
+        return [dict(z) for z in self.zones.values() if z["user_id"] in user_ids]
+
+    async def list_hits_for_users(self, user_ids, limit=500):
+        return [dict(h) for h in self.hits if h["user_id"] in user_ids][:limit]
+
+    async def transfer_contacts(self, from_user, to_user):
+        for l in self.links.values():
+            if l["user_id"] == from_user:
+                l["user_id"] = to_user
+        for lead in self.leads:
+            if lead["user_id"] == from_user:
+                lead["user_id"] = to_user
 
     async def get_profile_by_customer(self, customer_id):
         return next((dict(p) for p in self.profiles.values() if p.get("stripe_customer_id") == customer_id), None)
@@ -174,6 +269,8 @@ class FakeBilling:
         self.customers = []
         self.canceled = []
         self.plans = []
+        self.checkouts = []
+        self.seat_updates = []
 
     async def create_customer(self, user_id, email):
         self.customers.append(user_id)
@@ -185,15 +282,19 @@ class FakeBilling:
                                      "currency": "eur", "metadata": {"kind": "report", "report_id": report_id}}
         return {"id": session_id, "url": f"https://checkout.stripe.test/{session_id}"}
 
-    async def subscription_checkout(self, user_id, customer_id, plan="solo_monthly"):
+    async def subscription_checkout(self, user_id, customer_id, plan="solo_monthly", quantity=1, org_id=None):
         self.plans.append(plan)
+        self.checkouts.append({"plan": plan, "quantity": quantity, "org_id": org_id})
         return "https://checkout.stripe.test/sub"
 
     async def portal_url(self, customer_id):
         return "https://billing.stripe.test/portal"
 
-    async def cancel_subscription(self, subscription_id):
+    async def cancel_subscription(self, subscription_id, prorate=False):
         self.canceled.append(subscription_id)
+
+    async def update_seats(self, subscription_id, seats):
+        self.seat_updates.append((subscription_id, seats))
 
     async def get_session(self, session_id):
         return self.sessions[session_id]

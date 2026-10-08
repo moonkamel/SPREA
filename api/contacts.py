@@ -191,28 +191,53 @@ async def leave_contact(code: str, data: LeadRequest, store: SupabaseStore = Dep
 
 # --- Agent: requests received ---
 
+async def visible_owners(store: SupabaseStore, user: User) -> Dict[str, Optional[str]]:
+    """Users whose requests this user sees, with their email: the whole agency
+    for its owner and admins, otherwise only themselves."""
+    profile = await store.ensure_profile(user.id, user.email)
+    if profile.get("org") and profile.get("org_role") in ("owner", "admin"):
+        return {m["user_id"]: m.get("email") for m in await store.list_members(profile["org"]["id"])}
+    return {user.id: user.email}
+
+
 @router.get("/leads")
 async def list_leads(user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
-    links = {l["code"]: l for l in await store.list_links(user.id)}
+    owners = await visible_owners(store, user)
+    ids = list(owners)
+    links = {l["code"]: l for l in await store.list_links_for_users(ids)}
     leads = [{**lead, "address": links.get(lead["code"], {}).get("address"),
-              "dpe_number": links.get(lead["code"], {}).get("dpe_number")} for lead in await store.list_leads(user.id)]
-    return {"leads": leads, "links": list(links.values())}
+              "dpe_number": links.get(lead["code"], {}).get("dpe_number"),
+              # Who received it, when the agency's requests are shown together
+              "agent": owners.get(lead["user_id"]) if len(ids) > 1 else None}
+             for lead in await store.list_leads_for_users(ids)]
+    own_links = [l for l in links.values() if l.get("user_id") == user.id]
+    return {"leads": leads, "links": own_links}
 
 
 class LeadUpdate(BaseModel):
     status: str = Field(..., pattern="^(new|contacted|closed)$")
 
 
+async def lead_owner(store: SupabaseStore, user: User, lead_id: str) -> str:
+    owners = await visible_owners(store, user)
+    if len(owners) == 1:
+        return user.id
+    lead = next((l for l in await store.list_leads_for_users(list(owners)) if l["id"] == lead_id), None)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Demande introuvable.")
+    return lead["user_id"]
+
+
 @router.patch("/leads/{lead_id}")
 async def update_lead(lead_id: str, data: LeadUpdate, user: User = Depends(current_user),
                       store: SupabaseStore = Depends(store_dep)):
-    if not await store.update_lead(user.id, lead_id, {"status": data.status}):
+    if not await store.update_lead(await lead_owner(store, user, lead_id), lead_id, {"status": data.status}):
         raise HTTPException(status_code=404, detail="Demande introuvable.")
     return {"updated": True}
 
 
 @router.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
-    if not await store.delete_lead(user.id, lead_id):
+    if not await store.delete_lead(await lead_owner(store, user, lead_id), lead_id):
         raise HTTPException(status_code=404, detail="Demande introuvable.")
     return {"deleted": True}
