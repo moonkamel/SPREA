@@ -128,19 +128,23 @@ class DPECalculator:
                 "suggested": True
             })
             
-        # Priority 4: Efficient Heating (if G/F)
-        # For apartments, collective heating is tricky, but individual PAC is possible sometimes.
-        # For houses, PAC is the way to go.
+        # Priority 4: Heating system (if G/F)
+        # Houses heated with fossil fuels: heat pump. Already electric: better regulated radiators.
         if dpe in [DPEClass.G, DPEClass.F]:
-            heating_reason = "Indispensable pour décarboner et sortir durablement de l'état de passoire."
-            if not is_house:
-                heating_reason = "Amélioration du système de chauffage individuel pour une meilleure efficacité énergétique."
-                
-            recos.append({
-                "id": "heating",
-                "name": "Radiateur inertie",
-                "reason": heating_reason,
-                "suggested": True
-            })
-            
+            energy = normalize_energy(prop.systems[0].energy_source) if prop.systems else "gas"
+            if is_house and energy in ("gas", "oil"):
+                recos.append({
+                    "id": "pac_air_eau",
+                    "name": "Pompe à Chaleur Air/Eau",
+                    "reason": "Indispensable pour décarboner et sortir durablement de l'état de passoire.",
+                    "suggested": True
+                })
+            elif energy == "electricity":
+                recos.append({
+                    "id": "heating",
+                    "name": "Radiateur inertie",
+                    "reason": "Amélioration de la régulation du chauffage électrique pour réduire la consommation.",
+                    "suggested": True
+                })
+
         return recos

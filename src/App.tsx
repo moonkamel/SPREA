@@ -40,6 +40,7 @@ interface PropertyData {
     wallMaterials?: string;
     pricePerM2?: number; // Added for gain calculation
     suggestedWorks?: string[];
+    finalConsumption?: number;
     preselectedWorks?: string[];
     glassType?: string;
     roofIsolation?: string;
@@ -78,7 +79,9 @@ interface Simulation {
     ecoPTZAmount: number;
     ecoPTZLimit: number;
     savings: number;
-    roi: number;
+    billBefore: number;
+    billAfter: number;
+    roi: number | null;
     gain: number;
     taxBenefit: number;
     netInvestorCost: number;
@@ -105,6 +108,8 @@ const toSimulation = (r: any): Simulation => ({
     ecoPTZAmount: r.eco_ptz_amount,
     ecoPTZLimit: r.eco_ptz_limit,
     savings: r.annual_savings,
+    billBefore: r.annual_bill_before,
+    billAfter: r.annual_bill_after,
     roi: r.roi_years,
     gain: r.latent_gain,
     taxBenefit: r.tax_benefit,
@@ -126,6 +131,7 @@ const toProperty = (r: any): PropertyData => ({
     label: r.dpe_class_current,
     buildingType: r.building_type || "Logement",
     heatingType: r.systems?.[0]?.energy_source,
+    finalConsumption: r.final_consumption || undefined,
     gesValue: r.ges_value || 10,
     postcode: r.postcode || undefined,
     loss_breakdown: r.loss_breakdown,
@@ -342,6 +348,8 @@ export default function App() {
             construction_year: property.year || null,
             construction_period: property.constructionPeriod ?? null,
             price_per_m2: property.pricePerM2 ?? null,
+            heating_energy: property.heatingType ?? null,
+            final_consumption: property.finalConsumption ?? null,
         },
         works: actions.filter(a => a.active).map(a => a.id),
         suggested_works: actions.filter(a => a.suggested).map(a => a.id),
@@ -680,9 +688,14 @@ export default function App() {
                         <div className="mb-10 flex items-center justify-between relative z-10">
                             <div>
                                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Objectif Amélioration Énergétique</h3>
-                                <div className="flex gap-2 mt-2">
+                                <div className="flex flex-wrap gap-2 mt-2">
                                     <span className="px-3 py-1.5 bg-blue-50 text-blue-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase border border-blue-100 shadow-sm">{activeSim?.currentLabel} ➔ {activeSim?.newLabel}</span>
                                     <span className="px-3 py-1.5 bg-green-50 text-green-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase border border-green-100 shadow-sm">{Math.round(activeSim?.newCep || 0)} kWh/m².an</span>
+                                    {activeSim && (
+                                        <span className="px-3 py-1.5 bg-slate-50 text-slate-700 font-extrabold text-[10px] rounded-lg tracking-widest uppercase border border-slate-100 shadow-sm">
+                                            Facture énergie : {Math.round(activeSim.billBefore).toLocaleString()} € ➔ {Math.round(activeSim.billAfter).toLocaleString()} € / an
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>

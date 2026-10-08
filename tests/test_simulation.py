@@ -49,14 +49,47 @@ def test_income_from_rfr():
     assert res["income_profile"] == "Très Modeste"
 
 
-def test_savings_use_floored_consumption():
-    res = run(works=["iti", "roof", "floor_ceiling", "heating", "ecs"], property={"initial_cep": 200})
-    assert res["new_cep"] == 35
-    assert res["annual_savings"] == pytest.approx((200 - 35) * 80 * 0.228)
+def test_savings_are_computed_on_final_energy_bill():
+    # Gas: primary == final energy, 0.11 EUR/kWh
+    res = run(works=["iti", "roof"], property={"heating_energy": "Gaz naturel"})
+    ratio = res["new_cep"] / 380
+    assert res["annual_bill_before"] == pytest.approx(380 * 80 * 0.11)
+    assert res["annual_savings"] == pytest.approx(380 * 80 * 0.11 * (1 - ratio))
+
+
+def test_electric_home_uses_final_consumption():
+    # Without ADEME final consumption, primary is divided by the 1.9 coefficient
+    res = run(property={"heating_energy": "Électricité"})
+    assert res["initial_final_consumption"] == pytest.approx(380 / 1.9)
+    res = run(property={"heating_energy": "Électricité", "final_consumption": 210})
+    assert res["annual_bill_before"] == pytest.approx(210 * 80 * 0.20)
+
+
+def test_heat_pump_replaces_gas_boiler():
+    res = run(works=["pac_air_eau"], property={"heating_energy": "Gaz naturel"})
+    heat = 380 * 0.7 * 0.85 / 2.9
+    assert res["new_cep"] == pytest.approx(heat * 1.9 + 380 * 0.3)
+    assert res["new_ges"] < 60
+    assert res["annual_bill_after"] == pytest.approx((heat * 0.20 + 380 * 0.3 * 0.11) * 80)
+    assert res["annual_savings"] > 0
+
+
+def test_inertia_radiators_worsen_a_gas_heated_home():
+    res = run(works=["heating"], property={"heating_energy": "Gaz naturel"})
+    assert res["new_cep"] > 380
+    assert res["annual_savings"] == 0
+    assert res["roi_years"] is None
+
+
+def test_heat_pump_gets_maprimerenov_forfait():
+    res = run(works=["pac_air_eau"], property={"heating_energy": "Fioul domestique"}, income_level="modeste")
+    assert res["subsidies"] == 4000
 
 
 def test_rental_ban_dates():
     assert rental_ban_date("G", 400, "59000").year == 2025
+    # 450 kWh final energy rule
+    assert rental_ban_date("F", 460, "59000").year == 2023
     assert rental_ban_date("F", 400, "97400").year == 2031
     assert rental_ban_date("C", 150, "59000") is None
 
@@ -68,6 +101,18 @@ def test_suggestions_skip_roof_for_apartments():
 
 
 def test_suggestions_target_class_c():
-    res = suggest_works("Maison", "F", 380, ["roof", "iti", "windows"], None)
+    res = suggest_works("Maison", "F", 380, ["roof", "iti", "windows"], None, "Électricité")
     # Needs 230 kWh: roof (65) + iti (120) + windows (45)
     assert res["preselected"] == ["roof", "iti", "windows"]
+
+
+def test_heat_pump_suggested_for_gas_heated_houses():
+    res = suggest_works("maison", "F", 380, ["roof", "iti", "heating"], None, "Gaz naturel")
+    assert "pac_air_eau" in res["suggested"]
+    assert "heating" not in res["suggested"]
+    assert res["preselected"] == ["roof", "iti", "pac_air_eau"]
+
+
+def test_no_heat_pump_for_apartments_or_electric_homes():
+    assert "pac_air_eau" not in suggest_works("appartement", "F", 380, [], None, "Gaz naturel")["suggested"]
+    assert "pac_air_eau" not in suggest_works("maison", "F", 380, [], None, "Électricité")["suggested"]

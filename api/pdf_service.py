@@ -284,7 +284,7 @@ class PDFReportGenerator:
             [
                 Paragraph(f"<font size='18'><b>{data.get('yield_brut', 0):.1f} %</b></font>", self.body_style), 
                 Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} €</b></font>", self.body_style), 
-                Paragraph(f"<font size='18'><b>{data.get('roi_years', 0)} ans</b></font>", self.body_style)
+                Paragraph(f"<font size='18'><b>{data['roi_years']} ans</b></font>" if data.get('roi_years') is not None else "<font size='18'><b>-</b></font>", self.body_style)
             ]
         ]
         

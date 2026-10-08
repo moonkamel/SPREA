@@ -208,6 +208,7 @@ def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
         prop.consumption_level,
         [r["id"] for r in recos],
         calc["loss_breakdown"],
+        prop.systems[0].energy_source if prop.systems else None,
     )
     d["recommended_works"] = recos
     d["loss_breakdown"] = calc["loss_breakdown"]
@@ -292,7 +293,7 @@ class ReportRequest(BaseModel):
     rest_to_pay: float = 0.0
     latent_gain: float = 0.0
     annual_savings: float = 0.0
-    roi_years: int = 0
+    roi_years: Optional[int] = None
     detailed_costs: Optional[list] = []
     yield_brut: Optional[float] = 0.0
     cashflow: Optional[float] = 0.0
@@ -337,7 +338,7 @@ async def generate_report(data: ReportRequest):
                 "rest_to_pay": sim["rest_to_pay"],
                 "latent_gain": sim["latent_gain"],
                 "annual_savings": sim["annual_savings"],
-                "roi_years": round(sim["roi_years"]),
+                "roi_years": round(sim["roi_years"]) if sim["roi_years"] is not None else None,
                 "detailed_costs": sim["detailed_costs"],
                 "yield_brut": sim["yield_brut"],
                 "cashflow": sim["cashflow"],

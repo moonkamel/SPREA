@@ -77,7 +77,8 @@ class PropertySchema(BaseModel):
     climate_zone: Optional[ClimateZone] = None
     dpe_class_current: Optional[DPEClass] = None
     ges_class_current: Optional[DPEClass] = None
-    consumption_level: Optional[float] = None
+    consumption_level: Optional[float] = None  # Primary energy, kWh/m2/year
+    final_consumption: Optional[float] = None  # Final energy (what is billed), kWh/m2/year
     ges_value: Optional[float] = None
     date_etablissement: Optional[str] = None
     latitude: Optional[float] = None
@@ -234,6 +235,7 @@ class AdemeConnector:
             dpe_class_current=self._map_dpe_label(raw.get("etiquette_dpe")),
             ges_class_current=self._map_dpe_label(raw.get("etiquette_ges")),
             consumption_level=self._safe_float(raw.get("conso_5_usages_par_m2_ep", raw.get("consommation_energie_primaire_logement"))),
+            final_consumption=self._safe_float(raw.get("conso_5_usages_par_m2_ef"), None),
             ges_value=self._safe_float(raw.get("emission_ges_5_usages_par_m2")),
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment", "Logement"),
