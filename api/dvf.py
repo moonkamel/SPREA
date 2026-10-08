@@ -88,9 +88,10 @@ def parse_sales(text: str, kind: str, year: int) -> List[Dict]:
         price_m2 = price / surface
         if not MIN_PRICE_M2 <= price_m2 <= MAX_PRICE_M2:
             continue
-        sales.append({"price_m2": price_m2, "surface": surface, "lat": _float(d.get("latitude")),
+        sales.append({"price_m2": price_m2, "surface": surface, "price": price, "lat": _float(d.get("latitude")),
                       "lon": _float(d.get("longitude")), "year": year, "quarter": quarter(d.get("date_mutation") or ""),
-                      "commune": d.get("nom_commune")})
+                      "date": (d.get("date_mutation") or "")[:10], "street": (d.get("adresse_nom_voie") or "").strip(),
+                      "rooms": d.get("nombre_pieces_principales") or None, "commune": d.get("nom_commune")})
     return sales
 
 
@@ -124,6 +125,8 @@ def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[
         similar = ""
     if lat is not None and lon is not None:
         located = [(distance_m(lat, lon, s["lat"], s["lon"]), s) for s in pool if s["lat"] is not None and s["lon"] is not None]
+        for d, s in located:
+            s["distance"] = d
         for radius, minimum in RINGS:
             near = [s for d, s in located if d <= radius]
             if len(near) >= minimum:
@@ -152,7 +155,20 @@ def _result(sales: List[Dict], kind: str, scope: str, similar: str, adjusted: bo
         "kind": "maisons" if kind == "Maison" else "appartements",
         "source": (f"prix médian DVF de {n} ventes {what} {similar}{scope} ({period}"
                    + (", actualisées au dernier trimestre)" if adjusted else ")")),
+        "comparables": comparables(sales),
     }
+
+
+def comparables(sales: List[Dict], limit: int = 8) -> List[Dict]:
+    """Closest and most recent sales, for the valuation report. The street is
+    shown without the house number."""
+    ranked = sorted(sales, key=lambda s: (round(s.get("distance", 1e9) / 250), -int(s["date"].replace("-", "") or 0)))
+    return [{
+        "date": s["date"], "street": s["street"].title() if s["street"].isupper() else s["street"],
+        "surface": round(s["surface"], 1), "rooms": s.get("rooms"), "price": round(s["price"]),
+        "price_m2": round(s["price_m2"]), "adjusted_m2": round(s.get("adjusted_m2", s["price_m2"])),
+        "distance": round(s["distance"]) if s.get("distance") is not None else None,
+    } for s in ranked[:limit]]
 
 
 async def market_price(insee: str, building_type: Optional[str], lat: Optional[float] = None,

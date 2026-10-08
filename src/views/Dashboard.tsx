@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info, Scale } from 'lucide-react';
 import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, eurRange, num } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { INCOME_LEVELS, capitalize, formatDate, isHouse, type IncomeLevel, type PropertyData, type RetrofitAction, type Simulation } from '../model';
@@ -33,6 +33,8 @@ interface Props {
     settings: Settings;
     onSettings: (patch: Partial<Settings>) => void;
     report: { available: boolean; price: string | null; included: boolean; downloading: boolean; onDownload: () => void };
+    // Pro: avis de valeur avant / après rénovation
+    valuation?: () => void;
     onBack: () => void;
 }
 
@@ -53,12 +55,13 @@ function climateStatus(ban: Date | null) {
 
 // --- Summary (sticky on desktop) ---
 
-function Summary({ sim, property, report, updating, scenarioName }: {
+function Summary({ sim, property, report, updating, scenarioName, valuation }: {
     sim: Simulation | null;
     property: PropertyData;
     report: Props['report'];
     updating: boolean;
     scenarioName: string;
+    valuation?: () => void;
 }) {
     const aids = (sim?.sub || 0) + (sim?.ceeEst || 0);
     const noWorks = sim && sim.cost === 0;
@@ -143,6 +146,11 @@ function Summary({ sim, property, report, updating, scenarioName }: {
                         : report.included ? 'Inclus dans votre abonnement Pro' : report.price ? `${report.price} TTC · paiement sécurisé` : 'Paiement sécurisé'}
                     <Help topic="report" />
                 </p>
+                {valuation && (
+                    <Button variant="secondary" onClick={valuation} disabled={!sim} className="w-full mt-3">
+                        <Scale size={18} />Avis de valeur avant / après
+                    </Button>
+                )}
             </div>
         </Card>
     );
@@ -188,7 +196,7 @@ export default function Dashboard(props: Props) {
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] items-start">
                     {/* Summary first on mobile, sticky column on desktop */}
                     <aside className="lg:order-2 lg:sticky lg:top-24">
-                        <Summary sim={sim} property={property} report={report} updating={updating} scenarioName={scenarioName} />
+                        <Summary sim={sim} property={property} report={report} updating={updating} scenarioName={scenarioName} valuation={props.valuation} />
                     </aside>
 
                     <div className="lg:order-1 space-y-6 min-w-0">
