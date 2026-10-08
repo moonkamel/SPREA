@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { AccountProvider, useAccount } from './account';
 import { usePath } from './router';
 import CgvPage from './pages/Cgv';
 import ConfidentialitePage from './pages/Confidentialite';
 import MentionsLegalesPage from './pages/MentionsLegales';
 import PricingPage from './pages/Pricing';
+// Leaflet is only loaded on the map page
+const ProspectionPage = lazy(() => import('./pages/Prospection'));
 import Landing from './views/Landing';
 import Results from './views/Results';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
@@ -25,6 +27,7 @@ function Pages() {
         '/cgv': <CgvPage />,
         '/mentions-legales': <MentionsLegalesPage />,
         '/confidentialite': <ConfidentialitePage />,
+        '/prospection': <Suspense fallback={null}><ProspectionPage /></Suspense>,
     };
     const page = pages[path] ?? null;
     return (
@@ -97,6 +100,16 @@ function Simulator() {
             .then(data => setCatalog((data.works || []).map((w: any) => ({ id: w.id, name: w.name, description: w.description, active: false }))))
             .catch(err => console.error('Works catalog error:', err));
     }, []);
+
+    // Opened from the prospection map: /?dpe=NUMBER
+    const path = usePath();
+    useEffect(() => {
+        const dpe = new URLSearchParams(window.location.search).get('dpe');
+        if (path !== '/' || !dpe || !catalog.length) return;
+        window.history.replaceState({}, '', '/');
+        search(`/api/search-dpe/${encodeURIComponent(dpe)}`, 'Ce DPE est introuvable.');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [path, catalog.length]);
 
     const goHome = () => { setView('landing'); setError(null); window.scrollTo(0, 0); };
 

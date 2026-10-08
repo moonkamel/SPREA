@@ -26,6 +26,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
                 <Logo onClick={onHome} />
                 <nav className="flex items-center gap-1 sm:gap-3">
+                    <Link to="/prospection" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Prospection</Link>
                     <Link to="/tarifs" className="px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Tarifs</Link>
                     <AccountButton />
                 </nav>

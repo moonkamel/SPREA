@@ -468,3 +468,31 @@ def test_report_uses_local_dvf_price_for_green_value(env, monkeypatch):
     assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
     assert seen == {"insee": "59350", "lat": 50.63}
     assert built["r"]["price_per_m2"] == 3100 and not built["r"]["price_is_default"]
+
+
+def test_prospection_is_detailed_for_pro_only(env, monkeypatch):
+    client, store, billing, state = env
+
+    async def fake_search(bbox, labels, kind=None, since=None):
+        return {"addresses": [{"address": "1 Rue des Brigittines 59800 Lille", "lat": 50.633285, "lon": 3.069252,
+                               "insee": "59350", "worst": "G", "dpe": [{"number": "2659E0077758E", "label": "G"}]}],
+                "dwellings": 1, "total": 1, "truncated": False}
+
+    monkeypatch.setattr(accounts.prospection, "search", fake_search)
+    res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
+    assert res["locked"] is True
+    assert res["addresses"] == [{"lat": 50.633, "lon": 3.069, "worst": "G", "count": 1}]
+
+    store.profiles[ALICE.id]["subscription_status"] = "active"
+    res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
+    assert res["locked"] is False and res["addresses"][0]["address"].startswith("1 Rue")
+
+    async def too_large(*a, **k):
+        raise accounts.prospection.AreaTooLarge("Zone trop grande : zoomez sur un quartier.")
+    monkeypatch.setattr(accounts.prospection, "search", too_large)
+    assert client.get("/api/prospection?bbox=1,2,3,4").status_code == 400
+    main.search_limiter.calls.clear()
+
+
+def test_prospection_requires_login():
+    assert TestClient(main.app).get("/api/prospection?bbox=3.05,50.63,3.07,50.64").status_code == 401

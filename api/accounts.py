@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
+import httpx
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
@@ -29,7 +30,8 @@ try:
     from api.billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
-    from api.ratelimit import ai_limiter
+    from api.ratelimit import ai_limiter, search_limiter
+    from api import prospection
     from api.simulation import SimulationInput, simulate as run_simulation
     from api.store import SupabaseStore, get_store
 except ImportError:
@@ -39,7 +41,8 @@ except ImportError:
     from billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
-    from ratelimit import ai_limiter
+    from ratelimit import ai_limiter, search_limiter
+    import prospection
     from simulation import SimulationInput, simulate as run_simulation
     from store import SupabaseStore, get_store
 
@@ -413,3 +416,32 @@ async def stripe_webhook(request: Request, store: SupabaseStore = Depends(store_
         await sync_subscription(store, billing, obj["id"])
 
     return {"received": True}
+
+
+# --- Prospection map (Pro) ---
+
+@router.get("/prospection", dependencies=[Depends(search_limiter)])
+async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = None, since: Optional[int] = None,
+                          user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """Poor DPE in the visible area. Full list for Pro subscribers; others get
+    counts on an approximate location, without addresses."""
+    profile = await store.ensure_profile(user.id, user.email)
+    try:
+        result = await prospection.search(bbox, labels.upper().split(","), kind, since)
+    except prospection.AreaTooLarge as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Les données de l'ADEME ne répondent pas, réessayez dans un instant.")
+    if is_pro(profile):
+        return {**result, "locked": False}
+    return {
+        "locked": True,
+        "dwellings": result["dwellings"],
+        "total": result["total"],
+        "truncated": result["truncated"],
+        # About 100 m precision, no address
+        "addresses": [{"lat": round(a["lat"], 3), "lon": round(a["lon"], 3), "worst": a["worst"], "count": len(a["dpe"])}
+                      for a in result["addresses"]],
+    }

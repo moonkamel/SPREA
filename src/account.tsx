@@ -56,6 +56,7 @@ interface AccountContextValue {
     startSubscription: () => void;
     openLogin: (reason?: string) => void;
     openAccount: () => void;
+    authedFetch: (url: string, init?: RequestInit) => Promise<Response>;
 }
 
 // A report asked for before signing in: kept across the magic link round trip
@@ -258,7 +259,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [config]);
 
     const value: AccountContextValue = {
-        config, session, me, requestReport, startSubscription,
+        config, session, me, requestReport, startSubscription, authedFetch,
         openLogin: (reason?: string) => setLoginReason(reason || ''),
         openAccount: () => { setShowAccount(true); refreshMe(); },
     };
