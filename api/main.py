@@ -197,7 +197,7 @@ def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
-        logger.info(f"Searching address: {q}")
+        logger.info("Searching by address")
         results = await ademe.search_by_address(q)
 
         api_results = []
@@ -205,7 +205,7 @@ async def search_address(q: str):
             try:
                 api_results.append(enrich_property(r))
             except Exception as item_err:
-                logger.error(f"Error mapping item {r.address}: {item_err}")
+                logger.error(f"Error mapping item: {item_err}")
                 continue
 
         return {"count": len(api_results), "results": api_results}
@@ -217,7 +217,7 @@ async def search_address(q: str):
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
-        logger.info(f"Searching DPE: {dpe_number}")
+        logger.info("Searching by DPE number")
         prop = await ademe.search_by_dpe_number(dpe_number)
         if prop:
             try:
@@ -250,7 +250,7 @@ async def simulate(data: SimulationInput):
 @router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(current_user)])
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
-    logger.info(f"Received PDF upload request: {file.filename}")
+    logger.info("Received DPE PDF upload")
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDFs are allowed.")
     

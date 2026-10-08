@@ -120,7 +120,7 @@ class AdemeConnector:
                 data = await self._make_request(client, self.BASE_URL, params)
                 
                 if not data.get("results"):
-                    logger.warning(f"No DPE found for number: {dpe_number}")
+                    logger.warning("No DPE found for this number")
                     return None
                 
                 raw_data = data["results"][0]
@@ -138,7 +138,7 @@ class AdemeConnector:
                 ban_data = await self._make_request(client, self.BAN_URL, ban_params)
                 
                 if not ban_data.get("features"):
-                    logger.warning(f"Address not found via BAN: {address}")
+                    logger.warning("Address not found via BAN")
                     return []
                 
                 feature = ban_data["features"][0]
@@ -169,7 +169,7 @@ class AdemeConnector:
                     "size": 100
                 }
                 
-                logger.info(f"Querying ADEME with Hyper-Precision: {ademe_params}")
+                logger.info("Querying ADEME by address")
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []

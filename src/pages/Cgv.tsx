@@ -1,27 +1,16 @@
 import type { ReactNode } from 'react';
 import { CGV_VERSION, LEGAL } from '../legal';
 import { Link } from '../router';
-import { LegalIncompleteBanner, PageShell } from './site';
+import { LegalPage, LegalSection } from './site';
 
 function Article({ n, title, children }: { n: number; title: string; children: ReactNode }) {
-    return (
-        <section className="space-y-3">
-            <h2 className="text-lg font-black text-slate-800 tracking-tight">Article {n} – {title}</h2>
-            <div className="space-y-3 text-sm text-slate-600 leading-relaxed">{children}</div>
-        </section>
-    );
+    return <LegalSection title={`Article ${n} – ${title}`}>{children}</LegalSection>;
 }
 
 export default function CgvPage() {
     const version = new Date(CGV_VERSION).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     return (
-        <PageShell>
-            <article className="max-w-3xl mx-auto bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 sm:p-10 space-y-8">
-                <LegalIncompleteBanner />
-                <header>
-                    <h1 className="text-3xl font-black text-slate-800 tracking-tighter">Conditions générales de vente</h1>
-                    <p className="text-xs text-slate-400 mt-2">Version du {version}</p>
-                </header>
+        <LegalPage title="Conditions générales de vente" updated={`Version du ${version}`}>
 
                 <Article n={1} title="Objet et champ d'application">
                     <p>Les présentes conditions générales de vente (« CGV ») régissent les ventes conclues sur le site {LEGAL.brand} entre {LEGAL.companyName} (« le Vendeur ») et toute personne, consommateur ou professionnel, achetant un rapport ou souscrivant un abonnement (« le Client »).</p>
@@ -96,7 +85,7 @@ export default function CgvPage() {
 
                 <Article n={14} title="Données personnelles">
                     <p>Le Vendeur traite l'adresse email du Client, les simulations enregistrées dans ses rapports et les informations de facturation pour fournir le service, facturer et respecter ses obligations comptables. Les paiements sont traités par Stripe, l'authentification et l'hébergement des données par Supabase. Les données sont conservées pendant la durée du compte, puis le temps des obligations légales (10 ans pour les pièces comptables).</p>
-                    <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL.</p>
+                    <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL. Le détail figure dans la <Link to="/confidentialite" className="underline text-blue-600">politique de confidentialité</Link>.</p>
                 </Article>
 
                 <Article n={15} title="Réclamations et médiation">
@@ -117,7 +106,6 @@ export default function CgvPage() {
                         <p>Date : …………… · Signature (uniquement en cas de notification sur papier)</p>
                     </div>
                 </section>
-            </article>
-        </PageShell>
+        </LegalPage>
     );
 }

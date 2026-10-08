@@ -15,6 +15,8 @@ import {
 import { AccountButton, AccountProvider, useAccount } from './account';
 import { Link, usePath } from './router';
 import CgvPage from './pages/Cgv';
+import ConfidentialitePage from './pages/Confidentialite';
+import MentionsLegalesPage from './pages/MentionsLegales';
 import PricingPage from './pages/Pricing';
 import { SiteFooter } from './pages/site';
 
@@ -186,7 +188,13 @@ export default function App() {
 
 function Pages() {
     const path = usePath();
-    const page = path === '/tarifs' ? <PricingPage /> : path === '/cgv' ? <CgvPage /> : null;
+    const pages: Record<string, JSX.Element> = {
+        '/tarifs': <PricingPage />,
+        '/cgv': <CgvPage />,
+        '/mentions-legales': <MentionsLegalesPage />,
+        '/confidentialite': <ConfidentialitePage />,
+    };
+    const page = pages[path] ?? null;
     return (
         <>
             {page}

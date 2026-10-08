@@ -58,14 +58,24 @@ stripe listen --forward-to localhost:8000/api/stripe/webhook
 La commande affiche un `whsec_…` à utiliser comme `STRIPE_WEBHOOK_SECRET`.
 Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
 
-## 4. Informations légales et CGV
+## 4. Informations légales, CGV et confidentialité
 
 Avant toute vente, compléter `src/legal.ts` : raison sociale, forme juridique,
-adresse, SIREN/RCS, TVA, email de contact, médiateur de la consommation
-(adhésion obligatoire pour vendre aux particuliers) et tribunal compétent.
+adresse, SIREN/RCS, TVA, téléphone, email de contact, directeur de la
+publication, médiateur de la consommation (adhésion obligatoire pour vendre
+aux particuliers), tribunal compétent et région du projet Supabase. Vérifier
+l'adresse de Vercel sur vercel.com/legal. Ces informations alimentent les
+CGV (`/cgv`), les mentions légales (`/mentions-legales`) et la politique de
+confidentialité (`/confidentialite`).
 Tant qu'une valeur reste entre crochets, un bandeau l'indique sur la page CGV.
 
 Les CGV (`src/pages/Cgv.tsx`) sont un modèle adapté au service : à faire
 relire par un juriste. À chaque modification, changer la date de version
 dans `src/legal.ts` (`CGV_VERSION`) et dans `api/accounts.py`
 (`TERMS_VERSION`) : chaque achat enregistre la version acceptée.
+
+La politique de confidentialité (`src/pages/Confidentialite.tsx`) décrit les
+traitements tels qu'ils sont codés : la mettre à jour (et sa date) à chaque
+nouveau prestataire ou nouvelle donnée collectée. Utiliser une clé Gemini
+d'un projet avec facturation activée : sur l'offre gratuite, Google peut
+utiliser les requêtes pour améliorer ses produits.

@@ -18,6 +18,14 @@ export const LEGAL = {
     mediatorUrl: '[https://site-du-mediateur.fr]',
     // Court competent for disputes with professional customers
     court: '[Tribunal de commerce de ...]',
+    phone: '[Numéro de téléphone]',
+    publicationDirector: '[Nom du directeur de la publication]',
+    // Hosting provider (LCEN art. 6): check the current address on vercel.com/legal
+    hostName: 'Vercel Inc.',
+    hostAddress: '440 N Barranca Ave #4133, Covina, CA 91723, États-Unis',
+    hostWebsite: 'https://vercel.com',
+    // Region chosen for the Supabase project (accounts database)
+    databaseRegion: "[Région du projet Supabase, ex. Union européenne (Francfort)]",
 };
 
 export const isLegalIncomplete = () => Object.values(LEGAL).some(v => v.startsWith('['));

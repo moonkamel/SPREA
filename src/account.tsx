@@ -383,6 +383,10 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
                         Recevoir un lien de connexion
                     </button>
                     {status === 'error' && <p className="text-sm text-red-600">L'envoi a échoué, vérifiez l'adresse et réessayez.</p>}
+                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                        Votre email sert uniquement à vous connecter, à conserver vos rapports et à vous envoyer vos factures.{' '}
+                        <a href="/confidentialite" target="_blank" rel="noopener" className="underline">Politique de confidentialité</a>
+                    </p>
                 </form>
             )}
         </Modal>

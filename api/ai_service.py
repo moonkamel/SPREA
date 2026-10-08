@@ -28,7 +28,6 @@ class AIService:
             Rédige une analyse synthétique et percutante (150-200 mots) pour un rapport de rénovation.
             
             DONNÉES DU BIEN :
-            - Adresse : {data.get('address')}
             - État actuel : DPE {data.get('current_label')} ({data.get('initial_cep')} kWh/m².an)
             - État projeté : DPE {data.get('new_label')} ({data.get('new_cep')} kWh/m².an)
             - Reste à charge après aides : {data.get('rest_to_pay')} €
