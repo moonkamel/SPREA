@@ -17,11 +17,13 @@ l'abonnement Pro.
 4. **Authentication > Emails** : configurer un SMTP (Resend, Brevo…). Le SMTP
    intégré de Supabase est limité à quelques emails par heure, insuffisant
    en production. Traduire le modèle « Magic Link » en français.
-5. **Project Settings > API** : récupérer `SUPABASE_URL`, la clé `anon`
-   (`SUPABASE_ANON_KEY`) et la clé `service_role`
-   (`SUPABASE_SERVICE_ROLE_KEY`, à ne jamais exposer côté navigateur).
-   Si le projet utilise encore l'ancien secret JWT partagé, renseigner aussi
-   `SUPABASE_JWT_SECRET`.
+5. **Project Settings > Data API** : récupérer l'URL du projet (`SUPABASE_URL`).
+   **Project Settings > API Keys** : la clé publishable `sb_publishable_…`
+   (ou l'ancienne clé `anon`) va dans `SUPABASE_ANON_KEY`, la clé secrète
+   `sb_secret_…` (ou l'ancienne `service_role`) dans
+   `SUPABASE_SERVICE_ROLE_KEY`, à ne jamais exposer côté navigateur.
+   Les deux générations de clés fonctionnent. `SUPABASE_JWT_SECRET` n'est utile
+   que si le projet signe encore ses jetons avec l'ancien secret partagé.
 
 ## 2. Stripe
 
