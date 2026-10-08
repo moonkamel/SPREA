@@ -363,8 +363,35 @@ def shrink(dep_fit: Dict, nat: Dict, tau2: Dict[str, float]) -> Dict[str, float]
     return out
 
 
-def fit(in_dir: str, out_path: str) -> None:
+def summary_markdown(new: Dict, old: Optional[Dict]) -> str:
+    """PR description: sample sizes and national class gaps, with the change since the previous file."""
+    lines = [f"Mise à jour mensuelle des écarts de prix entre classes DPE ({new.get('period')}).", ""]
+    for kind, label in (("Maison", "Maisons"), ("Appartement", "Appartements")):
+        nat = new["kinds"].get(kind, {}).get("national")
+        if not nat:
+            continue
+        prev = ((old or {}).get("kinds", {}).get(kind) or {}).get("national")
+        lines += [f"### {label} : {nat['n']:,} ventes rapprochées de leur DPE".replace(",", " "), "",
+                  "| Classe | Écart vs D | Mois précédent |", "|---|---|---|"]
+        for c in LABELS:
+            pct = (math.exp(nat["class"][c]) - 1) * 100
+            before = f"{(math.exp(prev['class'][c]) - 1) * 100:+.1f} %" if prev else "–"
+            lines.append(f"| {c} | {pct:+.1f} % | {before} |")
+        lines.append("")
+    deps = {k: len(v.get("departments", {})) for k, v in new["kinds"].items()}
+    lines.append(f"Départements estimés : {deps}. À relire avant fusion : des écarts qui bougent de plus de quelques points "
+                 "d'un mois sur l'autre méritent une vérification des données sources.")
+    return "\n".join(lines)
+
+
+def fit(in_dir: str, out_path: str, summary_path: Optional[str] = None) -> None:
     import glob
+    import os
+
+    old = None
+    if os.path.exists(out_path):
+        with open(out_path, encoding="utf-8") as f:
+            old = json.load(f)
 
     rows: List[Dict] = []
     for path in sorted(glob.glob(f"{in_dir}/**/matched_*.csv.gz", recursive=True)):
@@ -423,11 +450,13 @@ def fit(in_dir: str, out_path: str) -> None:
             },
             "departments": departments,
         }
-    import os
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=1, sort_keys=True)
     log(f"Written {out_path}")
+    if summary_path:
+        with open(summary_path, "w", encoding="utf-8") as f:
+            f.write(summary_markdown(result, old))
 
 
 def main(argv=None):
@@ -439,11 +468,12 @@ def main(argv=None):
     f = sub.add_parser("fit")
     f.add_argument("--in", dest="in_dir", required=True)
     f.add_argument("--out", required=True)
+    f.add_argument("--summary")
     args = parser.parse_args(argv)
     if args.cmd == "extract":
         extract(args.dep, args.out)
     else:
-        fit(args.in_dir, args.out)
+        fit(args.in_dir, args.out, args.summary)
 
 
 if __name__ == "__main__":

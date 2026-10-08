@@ -79,3 +79,11 @@ def test_hedonic_recovers_class_effects(tmp_path):
     dep = data["kinds"]["Appartement"]["departments"]["59"]
     assert abs(dep["class"]["G"] - truth["G"]) < 0.03
     assert abs(sum(dep["mix"].values()) - 1) < 0.01
+
+
+def test_summary_compares_with_previous_file():
+    new = {"period": "2022T1-2026T2", "kinds": {"Maison": {"national": {"n": 1200, "class": {c: v for c, v in zip(build.LABELS, [0.07, 0.07, 0.05, 0, -0.1, -0.2, -0.3])}}, "departments": {"59": {}}}}}
+    old = {"kinds": {"Maison": {"national": {"n": 1000, "class": {c: 0.0 for c in build.LABELS}}}}}
+    md = build.summary_markdown(new, old)
+    assert "Maisons : 1 200 ventes" in md
+    assert "| G | -25.9 % | +0.0 % |" in md
