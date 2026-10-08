@@ -41,8 +41,10 @@ def subscription_period_end(subscription: Dict[str, Any]) -> Optional[int]:
 
 
 class Billing:
-    def __init__(self, secret_key: str, webhook_secret: str, price_report: str, price_pro: str, app_url: str):
+    def __init__(self, secret_key: str, webhook_secret: str, price_report: str, price_pro: str, app_url: str,
+                 automatic_tax: bool = False):
         self.client = stripe.StripeClient(secret_key, http_client=stripe.HTTPXClient())
+        self.automatic_tax = automatic_tax
         self.webhook_secret = webhook_secret
         self.price_report = price_report
         self.price_pro = price_pro
@@ -59,6 +61,20 @@ class Billing:
                 logger.error(f"Cannot load Stripe price {price_id}: {e}")
                 return None
         return self._price_labels[price_id]
+
+    def _tax_params(self) -> Dict[str, Any]:
+        """Stripe Tax: VAT computed from the customer's address, VAT number
+        collected for professionals (shown on the invoice). Prices must be set
+        to "tax inclusive" in Stripe since the site displays prices TTC."""
+        if not self.automatic_tax:
+            return {}
+        return {
+            "automatic_tax": {"enabled": True},
+            "tax_id_collection": {"enabled": True},
+            "billing_address_collection": "required",
+            # Saves the address / company name entered in Checkout on the customer
+            "customer_update": {"address": "auto", "name": "auto"},
+        }
 
     async def create_customer(self, user_id: str, email: Optional[str]) -> str:
         customer = await self.client.v1.customers.create_async(params={
@@ -78,6 +94,7 @@ class Billing:
             "invoice_creation": {"enabled": True},
             "allow_promotion_codes": True,
             "custom_text": {"submit": {"message": REPORT_CHECKOUT_MESSAGE}},
+            **self._tax_params(),
             "success_url": f"{self.app_url}/?report={report_id}&checkout=success",
             "cancel_url": f"{self.app_url}/?report={report_id}&checkout=cancel",
         })
@@ -93,6 +110,7 @@ class Billing:
             "subscription_data": {"metadata": {"user_id": user_id}},
             "allow_promotion_codes": True,
             "custom_text": {"submit": {"message": PRO_CHECKOUT_MESSAGE}},
+            **self._tax_params(),
             "success_url": f"{self.app_url}/?checkout=pro_success",
             "cancel_url": f"{self.app_url}/?checkout=pro_cancel",
         })
@@ -144,5 +162,6 @@ def get_billing() -> Billing:
             os.environ["STRIPE_PRICE_REPORT"],
             os.environ["STRIPE_PRICE_PRO"],
             os.environ["PUBLIC_APP_URL"],
+            automatic_tax=os.getenv("STRIPE_AUTOMATIC_TAX", "").lower() in ("1", "true", "yes"),
         )
     return _billing
