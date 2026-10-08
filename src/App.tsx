@@ -135,6 +135,31 @@ function Simulator() {
         });
         setView('dashboard');
         window.scrollTo(0, 0);
+        loadMarketPrice(p);
+    };
+
+    // Local price per m2 from DVF sales (green value, default purchase price)
+    const loadMarketPrice = async (p: PropertyData) => {
+        const done = (patch: Partial<PropertyData> = {}) => setProperty(current =>
+            current && current.ademe_dpe_number === p.ademe_dpe_number ? { ...current, ...patch, priceLookupDone: true } : current);
+        if (!p.inseeCode) return done();
+        const params = new URLSearchParams({ insee: p.inseeCode, building_type: p.buildingType || '' });
+        if (p.latitude != null && p.longitude != null) {
+            params.set('lat', String(p.latitude));
+            params.set('lon', String(p.longitude));
+        }
+        try {
+            const res = await fetch(`/api/market-price?${params}`);
+            const market = res.ok ? await res.json() : null;
+            if (!market?.price_per_m2) return done();
+            const defaultPrice = Math.round(p.surface * 4200 / 1000) * 1000;
+            done({ pricePerM2: market.price_per_m2, priceSource: market.source });
+            setSettings(s => s.purchasePrice === defaultPrice
+                ? { ...s, purchasePrice: Math.round(p.surface * market.price_per_m2 / 1000) * 1000 }
+                : s);
+        } catch {
+            done(); // Default price per m2 stays in place
+        }
     };
 
     const toggle = (id: string) =>
@@ -156,6 +181,7 @@ function Simulator() {
                 construction_year: property.year || null,
                 construction_period: property.constructionPeriod ?? null,
                 price_per_m2: property.pricePerM2 ?? null,
+                price_source: property.priceSource ?? null,
                 heating_energy: property.heatingType ?? null,
                 final_consumption: property.finalConsumption ?? null,
                 insulation_quality: property.insulationQuality ?? null,
@@ -201,6 +227,9 @@ function Simulator() {
                     city: property.city || null,
                     postcode: property.postcode || null,
                     details: property.details || null,
+                    insee_code: property.inseeCode || null,
+                    latitude: property.latitude ?? null,
+                    longitude: property.longitude ?? null,
                 },
                 simulation,
             });

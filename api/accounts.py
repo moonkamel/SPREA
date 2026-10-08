@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field, field_validator
 try:
     from api.ai_service import ai_service, parse_stored
     from api.auth import User, current_user
+    from api.dvf import market_price
     from api.billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
@@ -34,6 +35,7 @@ try:
 except ImportError:
     from ai_service import ai_service, parse_stored
     from auth import User, current_user
+    from dvf import market_price
     from billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
@@ -156,6 +158,9 @@ class ReportMeta(BaseModel):
     dpe_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}", max_length=30)
     city: Optional[str] = Field(None, max_length=100)
     postcode: Optional[str] = Field(None, max_length=10)
+    insee_code: Optional[str] = Field(None, max_length=5)
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
     # Equipment labels from the DPE (heating, hot water, ventilation...)
     details: Optional[Dict[str, Optional[str]]] = Field(None, max_length=10)
 
@@ -332,7 +337,16 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     if report["status"] not in ("paid", "included"):
         raise HTTPException(status_code=402, detail="Ce rapport n'a pas encore été payé.")
 
-    content = build_report(report["meta"], SimulationInput.model_validate(report["simulation"]))
+    meta = report["meta"]
+    simulation = SimulationInput.model_validate(report["simulation"])
+    if not simulation.property.price_per_m2 and meta.get("insee_code"):
+        # Local DVF price for the green value, when the page did not provide it
+        market = await market_price(meta["insee_code"], simulation.property.building_type,
+                                    meta.get("latitude"), meta.get("longitude"))
+        if market:
+            simulation.property.price_per_m2 = market["price_per_m2"]
+            simulation.property.price_source = market["source"]
+    content = build_report(meta, simulation)
     analysis = parse_stored(report.get("narrative"))
     if not analysis:
         analysis = await ai_service.write_analysis(facts_for_writer(content))

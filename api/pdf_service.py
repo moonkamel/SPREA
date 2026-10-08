@@ -649,7 +649,8 @@ class PDFReportGenerator:
         ]
         out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 4),
                           Paragraph(f"Valeur verte : écart de prix constaté entre classes DPE, appliqué sur {eur(report['price_per_m2'])}/m²"
-                                    + (" (prix par défaut : remplacez-le par le prix de votre secteur)." if report['price_is_default'] else "."),
+                                    + (" (prix par défaut, faute de ventes connues à proximité)." if report['price_is_default']
+                                       else f" : {text(report['price_source'])}." if report.get('price_source') else " (prix saisi)."),
                                     S['small'])]
         if report['is_investor']:
             inv_w = CONTENT_W / 4
