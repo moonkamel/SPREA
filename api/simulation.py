@@ -566,7 +566,8 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
     suggested = set()
     if shares["walls"] >= 0.18 and env.u["walls"] > 0.45:
         suggested.add("iti")
-    if house and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
+    # Roof: houses, and flats whose DPE puts most losses through the roof (top floor)
+    if (house or shares["roof"] >= 0.35) and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
         suggested.add("roof")
     if house and shares["floor"] >= 0.08 and env.u["floor"] > 0.5:
         suggested.add("floor_ceiling")
@@ -574,27 +575,36 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         suggested.add("windows")
     if shares["air"] >= 0.20 and env.period <= 2:
         suggested.add("vmc")
-    # Heating: heat pump for houses heated with fossil fuels, inertia radiators
-    # only when the dwelling is already electric
-    if house and energy in ("gas", "oil") and label in ("D", "E", "F", "G"):
+    # Heating: heat pump for houses heated with fossil fuels; electric heating
+    # and a thermodynamic water heater for electric dwellings, and for flats
+    # heated with fossil fuels (GHG emissions often make the label)
+    if house and energy in ("gas", "oil") and poor_label:
         suggested.add("pac_air_eau")
-    if energy == "electricity" and poor_label:
+    if poor_label and (energy == "electricity" or (not house and energy in ("gas", "oil"))):
         suggested.update({"heating", "ecs"})
 
-    if label in ("A", "B", "C"):
-        target = prop.initial_cep
-    else:
-        target = 230 if label == "G" else 150
-
-    priority = ["iti", "floor_ceiling", "windows", "heating", "ecs", "vmc"] if not house else \
-        ["roof", "iti", "floor_ceiling", "pac_air_eau", "windows", "heating", "ecs", "vmc"]
+    # Default selection: the works that bring the label down the most (both
+    # consumption and emissions count), one at a time, until class C (D for a G)
     preselected: List[str] = []
-    for work in priority:
-        if work not in suggested:
-            continue
-        if projected_performance(prop, preselected)["new_cep"] <= target:
-            break
-        preselected.append(work)
+    if poor_label or label == "D":
+        ges = prop.ges_value or 20
+        thresholds, _ = calibrated_thresholds(prop.surface, prop.initial_cep, ges, prop.official_label or label, prop.dpe_date)
+        target = LABELS.index("D" if label == "G" else "C")
+
+        def score(works: List[str]) -> Tuple[int, float]:
+            perf = projected_performance(prop, works)
+            return LABELS.index(get_labels(perf["new_cep"], perf["new_ges"], thresholds)["label"]), perf["new_cep"]
+
+        current = score([])
+        while current[0] > target:
+            options = [(score(preselected + [w]), w) for w in sorted(suggested) if w not in preselected]
+            if not options:
+                break
+            best, work = min(options)
+            if best >= current:
+                break
+            preselected.append(work)
+            current = best
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],

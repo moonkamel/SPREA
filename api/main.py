@@ -184,6 +184,8 @@ def simulation_property(prop: PropertySchema) -> SimulationProperty:
         surface=prop.shab or 50,
         initial_cep=prop.consumption_level or 350,
         ges_value=prop.ges_value,
+        official_label=prop.dpe_class_current.value if prop.dpe_class_current else None,
+        dpe_date=str(prop.date_etablissement)[:10] if prop.date_etablissement else None,
         building_type=prop.building_type,
         postcode=prop.postcode,
         construction_year=prop.construction_year,
