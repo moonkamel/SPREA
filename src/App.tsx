@@ -197,6 +197,7 @@ function Simulator() {
                     ademe_dpe_number: property.ademe_dpe_number || null,
                     building_type: property.buildingType || null,
                     construction_period: property.constructionPeriod || null,
+                    dpe_date: property.dpeDate || null,
                 },
                 simulation,
             });

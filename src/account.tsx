@@ -37,6 +37,7 @@ export interface ReportRequest {
         ademe_dpe_number?: string | null;
         building_type?: string | null;
         construction_period?: string | null;
+        dpe_date?: string | null;
     };
     simulation: object;
 }
