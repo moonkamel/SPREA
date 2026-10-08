@@ -3,7 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Copy, Download, Loader2, Lock, MapPin, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
-import { navigate } from '../router';
+import { CGV_VERSION } from '../legal';
+import { Link, navigate } from '../router';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
@@ -47,7 +48,7 @@ const SINCE = [
     { value: '2024', label: 'DPE depuis 2024' },
     { value: '2025', label: 'DPE depuis 2025' },
 ];
-const ACK_KEY = 'sprea_prospection_ack';
+const ACK_KEY = `sprea_prospection_ack_${CGV_VERSION}`;
 
 // IGN Plan v2 (Géoplateforme), free and up to date for France
 const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2'
@@ -311,7 +312,11 @@ export default function ProspectionPage() {
                                     <li>Ne conservez les adresses que le temps de votre campagne. Pas de démarchage téléphonique à partir de ces données.</li>
                                     <li>Ces règles résument les principes du RGPD ; faites valider votre campagne par votre conseil ou consultez cnil.fr.</li>
                                 </ul>
-                                <Button className="mt-4 w-full" onClick={accept}>J'ai compris, afficher les adresses</Button>
+                                <p className="mt-3 text-muted">
+                                    En affichant les adresses, vous acceptez les conditions d'utilisation de la carte prévues à l'
+                                    <Link to="/cgv" className="underline text-brass hover:text-brass-light">article 14 des CGV</Link>.
+                                </p>
+                                <Button className="mt-4 w-full" onClick={accept}>J'accepte, afficher les adresses</Button>
                             </Card>
                         ) : null}
 

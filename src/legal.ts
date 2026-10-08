@@ -2,7 +2,7 @@
 // Every value in [brackets] must be replaced before selling: a banner is shown
 // on the legal pages while some are missing.
 
-export const CGV_VERSION = '2026-10-08'; // Keep in sync with TERMS_VERSION in api/accounts.py
+export const CGV_VERSION = '2026-10-08.2'; // Keep in sync with TERMS_VERSION in api/accounts.py
 
 export const LEGAL = {
     brand: 'SPREA',

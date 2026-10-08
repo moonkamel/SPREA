@@ -8,9 +8,10 @@ function Article({ n, title, children }: { n: number; title: string; children: R
 }
 
 export default function CgvPage() {
-    const version = new Date(CGV_VERSION).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const version = new Date(CGV_VERSION.slice(0, 10)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     return (
-        <LegalPage title="Conditions générales de vente" updated={`Version du ${version}`}>
+        <LegalPage title="Conditions générales de vente"
+            updated={`Version du ${version}${CGV_VERSION.length > 10 ? `, révision ${CGV_VERSION.slice(11)}` : ''}`}>
 
                 <Article n={1} title="Objet et champ d'application">
                     <p>Les présentes conditions générales de vente (« CGV ») régissent les ventes conclues sur le site {LEGAL.brand} entre {LEGAL.companyName} (« le Vendeur ») et toute personne, consommateur ou professionnel, achetant un rapport ou souscrivant un abonnement (« le Client »).</p>
@@ -30,7 +31,7 @@ export default function CgvPage() {
                 <Article n={3} title="Services proposés">
                     <p><b>Simulation gratuite.</b> À partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME, le site estime les travaux de rénovation envisageables, leur coût, l'étiquette énergétique après travaux, les aides mobilisables, le reste à charge et les économies d'énergie. La simulation est accessible sans compte et sans paiement.</p>
                     <p><b>Rapport.</b> Document PDF reprenant la simulation d'un logement, accompagné d'une analyse rédigée. Il est vendu à l'unité.</p>
-                    <p><b>Abonnement Pro.</b> Abonnement mensuel donnant accès à un nombre illimité de rapports pendant sa durée. Il s'adresse principalement aux professionnels de l'immobilier et de la rénovation.</p>
+                    <p><b>Abonnement Pro.</b> Abonnement mensuel donnant accès, pendant sa durée, à un nombre illimité de rapports et à la carte de prospection décrite à l'article 14. Il s'adresse principalement aux professionnels de l'immobilier et de la rénovation.</p>
                     <p>Les caractéristiques essentielles de chaque offre sont présentées sur la page <Link to="/tarifs" className="underline text-brass hover:text-brass-light">Tarifs</Link> et rappelées avant le paiement.</p>
                 </Article>
 
@@ -84,16 +85,31 @@ export default function CgvPage() {
                     <p>Le site, ses contenus et ses méthodes de calcul sont la propriété du Vendeur. Le Client peut utiliser les rapports pour ses besoins personnels ou professionnels ; un Client professionnel peut les remettre à ses propres clients pour le logement concerné. Toute revente de rapports, ou extraction systématique des résultats du site, est interdite.</p>
                 </Article>
 
-                <Article n={14} title="Données personnelles">
+                <Article n={14} title="Carte de prospection">
+                    <p><b>Contenu.</b> La carte de prospection affiche, pour une zone choisie par le Client, les adresses des logements dont le DPE est classé E, F ou G, avec les caractéristiques publiées dans ce DPE. Ces informations proviennent de la base des DPE publiée par l'ADEME sous Licence Ouverte 2.0 ; elles ne comprennent ni le nom ni les coordonnées des propriétaires ou des occupants. Le Vendeur ne les modifie pas et n'en garantit ni l'exactitude ni l'actualité : un logement peut avoir été rénové, vendu ou avoir fait l'objet d'un DPE plus récent non pris en compte.</p>
+                    <p><b>Usage professionnel.</b> La carte est réservée à un usage professionnel, pour les besoins propres de l'activité du Client (recherche de mandats, proposition d'estimation, d'accompagnement ou de travaux). Le Client est seul responsable des traitements de données personnelles qu'il réalise à partir de ces informations, au sens du règlement général sur la protection des données (RGPD), et de leur conformité à la loi.</p>
+                    <p><b>Engagements du Client.</b> Le Client s'engage notamment à :</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        <li>indiquer, dans toute prise de contact, l'origine des informations (données publiques des DPE de l'ADEME) et un moyen simple de s'opposer à tout nouveau contact, puis respecter sans délai les oppositions reçues ;</li>
+                        <li>ne pas rapprocher ces informations d'autres fichiers ou sources dans le but d'identifier les propriétaires ou les occupants, sauf base légale dont il répond ;</li>
+                        <li>ne pas utiliser ces informations pour un démarchage téléphonique, par SMS ou par email non sollicité, ni à des fins discriminatoires, de pression ou de dénigrement ;</li>
+                        <li>ne conserver les adresses extraites que le temps nécessaire à sa campagne de prospection ;</li>
+                        <li>ne pas revendre, publier ou mettre à disposition de tiers les listes obtenues, et ne pas procéder à une extraction systématique de la carte au-delà de ses besoins professionnels.</li>
+                    </ul>
+                    <p>Les rappels et le modèle de courrier proposés sur la carte sont fournis à titre d'aide ; ils ne constituent pas un conseil juridique et n'exonèrent pas le Client de ses obligations.</p>
+                    <p><b>Responsabilité et suspension.</b> Le Client garantit le Vendeur contre toute réclamation, action ou sanction résultant de l'usage qu'il fait de ces informations en méconnaissance du présent article ou de la réglementation. En cas d'usage manifestement contraire au présent article, notamment d'extraction massive ou de signalement fondé d'une personne démarchée, le Vendeur peut suspendre l'accès à la carte après en avoir informé le Client, sans préjudice des autres services de l'abonnement.</p>
+                </Article>
+
+                <Article n={15} title="Données personnelles">
                     <p>Le Vendeur traite l'adresse email du Client, les simulations enregistrées dans ses rapports et les informations de facturation pour fournir le service, facturer et respecter ses obligations comptables. Les paiements sont traités par Stripe, l'authentification et l'hébergement des données par Supabase. Les données sont conservées pendant la durée du compte, puis le temps des obligations légales (10 ans pour les pièces comptables).</p>
                     <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL. Le détail figure dans la <Link to="/confidentialite" className="underline text-brass hover:text-brass-light">politique de confidentialité</Link>.</p>
                 </Article>
 
-                <Article n={15} title="Réclamations et médiation">
+                <Article n={16} title="Réclamations et médiation">
                     <p>Toute réclamation est adressée à {LEGAL.email}. En cas de litige non résolu, le consommateur peut recourir gratuitement au médiateur de la consommation : {LEGAL.mediatorName} ({LEGAL.mediatorUrl}), après avoir tenté de résoudre le litige directement auprès du Vendeur par une réclamation écrite.</p>
                 </Article>
 
-                <Article n={16} title="Droit applicable et juridiction">
+                <Article n={17} title="Droit applicable et juridiction">
                     <p>Les présentes CGV sont soumises au droit français. Pour les consommateurs, les litiges relèvent des juridictions désignées par les règles légales. Pour les Clients professionnels, compétence exclusive est attribuée au {LEGAL.court}.</p>
                 </Article>
 
