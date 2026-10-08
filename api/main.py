@@ -2,17 +2,11 @@ import os
 import io
 import logging
 import json
-import re
-import time
-import unicodedata
-from datetime import date
-from collections import defaultdict, deque
 from dotenv import load_dotenv
 
 load_dotenv()
-from typing import Optional, Dict, Any
-from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Request, Depends
-from pydantic import BaseModel
+from typing import Dict, Any
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Depends
 try:
     import pytesseract
     from PIL import Image
@@ -46,10 +40,6 @@ else:
 # Initialize Connector & Engine
 ademe = AdemeConnector()
 engine = DPECalculator()
-try:
-    from api.ai_service import ai_service
-except ImportError:
-    from ai_service import ai_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -78,32 +68,14 @@ async def global_exception_handler(request, exc):
         media_type="application/json"
     )
 
-# --- Rate limiting ---
-# In-memory sliding window per client IP. Protects the paid endpoints (LLM calls)
-# from abuse. On serverless platforms memory is per instance, so this is a
-# best-effort guard, not a hard quota.
-
-class RateLimiter:
-    def __init__(self, max_calls: int, period_seconds: int):
-        self.max_calls = max_calls
-        self.period = period_seconds
-        self.calls: Dict[str, deque] = defaultdict(deque)
-
-    def __call__(self, request: Request):
-        forwarded = request.headers.get("x-forwarded-for", "")
-        ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
-        now = time.monotonic()
-        window = self.calls[ip]
-        while window and now - window[0] > self.period:
-            window.popleft()
-        if len(window) >= self.max_calls:
-            raise HTTPException(status_code=429, detail="Trop de requêtes, veuillez réessayer plus tard.")
-        window.append(now)
-
-search_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SEARCH_PER_MIN", "30")), period_seconds=60)
-# The UI re-simulates on every change (debounced), so this one is looser
-simulate_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SIMULATE_PER_MIN", "120")), period_seconds=60)
-ai_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_AI_PER_HOUR", "10")), period_seconds=3600)
+try:
+    from api.ratelimit import search_limiter, simulate_limiter, ai_limiter
+    from api.auth import current_user
+    from api.accounts import router as accounts_router
+except ImportError:
+    from ratelimit import search_limiter, simulate_limiter, ai_limiter
+    from auth import current_user
+    from accounts import router as accounts_router
 
 @app.get("/")
 async def root():
@@ -270,104 +242,7 @@ async def simulate(data: SimulationInput):
         logger.error(f"Simulation failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="La simulation a échoué.")
 
-try:
-    from api.pdf_service import pdf_service
-except ImportError:
-    from pdf_service import pdf_service
-
-class ReportRequest(BaseModel):
-    address: str
-    surface: float
-    year: Any = "N/A"
-    construction_period: Optional[str] = "N/A"
-    building_type: Optional[str] = "Logement"
-    ademe_dpe_number: Optional[str] = "N/A"
-    current_label: str = "G"
-    new_label: str = "G"
-    initial_cep: float = 0.0
-    new_cep: float = 0.0
-    ges_value: float = 0.0
-    new_ges: float = 0.0
-    total_cost: float = 0.0
-    subsidies: float = 0.0
-    rest_to_pay: float = 0.0
-    latent_gain: float = 0.0
-    annual_savings: float = 0.0
-    roi_years: Optional[int] = None
-    detailed_costs: Optional[list] = []
-    yield_brut: Optional[float] = 0.0
-    cashflow: Optional[float] = 0.0
-    purchase_price: Optional[float] = 0.0
-    ban_date: Optional[str] = None
-    cee_est: Optional[float] = 0.0
-    eco_ptz_amount: Optional[float] = 0.0
-    pam_amount: Optional[float] = 0.0
-    tax_benefit: Optional[float] = 0.0
-    has_iti: Optional[bool] = False
-    user_profile: Optional[str] = "propriétaire"
-    focus_mpr: Optional[str] = None
-    focus_cee: Optional[str] = None
-    focus_eco_ptz: Optional[str] = None
-    # When given, every figure of the report is recomputed server side
-    simulation: Optional[SimulationInput] = None
-
-def safe_filename(text: str) -> str:
-    """ASCII-only filename, safe to put in a Content-Disposition header."""
-    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
-    return re.sub(r"[^A-Za-z0-9]+", "_", ascii_text).strip("_")[:80] or "bien"
-
-@router.post("/generate-report", dependencies=[Depends(ai_limiter)])
-async def generate_report(data: ReportRequest):
-    """Generates a PDF report from simulation results with AI narrative."""
-    try:
-        report_data = data.model_dump(exclude={"simulation"})
-        if data.simulation:
-            sim = run_simulation(data.simulation)
-            prop = data.simulation.property
-            report_data.update({
-                "surface": prop.surface,
-                "current_label": sim["current_label"],
-                "new_label": sim["new_label"],
-                "initial_cep": sim["initial_cep"],
-                "new_cep": sim["new_cep"],
-                "ges_value": sim["initial_ges"],
-                "new_ges": sim["new_ges"],
-                "total_cost": sim["cost"],
-                "subsidies": sim["subsidies"],
-                "cee_est": sim["cee_est"],
-                "rest_to_pay": sim["rest_to_pay"],
-                "latent_gain": sim["latent_gain"],
-                "annual_savings": sim["annual_savings"],
-                "roi_years": round(sim["roi_years"]) if sim["roi_years"] is not None else None,
-                "detailed_costs": sim["detailed_costs"],
-                "yield_brut": sim["yield_brut"],
-                "cashflow": sim["cashflow"],
-                "purchase_price": data.simulation.purchase_price,
-                "ban_date": date.fromisoformat(sim["ban_date"]).strftime("%d/%m/%Y") if sim["ban_date"] else None,
-                "eco_ptz_amount": sim["eco_ptz_amount"],
-                "tax_benefit": sim["tax_benefit"],
-                "has_iti": sim["has_iti"],
-                "user_profile": "investisseur" if data.simulation.is_investor else "propriétaire",
-            })
-        
-        # 1. Generate AI Narrative
-        logger.info(f"Generating AI narrative for profile: {report_data['user_profile']}")
-        narrative = await ai_service.generate_narrative(report_data, report_data["user_profile"])
-        report_data["ai_narrative"] = narrative
-        
-        # 2. Generate PDF
-        pdf_bytes = pdf_service.generate(report_data)
-        
-        return Response(
-            content=pdf_bytes,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=Rapport_SPREA_{safe_filename(data.address)}.pdf"}
-        )
-    except Exception as e:
-        logger.error(f"PDF Generation failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="La génération du rapport a échoué.")
-
-@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter)])
+@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(current_user)])
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
     logger.info(f"Received PDF upload request: {file.filename}")
@@ -400,6 +275,7 @@ async def analyze_dpe(file: UploadFile = File(...)):
     }
 
 app.include_router(router)
+app.include_router(accounts_router)
 
 if __name__ == "__main__":
     import uvicorn

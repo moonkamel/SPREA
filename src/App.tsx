@@ -12,6 +12,7 @@ import {
     Layers,
     Zap
 } from 'lucide-react';
+import { AccountButton, AccountProvider, useAccount } from './account';
 
 type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
 
@@ -167,6 +168,15 @@ const isHouse = (buildingType?: string) => (buildingType || '').toLowerCase().in
 // --- Main Component ---
 
 export default function App() {
+    return (
+        <AccountProvider>
+            <Simulator />
+        </AccountProvider>
+    );
+}
+
+function Simulator() {
+    const { requestReport, config, me } = useAccount();
     const [view, setView] = useState<'landing' | 'results' | 'dashboard'>('landing');
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -373,40 +383,28 @@ export default function App() {
     const activeSim = activeScenario === 'A' ? simA : simB;
 
     const handleDownloadPDF = async () => {
-        if (!property || !activeSim) return;
+        const simulation = activeScenario === 'A' ? inputA : inputB;
+        if (!property || !simulation) return;
         setDownloading(true);
         try {
-            const res = await fetch(`/api/generate-report`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            await requestReport({
+                meta: {
                     address: property.address || "Adresse inconnue",
-                    surface: property.surface || 0,
-                    year: property.year || "N/A",
-                    ademe_dpe_number: property.ademe_dpe_number || "N/A",
-                    building_type: property.buildingType || "Logement",
-                    construction_period: property.constructionPeriod || "N/A",
-                    simulation: activeScenario === 'A' ? inputA : inputB,
-                    focus_mpr: "MaPrimeRénov' est l’aide principale de l’État pour la rénovation énergétique. Pour être éligible, le logement doit être construit depuis plus de 15 ans. Le montant dépend du gain de classe DPE : une rénovation globale (au moins 2 classes) déclenche des forfaits bien plus élevés.",
-                    focus_cee: "Les Certificats d’Économie d’Énergie sont financés par les 'pollueurs-payeurs'. Cette prime est cumulable avec MaPrimeRénov' par geste, mais pas avec le parcours accompagné (l'Anah les valorise elle-même). Elle est versée sous forme de virement bancaire ou de bon d'achat après validation des travaux par un organisme indépendant.",
-                    focus_eco_ptz: "L’Éco-Prêt à Taux Zéro permet de financer les travaux sans avance de trésorerie. La durée de remboursement peut aller jusqu'à 20 ans pour les rénovations globales. Il est distribué par la plupart des banques françaises sur présentation des devis RGE."
-                })
+                    year: property.year || null,
+                    ademe_dpe_number: property.ademe_dpe_number || null,
+                    building_type: property.buildingType || null,
+                    construction_period: property.constructionPeriod || null,
+                },
+                simulation,
             });
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.detail || "Erreur lors de la génération du rapport.");
-            }
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Rapport_SPREA.pdf`;
-            document.body.appendChild(a); a.click(); a.remove();
         } finally { setDownloading(false); }
     };
 
     // --- Views ---
 
     if (view === 'landing') return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans relative">
+            <div className="absolute top-6 right-6"><AccountButton /></div>
             <div className="max-w-2xl w-full text-center">
                 <div className="mb-12">
                     <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-8 mx-auto w-fit">
@@ -561,11 +559,14 @@ export default function App() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-3">
                         <button onClick={handleDownloadPDF} disabled={downloading} className="h-14 px-8 rounded-2xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3 border border-blue-100 shadow-sm">
                             {downloading ? <Loader2 className="animate-spin" /> : <FileText size={20} />}
-                            <span className="uppercase text-xs tracking-widest">PDF</span>
+                            <span className="uppercase text-xs tracking-widest">
+                                Rapport PDF{!me?.is_pro && config?.report_price ? ` · ${config.report_price}` : ''}
+                            </span>
                         </button>
+                        <AccountButton />
                         <button onClick={() => setView('landing')} className="h-14 px-6 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-slate-900 hover:text-white transition-all text-[10px] uppercase tracking-widest border border-slate-200">Retour</button>
                     </div>
                 </div>
