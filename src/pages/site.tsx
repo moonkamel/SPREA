@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AccountButton } from '../account';
+import { AccountButton, useAccount } from '../account';
 import { isLegalIncomplete, LEGAL } from '../legal';
 import { Link, navigate } from '../router';
 
@@ -20,6 +20,12 @@ export function Logo({ onClick }: { onClick?: () => void }) {
     );
 }
 
+function ContactsLink() {
+    const { me } = useAccount();
+    if (!me?.is_pro) return null;
+    return <Link to="/contacts" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Contacts</Link>;
+}
+
 export function SiteHeader({ onHome }: { onHome?: () => void }) {
     return (
         <header className="border-b border-line/70 bg-canvas/90 backdrop-blur sticky top-0 z-40">
@@ -27,6 +33,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
                 <Logo onClick={onHome} />
                 <nav className="flex items-center gap-1 sm:gap-3">
                     <Link to="/prospection" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Prospection</Link>
+                    <ContactsLink />
                     <Link to="/tarifs" className="px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Tarifs</Link>
                     <AccountButton />
                 </nav>

@@ -140,6 +140,24 @@ export const toSimulation = (r: any): Simulation => ({
     hasITI: r.has_iti,
 });
 
+// The dwelling as sent to /api/simulate
+export const propertyInput = (property: PropertyData) => ({
+    surface: property.surface,
+    initial_cep: property.initialCep,
+    ges_value: property.gesValue ?? null,
+    building_type: property.buildingType,
+    postcode: property.postcode ?? null,
+    construction_year: property.year || null,
+    construction_period: property.constructionPeriod ?? null,
+    price_per_m2: property.pricePerM2 ?? null,
+    price_source: property.priceSource ?? null,
+    insee_code: property.inseeCode ?? null,
+    heating_energy: property.heatingType ?? null,
+    final_consumption: property.finalConsumption ?? null,
+    insulation_quality: property.insulationQuality ?? null,
+    dpe_losses: property.dpeLosses ?? null,
+});
+
 // Maps an API search result to the UI property model
 export const toProperty = (r: any): PropertyData => ({
     address: r.address,

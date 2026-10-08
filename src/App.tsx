@@ -7,10 +7,12 @@ import MentionsLegalesPage from './pages/MentionsLegales';
 import PricingPage from './pages/Pricing';
 // Leaflet is only loaded on the map page
 const ProspectionPage = lazy(() => import('./pages/Prospection'));
+const OwnerPage = lazy(() => import('./pages/Owner'));
+const ContactsPage = lazy(() => import('./pages/Contacts'));
 import Landing from './views/Landing';
 import Results from './views/Results';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
-import { toProperty, toSimulation, type PropertyData, type RetrofitAction, type Simulation } from './model';
+import { propertyInput, toProperty, toSimulation, type PropertyData, type RetrofitAction, type Simulation } from './model';
 
 export default function App() {
     return (
@@ -28,8 +30,11 @@ function Pages() {
         '/mentions-legales': <MentionsLegalesPage />,
         '/confidentialite': <ConfidentialitePage />,
         '/prospection': <Suspense fallback={null}><ProspectionPage /></Suspense>,
+        '/contacts': <Suspense fallback={null}><ContactsPage /></Suspense>,
     };
-    const page = pages[path] ?? null;
+    // Owner page reached from a letter's QR code: /l/<code>
+    const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})\/?$/)?.[1];
+    const page = ownerCode ? <Suspense fallback={null}><OwnerPage code={ownerCode} /></Suspense> : pages[path] ?? null;
     return (
         <>
             {page}
@@ -185,22 +190,7 @@ function Simulator() {
         const s = settings;
         const useRfr = s.incomeMode === 'rfr' && s.rfr !== '';
         return {
-            property: {
-                surface: property.surface,
-                initial_cep: property.initialCep,
-                ges_value: property.gesValue ?? null,
-                building_type: property.buildingType,
-                postcode: property.postcode ?? null,
-                construction_year: property.year || null,
-                construction_period: property.constructionPeriod ?? null,
-                price_per_m2: property.pricePerM2 ?? null,
-                price_source: property.priceSource ?? null,
-                insee_code: property.inseeCode ?? null,
-                heating_energy: property.heatingType ?? null,
-                final_consumption: property.finalConsumption ?? null,
-                insulation_quality: property.insulationQuality ?? null,
-                dpe_losses: property.dpeLosses ?? null,
-            },
+            property: propertyInput(property),
             works: list.filter(a => a.active).map(a => a.id),
             suggested_works: list.filter(a => a.suggested).map(a => a.id),
             income_level: s.incomeLevel,
