@@ -137,13 +137,14 @@ def test_suggestions_for_an_uninsulated_gas_house():
     res = suggest()
     assert {"roof", "iti", "windows", "pac_air_eau"} <= set(res["suggested"])
     assert "heating" not in res["suggested"]
-    assert res["preselected"][0] == "roof"
+    # The heat pump changes the most: energy and emissions
+    assert res["preselected"][0] == "pac_air_eau"
 
 
 def test_preselection_reaches_the_target_class():
     res = suggest()
     sim = run(works=res["preselected"])
-    assert sim["new_cep"] <= 150
+    assert sim["new_label"] in ("A", "B", "C")
 
 
 def test_no_roof_or_heat_pump_for_apartments():
