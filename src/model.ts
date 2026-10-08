@@ -145,6 +145,8 @@ export const propertyInput = (property: PropertyData) => ({
     surface: property.surface,
     initial_cep: property.initialCep,
     ges_value: property.gesValue ?? null,
+    official_label: property.label ?? null,
+    dpe_date: property.dpeDate ? property.dpeDate.slice(0, 10) : null,
     building_type: property.buildingType,
     postcode: property.postcode ?? null,
     construction_year: property.year || null,

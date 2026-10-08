@@ -166,3 +166,17 @@ def test_rental_ban_after_works():
     res = run(works=["roof", "iti", "pac_air_eau"])
     assert res["ban_date"] == "2028-01-01"  # F today
     assert res["new_ban_date"] is None  # C after works
+
+
+def test_official_label_wins_for_recent_small_dwellings():
+    from api.simulation import calibrated_thresholds, get_labels, small_surface_factor
+    # 16 m2 flat, 523 kWh/m2, DPE of 2026 classed G: stays G
+    thresholds, official = calibrated_thresholds(16.2, 523, 20, "G", "2026-06-03")
+    assert official == "G" and get_labels(523, 20, thresholds)["label"] == "G"
+    # Calibrated factor gives the official label for a borderline case
+    thresholds, official = calibrated_thresholds(30, 440, 20, "F", "2025-01-10")
+    assert get_labels(440, 20, thresholds)["label"] == "F"
+    # DPE before July 2024: recalculated with today's thresholds
+    thresholds, official = calibrated_thresholds(35, 425, 20, "G", "2023-05-01")
+    assert official is None and get_labels(425, 20, thresholds)["label"] == "F"
+    assert small_surface_factor(40) == 1 and 1.01 < small_surface_factor(35) < 1.03

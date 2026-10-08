@@ -127,3 +127,21 @@ def test_widens_to_neighbouring_communes():
     dvf._cache.clear()
     res = asyncio.run(market_price("59001", "Appartement", transport=t, today=date(2026, 10, 8)))
     assert res["sales"] == 23
+
+
+def test_follows_redirects_and_skips_forbidden_years():
+    dvf._cache.clear()
+    sales = to_csv([row(f"r{i}", 2500 * 100, "Maison", 100) for i in range(12)])
+
+    def handler(request):
+        url = str(request.url)
+        if "/2026/" in url:
+            return httpx.Response(403)
+        if url.startswith("https://files.data.gouv.fr/") and "/2025/" in url:
+            return httpx.Response(302, headers={"location": url.replace("files.data.gouv.fr", "object.files.data.gouv.fr")})
+        if url.startswith("https://object.files.data.gouv.fr/") and "/2025/" in url:
+            return httpx.Response(200, text=sales)
+        return httpx.Response(404)
+
+    res = asyncio.run(market_price("59350", "Maison", transport=httpx.MockTransport(handler), today=date(2026, 10, 8)))
+    assert res["price_per_m2"] == 2500
