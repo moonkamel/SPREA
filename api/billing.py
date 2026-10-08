@@ -162,12 +162,14 @@ def get_billing() -> Billing:
     if _billing is None:
         if not billing_configured():
             raise RuntimeError(f"Stripe is not configured: {', '.join(REQUIRED_ENV)} must be set")
+        # strip(): a space or newline pasted with a key breaks it silently
+        env = {k: os.environ[k].strip() for k in REQUIRED_ENV}
         _billing = Billing(
-            os.environ["STRIPE_SECRET_KEY"],
-            os.environ["STRIPE_WEBHOOK_SECRET"],
-            os.environ["STRIPE_PRICE_REPORT"],
-            os.environ["STRIPE_PRICE_PRO"],
-            os.environ["PUBLIC_APP_URL"],
+            env["STRIPE_SECRET_KEY"],
+            env["STRIPE_WEBHOOK_SECRET"],
+            env["STRIPE_PRICE_REPORT"],
+            env["STRIPE_PRICE_PRO"],
+            env["PUBLIC_APP_URL"],
             automatic_tax=os.getenv("STRIPE_AUTOMATIC_TAX", "").lower() in ("1", "true", "yes"),
         )
     return _billing
