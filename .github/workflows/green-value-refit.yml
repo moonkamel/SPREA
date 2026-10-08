@@ -1,6 +1,6 @@
 name: Green value refit (one-off)
 # Re-runs the fit on the matched sales of run 37776497389 and pushes the
-# result to the green-value/initial branch. Temporary.
+# result to the green-value/initial branch. Temporary (monotone class effects).
 on:
   push:
     branches: [claude/hopeful-fermi-re2vn1]

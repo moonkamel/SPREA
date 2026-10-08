@@ -349,6 +349,26 @@ def hedonic(rows: List[Dict], quarters: List[str]) -> Optional[Dict]:
     }
 
 
+def monotone(effects: Dict[str, float], weights: Dict[str, float]) -> Dict[str, float]:
+    """Pool-adjacent-violators: class effects must not increase from A to G
+    (a G cannot be worth more than an F). Weighted by the number of sales;
+    D stays the reference (0)."""
+    blocks = [[effects[c], max(weights.get(c, 0), 1), [c]] for c in LABELS]
+    i = 0
+    while i < len(blocks) - 1:
+        if blocks[i][0] < blocks[i + 1][0]:  # violation: later class worth more
+            v1, w1, c1 = blocks[i]
+            v2, w2, c2 = blocks[i + 1]
+            blocks[i] = [(v1 * w1 + v2 * w2) / (w1 + w2), w1 + w2, c1 + c2]
+            del blocks[i + 1]
+            i = max(i - 1, 0)
+        else:
+            i += 1
+    out = {c: v for v, _, cs in blocks for c in cs}
+    ref = out["D"]
+    return {c: v - ref for c, v in out.items()}
+
+
 def shrink(dep_fit: Dict, nat: Dict, tau2: Dict[str, float]) -> Dict[str, float]:
     out = {}
     for c in LABELS:
@@ -433,7 +453,7 @@ def fit(in_dir: str, out_path: str, summary_path: Optional[str] = None) -> None:
             entry = {"n": len(dep_rows), "mix": {c: round(mix.get(c, 0) / total, 4) for c in LABELS}}
             f = dep_fits.get(dep)
             if f:
-                entry["class"] = {c: round(v, 4) for c, v in shrink(f, nat, tau2).items()}
+                entry["class"] = {c: round(v, 4) for c, v in monotone(shrink(f, nat, tau2), f["class_n"]).items()}
                 entry["class_se"] = {c: round(f["class_se"][c] or 0, 4) for c in LABELS}
                 if f["n"] >= 2000:
                     entry["quarter"] = {q: round(v, 4) for q, v in f["quarter"].items() if v is not None}
@@ -442,7 +462,7 @@ def fit(in_dir: str, out_path: str, summary_path: Optional[str] = None) -> None:
         result["kinds"][kind] = {
             "national": {
                 "n": nat["n"],
-                "class": {c: round(v, 4) for c, v in nat["class"].items()},
+                "class": {c: round(v, 4) for c, v in monotone(nat["class"], nat["class_n"]).items()},
                 "class_se": {c: round(v or 0, 4) for c, v in nat["class_se"].items()},
                 "quarter": {q: round(v, 4) for q, v in nat["quarter"].items() if v is not None},
                 "mix": {c: round(mix.get(c, 0) / len(kind_rows), 4) for c in LABELS},

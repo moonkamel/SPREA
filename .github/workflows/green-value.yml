@@ -1,17 +1,18 @@
 name: Green value data
 
 # Measures the price gap between DPE classes from real sales (DVF x ADEME DPE)
-# and commits api/data/green_value.json. Monthly, or on demand.
+# and opens a pull request updating api/data/green_value.json, to be reviewed
+# before merging. Monthly (the 6th), or on demand from the Actions tab.
+# Requires "Allow GitHub Actions to create and approve pull requests"
+# (Settings > Actions > General > Workflow permissions).
 on:
   workflow_dispatch:
   schedule:
     - cron: "17 3 6 * *"
-  push:
-    branches: [claude/hopeful-fermi-re2vn1]
-    paths: ["scripts/green_value/**", ".github/workflows/green-value.yml"]
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: green-value-${{ github.ref }}
@@ -55,12 +56,20 @@ jobs:
           pattern: matched-*
           path: matched
           merge-multiple: true
-      - run: python scripts/green_value/build.py fit --in matched --out api/data/green_value.json
-      - name: Commit the result
+      - run: python scripts/green_value/build.py fit --in matched --out api/data/green_value.json --summary summary.md
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          git add api/data/green_value.json
+          git diff --cached --quiet && { echo "No change"; exit 0; }
+          month=$(date +%Y-%m)
+          branch="green-value/$month"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add api/data/green_value.json
-          git diff --cached --quiet && exit 0
-          git commit -m "Update green value coefficients (DVF x DPE)"
-          git push origin HEAD:${{ github.ref_name }}
+          git checkout -b "$branch"
+          git commit -m "Update green value coefficients ($month)"
+          git push --force origin "$branch"
+          gh pr view "$branch" > /dev/null 2>&1 && exit 0
+          gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+            --title "Valeur verte : mise à jour $(date +%m/%Y)" --body-file summary.md

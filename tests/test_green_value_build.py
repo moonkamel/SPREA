@@ -87,3 +87,14 @@ def test_summary_compares_with_previous_file():
     md = build.summary_markdown(new, old)
     assert "Maisons : 1 200 ventes" in md
     assert "| G | -25.9 % | +0.0 % |" in md
+
+
+def test_monotone_pools_violations_weighted_by_sales():
+    effects = {"A": 0.10, "B": 0.12, "C": 0.05, "D": 0.0, "E": -0.02, "F": -0.01, "G": 0.04}
+    weights = {"A": 10, "B": 30, "C": 100, "D": 500, "E": 300, "F": 100, "G": 20}
+    out = build.monotone(effects, weights)
+    values = [out[c] for c in build.LABELS]
+    assert all(a >= b - 1e-12 for a, b in zip(values, values[1:]))
+    assert out["D"] == 0
+    assert out["A"] == out["B"]  # pooled
+    assert out["G"] <= out["F"] <= out["E"]
