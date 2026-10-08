@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Download, Loader2, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
+import { Bell, Download, Loader2, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
@@ -87,6 +87,7 @@ export default function ProspectionPage() {
     const [reload, setReload] = useState(0);
     const [accepting, setAccepting] = useState(false);
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
     const [boundsKey, setBoundsKey] = useState('');
 
     // Map
@@ -184,6 +185,30 @@ export default function ProspectionPage() {
         setTimeout(() => markers.current.get(a.address || `${a.lat},${a.lon}`)?.openPopup(), 300);
     };
 
+
+    // Daily alert on the visible area (center, radius up to 3 km)
+    const createAlert = async () => {
+        const map = mapRef.current;
+        if (!map) return;
+        const name = window.prompt('Nom de la zone d\'alerte (ex. : Vieux-Lille)');
+        if (!name?.trim()) return;
+        const center = map.getCenter();
+        const radius = Math.round(Math.min(3000, Math.max(200, center.distanceTo(map.getBounds().getNorthEast()))));
+        setAlertMessage(null);
+        try {
+            const res = await authedFetch('/api/alerts/zones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name.trim().slice(0, 60), lat: center.lat, lon: center.lng, radius_m: radius,
+                    labels: labels.length ? labels : ['E', 'F', 'G'], kind: kind || null }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.detail || "L'alerte n'a pas pu être créée.");
+            setAlertMessage(`Alerte « ${name.trim()} » créée : ${data.new_hits} DPE reçus ces 14 derniers jours. Les nouveaux arriveront chaque matin.`);
+        } catch (e) {
+            setAlertMessage((e as Error).message);
+        }
+    };
 
     const exportCsv = () => {
         if (!result) return;
@@ -313,6 +338,18 @@ export default function ProspectionPage() {
                                 </Button>
                             </Card>
                         ) : null}
+
+                        {showDetails && (
+                            <Card className="p-4">
+                                <Button variant="secondary" className="h-10 w-full" onClick={createAlert}>
+                                    <Bell size={14} />Créer une alerte sur cette zone
+                                </Button>
+                                <p className="mt-2 text-xs text-faint">
+                                    {alertMessage || 'Chaque matin, les nouveaux DPE de la zone visible, avec les filtres choisis. Un nouveau DPE annonce souvent une vente ou une location.'}
+                                    {alertMessage && <> <Link to="/alertes" className="underline text-brass-light">Voir les alertes</Link></>}
+                                </p>
+                            </Card>
+                        )}
 
                         {showDetails && (
                             <Card className="p-0 overflow-hidden">

@@ -23,7 +23,12 @@ export function Logo({ onClick }: { onClick?: () => void }) {
 function ContactsLink() {
     const { me } = useAccount();
     if (!me?.is_pro) return null;
-    return <Link to="/contacts" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Contacts</Link>;
+    return (
+        <>
+            <Link to="/alertes" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Alertes</Link>
+            <Link to="/contacts" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Contacts</Link>
+        </>
+    );
 }
 
 export function SiteHeader({ onHome }: { onHome?: () => void }) {

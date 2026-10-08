@@ -149,6 +149,40 @@ class SupabaseStore:
         return await self._request("DELETE", "leads", params={"id": f"eq.{lead_id}", "user_id": f"eq.{user_id}"},
                                    prefer="return=representation")
 
+    # --- DPE alerts ---
+
+    async def list_zones(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "alert_zones", params={
+            "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.asc"})
+
+    async def active_zones(self) -> List[Dict[str, Any]]:
+        return await self._request("GET", "alert_zones", params={"active": "eq.true", "select": "*", "limit": "5000"})
+
+    async def create_zone(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "alert_zones", json=row, prefer="return=representation")
+        return rows[0]
+
+    async def update_zone(self, zone_id: str, fields: Dict[str, Any], user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        params = {"id": f"eq.{zone_id}"}
+        if user_id:
+            params["user_id"] = f"eq.{user_id}"
+        return await self._request("PATCH", "alert_zones", params=params, json=fields, prefer="return=representation")
+
+    async def delete_zone(self, user_id: str, zone_id: str) -> List[Dict[str, Any]]:
+        return await self._request("DELETE", "alert_zones", params={"id": f"eq.{zone_id}", "user_id": f"eq.{user_id}"},
+                                   prefer="return=representation")
+
+    async def add_hits(self, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Inserts the hits not already recorded for their zone; returns only the new ones."""
+        if not rows:
+            return []
+        return await self._request("POST", "alert_hits", params={"on_conflict": "zone_id,dpe_number"}, json=rows,
+                                   prefer="resolution=ignore-duplicates,return=representation")
+
+    async def list_hits(self, user_id: str, limit: int = 300) -> List[Dict[str, Any]]:
+        return await self._request("GET", "alert_hits", params={
+            "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.desc,received_on.desc", "limit": str(limit)})
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:

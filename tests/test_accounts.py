@@ -30,6 +30,8 @@ class FakeStore:
         self.agent_pages = {}
         self.links = {}
         self.leads = []
+        self.zones = {}
+        self.hits = []
 
     async def ensure_profile(self, user_id, email):
         profile = self.profiles.setdefault(user_id, {"id": user_id})
@@ -118,6 +120,40 @@ class FakeStore:
         hits = [l for l in self.leads if l["id"] == lead_id and l["user_id"] == user_id]
         self.leads = [l for l in self.leads if l not in hits]
         return hits
+
+    async def list_zones(self, user_id):
+        return [dict(z) for z in self.zones.values() if z["user_id"] == user_id]
+
+    async def active_zones(self):
+        return [dict(z) for z in self.zones.values() if z.get("active", True)]
+
+    async def create_zone(self, row):
+        zone = {"id": str(uuid.uuid4()), "active": True, "email": True, "last_checked_on": None, **row}
+        self.zones[zone["id"]] = zone
+        return dict(zone)
+
+    async def update_zone(self, zone_id, fields, user_id=None):
+        z = self.zones.get(zone_id)
+        if not z or (user_id and z["user_id"] != user_id):
+            return []
+        z.update(fields)
+        return [dict(z)]
+
+    async def delete_zone(self, user_id, zone_id):
+        z = self.zones.get(zone_id)
+        if not z or z["user_id"] != user_id:
+            return []
+        del self.zones[zone_id]
+        return [z]
+
+    async def add_hits(self, rows):
+        known = {(h["zone_id"], h["dpe_number"]) for h in self.hits}
+        new = [dict(r, id=str(uuid.uuid4())) for r in rows if (r["zone_id"], r["dpe_number"]) not in known]
+        self.hits.extend(new)
+        return new
+
+    async def list_hits(self, user_id, limit=300):
+        return [dict(h) for h in self.hits if h["user_id"] == user_id][:limit]
 
     async def delete_user(self, user_id):
         # Cascade of the real schema
