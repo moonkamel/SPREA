@@ -4,6 +4,7 @@ import { Button, Segmented } from '../ui';
 import { useAccount, type AgencyOrder, type Plan } from '../account';
 import { Link } from '../router';
 import { PageShell } from './site';
+import { useSeo } from '../seo';
 
 type Billing = 'monthly' | 'yearly';
 
@@ -41,6 +42,11 @@ const FAQ = [
 ];
 
 export default function PricingPage() {
+    useSeo({
+        title: 'Tarifs SPREA : dès 79 € HT par mois pour les agents immobiliers',
+        description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, alertes, avis de valeur, rapports. Satisfait ou remboursé 14 jours.",
+        path: '/tarifs',
+    });
     const { config, me, startSubscription } = useAccount();
     const [billing, setBilling] = useState<Billing>('monthly');
     const [quote, setQuote] = useState<'agence' | 'reseau' | null>(null);

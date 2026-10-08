@@ -24,3 +24,15 @@ def test_small_departments_are_not_shown():
         "national": {"n": 1000, "class": {c: 0.0 for c in "ABCDEFG"}, "mix": {c: 1 / 7 for c in "ABCDEFG"}},
         "departments": {"48": {"n": 120, "class": {c: 0.0 for c in "ABCDEFG"}, "mix": {}}}}}}
     assert build(data)["departments"] == []
+
+
+def test_prerender_data_is_up_to_date():
+    """src/data/observatoire.json (prerendered pages) must follow green_value.json:
+    run scripts/seo/export_observatoire.py after an update."""
+    import json
+    import os
+    from api.green_value import load
+    from api.observatoire import build
+    path = os.path.join(os.path.dirname(__file__), "..", "src", "data", "observatoire.json")
+    with open(path, encoding="utf-8") as f:
+        assert json.load(f) == json.loads(json.dumps(build(load())))

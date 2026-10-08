@@ -47,7 +47,11 @@ function Pages() {
     };
     // Owner page reached from a letter's QR code: /l/<code>
     const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})\/?$/)?.[1];
-    const page = ownerCode ? <Suspense fallback={null}><OwnerPage code={ownerCode} /></Suspense> : pages[path] ?? null;
+    // Observatory of one department: /observatoire/<name>-<code>
+    const department = path.match(/^\/observatoire\/([a-z0-9-]+)\/?$/)?.[1];
+    const page = ownerCode ? <Suspense fallback={null}><OwnerPage code={ownerCode} /></Suspense>
+        : department ? <Suspense fallback={null}><ObservatoirePage slug={department} /></Suspense>
+        : pages[path] ?? null;
     return (
         <>
             {page}

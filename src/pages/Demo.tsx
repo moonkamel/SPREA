@@ -5,6 +5,7 @@ import { useAccount } from '../account';
 import { navigate } from '../router';
 import { SiteFooter, SiteHeader } from './site';
 import { Screen } from './Screen';
+import { useSeo } from '../seo';
 
 // Product walkthrough for professionals: a morning with SPREA, from the new
 // DPE of the day to the valuation handed to the owner.
@@ -40,10 +41,12 @@ function Step({ id, kicker, title, children, points, media, reverse = false }: {
 export default function DemoPage() {
     const { me, startSubscription } = useAccount();
 
+    useSeo({
+        title: "Démo SPREA : prospection DPE, alertes, avis de valeur avant / après travaux",
+        description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux : découvrez SPREA en images.",
+        path: '/demo',
+    });
     useEffect(() => {
-        document.title = 'Démo · SPREA, l\'outil DPE des pros de l\'immobilier';
-        const meta = document.querySelector('meta[name="description"]');
-        meta?.setAttribute('content', "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux : découvrez SPREA en images.");
         // Anchor from the home page (/demo#convaincre)
         const target = window.location.hash.slice(1);
         if (target) setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 150);

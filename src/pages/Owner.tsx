@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, Phone, ShieldCheck } from 'lucide-react';
+import { useSeo } from '../seo';
 import { propertyInput, toProperty, toSimulation, type PropertyData, type Simulation } from '../model';
 import { Link } from '../router';
 import { Button, Card, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
@@ -22,6 +23,8 @@ const LAW: Partial<Record<DPEClass, string>> = {
 const fieldClass = 'w-full rounded-xl border border-line bg-raised px-3.5 h-11 text-ink outline-none focus:border-brass/70';
 
 export default function OwnerPage({ code }: { code: string }) {
+    // Personal page of a dwelling: never indexed
+    useSeo({ title: 'Votre logement', noindex: true });
     const [page, setPage] = useState<PageData | null>(null);
     const [property, setProperty] = useState<PropertyData | null>(null);
     const [sim, setSim] = useState<Simulation | null>(null);

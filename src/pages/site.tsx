@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AccountButton, useAccount } from '../account';
 import { isLegalIncomplete, LEGAL } from '../legal';
 import { Link, navigate } from '../router';
+import { useSeo } from '../seo';
 
 export function Logo({ onClick }: { onClick?: () => void }) {
     return (
@@ -102,6 +103,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 }
 
 export function LegalPage({ title, updated, children }: { title: string; updated?: string; children: ReactNode }) {
+    useSeo({ title: `${title} · SPREA`, path: window.location.pathname });
     return (
         <PageShell>
             <article className="max-w-3xl mx-auto space-y-10">

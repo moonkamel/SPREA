@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Loader2, Mail, Phone, Trash2 } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
+import { useSeo } from '../seo';
 import { Button, Card } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
@@ -106,6 +107,7 @@ export function AgentPageForm({ initial, onSaved }: { initial: AgentPageData; on
 
 export default function ContactsPage() {
     const { session, me, config, openLogin, authedFetch } = useAccount();
+    useSeo({ title: 'Contacts · SPREA', noindex: true });
     const [page, setPage] = useState<AgentPageData>({});
     const [leads, setLeads] = useState<Lead[]>([]);
     const [links, setLinks] = useState<LinkStat[]>([]);

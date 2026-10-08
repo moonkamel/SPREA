@@ -4,9 +4,11 @@ import { Button, Card } from '../ui';
 import { saveJoinToken, useAccount } from '../account';
 import { navigate } from '../router';
 import { PageShell } from './site';
+import { useSeo } from '../seo';
 
 // Invitation link: /rejoindre?token=...
 export default function JoinPage() {
+    useSeo({ title: 'Équipe · SPREA', noindex: true });
     const { session, openLogin, authedFetch, refreshMe } = useAccount();
     const [token] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
     const [status, setStatus] = useState<'idle' | 'joining' | 'error'>('idle');
