@@ -26,6 +26,7 @@ class FakeStore:
         self.reports = {}
         self.archive = []
         self.deleted_users = []
+        self.acceptances = []
 
     async def ensure_profile(self, user_id, email):
         profile = self.profiles.setdefault(user_id, {"id": user_id})
@@ -61,9 +62,22 @@ class FakeStore:
     async def archive_purchases(self, rows):
         self.archive.extend(rows)
 
+    async def add_terms_acceptance(self, user_id, scope, version):
+        row = {"user_id": user_id, "scope": scope, "terms_version": version, "accepted_at": f"2026-10-08T12:{len(self.acceptances):02d}:00Z"}
+        self.acceptances.append(row)
+        return dict(row)
+
+    async def latest_terms_acceptance(self, user_id, scope):
+        rows = [a for a in self.acceptances if a["user_id"] == user_id and a["scope"] == scope]
+        return dict(rows[-1]) if rows else None
+
+    async def terms_acceptances(self, user_id):
+        return [dict(a) for a in self.acceptances if a["user_id"] == user_id]
+
     async def delete_user(self, user_id):
         # Cascade of the real schema
         self.deleted_users.append(user_id)
+        self.acceptances = [a for a in self.acceptances if a["user_id"] != user_id]
         self.profiles.pop(user_id, None)
         self.reports = {k: r for k, r in self.reports.items() if r["user_id"] != user_id}
 
@@ -484,8 +498,29 @@ def test_prospection_is_detailed_for_pro_only(env, monkeypatch):
     assert res["addresses"] == [{"lat": 50.633, "lon": 3.069, "worst": "G", "count": 1}]
 
     store.profiles[ALICE.id]["subscription_status"] = "active"
+    # Pro, but the map terms are not accepted yet: still no address
+    res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
+    assert res["terms_required"] is True and "address" not in res["addresses"][0]
+
+    assert client.post("/api/prospection/terms", json={"terms_version": "old", "accept": True}).status_code == 409
+    assert client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION}).status_code == 400
+    ok = client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION, "accept": True}).json()
+    assert ok["accepted"] and store.acceptances[-1]["terms_version"] == accounts.TERMS_VERSION
+
     res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
     assert res["locked"] is False and res["addresses"][0]["address"].startswith("1 Rue")
+
+    # New version of the terms: acceptance asked again
+    monkeypatch.setattr(accounts, "TERMS_VERSION", "2099-01-01")
+    assert client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()["terms_required"] is True
+    monkeypatch.undo()
+    monkeypatch.setattr(accounts.prospection, "search", fake_search)
+
+    # The acceptance survives account deletion in the archive
+    assert client.request("DELETE", "/api/me", json={"confirm": True}).status_code == 200
+    archived = [a for a in store.archive if a["kind"] == "prospection_terms"]
+    assert archived and archived[0]["terms_accepted_at"]
+    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
 
     async def too_large(*a, **k):
         raise accounts.prospection.AreaTooLarge("Zone trop grande : zoomez sur un quartier.")

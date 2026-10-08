@@ -3,7 +3,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Copy, Download, Loader2, Lock, MapPin, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
-import { CGV_VERSION } from '../legal';
 import { Link, navigate } from '../router';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
@@ -29,6 +28,9 @@ interface Address {
 
 interface Result {
     locked: boolean;
+    // Pro, but the current terms of the map (CGV article 14) are not accepted yet
+    terms_required?: boolean;
+    terms_version?: string;
     addresses: Address[];
     dwellings: number;
     total: number;
@@ -48,7 +50,6 @@ const SINCE = [
     { value: '2024', label: 'DPE depuis 2024' },
     { value: '2025', label: 'DPE depuis 2025' },
 ];
-const ACK_KEY = `sprea_prospection_ack_${CGV_VERSION}`;
 
 // IGN Plan v2 (Géoplateforme), free and up to date for France
 const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2'
@@ -62,7 +63,6 @@ const RENTAL_BAN: Partial<Record<DPEClass, string>> = {
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
-const readAck = () => { try { return localStorage.getItem(ACK_KEY) === '1'; } catch { return false; } };
 
 function letter(a: Address) {
     const label = a.worst;
@@ -104,7 +104,8 @@ export default function ProspectionPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [query, setQuery] = useState('');
-    const [ack, setAck] = useState(readAck);
+    const [reload, setReload] = useState(0);
+    const [accepting, setAccepting] = useState(false);
     const [copied, setCopied] = useState<string | null>(null);
     const [boundsKey, setBoundsKey] = useState('');
 
@@ -149,9 +150,9 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [session, zoom, boundsKey, labels, kind, since, authedFetch]);
+    }, [session, zoom, boundsKey, labels, kind, since, authedFetch, reload]);
 
-    const showDetails = !!result && !result.locked && ack;
+    const showDetails = !!result && !result.locked && !result.terms_required;
 
     // Markers
     useEffect(() => {
@@ -222,9 +223,27 @@ export default function ProspectionPage() {
         URL.revokeObjectURL(url);
     };
 
-    const accept = () => {
-        try { localStorage.setItem(ACK_KEY, '1'); } catch { /* storage unavailable */ }
-        setAck(true);
+    // The acceptance is recorded on the server (proof of the accepted version)
+    const accept = async () => {
+        if (!result?.terms_version) return;
+        setAccepting(true);
+        setError(null);
+        try {
+            const res = await authedFetch('/api/prospection/terms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ terms_version: result.terms_version, accept: true }),
+            });
+            if (!res.ok) {
+                const detail = await res.json().catch(() => ({}));
+                throw new Error(detail.detail || "L'acceptation n'a pas pu être enregistrée.");
+            }
+            setReload(r => r + 1);
+        } catch (e) {
+            setError((e as Error).message);
+        } finally {
+            setAccepting(false);
+        }
     };
 
     const visible = useMemo(() => (showDetails ? result!.addresses : []), [result, showDetails]);
@@ -303,7 +322,7 @@ export default function ProspectionPage() {
                                 </p>
                                 <Button className="mt-4 w-full" onClick={startSubscription}>Passer Pro</Button>
                             </Card>
-                        ) : result && !result.locked && !ack ? (
+                        ) : result?.terms_required ? (
                             <Card className="p-5 text-sm">
                                 <p className="text-ink font-medium flex items-center gap-2"><ShieldCheck size={16} className="text-brass" />Avant d'utiliser ces adresses</p>
                                 <ul className="mt-3 space-y-2 text-muted list-disc pl-5">
@@ -316,7 +335,9 @@ export default function ProspectionPage() {
                                     En affichant les adresses, vous acceptez les conditions d'utilisation de la carte prévues à l'
                                     <Link to="/cgv" className="underline text-brass hover:text-brass-light">article 14 des CGV</Link>.
                                 </p>
-                                <Button className="mt-4 w-full" onClick={accept}>J'accepte, afficher les adresses</Button>
+                                <Button className="mt-4 w-full" onClick={accept} disabled={accepting}>
+                                    {accepting && <Loader2 size={14} className="animate-spin" />}J'accepte, afficher les adresses
+                                </Button>
                             </Card>
                         ) : null}
 
