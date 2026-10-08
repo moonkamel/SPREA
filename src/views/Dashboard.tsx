@@ -102,7 +102,16 @@ function Summary({ sim, property, report, updating, scenarioName }: {
                     <div className="mt-3 divide-y divide-line/70">
                         <Row label="Économies sur la facture" help="savings" value={sim && sim.savings > 0 ? `${eur(sim.savings)} / an` : '–'} tone={sim && sim.savings > 0 ? 'positive' : 'muted'} />
                         <Row label="Retour sur investissement" help="payback" value={sim?.roi != null && sim.roi >= 0 ? (sim.roi < 1 ? "moins d'un an" : `${Math.round(sim.roi)} ans`) : '–'} />
-                        {!!sim?.gain && <Row label="Valeur verte du bien" help="greenValue" value={`+ ${eur(sim.gain)}`} tone="positive" />}
+                        {!!sim?.gain && <Row label="Valeur verte du bien" help="greenValue" value={`+ ${eur(Math.round(sim.gain / 500) * 500)}`} tone="positive" />}
+                        {!!sim?.gain && (
+                            <p className="pb-2 text-xs text-faint">
+                                {property.priceSource
+                                    ? `Sur ${num(property.pricePerM2)} €/m² : ${property.priceSource}.`
+                                    : property.priceLookupDone
+                                        ? 'Sur un prix par défaut de 4 500 €/m² : pas assez de ventes connues à proximité.'
+                                        : 'Recherche des prix de vente locaux (DVF)…'}
+                            </p>
+                        )}
                     </div>
                 </>
             )}

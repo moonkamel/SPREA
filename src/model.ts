@@ -28,6 +28,12 @@ export interface PropertyData {
     heatingType?: string;
     gesValue?: number;
     pricePerM2?: number;
+    // Origin of pricePerM2 (local DVF sales), shown with the green value
+    priceSource?: string;
+    priceLookupDone?: boolean;
+    inseeCode?: string;
+    latitude?: number;
+    longitude?: number;
     finalConsumption?: number;
     suggestedWorks?: string[];
     preselectedWorks?: string[];
@@ -149,6 +155,9 @@ export const toProperty = (r: any): PropertyData => ({
     preselectedWorks: r.preselected_works || [],
     city: r.city || undefined,
     details: r.details || undefined,
+    inseeCode: r.insee_code || undefined,
+    latitude: r.latitude ?? undefined,
+    longitude: r.longitude ?? undefined,
 });
 
 export const isHouse = (buildingType?: string) => (buildingType || '').toLowerCase().includes('maison');

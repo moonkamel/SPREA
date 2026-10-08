@@ -448,3 +448,23 @@ def test_claude_analysis_is_generated_once_and_stored(env, monkeypatch):
     prompt = json.loads(calls[0].content)["messages"][0]["content"]
     assert "rue de l" not in prompt and "Église" not in prompt
     assert "surface_m2" in prompt
+
+
+def test_report_uses_local_dvf_price_for_green_value(env, monkeypatch):
+    client, store, billing, state = env
+    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
+    seen = {}
+
+    async def fake_price(insee, building_type, lat=None, lon=None):
+        seen.update(insee=insee, lat=lat)
+        return {"price_per_m2": 3100, "source": "prix médian DVF de 42 ventes de maisons à Lille (2024-2025)"}
+
+    monkeypatch.setattr(accounts, "market_price", fake_price)
+    built = {}
+    real_build = accounts.build_report
+    monkeypatch.setattr(accounts, "build_report", lambda meta, sim: built.setdefault("r", real_build(meta, sim)))
+    request = {**REPORT_REQUEST, "meta": {**REPORT_REQUEST["meta"], "insee_code": "59350", "latitude": 50.63, "longitude": 3.06}}
+    report_id = client.post("/api/reports", json=request).json()["id"]
+    assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
+    assert seen == {"insee": "59350", "lat": 50.63}
+    assert built["r"]["price_per_m2"] == 3100 and not built["r"]["price_is_default"]

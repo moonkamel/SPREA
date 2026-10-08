@@ -41,6 +41,9 @@ export interface ReportRequest {
         city?: string | null;
         postcode?: string | null;
         details?: Record<string, string | null> | null;
+        insee_code?: string | null;
+        latitude?: number | null;
+        longitude?: number | null;
     };
     simulation: object;
 }

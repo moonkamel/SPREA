@@ -265,7 +265,8 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
         "Fourchette basse et haute selon la variabilité habituelle des devis.",
         f"Aides : {sim['aid_rules']}, catégorie de revenus « {sim['income_profile']} ». Primes CEE : valeurs de marché indicatives.",
         f"Valeur verte : +{fr_dec(GREEN_VALUE_PER_CLASS * 100)} % de valeur par classe gagnée, sur un prix de {fr_int(price_per_m2_used)} €/m²"
-        + (" (valeur par défaut, à remplacer par le prix local)." if price_is_default else "."),
+        + (" (valeur par défaut, faute de ventes connues à proximité)." if price_is_default
+           else f" ({sim_input.property.price_source})." if sim_input.property.price_source else " (prix saisi)."),
     ]
     if sim_input.is_investor:
         out.append("Rentabilité : loyer et prix d'achat saisis ; trésorerie hors charges, taxe foncière et impôt sur les loyers.")
@@ -358,6 +359,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "assumptions": assumptions(sim, sim_input, price_per_m2, not prop.price_per_m2),
         "price_per_m2": price_per_m2,
         "price_is_default": not prop.price_per_m2,
+        "price_source": prop.price_source,
     }
 
 
@@ -424,6 +426,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
         "valeur_verte_eur": int(round(sim["latent_gain"], -2)),
         "valeur_verte_calculee_sur_prix_m2_par_defaut": report["price_is_default"],
+        "prix_m2_local": {"eur_m2": round(report["price_per_m2"]), "source": report["price_source"]} if not report["price_is_default"] else None,
         "profil": "bailleur investisseur" if report["is_investor"] else "propriétaire occupant",
         "investisseur": {
             "prix_achat_eur": round(report["purchase_price"]),

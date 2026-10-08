@@ -100,7 +100,7 @@ export const HELP = {
     },
     greenValue: {
         title: 'Valeur verte',
-        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie, d'après les études des notaires (de l'ordre de 4 à 5 % par classe gagnée). C'est une tendance de marché, pas une garantie.",
+        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie, d'après les études des notaires (de l'ordre de 4 à 5 % par classe gagnée), appliquée au prix au m² local : médiane des ventes récentes de biens du même type autour du logement (données DVF de la DGFiP). C'est une tendance de marché, pas une garantie.",
     },
     yield: {
         title: 'Rendement brut',

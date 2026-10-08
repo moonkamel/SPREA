@@ -5,7 +5,8 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-from typing import Dict, Any
+import re
+from typing import Any, Dict, Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Depends
 try:
     import pytesseract
@@ -16,10 +17,12 @@ except ImportError:
 
 try:
     from api.ademe_client import AdemeConnector, PropertySchema
+    from api.dvf import market_price
     from api.simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
                                 suggest_works, simulate as run_simulation)
 except ImportError:
     from ademe_client import AdemeConnector, PropertySchema
+    from dvf import market_price
     from simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
                             suggest_works, simulate as run_simulation)
 
@@ -229,6 +232,14 @@ async def search_dpe(dpe_number: str):
     except Exception as e:
         logger.error(f"DPE search failed: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
+
+@router.get("/market-price", dependencies=[Depends(search_limiter)])
+async def get_market_price(insee: str, building_type: str = "", lat: Optional[float] = None, lon: Optional[float] = None):
+    """Local price per m2 from DVF sales, for the green value. None when unknown."""
+    if not re.fullmatch(r"[0-9][0-9AB][0-9]{3}", insee.upper()):
+        raise HTTPException(status_code=400, detail="Code commune invalide.")
+    result = await market_price(insee, building_type, lat, lon)
+    return result or {"price_per_m2": None}
 
 @router.get("/works")
 async def works_catalog():

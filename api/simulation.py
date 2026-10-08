@@ -146,7 +146,9 @@ class SimulationProperty(BaseModel):
     postcode: Optional[str] = None
     construction_year: Optional[int] = None
     construction_period: Optional[str] = None
-    price_per_m2: Optional[float] = None
+    price_per_m2: Optional[float] = Field(None, gt=0, le=100000)
+    # Where price_per_m2 comes from (e.g. "prix médian DVF de 212 ventes..."), shown in the report
+    price_source: Optional[str] = Field(None, max_length=200)
     heating_energy: Optional[str] = None  # ADEME label, e.g. "Gaz naturel", "Électricité"
     final_consumption: Optional[float] = Field(None, ge=0)  # kWh EF/m2/year, from ADEME
     # DPE insulation quality per element (walls, roof, floor, windows): insuffisante, moyenne, bonne, très bonne
