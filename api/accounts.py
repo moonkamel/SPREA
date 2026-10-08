@@ -15,12 +15,12 @@ import os
 import re
 import unicodedata
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 from uuid import UUID
 
 import httpx
 import stripe
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
 
 try:
@@ -52,7 +52,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-08.3"
+TERMS_VERSION = "2026-10-08.4"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -80,6 +80,33 @@ def optional_billing_dep() -> Optional[Billing]:
 
 def is_pro(profile: Optional[Dict[str, Any]]) -> bool:
     return bool(profile) and profile.get("subscription_status") in PRO_ACTIVE_STATUSES
+
+
+SUBSCRIBERS_ONLY = "Réservé aux abonnés SPREA."
+
+
+async def subscriber_access(request: Request, authorization: Optional[str] = Header(None),
+                            x_link_code: Optional[str] = Header(None)) -> None:
+    """The tools are for subscribers. Exception: the owner page reached from a
+    letter's QR code (its link code is sent in X-Link-Code)."""
+    # Dependencies resolved by hand, so that this check runs only when needed
+    # (and still honours the overrides used in tests)
+    overrides = request.app.dependency_overrides
+
+    async def user() -> User:
+        override = overrides.get(current_user)
+        return override() if override else await current_user(authorization)
+
+    if x_link_code:
+        store = overrides.get(store_dep, store_dep)()
+        if re.fullmatch(r"[A-Za-z0-9]{8}", x_link_code) and await store.get_link(x_link_code):
+            return
+        u = await user()
+    else:
+        u = await user()  # 401 before touching the database
+        store = overrides.get(store_dep, store_dep)()
+    if not is_pro(await store.ensure_profile(u.id, u.email)):
+        raise HTTPException(status_code=402, detail=SUBSCRIBERS_ONLY)
 
 
 def safe_filename(text: str) -> str:
@@ -191,6 +218,7 @@ class DeleteAccountRequest(BaseModel):
 class SubscribeRequest(BaseModel):
     # CGV accepted and immediate start of the subscription requested
     accept_terms: bool = False
+    plan: Literal["solo_monthly", "solo_yearly"] = "solo_monthly"
 
 
 def terms_acceptance() -> Dict[str, str]:
@@ -206,10 +234,11 @@ async def public_config():
     anon_key = os.getenv("SUPABASE_ANON_KEY")
     billing_enabled = billing_configured()
     report_price = pro_price = None
+    plans: Dict[str, Optional[str]] = {}
     if billing_enabled:
         billing = get_billing()
-        report_price = await billing.price_label(billing.price_report)
-        pro_price = await billing.price_label(billing.price_pro)
+        plans = await billing.plan_labels()
+        pro_price = plans.get("solo_monthly")
     return {
         "auth_enabled": bool(supabase_url and anon_key),
         "supabase_url": supabase_url,
@@ -217,6 +246,8 @@ async def public_config():
         "billing_enabled": billing_enabled,
         "report_price": report_price,
         "pro_price": pro_price,
+        # Prices excluding VAT
+        "plans": plans,
         "terms_version": TERMS_VERSION,
     }
 
@@ -303,29 +334,20 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
 async def create_report(data: ReportCreate, user: User = Depends(current_user),
                         store: SupabaseStore = Depends(store_dep),
                         billing: Optional[Billing] = Depends(optional_billing_dep)):
-    """Creates a report. Pro: available immediately. Otherwise: returns a Checkout URL."""
-    # Validates the simulation before anyone pays for it
+    """Creates a report, included in the subscription."""
+    # Validates the simulation first
     run_simulation(data.simulation)
     profile = await store.ensure_profile(user.id, user.email)
-    row = {
+    if not is_pro(profile):
+        raise HTTPException(status_code=402, detail=SUBSCRIBERS_ONLY)
+    report = await store.create_report({
         "user_id": user.id,
         "address": data.meta.address,
         "meta": data.meta.model_dump(mode="json"),
         "simulation": data.simulation.model_dump(mode="json"),
-    }
-    if is_pro(profile):
-        report = await store.create_report({**row, "status": "included"})
-        return {"id": report["id"], "status": "included"}
-
-    if billing is None:
-        raise HTTPException(status_code=503, detail="Le paiement n'est pas encore configuré.")
-    if not data.accept_terms:
-        raise HTTPException(status_code=400, detail=TERMS_REQUIRED)
-    customer_id = await ensure_customer(store, billing, user, profile)
-    report = await store.create_report({**row, "status": "pending", **terms_acceptance()})
-    session = await billing.report_checkout(report["id"], user.id, customer_id)
-    await store.update_report(report["id"], {"stripe_session_id": session["id"]})
-    return {"id": report["id"], "status": "pending", "checkout_url": session["url"]}
+        "status": "included",
+    })
+    return {"id": report["id"], "status": "included"}
 
 
 @router.get("/reports/{report_id}")
@@ -385,7 +407,7 @@ async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
         raise HTTPException(status_code=400, detail=TERMS_REQUIRED)
     await store.update_profile(user.id, terms_acceptance())
     customer_id = await ensure_customer(store, billing, user, profile)
-    return {"checkout_url": await billing.subscription_checkout(user.id, customer_id)}
+    return {"checkout_url": await billing.subscription_checkout(user.id, customer_id, data.plan)}
 
 
 @router.post("/billing/portal")

@@ -14,8 +14,8 @@ export default function CgvPage() {
             updated={`Version du ${version}${CGV_VERSION.length > 10 ? `, révision ${CGV_VERSION.slice(11)}` : ''}`}>
 
                 <Article n={1} title="Objet et champ d'application">
-                    <p>Les présentes conditions générales de vente (« CGV ») régissent les ventes conclues sur le site {LEGAL.brand} entre {LEGAL.companyName} (« le Vendeur ») et toute personne, consommateur ou professionnel, achetant un rapport ou souscrivant un abonnement (« le Client »).</p>
-                    <p>Le Client les accepte expressément avant chaque achat en cochant la case prévue à cet effet. Les CGV applicables sont celles en vigueur à la date de la commande.</p>
+                    <p>Les présentes conditions générales de vente (« CGV ») régissent les abonnements souscrits sur le site {LEGAL.brand} auprès de {LEGAL.companyName} (« le Vendeur ») par des professionnels, notamment de l'immobilier, agissant pour les besoins de leur activité professionnelle (« le Client »). Le site et ses services ne sont pas destinés aux consommateurs.</p>
+                    <p>Le Client les accepte expressément avant la souscription en cochant la case prévue à cet effet. Les CGV applicables sont celles en vigueur à la date de la souscription ; les contrats Réseau peuvent comporter des conditions particulières, qui prévalent sur les CGV.</p>
                 </Article>
 
                 <Article n={2} title="Identification du Vendeur">
@@ -29,10 +29,8 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={3} title="Services proposés">
-                    <p><b>Simulation gratuite.</b> À partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME, le site estime les travaux de rénovation envisageables, leur coût, l'étiquette énergétique après travaux, les aides mobilisables, le reste à charge et les économies d'énergie. La simulation est accessible sans compte et sans paiement.</p>
-                    <p><b>Rapport.</b> Document PDF reprenant la simulation d'un logement, accompagné d'une analyse rédigée. Il est vendu à l'unité.</p>
-                    <p><b>Abonnement Pro.</b> Abonnement mensuel donnant accès, pendant sa durée, à un nombre illimité de rapports et à la carte de prospection décrite à l'article 14. Il s'adresse principalement aux professionnels de l'immobilier et de la rénovation.</p>
-                    <p>Les caractéristiques essentielles de chaque offre sont présentées sur la page <Link to="/tarifs" className="underline text-brass hover:text-brass-light">Tarifs</Link> et rappelées avant le paiement.</p>
+                    <p>L'abonnement donne accès, pendant sa durée et sans limite d'usage raisonnable, aux services suivants : simulateur de rénovation à partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME (travaux, étiquette après travaux, aides, reste à charge, économies, valeur verte) ; rapports PDF ; avis de valeur avant et après travaux fondés sur les ventes publiées dans la base DVF ; carte de prospection et alertes sur les nouveaux DPE (article 14) ; courriers, pages de contact et suivi des demandes reçues.</p>
+                    <p>Trois formules sont proposées : <b>Solo</b>, pour un utilisateur ; <b>Agence</b>, facturée par utilisateur, à partir de deux ; <b>Réseau</b>, pour plusieurs agences, sur devis et conditions particulières. Leurs caractéristiques et leurs prix sont présentés sur la page <Link to="/tarifs" className="underline text-brass hover:text-brass-light">Tarifs</Link> et rappelés avant le paiement.</p>
                 </Article>
 
                 <Article n={4} title="Nature des résultats">
@@ -40,49 +38,47 @@ export default function CgvPage() {
                     <p>Les montants d'aides sont calculés selon les barèmes publics connus à la date de la simulation. Leur attribution dépend de conditions d'éligibilité vérifiées par les organismes compétents (Anah, fournisseurs d'énergie, banques) et doit être confirmée par France Rénov' ou un Accompagnateur Rénov' avant tout engagement. Les résultats dépendent de l'exactitude des données du DPE, dont le Vendeur n'est pas l'auteur.</p>
                 </Article>
 
-                <Article n={5} title="Compte client">
-                    <p>L'achat d'un rapport ou d'un abonnement nécessite un compte, créé à partir d'une adresse email. La connexion s'effectue par un lien envoyé à cette adresse. Le Client est responsable de l'accès à sa messagerie et de l'exactitude de son adresse email. Il peut supprimer son compte à tout moment depuis l'espace « Mon compte » ; ses rapports ne sont alors plus accessibles.</p>
+                <Article n={5} title="Compte et utilisateurs">
+                    <p>L'accès aux services nécessite un compte, créé à partir d'une adresse email professionnelle ; la connexion s'effectue par un lien envoyé à cette adresse. Chaque compte est personnel et réservé à un seul utilisateur : le partage d'un accès entre plusieurs personnes est interdit, chaque utilisateur supplémentaire devant disposer de son propre abonnement ou d'une place dans une formule Agence ou Réseau.</p>
+                    <p>Le Client est responsable de l'accès à sa messagerie et de l'usage fait de son compte. Il peut le supprimer à tout moment depuis l'espace « Mon compte » ; ses rapports et données ne sont alors plus accessibles.</p>
                 </Article>
 
                 <Article n={6} title="Prix">
-                    <p>Les prix sont indiqués en euros, toutes taxes comprises, sur la page Tarifs et avant le paiement. Le prix applicable est celui affiché au moment de la commande.</p>
-                    <p>Le Vendeur peut modifier le prix de l'abonnement Pro. Le Client en est informé par email au moins 30 jours avant son application ; le nouveau prix s'applique à la période suivante, et le Client peut résilier sans frais avant cette date.</p>
+                    <p>Les prix sont indiqués en euros hors taxes ; la TVA au taux en vigueur s'y ajoute et figure sur la facture. Le prix applicable est celui affiché au moment de la souscription.</p>
+                    <p>Le Vendeur peut modifier ses prix. Le Client en est informé par email au moins 30 jours avant leur application ; le nouveau prix s'applique à la période suivante, et le Client peut résilier sans frais avant cette date.</p>
                 </Article>
 
-                <Article n={7} title="Commande et paiement">
-                    <p>La commande est passée depuis le site : choix du rapport ou de l'abonnement, acceptation des CGV, puis paiement par carte bancaire sur la page sécurisée de notre prestataire de paiement Stripe. Le Vendeur n'a pas accès aux données de carte bancaire.</p>
-                    <p>La vente est conclue à la confirmation du paiement. Une facture est émise et mise à disposition du Client. L'abonnement Pro est prélevé chaque mois à la date anniversaire de la souscription.</p>
+                <Article n={7} title="Souscription et paiement">
+                    <p>La souscription est faite depuis le site : choix de la formule et de la périodicité (mensuelle ou annuelle), acceptation des CGV, puis paiement par carte bancaire sur la page sécurisée de notre prestataire Stripe, qui recueille la raison sociale, l'adresse et le numéro de TVA du Client. Le Vendeur n'a pas accès aux données de carte bancaire. Les formules Agence et Réseau peuvent aussi être souscrites sur devis.</p>
+                    <p>L'abonnement est payable d'avance, au début de chaque période. Une facture est émise à chaque paiement et mise à disposition du Client dans « Mon compte ».</p>
                 </Article>
 
-                <Article n={8} title="Mise à disposition">
-                    <p>Le rapport est mis à disposition immédiatement après la confirmation du paiement, par téléchargement. Il reste téléchargeable depuis l'espace « Mon compte » tant que le compte existe. Pour les abonnés Pro, chaque rapport est disponible immédiatement.</p>
+                <Article n={8} title="Accès aux services">
+                    <p>Les services sont accessibles dès la confirmation du paiement. Les rapports et avis de valeur sont générés à la demande et restent téléchargeables depuis « Mon compte » tant que le compte existe.</p>
                 </Article>
 
-                <Article n={9} title="Droit de rétractation (consommateurs)">
-                    <p><b>Rapport.</b> Conformément à l'article L221-28 13° du Code de la consommation, le droit de rétractation ne peut être exercé pour un contenu numérique fourni sans support matériel dont l'exécution a commencé avec l'accord préalable exprès du consommateur, qui a reconnu perdre son droit de rétractation. Avant le paiement, le Client demande expressément l'accès immédiat à son rapport et reconnaît perdre ce droit dès sa mise à disposition.</p>
-                    <p><b>Abonnement Pro.</b> Le consommateur dispose d'un délai de 14 jours à compter de la souscription pour se rétracter, sans motif. En demandant le démarrage immédiat de l'abonnement, il accepte, en cas de rétractation, de payer un montant proportionnel au service fourni jusqu'à la communication de sa décision (article L221-25 du Code de la consommation). Le droit de rétractation ne peut plus être exercé si le service a été pleinement exécuté avant la fin de ce délai.</p>
-                    <p>Pour se rétracter, le Client adresse une déclaration dénuée d'ambiguïté à {LEGAL.email}, par exemple au moyen du formulaire figurant en annexe. Le remboursement intervient dans les 14 jours, par le même moyen de paiement.</p>
-                    <p>Le droit de rétractation ne s'applique pas aux Clients professionnels.</p>
+                <Article n={9} title="Satisfait ou remboursé">
+                    <p>Lors de sa première souscription, le Client peut demander le remboursement intégral de son premier paiement, sans avoir à se justifier, en écrivant à {LEGAL.email} dans les 14 jours qui suivent ce paiement. L'abonnement est alors résilié et l'accès aux services prend fin à la date du remboursement.</p>
+                    <p>Cette garantie commerciale s'applique une seule fois par Client (même société ou même utilisateur), et ne s'applique pas aux renouvellements ni aux contrats Réseau, qui suivent leurs conditions particulières.</p>
                 </Article>
 
-                <Article n={10} title="Durée et résiliation de l'abonnement Pro">
-                    <p>L'abonnement est conclu pour une durée d'un mois, renouvelée automatiquement. Il est sans engagement : le Client peut le résilier à tout moment depuis « Mon compte », rubrique « Factures et abonnement ». La résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée. Les rapports obtenus restent téléchargeables.</p>
-                    <p>En cas d'échec du paiement, l'accès aux nouveaux rapports est suspendu jusqu'à régularisation.</p>
+                <Article n={10} title="Durée et résiliation">
+                    <p>L'abonnement est conclu pour un mois ou un an selon la périodicité choisie, et renouvelé automatiquement pour la même durée. Les formules Solo et Agence sont sans engagement : le Client peut les résilier à tout moment depuis « Mon compte », rubrique « Factures et abonnement ». La résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée, sauf application de l'article 9. Les contrats Réseau sont conclus pour 12 mois.</p>
+                    <p>En cas d'échec du paiement, l'accès aux services est suspendu jusqu'à régularisation.</p>
                     <p>La suppression du compte par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours.</p>
                 </Article>
 
-                <Article n={11} title="Garanties légales">
-                    <p>Le consommateur bénéficie de la garantie légale de conformité des contenus et services numériques prévue aux articles L224-25-12 et suivants du Code de la consommation. En cas de défaut de conformité (rapport illisible, incomplet ou ne correspondant pas à la simulation commandée), il contacte le Vendeur, qui procède à la mise en conformité ou, à défaut, au remboursement.</p>
+                <Article n={11} title="Disponibilité et assistance">
+                    <p>Le Vendeur met en œuvre les moyens raisonnables pour assurer l'accès aux services 24 heures sur 24, sous réserve des opérations de maintenance et de l'indisponibilité des sources de données publiques (ADEME, DVF, Base Adresse Nationale). Le Client peut signaler toute anomalie à {LEGAL.email} ; le Vendeur y répond dans les meilleurs délais.</p>
                 </Article>
 
                 <Article n={12} title="Responsabilité">
-                    <p>Le Vendeur est tenu d'une obligation de moyens. Compte tenu de la nature indicative des résultats (article 4), sa responsabilité ne peut être engagée pour les décisions prises par le Client ou par des tiers sur leur seul fondement, ni pour un écart entre les estimations et les coûts, aides ou consommations réels.</p>
-                    <p>Vis-à-vis des Clients professionnels, la responsabilité du Vendeur est limitée aux dommages directs et prévisibles, dans la limite des sommes versées par le Client au cours des douze derniers mois. Aucune limitation ne s'applique aux consommateurs au-delà de ce que permet la loi.</p>
-                    <p>Le service peut être interrompu pour maintenance ou en cas d'indisponibilité des données publiques (ADEME, Base Adresse Nationale).</p>
+                    <p>Le Vendeur est tenu d'une obligation de moyens. Compte tenu de la nature indicative des résultats (article 4), sa responsabilité ne peut être engagée pour les décisions prises par le Client ou par ses propres clients sur leur seul fondement, ni pour un écart entre les estimations et les coûts, aides, consommations ou prix de vente réels.</p>
+                    <p>La responsabilité du Vendeur est limitée aux dommages directs et prévisibles, dans la limite des sommes versées par le Client au cours des douze derniers mois. Le Client reste seul responsable des informations et documents qu'il remet à ses propres clients.</p>
                 </Article>
 
                 <Article n={13} title="Propriété intellectuelle et usage des rapports">
-                    <p>Le site, ses contenus et ses méthodes de calcul sont la propriété du Vendeur. Le Client peut utiliser les rapports pour ses besoins personnels ou professionnels ; un Client professionnel peut les remettre à ses propres clients pour le logement concerné. Toute revente de rapports, ou extraction systématique des résultats du site, est interdite.</p>
+                    <p>Le site, ses contenus et ses méthodes de calcul sont la propriété du Vendeur. Le Client peut utiliser les rapports et avis de valeur pour les besoins de son activité et les remettre à ses propres clients pour le logement concerné. Toute revente de rapports, ou extraction systématique des résultats du site, est interdite.</p>
                 </Article>
 
                 <Article n={14} title="Carte de prospection">
@@ -106,24 +102,14 @@ export default function CgvPage() {
                     <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL. Le détail figure dans la <Link to="/confidentialite" className="underline text-brass hover:text-brass-light">politique de confidentialité</Link>.</p>
                 </Article>
 
-                <Article n={16} title="Réclamations et médiation">
-                    <p>Toute réclamation est adressée à {LEGAL.email}. En cas de litige non résolu, le consommateur peut recourir gratuitement au médiateur de la consommation : {LEGAL.mediatorName} ({LEGAL.mediatorUrl}), après avoir tenté de résoudre le litige directement auprès du Vendeur par une réclamation écrite.</p>
+                <Article n={16} title="Réclamations">
+                    <p>Toute réclamation est adressée à {LEGAL.email}. Les parties s'efforcent de régler à l'amiable tout différend avant de saisir la juridiction compétente.</p>
                 </Article>
 
                 <Article n={17} title="Droit applicable et juridiction">
-                    <p>Les présentes CGV sont soumises au droit français. Pour les consommateurs, les litiges relèvent des juridictions désignées par les règles légales. Pour les Clients professionnels, compétence exclusive est attribuée au {LEGAL.court}.</p>
+                    <p>Les présentes CGV sont soumises au droit français. Compétence exclusive est attribuée au {LEGAL.court}, y compris en cas de pluralité de défendeurs ou d'appel en garantie.</p>
                 </Article>
 
-                <section className="space-y-3 border-t border-line pt-8">
-                    <h2 className="text-xl text-ink">Annexe – Formulaire de rétractation</h2>
-                    <p className="text-sm text-faint">À compléter et renvoyer uniquement si vous souhaitez vous rétracter du contrat.</p>
-                    <div className="text-sm text-ink-soft leading-relaxed bg-panel border border-line rounded-xl p-5 space-y-2">
-                        <p>À l'attention de {LEGAL.companyName}, {LEGAL.address}, {LEGAL.email} :</p>
-                        <p>Je vous notifie par la présente ma rétractation du contrat portant sur la prestation de services ci-dessous :</p>
-                        <p>Commandé le : …………… · Nom du consommateur : …………… · Adresse email du compte : ……………</p>
-                        <p>Date : …………… · Signature (uniquement en cas de notification sur papier)</p>
-                    </div>
-                </section>
         </LegalPage>
     );
 }

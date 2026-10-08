@@ -36,6 +36,11 @@ class SupabaseStore:
         rows = await self._request("GET", table, params={**params, "select": "*", "limit": "1"})
         return rows[0] if rows else None
 
+    # --- Quote requests (pricing page) ---
+
+    async def create_quote_request(self, row: Dict[str, Any]) -> None:
+        await self._request("POST", "quote_requests", json=row, prefer="return=minimal")
+
     # --- Profiles ---
 
     async def ensure_profile(self, user_id: str, email: Optional[str]) -> Dict[str, Any]:

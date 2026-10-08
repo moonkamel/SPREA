@@ -34,7 +34,7 @@ interface Hit {
 const day = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 export default function AlertsPage() {
-    const { session, me, config, openLogin, startSubscription, authedFetch } = useAccount();
+    const { session, me, config, openLogin, authedFetch } = useAccount();
     const [zones, setZones] = useState<Zone[]>([]);
     const [hits, setHits] = useState<Hit[]>([]);
     const [emailEnabled, setEmailEnabled] = useState(false);
@@ -113,8 +113,8 @@ export default function AlertsPage() {
                     </Card>
                 ) : locked ? (
                     <Card className="p-5">
-                        <p className="text-ink font-medium">Réservé aux abonnés Pro</p>
-                        <Button className="mt-4" onClick={startSubscription}>Passer Pro</Button>
+                        <p className="text-ink font-medium">Réservé aux abonnés</p>
+                        <Button className="mt-4" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
                     </Card>
                 ) : needsTerms ? (
                     <Card className="p-5">

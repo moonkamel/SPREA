@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { AccountProvider, useAccount } from './account';
 import { usePath } from './router';
 import CgvPage from './pages/Cgv';
@@ -12,7 +13,9 @@ const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
 const ValuationDialog = lazy(() => import('./pages/ValuationDialog'));
 const ObservatoirePage = lazy(() => import('./pages/Observatoire'));
+const DemoPage = lazy(() => import('./pages/Demo'));
 import Landing from './views/Landing';
+import Home from './views/Home';
 import Results from './views/Results';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
 import { propertyInput, toProperty, toSimulation, type PropertyData, type RetrofitAction, type Simulation } from './model';
@@ -36,6 +39,7 @@ function Pages() {
         '/contacts': <Suspense fallback={null}><ContactsPage /></Suspense>,
         '/alertes': <Suspense fallback={null}><AlertsPage /></Suspense>,
         '/observatoire': <Suspense fallback={null}><ObservatoirePage /></Suspense>,
+        '/demo': <Suspense fallback={null}><DemoPage /></Suspense>,
     };
     // Owner page reached from a letter's QR code: /l/<code>
     const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})\/?$/)?.[1];
@@ -44,7 +48,7 @@ function Pages() {
         <>
             {page}
             {/* Kept mounted so the current simulation survives a visit to the other pages */}
-            <div hidden={page !== null}><Simulator /></div>
+            <div hidden={page !== null}><Gate /></div>
         </>
     );
 }
@@ -65,14 +69,16 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 // Debounced server-side simulation; the previous result stays displayed meanwhile
-function useSimulation(input: object | null, setSim: (s: Simulation | null) => void, setBusy: (b: boolean) => void) {
+type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
+
+function useSimulation(input: object | null, setSim: (s: Simulation | null) => void, setBusy: (b: boolean) => void, fetcher: Fetcher) {
     useEffect(() => {
         if (!input) return;
         const controller = new AbortController();
         setBusy(true);
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch('/api/simulate', {
+                const res = await fetcher('/api/simulate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(input),
@@ -86,11 +92,26 @@ function useSimulation(input: object | null, setSim: (s: Simulation | null) => v
             }
         }, 250);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [input, setSim, setBusy]);
+    }, [input, setSim, setBusy, fetcher]);
+}
+
+// The tools are for subscribers; visitors get the showcase
+function Gate() {
+    const { config, session, me } = useAccount();
+    // Account still loading (or unreachable: show the showcase after a while)
+    const [waited, setWaited] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => setWaited(true), 5000);
+        return () => clearTimeout(timer);
+    }, []);
+    if (!waited && (!config || (session && !me))) {
+        return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-faint" /></div>;
+    }
+    return me?.is_pro ? <Simulator /> : <Home />;
 }
 
 function Simulator() {
-    const { requestReport, config, me } = useAccount();
+    const { requestReport, config, me, authedFetch } = useAccount();
     const [view, setView] = useState<'landing' | 'results' | 'dashboard'>('landing');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -128,7 +149,7 @@ function Simulator() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(url);
+            const res = await authedFetch(url);
             if (res.status === 429) throw new Error('Trop de recherches en peu de temps : patientez une minute puis réessayez.');
             if (!res.ok) throw new Error();
             const data = await res.json();
@@ -173,7 +194,7 @@ function Simulator() {
             params.set('lon', String(p.longitude));
         }
         try {
-            const res = await fetch(`/api/market-price?${params}`);
+            const res = await authedFetch(`/api/market-price?${params}`);
             const market = res.ok ? await res.json() : null;
             if (!market?.price_per_m2) return done();
             const defaultPrice = Math.round(p.surface * 4200 / 1000) * 1000;
@@ -218,8 +239,8 @@ function Simulator() {
     const setSimB = useCallback((s: Simulation | null) => setSims(p => ({ ...p, B: s })), []);
     const setBusyA = useCallback((b: boolean) => setBusy(p => ({ ...p, A: b })), []);
     const setBusyB = useCallback((b: boolean) => setBusy(p => ({ ...p, B: b })), []);
-    useSimulation(inputA, setSimA, setBusyA);
-    useSimulation(inputB, setSimB, setBusyB);
+    useSimulation(inputA, setSimA, setBusyA, authedFetch);
+    useSimulation(inputB, setSimB, setBusyB, authedFetch);
 
     const reportMeta = () => property && ({
         address: property.address || 'Adresse inconnue',

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 import uuid
@@ -172,6 +173,7 @@ class FakeBilling:
         self.subscriptions = {}
         self.customers = []
         self.canceled = []
+        self.plans = []
 
     async def create_customer(self, user_id, email):
         self.customers.append(user_id)
@@ -183,7 +185,8 @@ class FakeBilling:
                                      "currency": "eur", "metadata": {"kind": "report", "report_id": report_id}}
         return {"id": session_id, "url": f"https://checkout.stripe.test/{session_id}"}
 
-    async def subscription_checkout(self, user_id, customer_id):
+    async def subscription_checkout(self, user_id, customer_id, plan="solo_monthly"):
+        self.plans.append(plan)
         return "https://checkout.stripe.test/sub"
 
     async def portal_url(self, customer_id):
@@ -223,6 +226,72 @@ def env(monkeypatch):
     main.ai_limiter.calls.clear()
 
 
+def make_pro(store, user=ALICE):
+    asyncio.run(store.ensure_profile(user.id, user.email))
+    store.profiles[user.id]["subscription_status"] = "active"
+
+
+def legacy_report(store, billing, user=ALICE):
+    """Report bought alone, before the subscription-only offer."""
+    report = asyncio.run(store.create_report({"user_id": user.id, "address": REPORT_REQUEST["meta"]["address"],
+                                              "meta": REPORT_REQUEST["meta"], "simulation": SIM_INPUT, "status": "pending",
+                                              "terms_version": accounts.TERMS_VERSION}))
+    session = asyncio.run(billing.report_checkout(report["id"], user.id, "cus_1"))
+    asyncio.run(store.update_report(report["id"], {"stripe_session_id": session["id"]}))
+    return report["id"], billing.sessions[session["id"]]
+
+
+def test_reports_are_for_subscribers_only(env):
+    client, store, billing, _ = env
+    res = client.post("/api/reports", json=REPORT_REQUEST)
+    assert res.status_code == 402 and not store.reports
+    assert client.post("/api/billing/subscribe", json={"accept_terms": False}).status_code == 400
+    make_pro(store)
+    res = client.post("/api/reports", json=REPORT_REQUEST).json()
+    assert res["status"] == "included"
+    assert client.get(f"/api/reports/{res['id']}/pdf").content.startswith(b"%PDF")
+
+
+def test_legacy_report_unlocked_by_webhook(env):
+    client, store, billing, _ = env
+    report_id, session = legacy_report(store, billing)
+    assert client.get(f"/api/reports/{report_id}/pdf").status_code == 402
+    # Forged signature: ignored
+    paid = dict(session, payment_status="paid")
+    assert webhook(client, {"type": "checkout.session.completed", "data": {"object": paid}}, signature="forged").status_code == 400
+    assert store.reports[report_id]["status"] == "pending"
+    assert webhook(client, {"type": "checkout.session.completed", "data": {"object": paid}}).status_code == 200
+    assert store.reports[report_id]["status"] == "paid" and store.reports[report_id]["amount_paid"] == 3900
+    assert client.get(f"/api/reports/{report_id}/pdf").content.startswith(b"%PDF")
+
+
+def test_subscription_records_terms_and_plan(env):
+    client, store, billing, _ = env
+    client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "solo_yearly"})
+    assert store.profiles[ALICE.id]["terms_version"] == accounts.TERMS_VERSION
+    assert billing.plans == ["solo_yearly"]
+    assert client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "gratuit"}).status_code == 422
+
+
+def test_tools_are_for_subscribers(env):
+    client, store, billing, _ = env
+    sim = {"property": SIM_INPUT["property"], "works": []}
+    assert client.post("/api/simulate", json=sim).status_code == 402
+    make_pro(store)
+    assert client.post("/api/simulate", json=sim).status_code == 200
+
+
+def test_owner_link_opens_the_tools(env):
+    client, store, billing, state = env
+    sim = {"property": SIM_INPUT["property"], "works": []}
+    state["user"] = None
+    main.app.dependency_overrides.pop(current_user)
+    asyncio.run(store.create_link({"code": "Ab3dEf7h", "user_id": ALICE.id, "dpe_number": "2259E0123456X"}))
+    assert client.post("/api/simulate", json=sim).status_code == 401
+    assert client.post("/api/simulate", json=sim, headers={"X-Link-Code": "Zz9zZz9z"}).status_code == 401
+    assert client.post("/api/simulate", json=sim, headers={"X-Link-Code": "Ab3dEf7h"}).status_code == 200
+
+
 def webhook(client, event, signature="valid"):
     return client.post("/api/stripe/webhook", content=json.dumps(event), headers={"stripe-signature": signature})
 
@@ -239,67 +308,9 @@ def test_dpe_pdf_analysis_requires_login():
     assert res.status_code == 401
 
 
-def test_report_purchase_flow_with_webhook(env):
-    client, store, billing, _ = env
-    res = client.post("/api/reports", json=REPORT_REQUEST)
-    assert res.status_code == 200
-    body = res.json()
-    assert body["status"] == "pending"
-    assert body["checkout_url"].startswith("https://checkout.stripe.test/")
-    report_id = body["id"]
-    assert store.profiles[ALICE.id]["stripe_customer_id"] == "cus_1"
-
-    # Not paid yet
-    assert client.get(f"/api/reports/{report_id}/pdf").status_code == 402
-
-    session = billing.sessions[store.reports[report_id]["stripe_session_id"]]
-    session["payment_status"] = "paid"
-    assert webhook(client, {"type": "checkout.session.completed", "data": {"object": session}}).status_code == 200
-    assert store.reports[report_id]["status"] == "paid"
-    assert store.reports[report_id]["amount_paid"] == 3900
-
-    res = client.get(f"/api/reports/{report_id}/pdf")
-    assert res.status_code == 200
-    assert res.content.startswith(b"%PDF")
-    assert "Rapport_SPREA_1_rue_de_l_Eglise_Lille.pdf" in res.headers["content-disposition"]
-    # Without an API key the rule-based analysis is used and not stored,
-    # so the report gets Claude's analysis once a key is configured
-    assert store.reports[report_id]["narrative"] is None
-
-    reports = client.get("/api/me").json()["reports"]
-    assert [r["id"] for r in reports] == [report_id]
-
-
-def test_payment_confirmed_without_webhook(env):
-    client, store, billing, _ = env
-    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    assert client.get(f"/api/reports/{report_id}").json()["status"] == "pending"
-    billing.sessions[store.reports[report_id]["stripe_session_id"]]["payment_status"] = "paid"
-    assert client.get(f"/api/reports/{report_id}").json()["status"] == "paid"
-
-
-def test_webhook_rejects_bad_signature(env):
-    client, store, billing, _ = env
-    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    session = dict(billing.sessions[store.reports[report_id]["stripe_session_id"]], payment_status="paid")
-    res = webhook(client, {"type": "checkout.session.completed", "data": {"object": session}}, signature="forged")
-    assert res.status_code == 400
-    assert store.reports[report_id]["status"] == "pending"
-
-
-def test_session_must_match_report(env):
-    client, store, billing, _ = env
-    first = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    second = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    # A paid session for the first report cannot unlock the second one
-    session = dict(billing.sessions[store.reports[first]["stripe_session_id"]], payment_status="paid")
-    session["metadata"] = {"kind": "report", "report_id": second}
-    webhook(client, {"type": "checkout.session.completed", "data": {"object": session}})
-    assert store.reports[second]["status"] == "pending"
-
-
 def test_reports_are_private(env):
     client, store, billing, state = env
+    make_pro(store)
     report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
     state["user"] = BOB
     assert client.get(f"/api/reports/{report_id}").status_code == 404
@@ -330,7 +341,7 @@ def test_pro_subscription_flow(env):
     billing.subscriptions["sub_1"]["status"] = "canceled"
     webhook(client, {"type": "customer.subscription.deleted", "data": {"object": {"id": "sub_1"}}})
     assert client.get("/api/me").json()["is_pro"] is False
-    assert client.post("/api/reports", json=REPORT_REQUEST).json()["status"] == "pending"
+    assert client.post("/api/reports", json=REPORT_REQUEST).status_code == 402
 
 
 def test_old_subscription_event_does_not_override_new_one(env):
@@ -406,23 +417,6 @@ def test_price_labels():
     assert subscription_period_end({"current_period_end": 7}) == 7
 
 
-def test_purchase_requires_terms_acceptance(env):
-    client, store, billing, _ = env
-    res = client.post("/api/reports", json={**REPORT_REQUEST, "accept_terms": False})
-    assert res.status_code == 400
-    assert not billing.sessions and not store.reports
-    assert client.post("/api/billing/subscribe", json={"accept_terms": False}).status_code == 400
-
-
-def test_terms_acceptance_is_recorded(env):
-    client, store, billing, _ = env
-    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    assert store.reports[report_id]["terms_version"] == accounts.TERMS_VERSION
-    assert store.reports[report_id]["terms_accepted_at"]
-    client.post("/api/billing/subscribe", json=SUBSCRIBE)
-    assert store.profiles[ALICE.id]["terms_version"] == accounts.TERMS_VERSION
-
-
 def test_pro_reports_do_not_need_a_new_acceptance(env):
     client, store, billing, _ = env
     store.profiles[ALICE.id] = {"id": ALICE.id, "subscription_status": "active"}
@@ -443,11 +437,11 @@ def test_account_deletion_requires_confirmation(env):
 
 def test_account_deletion_removes_data_and_keeps_minimal_proof(env):
     client, store, billing, state = env
-    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
-    session = billing.sessions[store.reports[report_id]["stripe_session_id"]]
+    report_id, session = legacy_report(store, billing)
     session["payment_status"] = "paid"
     webhook(client, {"type": "checkout.session.completed", "data": {"object": session}})
     state["user"] = BOB
+    make_pro(store, BOB)
     client.post("/api/reports", json=REPORT_REQUEST)  # Someone else's report
     state["user"] = ALICE
 
@@ -665,3 +659,22 @@ def test_owner_contact_page_flow(env):
     assert client.delete(f"/api/leads/{lead_id}").status_code == 200
     lead_limiter.calls.clear()
     main.search_limiter.calls.clear()
+
+
+def test_quote_request_is_stored(env, monkeypatch):
+    client, store, billing, _ = env
+    store.quotes = []
+
+    async def create_quote_request(row):
+        store.quotes.append(row)
+
+    store.create_quote_request = create_quote_request
+    main.lead_limiter.calls.clear() if hasattr(main, "lead_limiter") else None
+    body = {"offer": "agence", "name": "Jeanne Martin", "company": "Agence du Centre", "email": "Jeanne@Agence.fr",
+            "agents": 4, "message": "Démo pour l'équipe"}
+    assert client.post("/api/quote", json=body).status_code == 200
+    assert store.quotes[0]["email"] == "jeanne@agence.fr" and store.quotes[0]["agents"] == 4
+    assert client.post("/api/quote", json={**body, "email": "pas-un-email"}).status_code == 422
+    assert client.post("/api/quote", json={**body, "offer": "solo"}).status_code == 422
+    assert client.post("/api/quote", json={**body, "website": "spam"}).json() == {"received": True}
+    assert len(store.quotes) == 1

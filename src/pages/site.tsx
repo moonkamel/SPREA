@@ -15,18 +15,25 @@ export function Logo({ onClick }: { onClick?: () => void }) {
             className="flex items-baseline gap-3 group"
         >
             <span className="font-serif text-2xl tracking-tight text-ink group-hover:text-brass-light transition-colors">{LEGAL.brand}</span>
-            <span className="hidden sm:inline text-xs text-faint tracking-wide">Rénovation énergétique</span>
+            <span className="hidden lg:inline text-xs text-faint tracking-wide">L'outil DPE des pros de l'immobilier</span>
         </a>
     );
 }
 
-function ContactsLink() {
+const NAV_LINK = 'px-2 sm:px-3 py-2 text-sm text-muted hover:text-ink transition-colors';
+
+// Subscribers see their tools; visitors see the showcase. On small screens,
+// only the links marked as essential stay in the header.
+function Nav() {
     const { me } = useAccount();
-    if (!me?.is_pro) return null;
+    const links: [string, string, boolean][] = me?.is_pro
+        ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false], ['/observatoire', 'Observatoire', false]]
+        : [['/demo', 'Démo', true], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     return (
         <>
-            <Link to="/alertes" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Alertes</Link>
-            <Link to="/contacts" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Contacts</Link>
+            {links.map(([to, label, essential]) => (
+                <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}`}>{label}</Link>
+            ))}
         </>
     );
 }
@@ -36,11 +43,8 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
         <header className="border-b border-line/70 bg-canvas/90 backdrop-blur sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
                 <Logo onClick={onHome} />
-                <nav className="flex items-center gap-1 sm:gap-3">
-                    <Link to="/prospection" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Prospection</Link>
-                    <Link to="/observatoire" className="hidden md:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Observatoire</Link>
-                    <ContactsLink />
-                    <Link to="/tarifs" className="px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Tarifs</Link>
+                <nav className="flex items-center gap-1 sm:gap-2">
+                    <Nav />
                     <AccountButton />
                 </nav>
             </div>
@@ -52,8 +56,9 @@ export function SiteFooter({ className = '' }: { className?: string }) {
     return (
         <footer className={`border-t border-line/70 ${className}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-faint">
-                <span>© {new Date().getFullYear()} {LEGAL.brand} · Estimations indicatives, sans valeur de DPE, d'audit ni de devis.</span>
+                <span>© {new Date().getFullYear()} {LEGAL.brand} · Réservé aux professionnels. Estimations indicatives, sans valeur de DPE, d'audit ni de devis.</span>
                 <nav className="flex flex-wrap gap-x-5 gap-y-2">
+                    <Link to="/demo" className="hover:text-ink">Démo</Link>
                     <Link to="/tarifs" className="hover:text-ink">Tarifs</Link>
                     <Link to="/observatoire" className="hover:text-ink">Observatoire</Link>
                     <Link to="/cgv" className="hover:text-ink">CGV</Link>

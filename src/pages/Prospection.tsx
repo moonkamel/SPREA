@@ -71,7 +71,7 @@ function toCsv(addresses: Address[]) {
 }
 
 export default function ProspectionPage() {
-    const { session, me, config, openLogin, startSubscription, authedFetch } = useAccount();
+    const { session, me, config, openLogin, authedFetch } = useAccount();
     const mapRef = useRef<L.Map | null>(null);
     const layerRef = useRef<L.LayerGroup | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -325,18 +325,18 @@ export default function ProspectionPage() {
                         {!session ? (
                             <Card className="p-5">
                                 <p className="text-ink font-medium">Connectez-vous pour explorer la carte</p>
-                                <p className="mt-1 text-sm text-muted">La carte affiche le nombre de passoires par secteur ; les adresses sont réservées aux abonnés Pro.</p>
+                                <p className="mt-1 text-sm text-muted">La carte affiche le nombre de passoires par secteur ; les adresses sont réservées aux abonnés.</p>
                                 <Button className="mt-4 w-full" onClick={() => openLogin('Connectez-vous pour utiliser la carte de prospection.')}
                                     disabled={!config?.auth_enabled}>Se connecter</Button>
                             </Card>
                         ) : result?.locked ? (
                             <Card className="p-5">
-                                <p className="text-ink font-medium flex items-center gap-2"><Lock size={16} className="text-brass" />Adresses réservées aux abonnés Pro</p>
+                                <p className="text-ink font-medium flex items-center gap-2"><Lock size={16} className="text-brass" />Adresses réservées aux abonnés</p>
                                 <p className="mt-2 text-sm text-muted">
                                     {result.dwellings.toLocaleString('fr-FR')} logements classés {labels.join(', ')} dans cette zone.
-                                    Avec Pro : les adresses, le détail de chaque DPE, l'export CSV et un modèle de courrier par adresse.
+                                    Avec l'abonnement : les adresses, le détail de chaque DPE, l'export CSV et un modèle de courrier par adresse.
                                 </p>
-                                <Button className="mt-4 w-full" onClick={startSubscription}>Passer Pro</Button>
+                                <Button className="mt-4 w-full" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
                             </Card>
                         ) : result?.terms_required ? (
                             <Card className="p-5 text-sm">

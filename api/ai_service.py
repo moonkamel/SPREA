@@ -103,10 +103,21 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
 
     losses = list(now["repartition_pertes_chaleur"].items())[:2]
     kind = (log["type"] or "logement").lower()
-    article = "Cet" if kind[:1] in "aeéèiouyh" else "Ce"
-    period = f" construit {log['epoque_construction'].lower()}" if log.get("epoque_construction") and not str(log["epoque_construction"]).isdigit() else (
-        f" construit en {log['epoque_construction']}" if log.get("epoque_construction") else "")
-    diag = (f"{article} {kind} de {str(log['surface_m2']).replace('.', ',')} m²{period} est classé {now['classe_dpe']}, "
+    feminine = kind == "maison"
+    article = "Cette" if feminine else ("Cet" if kind[:1] in "aeéèiouyh" else "Ce")
+    e = "e" if feminine else ""
+    epoch = str(log.get("epoque_construction") or "")
+    m = re.fullmatch(r"(\d{4})\s*-\s*(\d{4})", epoch)
+    if m:
+        period = f", construit{e} entre {m.group(1)} et {m.group(2)},"
+    elif epoch.isdigit():
+        period = f", construit{e} en {epoch},"
+    elif epoch:
+        period = f", construit{e} {epoch.lower()},"
+    else:
+        period = ""
+    surface = f"{float(log['surface_m2']):g}".replace(".", ",")
+    diag = (f"{article} {kind} de {surface} m²{period} est classé{e} {now['classe_dpe']}, "
             f"avec {now['consommation_kwh_ep_m2_an']} kWh/m²/an. "
             f"Ses pertes de chaleur passent d'abord par : {losses[0][0].lower()} ({losses[0][1]})"
             + (f", puis {losses[1][0].lower()} ({losses[1][1]})" if len(losses) > 1 else "") + ". "
