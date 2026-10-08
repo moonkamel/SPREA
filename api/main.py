@@ -5,13 +5,14 @@ import json
 import re
 import time
 import unicodedata
+from datetime import date
 from collections import defaultdict, deque
 from dotenv import load_dotenv
 
 load_dotenv()
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Request, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 try:
     import pytesseract
     from PIL import Image
@@ -22,9 +23,11 @@ except ImportError:
 try:
     from api.ademe_client import AdemeConnector, PropertySchema
     from api.engine import DPECalculator
+    from api.simulation import WORKS_CATALOG, SimulationInput, suggest_works, simulate as run_simulation
 except ImportError:
     from ademe_client import AdemeConnector, PropertySchema
     from engine import DPECalculator
+    from simulation import WORKS_CATALOG, SimulationInput, suggest_works, simulate as run_simulation
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
@@ -98,6 +101,8 @@ class RateLimiter:
         window.append(now)
 
 search_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SEARCH_PER_MIN", "30")), period_seconds=60)
+# The UI re-simulates on every change (debounced), so this one is looser
+simulate_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SIMULATE_PER_MIN", "120")), period_seconds=60)
 ai_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_AI_PER_HOUR", "10")), period_seconds=3600)
 
 @app.get("/")
@@ -192,27 +197,39 @@ router = APIRouter(prefix="/api")
 async def api_root():
     return {"status": "online", "message": "SPREA API is running."}
 
+def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
+    """API representation of a property, with losses and suggested works."""
+    d = prop.model_dump(mode="json")
+    calc = engine.calculate(prop)
+    recos = engine.get_recommendations(prop)
+    suggestions = suggest_works(
+        prop.building_type,
+        prop.dpe_class_current.value if prop.dpe_class_current else None,
+        prop.consumption_level,
+        [r["id"] for r in recos],
+        calc["loss_breakdown"],
+    )
+    d["recommended_works"] = recos
+    d["loss_breakdown"] = calc["loss_breakdown"]
+    d["suggested_works"] = suggestions["suggested"]
+    d["preselected_works"] = suggestions["preselected"]
+    return d
+
 @router.get("/search-address", dependencies=[Depends(search_limiter)])
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
         logger.info(f"Searching address: {q}")
         results = await ademe.search_by_address(q)
-        
+
         api_results = []
         for r in results:
             try:
-                d = r.dict()
-                calc = engine.calculate(r)
-                d["recommended_works"] = engine.get_recommendations(r)
-                d["loss_breakdown"] = calc["loss_breakdown"]
-                d["building_type"] = r.building_type
-                d["construction_period"] = r.construction_period
-                api_results.append(d)
+                api_results.append(enrich_property(r))
             except Exception as item_err:
                 logger.error(f"Error mapping item {r.address}: {item_err}")
                 continue
-            
+
         return {"count": len(api_results), "results": api_results}
     except Exception as e:
         logger.error(f"Address search crash: {e}", exc_info=True)
@@ -226,57 +243,28 @@ async def search_dpe(dpe_number: str):
         prop = await ademe.search_by_dpe_number(dpe_number)
         if prop:
             try:
-                d = prop.dict()
-                calc = engine.calculate(prop)
-                d["recommended_works"] = engine.get_recommendations(prop)
-                d["loss_breakdown"] = calc["loss_breakdown"]
-                d["building_type"] = prop.building_type
-                d["construction_period"] = prop.construction_period
-                return {"count": 1, "results": [d]}
+                return {"count": 1, "results": [enrich_property(prop)]}
             except Exception as map_err:
                 logger.error(f"DPE Mapping Error: {map_err}")
-                return {"count": 1, "results": [prop.dict()]}
+                return {"count": 1, "results": [prop.model_dump(mode="json")]}
         return {"count": 0, "results": []}
     except Exception as e:
         logger.error(f"DPE search failed: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-class SimulationRequest(BaseModel):
-    property_data: PropertySchema
-    selected_works: List[str]
-    rfr: float
-    postcode: Optional[str] = "59000"
-    # New Precision Parameters
-    index_insee: Optional[float] = 125.0
-    nb_etages: Optional[int] = 0
-    has_ascenseur: Optional[bool] = True
-    is_urban_dense: Optional[bool] = False
-    parking_cost: Optional[float] = 35.0
-    chantier_duration: Optional[int] = 5
-    occupants: Optional[int] = Field(1, ge=1, le=20)
+@router.get("/works")
+async def works_catalog():
+    """Catalog of retrofit works the simulation knows about."""
+    return {"works": [
+        {"id": w["id"], "name": w["name"], "description": w["description"], "impact_kwh": w["impact_kwh"]}
+        for w in WORKS_CATALOG
+    ]}
 
-@router.post("/simulate", dependencies=[Depends(search_limiter)])
-async def simulate(data: SimulationRequest):
-    """Run 2025 technical-economic simulation."""
+@router.post("/simulate", dependencies=[Depends(simulate_limiter)])
+async def simulate(data: SimulationInput):
+    """Run the technical-economic simulation for a set of works."""
     try:
-        # Pass extra params as a dict
-        params = {
-            "index_insee": data.index_insee,
-            "nb_etages": data.nb_etages,
-            "has_ascenseur": data.has_ascenseur,
-            "is_urban_dense": data.is_urban_dense,
-            "parking_cost": data.parking_cost,
-            "chantier_duration": data.chantier_duration,
-            "occupants": data.occupants
-        }
-        res = engine.simulate_retrofit(
-            data.property_data, 
-            data.selected_works, 
-            data.rfr, 
-            data.postcode,
-            params=params
-        )
-        return res
+        return run_simulation(data)
     except Exception as e:
         logger.error(f"Simulation failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="La simulation a échoué.")
@@ -319,6 +307,8 @@ class ReportRequest(BaseModel):
     focus_mpr: Optional[str] = None
     focus_cee: Optional[str] = None
     focus_eco_ptz: Optional[str] = None
+    # When given, every figure of the report is recomputed server side
+    simulation: Optional[SimulationInput] = None
 
 def safe_filename(text: str) -> str:
     """ASCII-only filename, safe to put in a Content-Disposition header."""
@@ -329,11 +319,39 @@ def safe_filename(text: str) -> str:
 async def generate_report(data: ReportRequest):
     """Generates a PDF report from simulation results with AI narrative."""
     try:
-        report_data = data.dict()
+        report_data = data.model_dump(exclude={"simulation"})
+        if data.simulation:
+            sim = run_simulation(data.simulation)
+            prop = data.simulation.property
+            report_data.update({
+                "surface": prop.surface,
+                "current_label": sim["current_label"],
+                "new_label": sim["new_label"],
+                "initial_cep": sim["initial_cep"],
+                "new_cep": sim["new_cep"],
+                "ges_value": sim["initial_ges"],
+                "new_ges": sim["new_ges"],
+                "total_cost": sim["cost"],
+                "subsidies": sim["subsidies"],
+                "cee_est": sim["cee_est"],
+                "rest_to_pay": sim["rest_to_pay"],
+                "latent_gain": sim["latent_gain"],
+                "annual_savings": sim["annual_savings"],
+                "roi_years": round(sim["roi_years"]),
+                "detailed_costs": sim["detailed_costs"],
+                "yield_brut": sim["yield_brut"],
+                "cashflow": sim["cashflow"],
+                "purchase_price": data.simulation.purchase_price,
+                "ban_date": date.fromisoformat(sim["ban_date"]).strftime("%d/%m/%Y") if sim["ban_date"] else None,
+                "eco_ptz_amount": sim["eco_ptz_amount"],
+                "tax_benefit": sim["tax_benefit"],
+                "has_iti": sim["has_iti"],
+                "user_profile": "investisseur" if data.simulation.is_investor else "propriétaire",
+            })
         
         # 1. Generate AI Narrative
-        logger.info(f"Generating AI narrative for profile: {data.user_profile}")
-        narrative = await ai_service.generate_narrative(report_data, data.user_profile)
+        logger.info(f"Generating AI narrative for profile: {report_data['user_profile']}")
+        narrative = await ai_service.generate_narrative(report_data, report_data["user_profile"])
         report_data["ai_narrative"] = narrative
         
         # 2. Generate PDF

@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from api import main
@@ -26,20 +27,54 @@ def test_normalize_energy_french_labels():
     assert normalize_energy(None) == "gas"
 
 
-def test_simulate_returns_capped_aids():
-    payload = {
-        "property_data": sample_property().model_dump(mode="json"),
-        "selected_works": ["ite_pse", "windows_pvc", "pac_air_eau"],
-        "rfr": 20000,
-        "postcode": "59000",
-        "occupants": 2,
-    }
-    res = client.post("/api/simulate", json=payload)
+SIM_INPUT = {
+    "property": {"surface": 80, "initial_cep": 380, "ges_value": 60, "building_type": "Maison", "postcode": "59000"},
+    "works": ["iti", "roof", "heating"],
+    "income_level": "tres_modeste",
+}
+
+
+def test_works_catalog():
+    res = client.get("/api/works")
+    assert res.status_code == 200
+    ids = [w["id"] for w in res.json()["works"]]
+    assert "iti" in ids and "roof" in ids
+
+
+def test_simulate_endpoint():
+    res = client.post("/api/simulate", json=SIM_INPUT)
     assert res.status_code == 200
     body = res.json()
-    assert body["profile"] == "Très Modeste"
-    assert body["subsidies"] <= body["total_cost"]
-    assert body["rest_to_pay"] == round(max(0, body["total_cost"] - body["subsidies"] - body["cee_est"]))
+    assert body["current_label"] == "F"
+    assert body["subsidies"] <= body["cost"]
+    assert body["rest_to_pay"] == pytest.approx(max(0, body["cost"] - body["subsidies"] - body["cee_est"]))
+
+
+def test_simulate_rejects_invalid_surface():
+    res = client.post("/api/simulate", json={**SIM_INPUT, "property": {**SIM_INPUT["property"], "surface": 0}})
+    assert res.status_code == 422
+
+
+def test_report_figures_are_recomputed_server_side(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    main.ai_limiter.calls.clear()
+    captured = {}
+    original = main.pdf_service.generate
+
+    def spy(data):
+        captured.update(data)
+        return original(data)
+
+    monkeypatch.setattr(main.pdf_service, "generate", spy)
+    # Client-sent figures are ignored when a simulation input is given
+    res = client.post("/api/generate-report", json={
+        "address": "x", "surface": 80, "subsidies": 999999, "simulation": SIM_INPUT,
+    })
+    assert res.status_code == 200
+    expected = client.post("/api/simulate", json=SIM_INPUT).json()
+    assert captured["subsidies"] == expected["subsidies"]
+    assert captured["total_cost"] == expected["cost"]
+    main.ai_limiter.calls.clear()
 
 
 def test_engine_uses_electricity_factor():
@@ -72,5 +107,5 @@ def test_ai_endpoints_are_rate_limited(monkeypatch):
 
 
 def test_errors_do_not_leak_internals():
-    res = client.post("/api/simulate", json={"property_data": {}, "selected_works": [], "rfr": "abc"})
+    res = client.post("/api/simulate", json={"property": {}, "works": [], "rfr": "abc"})
     assert res.status_code == 422

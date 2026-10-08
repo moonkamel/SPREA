@@ -1,13 +1,9 @@
 import logging
-import copy
-import math
 from typing import Dict, List, Optional, Any
 try:
-    from api.ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
-    from api.aids import get_profile, compute_aids
+    from api.ademe_client import PropertySchema, DPEClass
 except ImportError:
-    from ademe_client import PropertySchema, WallSchema, WindowSchema, SystemSchema, ClimateZone, DPEClass
-    from aids import get_profile, compute_aids
+    from ademe_client import PropertySchema, DPEClass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,27 +31,6 @@ DPE_THRESHOLDS = [
     (float('inf'), DPEClass.G)
 ]
 
-K_REGION = {
-    "75": 1.30, "92": 1.30, "93": 1.30, "94": 1.30,  # Paris & Petite Couronne
-    "77": 1.15, "91": 1.15, "78": 1.15, "95": 1.15,  # Grande Couronne
-    "69": 1.12, "74": 1.12, "01": 1.12,              # AURA (Lyon, Annecy)
-    "06": 1.15, "83": 1.15, "13": 1.08,              # PACA
-    "33": 1.05, "44": 1.05, "35": 1.05,              # Atlantique
-    "67": 1.05,                                      # Grand Est
-    "59": 1.00, "62": 1.00, "80": 1.00,              # Nord
-    "2A": 1.20, "2B": 1.20,                          # Corse
-    "971": 1.35, "972": 1.35, "973": 1.35, "974": 1.35, "976": 1.35, # DOM
-}
-
-DEFAULT_K_REGION = 1.00
-K_LOGISTIQUE = {
-    "urbain_dense": 1.15,
-    "pavillonnaire": 1.00,
-    "rural_isole": 1.05
-}
-
-# --- Calculation Classes ---
-
 def normalize_energy(source: Optional[str]) -> str:
     """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys."""
     s = (source or "gas").lower()
@@ -66,14 +41,6 @@ def normalize_energy(source: Optional[str]) -> str:
     if "bois" in s or "granul" in s: return "wood"
     if "seau" in s: return "district_heating"
     return "gas"
-
-class GeographicWeighting:
-    @staticmethod
-    def get_localized_cost(base_cost: float, postcode: str, typo: str = "pavillonnaire") -> float:
-        dept = postcode[:2] if postcode else "59"
-        k_reg = K_REGION.get(dept, DEFAULT_K_REGION)
-        k_log = K_LOGISTIQUE.get(typo, 1.00)
-        return base_cost * k_reg * k_log
 
 class BuildingPhysics:
     @staticmethod
@@ -86,7 +53,6 @@ class BuildingPhysics:
 class DPECalculator:
     def __init__(self):
         self.physics = BuildingPhysics()
-        self.geo = GeographicWeighting()
 
     def get_dpe_class(self, cep_m2: float) -> DPEClass:
         for threshold, dpe_class in DPE_THRESHOLDS:
@@ -137,7 +103,7 @@ class DPECalculator:
         # HOUSE ONLY: Attic insulation is a classic individual house gain.
         if is_house:
             recos.append({
-                "id": "combles",
+                "id": "roof",
                 "name": "Isolation des Combles",
                 "reason": "Le geste le plus rentable pour une maison individuelle afin de gagner rapidement en performance.",
                 "suggested": True
@@ -147,7 +113,7 @@ class DPECalculator:
         # We suggest ITI by default as it's private.
         if breakdown["walls"] > 50: # Major loss
             recos.append({
-                "id": "iti_ossature",
+                "id": "iti",
                 "name": "Isolation des Murs (ITI)",
                 "reason": "Réduction des déperditions par l'intérieur, idéal pour un contrôle total sans accord de copropriété." if not is_house else "Solution rapide et efficace pour isoler les murs.",
                 "suggested": True
@@ -156,7 +122,7 @@ class DPECalculator:
         # Priority 3: Windows
         if breakdown["windows"] > breakdown["walls"] * 0.3:
             recos.append({
-                "id": "windows_pvc",
+                "id": "windows",
                 "name": "Menuiseries PVC",
                 "reason": "Remplacement des fenêtres pour supprimer l'effet paroi froide et améliorer l'étanchéité.",
                 "suggested": True
@@ -171,113 +137,10 @@ class DPECalculator:
                 heating_reason = "Amélioration du système de chauffage individuel pour une meilleure efficacité énergétique."
                 
             recos.append({
-                "id": "pac_air_eau",
-                "name": "PAC Air/Eau",
+                "id": "heating",
+                "name": "Radiateur inertie",
                 "reason": heating_reason,
                 "suggested": True
             })
             
         return recos
-
-    def simulate_retrofit(self, prop: PropertySchema, selections: List[str], rfr: float, postcode: str, **kwargs) -> Dict[str, Any]:
-        works_catalog = {
-            "ite_pse": {"name": "ITE PSE", "u_new": 0.25, "cost": 170, "unit": "m2_wall", "base_index": 120.0},
-            "ite_bois": {"name": "ITE Fibre Bois", "u_new": 0.28, "cost": 220, "unit": "m2_wall", "base_index": 120.0},
-            "iti_ossature": {"name": "ITI Ossature", "u_new": 0.30, "cost": 75, "unit": "m2_wall", "base_index": 115.0},
-            "combles": {"name": "Isolation Combles", "u_new": 0.15, "cost": 32, "unit": "m2_comble", "base_index": 110.0},
-            "pac_air_eau": {"name": "PAC Air/Eau", "eff_new": 3.5, "energy_new": "electricity", "cost": 12500, "unit": "flat", "base_index": 125.0},
-            "windows_pvc": {"name": "Fenêtres PVC", "u_new": 1.3, "cost": 575, "unit": "unit_win", "base_index": 118.0}
-        }
-
-        sim_prop = copy.deepcopy(prop)
-        total_cost = 0.0
-        applied_names = []
-        aid_works = []
-        
-        # 1. Technical Parameters Extraction
-        extra_params = kwargs.get('params', {})
-        current_insee = extra_params.get('index_insee', 1.0)
-        nb_etages = extra_params.get('nb_etages', 0)
-        has_ascenseur = extra_params.get('has_ascenseur', True)
-        is_urban_dense = extra_params.get('is_urban_dense', False)
-        parking_cost_day = extra_params.get('parking_cost', 0)
-        duration_days = extra_params.get('chantier_duration', 5)
-        occupants = extra_params.get('occupants', 1)
-
-        # 2. Global Multipliers
-        coeff_accessibilite = 1.0
-        if nb_etages > 0 and not has_ascenseur:
-            coeff_accessibilite += (nb_etages * 0.05) # +5% per floor
-        
-        if is_urban_dense:
-            coeff_accessibilite += 0.10 # +10% for dense urban
-            
-        frais_logistiques = 0
-        if is_urban_dense: # Simplified logic: if urban, parking is likely payant
-             frais_logistiques += (duration_days * parking_cost_day)
-
-        for key in selections:
-            if key not in works_catalog: continue
-            w = works_catalog[key]
-            applied_names.append(w["name"])
-            
-            # 3. New Formula Logic
-            # Price = (Base_Price * (Current_Index / Base_Index)) * Coeffs
-            # If current_insee is 1.0 (demo mode), we skip index ratio or assume 1.0
-            index_ratio = (current_insee / w["base_index"]) if current_insee > 20 else 1.0
-            
-            base_unit_cost = w["cost"]
-            localized_unit_cost = self.geo.get_localized_cost(base_unit_cost, postcode)
-            
-            # Apply INSEE and Accessibility
-            final_unit_cost = (localized_unit_cost * index_ratio) * coeff_accessibilite
-            
-            if w["unit"] == "m2_wall":
-                quantity = sum(wall.surface for wall in sim_prop.walls)
-                item_cost = quantity * final_unit_cost
-                for wall in sim_prop.walls: wall.u_value = w["u_new"]
-            elif w["unit"] == "m2_comble":
-                quantity = sim_prop.shab # Rough estimate
-                item_cost = quantity * final_unit_cost
-            elif w["unit"] == "flat":
-                quantity = 1
-                item_cost = final_unit_cost
-                sim_prop.systems = [SystemSchema(system_type="chauffage", energy_source=w["energy_new"], efficiency_etas=w["eff_new"])]
-            elif w["unit"] == "unit_win":
-                quantity = 10 # Assume 10 windows
-                item_cost = quantity * final_unit_cost
-                for win in sim_prop.windows: win.u_value = w["u_new"]
-            else:
-                continue
-            total_cost += item_cost
-            aid_works.append({"id": key, "cost_ttc": item_cost, "quantity": quantity})
-
-        total_cost += frais_logistiques
-
-        initial_res = self.calculate(prop)
-        final_res = self.calculate(sim_prop)
-        
-        # Labels for class gain calc
-        labels = [v.value for v in DPEClass]
-        gain = labels.index(initial_res["dpe_label"]) - labels.index(final_res["dpe_label"])
-        
-        profile = get_profile(rfr, occupants, postcode)
-        aids = compute_aids(aid_works, profile, initial_res["dpe_label"], final_res["dpe_label"])
-        subsidies = aids["mpr"]
-        cee = aids["cee"]
-
-        return {
-            "initial_dpe": initial_res["dpe_label"],
-            "new_dpe": final_res["dpe_label"],
-            "initial_cep": initial_res["cep_m2"],
-            "new_cep": final_res["cep_m2"],
-            "total_cost": round(total_cost, 0),
-            "subsidies": round(subsidies, 0),
-            "cee_est": round(cee, 0),
-            "rest_to_pay": round(max(0.0, total_cost - subsidies - cee), 0),
-            "aid_pathway": aids["pathway"],
-            "aid_notes": aids["notes"],
-            "gain_classes": max(0, gain),
-            "applied_works": applied_names,
-            "profile": profile.value
-        }

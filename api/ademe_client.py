@@ -83,6 +83,7 @@ class PropertySchema(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     building_type: Optional[str] = None # Maison, Appartement, etc.
+    postcode: Optional[str] = None
     walls: List[WallSchema] = []
     windows: List[WindowSchema] = []
     systems: List[SystemSchema] = []
@@ -171,6 +172,8 @@ class AdemeConnector:
                 for raw_item in ademe_data.get("results", []):
                     mapped = self._map_to_internal(raw_item)
                     # We might not have exact coords from ADEME, so we use BAN's
+                    if not mapped.postcode:
+                        mapped.postcode = postcode
                     if not mapped.latitude:
                         mapped.latitude = coords[1]
                         mapped.longitude = coords[0]
@@ -234,6 +237,7 @@ class AdemeConnector:
             ges_value=self._safe_float(raw.get("emission_ges_5_usages_par_m2")),
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment", "Logement"),
+            postcode=str(raw.get("code_postal_ban") or raw.get("code_postal_brut") or "") or None,
             is_estimated=is_estimated
         )
 
