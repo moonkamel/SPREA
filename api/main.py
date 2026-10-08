@@ -75,11 +75,13 @@ try:
     from api.auth import current_user
     from api.accounts import router as accounts_router
     from api.contacts import router as contacts_router
+    from api.alerts import router as alerts_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
     from accounts import router as accounts_router
     from contacts import router as contacts_router
+    from alerts import router as alerts_router
 
 @app.get("/")
 async def root():
@@ -298,6 +300,7 @@ async def analyze_dpe(file: UploadFile = File(...)):
 app.include_router(router)
 app.include_router(accounts_router)
 app.include_router(contacts_router)
+app.include_router(alerts_router)
 
 if __name__ == "__main__":
     import uvicorn
