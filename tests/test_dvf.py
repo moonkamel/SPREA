@@ -95,3 +95,35 @@ def test_surface_band_and_time_adjustment(monkeypatch):
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for({2025: to_csv(dated)}), today=date(2026, 10, 8)))
     assert res["price_per_m2"] == 3300
     assert "actualisées" in res["source"]
+
+
+def test_widens_to_neighbouring_communes():
+    dvf._cache.clear()
+    village = (50.60, 3.10)
+    # 3 sales in the village, 20 in a commune 4 km away, 20 in one 30 km away
+    own = [{**row(f"v{i}", 2000 * 60, "Appartement", 60, *village), "nom_commune": "Village"} for i in range(3)]
+    near = [{**row(f"n{i}", 2500 * 60, "Appartement", 60, 50.636, 3.10), "nom_commune": "Voisine"} for i in range(20)]
+    far = [row(f"f{i}", 6000 * 60, "Appartement", 60, 50.87, 3.10) for i in range(20)]
+    files = {"59001": to_csv(own), "59002": to_csv(near), "59003": to_csv(far)}
+    communes = [{"code": "59001", "nom": "Village", "centre": {"coordinates": [3.10, 50.60]}},
+                {"code": "59002", "nom": "Voisine", "centre": {"coordinates": [3.10, 50.636]}},
+                {"code": "59003", "nom": "Loin", "centre": {"coordinates": [3.10, 50.87]}}]
+
+    def handler(request):
+        url = str(request.url)
+        if "geo.api.gouv.fr/departements/59/communes" in url:
+            return httpx.Response(200, json=communes)
+        for code, text in files.items():
+            if f"/2025/communes/59/{code}.csv" in url:
+                return httpx.Response(200, text=text)
+        return httpx.Response(404)
+
+    t = httpx.MockTransport(handler)
+    res = asyncio.run(market_price("59001", "Appartement", *village, transport=t, today=date(2026, 10, 8)))
+    assert res["wide"] and res["scope"] == "à moins de 5 km, communes voisines incluses"
+    assert res["sales"] == 23 and res["price_per_m2"] == 2500
+    assert {c["commune"] for c in res["comparables"]} == {"Village", "Voisine"}
+    # Without coordinates: around the commune's centre
+    dvf._cache.clear()
+    res = asyncio.run(market_price("59001", "Appartement", transport=t, today=date(2026, 10, 8)))
+    assert res["sales"] == 23

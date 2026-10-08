@@ -82,6 +82,14 @@ def num(value: Optional[float]) -> str:
     return f"{round(value or 0):,}".replace(',', NBSP)
 
 
+def distance_text(metres: Optional[float]) -> str:
+    if metres is None:
+        return '–'
+    if metres < 1000:
+        return f"{round(metres)}{NBSP}m"
+    return f"{metres / 1000:.1f}".replace('.', ',') + f"{NBSP}km"
+
+
 def text(value: Any) -> str:
     """Escapes user or external text before it goes into Paragraph markup."""
     return escape(str(value)) if value not in (None, '') else ''
@@ -760,11 +768,11 @@ class PDFReportGenerator:
             for c in market['comparables']:
                 comp_rows.append([
                     Paragraph(text(date.fromisoformat(c['date']).strftime('%m/%Y')) if c.get('date') else '–', S['body']),
-                    Paragraph(text(c.get('street') or '–'), S['body']),
+                    Paragraph(text(' · '.join(x for x in (c.get('street'), c.get('commune') if market.get('wide') else None) if x) or '–'), S['body']),
                     Paragraph(f"{c['surface']:g}".replace('.', ',') + f"{NBSP}m²", S['right']),
                     Paragraph(eur(c['price']), S['right']),
                     Paragraph(eur(c['price_m2']), S['right']),
-                    Paragraph(f"{c['distance']}{NBSP}m" if c.get('distance') is not None else '–', S['right']),
+                    Paragraph(distance_text(c.get('distance')), S['right']),
                 ])
             story += [Spacer(1, 10), Paragraph('Ventes comparables les plus proches', S['h3']), Spacer(1, 4),
                       grid(comp_rows, [CONTENT_W * 0.12, CONTENT_W * 0.34, CONTENT_W * 0.13, CONTENT_W * 0.15, CONTENT_W * 0.13, CONTENT_W * 0.13])]

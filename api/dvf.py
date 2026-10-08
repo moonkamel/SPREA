@@ -5,10 +5,12 @@ per year, with the coordinates of each sale).
 Comparable sales: same kind of dwelling (house or apartment), a similar
 surface (price per m2 falls as surface grows), as close as possible to the
 dwelling: within 500 m, then 1 km, 2 km, then the whole commune, until there
-are enough sales. Older sales are brought to today's prices with the quarterly
+are enough sales. In small communes, the search widens to the neighbouring
+communes (5 km, then 10 km). Older sales are brought to today's prices with the quarterly
 index measured by scripts/green_value/build.py. The result is the median, with
 the interquartile range.
 """
+import asyncio
 import csv
 import io
 import logging
@@ -28,10 +30,14 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 DVF_URL = "https://files.data.gouv.fr/geo-dvf/latest/csv/{year}/communes/{dep}/{insee}.csv"
+COMMUNES_URL = "https://geo.api.gouv.fr/departements/{dep}/communes?fields=code,nom,centre&format=json"
 
 # (radius in metres, minimum number of comparable sales)
 RINGS = [(500, 20), (1000, 15), (2000, 15)]
 MIN_COMMUNE_SALES = 10
+# Neighbouring communes, when the commune has too few sales
+WIDE_RINGS = [(5000, 15), (10000, 15)]
+MAX_NEIGHBOURS = 12
 # Comparable surface: from 60 % to 160 % of the dwelling's surface
 SURFACE_BAND = (0.6, 1.6)
 # The two most recent years with data, up to 4 years when sales are scarce
@@ -110,7 +116,7 @@ def adjust_to_today(sales: List[Dict], index: Dict[str, float]) -> None:
 
 
 def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[float],
-              surface: Optional[float] = None, adjusted: bool = False) -> Optional[Dict]:
+              surface: Optional[float] = None, adjusted: bool = False, wide: bool = False) -> Optional[Dict]:
     pool = sales
     similar = "de surface comparable "
     if surface:
@@ -127,11 +133,15 @@ def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[
         located = [(distance_m(lat, lon, s["lat"], s["lon"]), s) for s in pool if s["lat"] is not None and s["lon"] is not None]
         for d, s in located:
             s["distance"] = d
-        for radius, minimum in RINGS:
+        for radius, minimum in (WIDE_RINGS if wide else RINGS):
             near = [s for d, s in located if d <= radius]
             if len(near) >= minimum:
                 scope = f"à moins de {radius} m" if radius < 1000 else f"à moins de {radius // 1000} km"
-                return _result(near, kind, scope, similar, adjusted)
+                if wide:
+                    scope += ", communes voisines incluses"
+                return {**_result(near, kind, scope, similar, adjusted), "wide": wide}
+    if wide:
+        return None
     if len(pool) >= MIN_COMMUNE_SALES:
         commune = next((s["commune"] for s in pool if s["commune"]), None)
         return _result(pool, kind, f"à {commune}" if commune else "dans la commune", similar, adjusted)
@@ -165,10 +175,50 @@ def comparables(sales: List[Dict], limit: int = 8) -> List[Dict]:
     ranked = sorted(sales, key=lambda s: (round(s.get("distance", 1e9) / 250), -int(s["date"].replace("-", "") or 0)))
     return [{
         "date": s["date"], "street": s["street"].title() if s["street"].isupper() else s["street"],
+        "commune": s.get("commune"),
         "surface": round(s["surface"], 1), "rooms": s.get("rooms"), "price": round(s["price"]),
         "price_m2": round(s["price_m2"]), "adjusted_m2": round(s.get("adjusted_m2", s["price_m2"])),
         "distance": round(s["distance"]) if s.get("distance") is not None else None,
     } for s in ranked[:limit]]
+
+
+async def commune_sales(client: httpx.AsyncClient, insee: str, kind: str, today: date) -> List[Dict]:
+    """Sales of the commune, most recent years first; the current year is
+    usually not published yet."""
+    sales: List[Dict] = []
+    years_found = 0
+    for year in range(today.year, today.year - 7, -1):
+        res = await client.get(DVF_URL.format(year=year, dep=department(insee), insee=insee))
+        if res.status_code == 404:
+            continue
+        res.raise_for_status()
+        sales += parse_sales(res.text, kind, year)
+        years_found += 1
+        if years_found >= MAX_YEARS or (years_found >= MIN_YEARS and len(sales) >= 200):
+            break
+    return sales
+
+
+async def neighbours(client: httpx.AsyncClient, insee: str, lat: Optional[float],
+                     lon: Optional[float]) -> Tuple[List[str], Optional[float], Optional[float]]:
+    """Communes of the department whose centre is within the widest ring, the
+    closest first, and the reference point (the commune's centre when the
+    dwelling has no coordinates)."""
+    res = await client.get(COMMUNES_URL.format(dep=department(insee)))
+    res.raise_for_status()
+    centres = {}
+    for c in res.json():
+        coords = (c.get("centre") or {}).get("coordinates")
+        if c.get("code") and coords:
+            centres[c["code"]] = (coords[1], coords[0])
+    if lat is None or lon is None:
+        if insee not in centres:
+            return [], None, None
+        lat, lon = centres[insee]
+    # A commune's centre can be a few km from its edge
+    reach = WIDE_RINGS[-1][0] + 3000
+    near = sorted((distance_m(lat, lon, *c), code) for code, c in centres.items() if code != insee)
+    return [code for d, code in near if d <= reach][:MAX_NEIGHBOURS], lat, lon
 
 
 async def market_price(insee: str, building_type: Optional[str], lat: Optional[float] = None,
@@ -186,27 +236,25 @@ async def market_price(insee: str, building_type: Optional[str], lat: Optional[f
         return cached[1]
 
     today = today or date.today()
-    sales: List[Dict] = []
-    years_found = 0
+    index = quarter_index(kind, department(insee))
     try:
         async with httpx.AsyncClient(timeout=10, transport=transport) as client:
-            # Recent years first; the current year is usually not published yet
-            for year in range(today.year, today.year - 7, -1):
-                res = await client.get(DVF_URL.format(year=year, dep=department(insee), insee=insee))
-                if res.status_code == 404:
-                    continue
-                res.raise_for_status()
-                sales += parse_sales(res.text, kind, year)
-                years_found += 1
-                if years_found >= MAX_YEARS or (years_found >= MIN_YEARS and len(sales) >= 200):
-                    break
+            sales = await commune_sales(client, insee, kind, today)
+            if index:
+                adjust_to_today(sales, index)
+            result = summarize(sales, kind, lat, lon, surface, adjusted=bool(index))
+            if result is None:
+                # Too few sales in the commune: the neighbouring communes too
+                codes, ref_lat, ref_lon = await neighbours(client, insee, lat, lon)
+                if codes:
+                    more = await asyncio.gather(*(commune_sales(client, c, kind, today) for c in codes))
+                    wider = [s for found in more for s in found]
+                    if index:
+                        adjust_to_today(wider, index)
+                    result = summarize(sales + wider, kind, ref_lat, ref_lon, surface, adjusted=bool(index), wide=True)
     except httpx.HTTPError as e:
         logger.error(f"DVF fetch failed: {type(e).__name__}")
         return None
 
-    index = quarter_index(kind, department(insee))
-    if index:
-        adjust_to_today(sales, index)
-    result = summarize(sales, kind, lat, lon, surface, adjusted=bool(index))
     _cache[key] = (time.time(), result)
     return result
