@@ -102,6 +102,53 @@ class SupabaseStore:
             "user_id": f"eq.{user_id}", "select": "scope,terms_version,accepted_at", "order": "accepted_at.asc",
         })
 
+    # --- Owner contact pages ---
+
+    async def get_agent_page(self, user_id: str) -> Optional[Dict[str, Any]]:
+        return await self._one("agent_pages", {"user_id": f"eq.{user_id}"})
+
+    async def upsert_agent_page(self, user_id: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "agent_pages", params={"on_conflict": "user_id"},
+                                   json={**fields, "user_id": user_id, "updated_at": "now()"},
+                                   prefer="resolution=merge-duplicates,return=representation")
+        return rows[0]
+
+    async def get_link(self, code: str) -> Optional[Dict[str, Any]]:
+        return await self._one("prospect_links", {"code": f"eq.{code}"})
+
+    async def get_link_for_dpe(self, user_id: str, dpe_number: str) -> Optional[Dict[str, Any]]:
+        return await self._one("prospect_links", {"user_id": f"eq.{user_id}", "dpe_number": f"eq.{dpe_number}"})
+
+    async def create_link(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "prospect_links", json=row, prefer="return=representation")
+        return rows[0]
+
+    async def update_link(self, code: str, fields: Dict[str, Any]) -> None:
+        await self._request("PATCH", "prospect_links", params={"code": f"eq.{code}"}, json=fields)
+
+    async def list_links(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "prospect_links", params={
+            "user_id": f"eq.{user_id}", "select": "code,dpe_number,address,label,created_at,visits,last_visit_at",
+            "order": "created_at.desc", "limit": "500",
+        })
+
+    async def create_lead(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "leads", json=row, prefer="return=representation")
+        return rows[0]
+
+    async def list_leads(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "leads", params={
+            "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.desc", "limit": "500",
+        })
+
+    async def update_lead(self, user_id: str, lead_id: str, fields: Dict[str, Any]) -> List[Dict[str, Any]]:
+        return await self._request("PATCH", "leads", params={"id": f"eq.{lead_id}", "user_id": f"eq.{user_id}"},
+                                   json=fields, prefer="return=representation")
+
+    async def delete_lead(self, user_id: str, lead_id: str) -> List[Dict[str, Any]]:
+        return await self._request("DELETE", "leads", params={"id": f"eq.{lead_id}", "user_id": f"eq.{user_id}"},
+                                   prefer="return=representation")
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:

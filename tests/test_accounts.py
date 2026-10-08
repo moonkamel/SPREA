@@ -27,6 +27,9 @@ class FakeStore:
         self.archive = []
         self.deleted_users = []
         self.acceptances = []
+        self.agent_pages = {}
+        self.links = {}
+        self.leads = []
 
     async def ensure_profile(self, user_id, email):
         profile = self.profiles.setdefault(user_id, {"id": user_id})
@@ -73,6 +76,48 @@ class FakeStore:
 
     async def terms_acceptances(self, user_id):
         return [dict(a) for a in self.acceptances if a["user_id"] == user_id]
+
+    async def get_agent_page(self, user_id):
+        return dict(self.agent_pages[user_id]) if user_id in self.agent_pages else None
+
+    async def upsert_agent_page(self, user_id, fields):
+        self.agent_pages[user_id] = {**self.agent_pages.get(user_id, {}), **fields, "user_id": user_id}
+        return dict(self.agent_pages[user_id])
+
+    async def get_link(self, code):
+        return dict(self.links[code]) if code in self.links else None
+
+    async def get_link_for_dpe(self, user_id, dpe_number):
+        return next((dict(l) for l in self.links.values() if l["user_id"] == user_id and l["dpe_number"] == dpe_number), None)
+
+    async def create_link(self, row):
+        self.links[row["code"]] = {"visits": 0, **row}
+        return dict(self.links[row["code"]])
+
+    async def update_link(self, code, fields):
+        self.links[code].update(fields)
+
+    async def list_links(self, user_id):
+        return [dict(l) for l in self.links.values() if l["user_id"] == user_id]
+
+    async def create_lead(self, row):
+        lead = {"id": str(uuid.uuid4()), "status": "new", "created_at": "2026-10-08T14:00:00Z", **row}
+        self.leads.append(lead)
+        return dict(lead)
+
+    async def list_leads(self, user_id):
+        return [dict(l) for l in self.leads if l["user_id"] == user_id]
+
+    async def update_lead(self, user_id, lead_id, fields):
+        hits = [l for l in self.leads if l["id"] == lead_id and l["user_id"] == user_id]
+        for l in hits:
+            l.update(fields)
+        return hits
+
+    async def delete_lead(self, user_id, lead_id):
+        hits = [l for l in self.leads if l["id"] == lead_id and l["user_id"] == user_id]
+        self.leads = [l for l in self.leads if l not in hits]
+        return hits
 
     async def delete_user(self, user_id):
         # Cascade of the real schema
@@ -531,3 +576,56 @@ def test_prospection_is_detailed_for_pro_only(env, monkeypatch):
 
 def test_prospection_requires_login():
     assert TestClient(main.app).get("/api/prospection?bbox=3.05,50.63,3.07,50.64").status_code == 401
+
+
+
+def test_owner_contact_page_flow(env):
+    client, store, billing, state = env
+    from api.ratelimit import lead_limiter
+    lead_limiter.calls.clear()
+    link_req = {"dpe_number": "2659E0077758E", "address": "1 Rue des Brigittines 59800 Lille", "label": "F"}
+
+    # Pro + accepted terms + agency name required
+    assert client.post("/api/prospection/links", json=link_req).status_code == 402
+    store.profiles[ALICE.id]["subscription_status"] = "active"
+    assert client.post("/api/prospection/links", json=link_req).status_code == 403
+    client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION, "accept": True})
+    assert client.post("/api/prospection/links", json=link_req).status_code == 409
+    assert client.put("/api/agent-page", json={"agency_name": "Agence du Vieux-Lille", "phone": "abc"}).status_code == 422
+    assert client.put("/api/agent-page", json={"agency_name": "Agence du Vieux-Lille", "agent_name": "Tarik",
+                                               "phone": "03 20 00 00 00", "email": "Contact@Agence.fr"}).status_code == 200
+    code = client.post("/api/prospection/links", json=link_req).json()["code"]
+    assert len(code) == 8
+    # Same dwelling: same link
+    assert client.post("/api/prospection/links", json=link_req).json()["code"] == code
+
+    # Public page, no login
+    anonymous = TestClient(main.app)
+    page = anonymous.get(f"/api/l/{code.lower()}").json()
+    assert page["agency"]["agency_name"] == "Agence du Vieux-Lille" and page["dpe_number"] == "2659E0077758E"
+    assert "Agence du Vieux-Lille" in page["consent_text"]
+    assert store.links[code]["visits"] == 1
+    assert anonymous.get("/api/l/AAAAAAAA").status_code == 404
+    assert anonymous.get("/api/l/../x").status_code == 404
+
+    # Callback request: consent and a phone or email required
+    lead = {"name": "Marie Martin", "phone": "06 12 34 56 78", "message": "Rappel le soir"}
+    assert anonymous.post(f"/api/l/{code}/lead", json=lead).status_code == 400
+    assert anonymous.post(f"/api/l/{code}/lead", json={"name": "Marie", "consent": True}).status_code == 400
+    assert anonymous.post(f"/api/l/{code}/lead", json={**lead, "consent": True, "website": "spam"}).json()["received"]
+    assert store.leads == []  # Honeypot
+    assert anonymous.post(f"/api/l/{code}/lead", json={**lead, "consent": True}).status_code == 200
+    assert store.leads[0]["consent_text"].startswith("J'accepte que Agence du Vieux-Lille")
+
+    # The agent sees it, with the address; another user does not
+    leads = client.get("/api/leads").json()["leads"]
+    assert leads[0]["name"] == "Marie Martin" and leads[0]["address"].startswith("1 Rue")
+    lead_id = leads[0]["id"]
+    assert client.patch(f"/api/leads/{lead_id}", json={"status": "contacted"}).status_code == 200
+    state["user"] = BOB
+    assert client.get("/api/leads").json()["leads"] == []
+    assert client.delete(f"/api/leads/{lead_id}").status_code == 404
+    state["user"] = ALICE
+    assert client.delete(f"/api/leads/{lead_id}").status_code == 200
+    lead_limiter.calls.clear()
+    main.search_limiter.calls.clear()

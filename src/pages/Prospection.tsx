@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Copy, Download, Loader2, Lock, MapPin, Search, ShieldCheck } from 'lucide-react';
+import { Download, Loader2, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
+import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { SiteFooter, SiteHeader } from './site';
 
 interface Dpe {
@@ -55,29 +56,8 @@ const SINCE = [
 const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2'
     + '&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
 
-const RENTAL_BAN: Partial<Record<DPEClass, string>> = {
-    G: "ne peut plus faire l'objet d'un nouveau bail depuis le 1er janvier 2025",
-    F: "ne pourra plus faire l'objet d'un nouveau bail à partir du 1er janvier 2028",
-    E: "ne pourra plus faire l'objet d'un nouveau bail à partir du 1er janvier 2034",
-};
-
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
-
-function letter(a: Address) {
-    const label = a.worst;
-    return `Madame, Monsieur,
-
-Je m'adresse aux propriétaires du ${a.address}.
-
-Le diagnostic de performance énergétique de ce logement, publié en données ouvertes par l'ADEME, le classe en ${label}. Avec la loi Climat et Résilience, un logement classé ${label} ${RENTAL_BAN[label] ?? 'est concerné par le calendrier de rénovation'}. Ce classement pèse aussi sur le prix de vente.
-
-Je vous propose, sans engagement, une estimation de votre bien et de sa valeur après rénovation, avec le chiffrage des travaux et des aides possibles.
-
-[Vos nom, agence, téléphone, email]
-
-Ce courrier est adressé au logement : nous ne connaissons pas votre identité. L'adresse provient des données publiques de l'ADEME (DPE). Pour ne plus recevoir de courrier de notre part, indiquez-le-nous à [email ou adresse] : nous retirerons cette adresse de nos envois.`;
-}
 
 function toCsv(addresses: Address[]) {
     const rows = [['adresse', 'classe', 'type', 'surface_m2', 'complement', 'date_dpe', 'periode_construction', 'numero_dpe']];
@@ -106,7 +86,7 @@ export default function ProspectionPage() {
     const [query, setQuery] = useState('');
     const [reload, setReload] = useState(0);
     const [accepting, setAccepting] = useState(false);
-    const [copied, setCopied] = useState<string | null>(null);
+    const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
     const [boundsKey, setBoundsKey] = useState('');
 
     // Map
@@ -204,13 +184,6 @@ export default function ProspectionPage() {
         setTimeout(() => markers.current.get(a.address || `${a.lat},${a.lon}`)?.openPopup(), 300);
     };
 
-    const copyLetter = async (a: Address) => {
-        try {
-            await navigator.clipboard.writeText(letter(a));
-            setCopied(a.address || null);
-            setTimeout(() => setCopied(null), 2000);
-        } catch { /* clipboard unavailable */ }
-    };
 
     const exportCsv = () => {
         if (!result) return;
@@ -366,8 +339,9 @@ export default function ProspectionPage() {
                                                 <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1" onClick={() => open(a.dpe![0])}>
                                                     <MapPin size={12} />Simuler la rénovation
                                                 </button>
-                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1" onClick={() => copyLetter(a)}>
-                                                    <Copy size={12} />{copied === a.address ? 'Courrier copié' : 'Copier un courrier'}
+                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
+                                                    onClick={() => setLetterFor({ address: a.address || '', label: a.worst, dpeNumber: a.dpe![0].number })}>
+                                                    <QrCode size={12} />Courrier avec QR code
                                                 </button>
                                             </div>
                                         </li>
@@ -389,6 +363,7 @@ export default function ProspectionPage() {
                 </p>
             </main>
             <SiteFooter />
+            {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
         </div>
     );
 }

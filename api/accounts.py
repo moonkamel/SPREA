@@ -52,7 +52,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-08.2"
+TERMS_VERSION = "2026-10-08.3"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 

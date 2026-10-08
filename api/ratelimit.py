@@ -31,3 +31,5 @@ search_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SEARCH_PER_MIN"
 # The UI re-simulates on every change (debounced), so this one is looser
 simulate_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_SIMULATE_PER_MIN", "120")), period_seconds=60)
 ai_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_AI_PER_HOUR", "10")), period_seconds=3600)
+# Callback requests left on the public owner pages
+lead_limiter = RateLimiter(max_calls=int(os.getenv("RATE_LIMIT_LEADS_PER_HOUR", "5")), period_seconds=3600)
