@@ -31,7 +31,7 @@
             "destination": "/confidentialite/index.html"
         },
         {
-            "source": "/observatoire/:slug([a-z0-9-]+)",
+            "source": "/observatoire/:slug",
             "destination": "/observatoire/:slug/index.html"
         },
         {
