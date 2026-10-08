@@ -189,7 +189,8 @@ async def commune_sales(client: httpx.AsyncClient, insee: str, kind: str, today:
     years_found = 0
     for year in range(today.year, today.year - 7, -1):
         res = await client.get(DVF_URL.format(year=year, dep=department(insee), insee=insee))
-        if res.status_code == 404:
+        # Years not published yet (the file server can answer 403 instead of 404)
+        if res.status_code in (403, 404, 410):
             continue
         res.raise_for_status()
         sales += parse_sales(res.text, kind, year)
@@ -238,7 +239,8 @@ async def market_price(insee: str, building_type: Optional[str], lat: Optional[f
     today = today or date.today()
     index = quarter_index(kind, department(insee))
     try:
-        async with httpx.AsyncClient(timeout=10, transport=transport) as client:
+        # data.gouv.fr redirects its files to an object storage
+        async with httpx.AsyncClient(timeout=20, transport=transport, follow_redirects=True) as client:
             sales = await commune_sales(client, insee, kind, today)
             if index:
                 adjust_to_today(sales, index)
@@ -253,7 +255,7 @@ async def market_price(insee: str, building_type: Optional[str], lat: Optional[f
                         adjust_to_today(wider, index)
                     result = summarize(sales + wider, kind, ref_lat, ref_lon, surface, adjusted=bool(index), wide=True)
     except httpx.HTTPError as e:
-        logger.error(f"DVF fetch failed: {type(e).__name__}")
+        logger.error(f"DVF fetch failed for {insee}: {type(e).__name__} {e}")
         return None
 
     _cache[key] = (time.time(), result)

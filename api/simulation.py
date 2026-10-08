@@ -8,7 +8,7 @@ official DPE figures, so the starting label matches the real certificate.
 """
 import math
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -143,6 +143,9 @@ class SimulationProperty(BaseModel):
     surface: float = Field(..., gt=0, le=10000)
     initial_cep: float = Field(..., ge=0)
     ges_value: Optional[float] = None
+    # Label and date of the official DPE, when known
+    official_label: Optional[str] = None
+    dpe_date: Optional[str] = None
     building_type: Optional[str] = None
     postcode: Optional[str] = None
     construction_year: Optional[int] = None
@@ -180,10 +183,45 @@ class SimulationInput(BaseModel):
 
 # --- Helpers ---
 
-def adjusted_thresholds(surface: float) -> List[Dict]:
+def small_surface_factor(surface: float) -> float:
+    """Approximation of the relaxed thresholds for dwellings under 40 m2
+    (arrêté du 25 mars 2024: +2 % at 35 m2, much more under 15 m2)."""
+    if surface >= 40:
+        return 1.0
+    factor = 1 + 0.004 * (40 - surface)
+    if surface < 15:
+        factor += 0.015 * (15 - max(surface, 8))
+    return factor
+
+
+def adjusted_thresholds(surface: float, factor: Optional[float] = None) -> List[Dict]:
     """Small dwellings (< 40 m2) get relaxed consumption thresholds."""
-    factor = 1 + (40 - surface) * 0.04 if surface < 40 else 1
+    factor = small_surface_factor(surface) if factor is None else factor
     return [{"label": label, "max": round(cep * factor), "max_ges": ges} for label, cep, ges in DPE_THRESHOLDS]
+
+
+# DPE established with the 2021 method, and with the small-surface thresholds
+DPE_2021 = "2021-07-01"
+SMALL_SURFACE_RULE = "2024-07-01"
+
+
+def calibrated_thresholds(surface: float, cep: float, ges: float, official: Optional[str],
+                          dpe_date: Optional[str]) -> Tuple[List[Dict], Optional[str]]:
+    """Thresholds, and the current label to show. A recent DPE already applies
+    the rules in force: its label is the reference, and the small-surface
+    factor is calibrated so that it gives that label."""
+    default = small_surface_factor(surface)
+    official = official if official in LABELS else None
+    if not official or not dpe_date or dpe_date < DPE_2021:
+        return adjusted_thresholds(surface, default), None
+    if surface < 40:
+        # Older DPE of a small dwelling: today's thresholds can improve its label
+        if dpe_date < SMALL_SURFACE_RULE:
+            return adjusted_thresholds(surface, default), None
+        matching = [f / 100 for f in range(100, 201) if get_labels(cep, ges, adjusted_thresholds(surface, f / 100))["label"] == official]
+        if matching:
+            return adjusted_thresholds(surface, min(matching, key=lambda f: abs(f - default))), official
+    return adjusted_thresholds(surface, default), official
 
 
 def get_labels(cep: float, ges: float, thresholds: List[Dict]) -> Dict[str, str]:
@@ -318,7 +356,7 @@ def simulate(data: SimulationInput) -> Dict:
     prop = data.property
     surface = prop.surface
     ges = prop.ges_value or 20
-    thresholds = adjusted_thresholds(surface)
+    thresholds, official = calibrated_thresholds(surface, prop.initial_cep, ges, prop.official_label, prop.dpe_date)
     works = [WORKS_BY_ID[w] for w in dict.fromkeys(data.works) if w in WORKS_BY_ID]
     work_ids = [w["id"] for w in works]
     perf = projected_performance(prop, work_ids)
@@ -374,6 +412,8 @@ def simulate(data: SimulationInput) -> Dict:
     bill_before = _total(balance["before"], ENERGY_PRICES_EUR_KWH) * surface
     bill_after = _total(balance["after"], ENERGY_PRICES_EUR_KWH) * surface
     current = get_labels(prop.initial_cep, ges, thresholds)
+    if official:
+        current["label"] = official
     target = get_labels(new_cep, new_ges, thresholds)
     steps = max(0, LABELS.index(current["label"]) - LABELS.index(target["label"]))
 

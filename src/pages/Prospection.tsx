@@ -102,6 +102,17 @@ export default function ProspectionPage() {
             setBoundsKey([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map(v => v.toFixed(4)).join(','));
         };
         map.on('moveend', update);
+        // Actions in the popups (plain HTML, built by Leaflet)
+        map.on('popupopen', e => {
+            e.popup.getElement()?.querySelectorAll<HTMLElement>('[data-action]').forEach(el => {
+                el.onclick = ev => {
+                    ev.preventDefault();
+                    const dpe = el.dataset.dpe || '';
+                    if (el.dataset.action === 'simulate') navigate(`/?dpe=${encodeURIComponent(dpe)}`);
+                    else setLetterFor({ address: el.dataset.address || '', label: el.dataset.label as DPEClass, dpeNumber: dpe });
+                };
+            });
+        });
         update();
         mapRef.current = map;
         return () => { map.remove(); mapRef.current = null; };
@@ -149,12 +160,19 @@ export default function ProspectionPage() {
                 color: '#0A0F1A', weight: 1, fillColor: DPE_COLORS[a.worst].bg, fillOpacity: 0.9,
             });
             if (showDetails && a.dpe) {
+                const link = 'color:#8A6417;font-weight:600;text-decoration:none;cursor:pointer';
                 const lines = a.dpe.slice(0, 8).map(d =>
-                    `<li><b style="color:${DPE_COLORS[d.label].bg}">${d.label}</b> · ${escapeHtml(d.kind || 'Logement')}`
+                    `<li style="margin:3px 0"><b style="color:${DPE_COLORS[d.label].bg}">${d.label}</b> · ${escapeHtml(d.kind || 'Logement')}`
                     + `${d.surface ? ` · ${Math.round(d.surface)} m²` : ''}${d.detail ? ` · ${escapeHtml(String(d.detail))}` : ''}`
-                    + ` <span style="color:#666">(${formatDate(d.date)})</span></li>`).join('');
+                    + ` <span style="color:#666">(${formatDate(d.date)})</span>`
+                    + (d.number ? ` · <a href="#" data-action="simulate" data-dpe="${escapeHtml(d.number)}" style="${link}">Simuler</a>` : '')
+                    + '</li>').join('');
+                const first = a.dpe[0];
                 marker.bindPopup(`<b>${escapeHtml(a.address || '')}</b><ul style="margin:6px 0 0;padding-left:16px">${lines}</ul>`
-                    + (a.dpe.length > 8 ? `<div style="color:#666">+ ${a.dpe.length - 8} autres</div>` : ''));
+                    + (a.dpe.length > 8 ? `<div style="color:#666">+ ${a.dpe.length - 8} autres</div>` : '')
+                    + (first?.number ? `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #ddd"><a href="#" data-action="letter"`
+                        + ` data-dpe="${escapeHtml(first.number)}" data-address="${escapeHtml(a.address || '')}" data-label="${a.worst}" style="${link}">`
+                        + 'Courrier avec QR code</a></div>' : ''), { minWidth: 260 });
                 markers.current.set(a.address || `${a.lat},${a.lon}`, marker);
             } else {
                 marker.bindTooltip(`${n} logement${n > 1 ? 's' : ''} classé${n > 1 ? 's' : ''} ${a.worst}`);

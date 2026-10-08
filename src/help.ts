@@ -20,7 +20,7 @@ export const HELP = {
     },
     labelRecomputed: {
         title: "Pourquoi deux étiquettes ?",
-        text: "Nous recalculons l'étiquette avec les seuils en vigueur aujourd'hui. Depuis juillet 2024, les seuils sont plus favorables pour les logements de moins de 40 m² : l'étiquette peut donc s'améliorer sans travaux. Une attestation gratuite peut être téléchargée sur le site de l'Observatoire DPE de l'ADEME.",
+        text: "Ce DPE date d'avant juillet 2024 : nous recalculons l'étiquette avec les seuils en vigueur aujourd'hui, plus favorables pour les logements de moins de 40 m². L'étiquette peut donc s'améliorer sans travaux. Une attestation gratuite peut être téléchargée sur le site de l'Observatoire DPE de l'ADEME.",
     },
     consumption: {
         title: 'Consommation (kWh/m²/an)',
