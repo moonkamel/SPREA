@@ -48,3 +48,16 @@ def test_search_queries_ademe_with_area_and_labels():
     assert seen["bbox"] == "3.05,50.63,3.07,50.64"
     assert seen["qs"] == "etiquette_dpe:(G) AND type_batiment:maison AND date_etablissement_dpe:[2023-01-01 TO *]"
     assert res["dwellings"] == 1 and not res["truncated"]
+
+
+def test_real_ademe_types_numeric_floor_and_missing_fields():
+    # As returned by the ADEME API: floor as a number, no complement, building DPE without surface
+    rows = [
+        {**dpe("A1", "F", "2026-01-12", detail=None), "numero_etage_appartement": 2},
+        {**dpe("A2", "G", "2026-01-12", detail=None), "numero_etage_appartement": 0},
+        {**dpe("B1", "G", "2026-01-06", ban="59350_7189_00020", detail=None, kind="immeuble"),
+         "surface_habitable_logement": None, "numero_etage_appartement": 0},
+    ]
+    out = group_by_address(rows, {"F", "G"})
+    details = sorted(str(d["detail"]) for a in out for d in a["dpe"])
+    assert details == ["2e étage", "None", "RDC"]
