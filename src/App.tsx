@@ -11,6 +11,7 @@ const OwnerPage = lazy(() => import('./pages/Owner'));
 const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
 const ValuationDialog = lazy(() => import('./pages/ValuationDialog'));
+const ObservatoirePage = lazy(() => import('./pages/Observatoire'));
 import Landing from './views/Landing';
 import Results from './views/Results';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
@@ -34,6 +35,7 @@ function Pages() {
         '/prospection': <Suspense fallback={null}><ProspectionPage /></Suspense>,
         '/contacts': <Suspense fallback={null}><ContactsPage /></Suspense>,
         '/alertes': <Suspense fallback={null}><AlertsPage /></Suspense>,
+        '/observatoire': <Suspense fallback={null}><ObservatoirePage /></Suspense>,
     };
     // Owner page reached from a letter's QR code: /l/<code>
     const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})\/?$/)?.[1];

@@ -38,6 +38,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
                 <Logo onClick={onHome} />
                 <nav className="flex items-center gap-1 sm:gap-3">
                     <Link to="/prospection" className="hidden sm:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Prospection</Link>
+                    <Link to="/observatoire" className="hidden md:inline px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Observatoire</Link>
                     <ContactsLink />
                     <Link to="/tarifs" className="px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Tarifs</Link>
                     <AccountButton />
@@ -54,6 +55,7 @@ export function SiteFooter({ className = '' }: { className?: string }) {
                 <span>© {new Date().getFullYear()} {LEGAL.brand} · Estimations indicatives, sans valeur de DPE, d'audit ni de devis.</span>
                 <nav className="flex flex-wrap gap-x-5 gap-y-2">
                     <Link to="/tarifs" className="hover:text-ink">Tarifs</Link>
+                    <Link to="/observatoire" className="hover:text-ink">Observatoire</Link>
                     <Link to="/cgv" className="hover:text-ink">CGV</Link>
                     <Link to="/mentions-legales" className="hover:text-ink">Mentions légales</Link>
                     <Link to="/confidentialite" className="hover:text-ink">Confidentialité</Link>
