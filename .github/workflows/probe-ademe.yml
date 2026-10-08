@@ -1,0 +1,17 @@
+name: Probe ADEME reception date
+on:
+  push:
+    branches: [claude/hopeful-fermi-re2vn1]
+    paths: [".github/workflows/probe-ademe.yml"]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          B="https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
+          for d in 2026-10-01 2026-10-05 2026-10-07; do
+            echo "since $d:"; curl -s -G "$B" --data-urlencode "geo_distance=3.06,50.635,3000" --data-urlencode "qs=date_reception_dpe:[$d TO *]" --data-urlencode "size=2" --data-urlencode "select=numero_dpe,date_etablissement_dpe,date_reception_dpe,etiquette_dpe" | head -c 600; echo
+          done
+          echo "--- national last days"; curl -s -G "$B" --data-urlencode "qs=date_reception_dpe:[2026-10-06 TO *]" --data-urlencode "size=0" | head -c 200; echo
+          echo "--- sorted latest"; curl -s -G "$B" --data-urlencode "sort=-date_reception_dpe" --data-urlencode "size=3" --data-urlencode "select=numero_dpe,date_reception_dpe,date_etablissement_dpe" | head -c 600; echo
