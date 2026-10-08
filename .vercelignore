@@ -1,7 +1,8 @@
-pdf_parser.py
 Dockerfile
-.venv/
+tests/
+scripts/
+docs/
+supabase/
 __pycache__/
 *.pyc
-.gitignore_backend
-verify_*.py
+.venv/
