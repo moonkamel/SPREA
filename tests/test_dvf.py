@@ -63,10 +63,11 @@ def test_median_near_the_dwelling_first():
     far = [row(f"f{i}", 9000 * 50, "Appartement", 50, lat=50.70, lon=3.20) for i in range(40)]
     files = {2025: to_csv(near[:10] + far[:20]), 2024: to_csv(near[10:] + far[20:])}
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, transport=transport_for(files), today=date(2026, 10, 8)))
-    assert res["sales"] == 20 and res["scope"] == "à moins de 1 km"
+    assert res["sales"] == 20 and res["scope"] == "à moins de 500 m"
     assert 3000 <= res["price_per_m2"] <= 3200
+    assert res["q25"] <= res["price_per_m2"] <= res["q75"]
     assert res["period"] == "2024-2025"
-    assert res["source"] == "prix médian DVF de 20 ventes d’appartements à moins de 1 km (2024-2025)"
+    assert res["source"].startswith("prix médian DVF de 20 ventes d’appartements à moins de 500 m (2024-2025")
 
 
 def test_commune_median_without_coordinates_and_none_when_too_few():
@@ -78,3 +79,19 @@ def test_commune_median_without_coordinates_and_none_when_too_few():
     few = {2025: to_csv([row("x", 250000, "Maison", 100)])}
     assert asyncio.run(market_price("59350", "Maison", transport=transport_for(few), today=date(2026, 10, 8))) is None
     assert asyncio.run(market_price("bad", "Maison")) is None
+
+
+def test_surface_band_and_time_adjustment(monkeypatch):
+    dvf._cache.clear()
+    small = [row(f"s{i}", 5000 * 20, "Appartement", 20) for i in range(25)]   # studios: 5 000 €/m²
+    large = [row(f"l{i}", 3000 * 80, "Appartement", 80) for i in range(25)]   # large flats: 3 000 €/m²
+    files = {2025: to_csv(small + large)}
+    res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for(files), today=date(2026, 10, 8)))
+    assert res["price_per_m2"] == 3000
+    # Sales of the first quarter 2025 were 10 % cheaper than the latest quarter
+    dvf._cache.clear()
+    monkeypatch.setattr(dvf, "quarter_index", lambda kind, dep: {"2025T1": -0.0953})
+    dated = [{**r, "date_mutation": "2025-02-01"} for r in large]
+    res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for({2025: to_csv(dated)}), today=date(2026, 10, 8)))
+    assert res["price_per_m2"] == 3300
+    assert "actualisées" in res["source"]

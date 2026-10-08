@@ -100,7 +100,7 @@ export const HELP = {
     },
     greenValue: {
         title: 'Valeur verte',
-        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie, d'après les études des notaires (de l'ordre de 4 à 5 % par classe gagnée), appliquée au prix au m² local : médiane des ventes récentes de biens du même type autour du logement (données DVF de la DGFiP). C'est une tendance de marché, pas une garantie.",
+        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie. Nous la mesurons sur les ventes réelles : chaque vente des données DVF (DGFiP) est rapprochée du DPE du logement vendu (ADEME), puis l'écart de prix entre classes est calculé dans votre département, à emplacement, surface, époque et date de vente comparables. Il est appliqué au prix au m² des ventes comparables autour du logement. C'est une tendance de marché, pas une garantie.",
     },
     yield: {
         title: 'Rendement brut',

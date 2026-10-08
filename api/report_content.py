@@ -9,13 +9,13 @@ from typing import Any, Dict, List, Optional
 try:
     from api.aids import AMPLEUR_LABELS
     from api.simulation import (DEFAULT_PRICE_PER_M2, ENERGY_PRICES_EUR_KWH,
-                                GREEN_VALUE_PER_CLASS, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                                HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from simulation import (DEFAULT_PRICE_PER_M2, ENERGY_PRICES_EUR_KWH,
-                            GREEN_VALUE_PER_CLASS, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                            HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
 
@@ -252,6 +252,18 @@ def next_steps(sim: Dict[str, Any], is_investor: bool) -> List[Dict[str, str]]:
     return steps
 
 
+def green_value_assumption(sim: Dict[str, Any], sim_input: SimulationInput, price_m2: float, price_is_default: bool) -> str:
+    price = (f"{fr_int(price_m2)} €/m², valeur par défaut faute de ventes connues à proximité" if price_is_default
+             else f"{fr_int(price_m2)} €/m², {sim_input.property.price_source}" if sim_input.property.price_source
+             else f"{fr_int(price_m2)} €/m², prix saisi")
+    if sim["green_value_method"] in ("department", "national"):
+        return (f"Valeur verte : {sim['green_value_basis']}, appliqué au prix local ({price}). "
+                "Fourchette : intervalle de confiance à 95 % de cet écart.")
+    if sim["green_value_method"] == "flat":
+        return f"Valeur verte : {sim['green_value_basis']}, appliquée au prix local ({price})."
+    return f"Prix local retenu : {price}."
+
+
 def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_used: float, price_is_default: bool) -> List[str]:
     energy = sim["heating_energy"]
     prices = ", ".join(f"{ENERGY_NAMES[e]} {fr_dec(p, 2)} €" for e, p in ENERGY_PRICES_EUR_KWH.items()
@@ -264,9 +276,7 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
         "Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au chantier. "
         "Fourchette basse et haute selon la variabilité habituelle des devis.",
         f"Aides : {sim['aid_rules']}, catégorie de revenus « {sim['income_profile']} ». Primes CEE : valeurs de marché indicatives.",
-        f"Valeur verte : +{fr_dec(GREEN_VALUE_PER_CLASS * 100)} % de valeur par classe gagnée, sur un prix de {fr_int(price_per_m2_used)} €/m²"
-        + (" (valeur par défaut, faute de ventes connues à proximité)." if price_is_default
-           else f" ({sim_input.property.price_source})." if sim_input.property.price_source else " (prix saisi)."),
+        green_value_assumption(sim, sim_input, price_per_m2_used, price_is_default),
     ]
     if sim_input.is_investor:
         out.append("Rentabilité : loyer et prix d'achat saisis ; trésorerie hors charges, taxe foncière et impôt sur les loyers.")
@@ -425,6 +435,9 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
         },
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
         "valeur_verte_eur": int(round(sim["latent_gain"], -2)),
+        "valeur_verte_fourchette_eur": [int(round(sim["latent_gain_low"], -2)), int(round(sim["latent_gain_high"], -2))],
+        "valeur_verte_methode": sim["green_value_basis"],
+        "ecart_de_prix_entre_classes_pct": sim["green_value_premium_pct"],
         "valeur_verte_calculee_sur_prix_m2_par_defaut": report["price_is_default"],
         "prix_m2_local": {"eur_m2": round(report["price_per_m2"]), "source": report["price_source"]} if not report["price_is_default"] else None,
         "profil": "bailleur investisseur" if report["is_investor"] else "propriétaire occupant",

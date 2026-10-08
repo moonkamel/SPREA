@@ -61,3 +61,22 @@ def test_legacy_jwt_key_is_also_sent_as_bearer():
     store = SupabaseStore("https://proj.supabase.co", "eyJhbGciOiJIUzI1NiJ9.x.y")
     assert store.headers["Authorization"] == "Bearer eyJhbGciOiJIUzI1NiJ9.x.y"
     assert "Authorization" not in SupabaseStore("https://proj.supabase.co", "sb_secret_abc").headers
+
+
+@pytest.mark.anyio
+async def test_terms_acceptances_are_appended_and_read_latest_first():
+    seen = []
+
+    def handler(request):
+        seen.append((request.method, str(request.url), request.content))
+        if request.method == "POST":
+            return httpx.Response(201, json=[{"terms_version": "v2", "accepted_at": "2026-10-08T12:00:00Z"}])
+        return httpx.Response(200, json=[{"terms_version": "v2", "accepted_at": "2026-10-08T12:00:00Z"}])
+
+    store = make_store(handler)
+    row = await store.add_terms_acceptance("u1", "prospection", "v2")
+    assert row["terms_version"] == "v2"
+    assert json.loads(seen[0][2]) == {"user_id": "u1", "scope": "prospection", "terms_version": "v2"}
+    latest = await store.latest_terms_acceptance("u1", "prospection")
+    assert latest["terms_version"] == "v2"
+    assert "order=accepted_at.desc" in seen[1][1] and "scope=eq.prospection" in seen[1][1]

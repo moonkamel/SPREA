@@ -82,6 +82,26 @@ class SupabaseStore:
             "select": "stripe_session_id,terms_version,terms_accepted_at,amount_paid,currency,paid_at",
         })
 
+    # --- Terms acceptances (append-only) ---
+
+    async def add_terms_acceptance(self, user_id: str, scope: str, version: str) -> Dict[str, Any]:
+        rows = await self._request("POST", "terms_acceptances", json={
+            "user_id": user_id, "scope": scope, "terms_version": version,
+        }, prefer="return=representation")
+        return rows[0]
+
+    async def latest_terms_acceptance(self, user_id: str, scope: str) -> Optional[Dict[str, Any]]:
+        rows = await self._request("GET", "terms_acceptances", params={
+            "user_id": f"eq.{user_id}", "scope": f"eq.{scope}", "select": "terms_version,accepted_at",
+            "order": "accepted_at.desc", "limit": "1",
+        })
+        return rows[0] if rows else None
+
+    async def terms_acceptances(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "terms_acceptances", params={
+            "user_id": f"eq.{user_id}", "select": "scope,terms_version,accepted_at", "order": "accepted_at.asc",
+        })
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:

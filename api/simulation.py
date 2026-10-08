@@ -15,9 +15,11 @@ from pydantic import BaseModel, Field
 try:
     from api.aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from api.envelope import Envelope
+    from api.green_value import department, estimate as green_value_estimate, kind_of
 except ImportError:
     from aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from envelope import Envelope
+    from green_value import department, estimate as green_value_estimate, kind_of
 
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
 
@@ -92,7 +94,6 @@ HEAT_PUMP_WATER_HEATER_COP = 2.5
 # Wall preparation before interior insulation of uninsulated walls (EUR/m2)
 WALL_PREPARATION_COST = 15
 
-GREEN_VALUE_PER_CLASS = 0.045  # Property value gain per DPE class gained
 DEFAULT_PRICE_PER_M2 = 4500
 SOCIAL_CHARGES = 0.172
 LOAN_RATE = 0.045
@@ -148,7 +149,8 @@ class SimulationProperty(BaseModel):
     construction_period: Optional[str] = None
     price_per_m2: Optional[float] = Field(None, gt=0, le=100000)
     # Where price_per_m2 comes from (e.g. "prix médian DVF de 212 ventes..."), shown in the report
-    price_source: Optional[str] = Field(None, max_length=200)
+    price_source: Optional[str] = Field(None, max_length=250)
+    insee_code: Optional[str] = Field(None, max_length=5)
     heating_energy: Optional[str] = None  # ADEME label, e.g. "Gaz naturel", "Électricité"
     final_consumption: Optional[float] = Field(None, ge=0)  # kWh EF/m2/year, from ADEME
     # DPE insulation quality per element (walls, roof, floor, windows): insuffisante, moyenne, bonne, très bonne
@@ -421,6 +423,8 @@ def simulate(data: SimulationInput) -> Dict:
     cashflow = data.monthly_rent - monthly_payment(rest) if data.is_investor else 0.0
 
     price_per_m2 = prop.price_per_m2 or DEFAULT_PRICE_PER_M2
+    green = green_value_estimate(current["label"], target["label"], surface, price_per_m2,
+                                 kind_of(prop.building_type), department(prop.insee_code, prop.postcode))
     ban = rental_ban_date(current["label"], final_before, prop.postcode)
     new_ban = rental_ban_date(target["label"], final_after, prop.postcode)
 
@@ -467,7 +471,13 @@ def simulate(data: SimulationInput) -> Dict:
         "loss_shares": env.shares(),
         # None when the works bring no bill saving
         "roi_years": (rest - tax_benefit) / savings if savings > 0 else None,
-        "latent_gain": steps * surface * price_per_m2 * GREEN_VALUE_PER_CLASS,
+        "latent_gain": green["value"],
+        "latent_gain_low": green["low"],
+        "latent_gain_high": green["high"],
+        "green_value_method": green["method"],
+        "green_value_basis": green["basis"],
+        "green_value_premium_pct": green.get("premium_pct"),
+        "price_per_m2_used": price_per_m2,
         "tax_benefit": tax_benefit,
         "net_investor_cost": rest - tax_benefit,
         "yield_brut": yield_brut,

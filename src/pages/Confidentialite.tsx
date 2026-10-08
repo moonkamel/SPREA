@@ -41,7 +41,7 @@ export default function ConfidentialitePage() {
                             </tr>
                             <tr>
                                 <td className={td}>Achats et abonnement</td>
-                                <td className={td}>Identifiant client Stripe, statut de l'abonnement, montants, date et version des CGV acceptées. Les données de carte bancaire sont saisies chez Stripe et ne sont jamais transmises au site.</td>
+                                <td className={td}>Identifiant client Stripe, statut de l'abonnement, montants, date et version des CGV acceptées (y compris les conditions d'utilisation de la carte de prospection). Les données de carte bancaire sont saisies chez Stripe et ne sont jamais transmises au site.</td>
                                 <td className={td}>Encaisser, facturer, gérer l'abonnement, prouver l'acceptation des CGV</td>
                                 <td className={td}>Exécution du contrat, obligations légales (comptabilité)</td>
                             </tr>
@@ -80,7 +80,7 @@ export default function ConfidentialitePage() {
                 <ul className="list-disc pl-5 space-y-1">
                     <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>
-                    <li>Après suppression du compte, trace minimale des achats (date, montant, références de paiement, version des CGV acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
+                    <li>Après suppression du compte, trace minimale des achats et des acceptations (date, montant, références de paiement, version des CGV ou des conditions de la carte de prospection acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
                     <li>Journaux techniques : quelques jours, selon la politique de l'hébergeur.</li>
                     <li>Données de simulation sans compte : non conservées.</li>
                 </ul>

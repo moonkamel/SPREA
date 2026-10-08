@@ -80,6 +80,10 @@ export interface Simulation {
     billAfter: number;
     roi: number | null;
     gain: number;
+    gainLow: number;
+    gainHigh: number;
+    greenValueBasis: string | null;
+    greenValueMethod: string;
     taxBenefit: number;
     netInvestorCost: number;
     yieldBrut: number;
@@ -121,6 +125,10 @@ export const toSimulation = (r: any): Simulation => ({
     billAfter: r.annual_bill_after,
     roi: r.roi_years,
     gain: r.latent_gain,
+    gainLow: r.latent_gain_low,
+    gainHigh: r.latent_gain_high,
+    greenValueBasis: r.green_value_basis,
+    greenValueMethod: r.green_value_method,
     taxBenefit: r.tax_benefit,
     netInvestorCost: r.net_investor_cost,
     yieldBrut: r.yield_brut,

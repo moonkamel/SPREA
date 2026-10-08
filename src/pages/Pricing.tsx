@@ -37,6 +37,7 @@ const PLANS = [
         tagline: 'Pour les agents immobiliers, courtiers, gestionnaires et artisans.',
         features: [
             'Rapports illimités',
+            'Carte de prospection des passoires thermiques (DPE E, F, G)',
             'Rapports à remettre à vos clients',
             'Historique de tous vos rapports',
             'Factures mensuelles',

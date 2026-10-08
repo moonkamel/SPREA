@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
+import httpx
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
@@ -29,7 +30,8 @@ try:
     from api.billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
-    from api.ratelimit import ai_limiter
+    from api.ratelimit import ai_limiter, search_limiter
+    from api import prospection
     from api.simulation import SimulationInput, simulate as run_simulation
     from api.store import SupabaseStore, get_store
 except ImportError:
@@ -39,7 +41,8 @@ except ImportError:
     from billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
-    from ratelimit import ai_limiter
+    from ratelimit import ai_limiter, search_limiter
+    import prospection
     from simulation import SimulationInput, simulate as run_simulation
     from store import SupabaseStore, get_store
 
@@ -49,7 +52,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-08"
+TERMS_VERSION = "2026-10-08.2"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -279,6 +282,14 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
             "terms_accepted_at": profile.get("terms_accepted_at"),
             "account_deleted_at": deleted_at,
         })
+    # Acceptances of the prospection map terms (CGV article 14)
+    archive += [{
+        "kind": "prospection_terms",
+        "stripe_customer_id": customer_id,
+        "terms_version": a.get("terms_version"),
+        "terms_accepted_at": a.get("accepted_at"),
+        "account_deleted_at": deleted_at,
+    } for a in await store.terms_acceptances(user.id)]
     if archive:
         await store.archive_purchases(archive)
 
@@ -342,10 +353,12 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     if not simulation.property.price_per_m2 and meta.get("insee_code"):
         # Local DVF price for the green value, when the page did not provide it
         market = await market_price(meta["insee_code"], simulation.property.building_type,
-                                    meta.get("latitude"), meta.get("longitude"))
+                                    meta.get("latitude"), meta.get("longitude"), simulation.property.surface)
         if market:
             simulation.property.price_per_m2 = market["price_per_m2"]
             simulation.property.price_source = market["source"]
+    if not simulation.property.insee_code and meta.get("insee_code"):
+        simulation.property.insee_code = meta["insee_code"]
     content = build_report(meta, simulation)
     analysis = parse_stored(report.get("narrative"))
     if not analysis:
@@ -411,3 +424,61 @@ async def stripe_webhook(request: Request, store: SupabaseStore = Depends(store_
         await sync_subscription(store, billing, obj["id"])
 
     return {"received": True}
+
+
+# --- Prospection map (Pro) ---
+
+@router.get("/prospection", dependencies=[Depends(search_limiter)])
+async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = None, since: Optional[int] = None,
+                          user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """Poor DPE in the visible area. Full list for Pro subscribers; others get
+    counts on an approximate location, without addresses."""
+    profile = await store.ensure_profile(user.id, user.email)
+    pro = is_pro(profile)
+    accepted = pro and await prospection_terms_accepted(store, user.id)
+    try:
+        result = await prospection.search(bbox, labels.upper().split(","), kind, since)
+    except prospection.AreaTooLarge as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Les données de l'ADEME ne répondent pas, réessayez dans un instant.")
+    if accepted:
+        return {**result, "locked": False, "terms_required": False}
+    # Addresses only once the current terms of the map are accepted (Pro)
+    return {
+        "locked": not pro,
+        "terms_required": pro,
+        "terms_version": TERMS_VERSION,
+        "dwellings": result["dwellings"],
+        "total": result["total"],
+        "truncated": result["truncated"],
+        # About 100 m precision, no address
+        "addresses": [{"lat": round(a["lat"], 3), "lon": round(a["lon"], 3), "worst": a["worst"], "count": len(a["dpe"])}
+                      for a in result["addresses"]],
+    }
+
+
+async def prospection_terms_accepted(store: SupabaseStore, user_id: str) -> bool:
+    latest = await store.latest_terms_acceptance(user_id, "prospection")
+    return bool(latest) and latest.get("terms_version") == TERMS_VERSION
+
+
+class ProspectionTerms(BaseModel):
+    # The version shown to the user must be the current one
+    terms_version: str = Field(..., max_length=30)
+    accept: bool = False
+
+
+@router.post("/prospection/terms")
+async def accept_prospection_terms(data: ProspectionTerms, user: User = Depends(current_user),
+                                   store: SupabaseStore = Depends(store_dep)):
+    """Records the acceptance of the prospection map terms (CGV article 14)."""
+    if not data.accept:
+        raise HTTPException(status_code=400, detail="Vous devez accepter les conditions d'utilisation de la carte.")
+    if data.terms_version != TERMS_VERSION:
+        raise HTTPException(status_code=409, detail="Les conditions ont changé : rechargez la page pour lire la nouvelle version.")
+    await store.ensure_profile(user.id, user.email)
+    row = await store.add_terms_acceptance(user.id, "prospection", TERMS_VERSION)
+    return {"accepted": True, "terms_version": TERMS_VERSION, "accepted_at": row.get("accepted_at")}

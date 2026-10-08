@@ -94,7 +94,7 @@ def test_market_price_endpoint():
     main.search_limiter.calls.clear()
     assert client.get("/api/market-price?insee=../x").status_code in (400, 422)
 
-    async def fake(insee, building_type, lat, lon):
+    async def fake(insee, building_type, lat, lon, surface):
         return {"price_per_m2": 3100, "source": "prix médian DVF"} if insee == "59350" else None
 
     with patch.object(main, "market_price", fake):

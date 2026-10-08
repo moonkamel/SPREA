@@ -104,13 +104,17 @@ function Summary({ sim, property, report, updating, scenarioName }: {
                         <Row label="Retour sur investissement" help="payback" value={sim?.roi != null && sim.roi >= 0 ? (sim.roi < 1 ? "moins d'un an" : `${Math.round(sim.roi)} ans`) : '–'} />
                         {!!sim?.gain && <Row label="Valeur verte du bien" help="greenValue" value={`+ ${eur(Math.round(sim.gain / 500) * 500)}`} tone="positive" />}
                         {!!sim?.gain && (
-                            <p className="pb-2 text-xs text-faint">
-                                {property.priceSource
-                                    ? `Sur ${num(property.pricePerM2)} €/m² : ${property.priceSource}.`
-                                    : property.priceLookupDone
-                                        ? 'Sur un prix par défaut de 4 500 €/m² : pas assez de ventes connues à proximité.'
-                                        : 'Recherche des prix de vente locaux (DVF)…'}
-                            </p>
+                            <div className="pb-2 text-xs text-faint space-y-1">
+                                <p className="tabular-nums">Entre {eur(Math.round(sim.gainLow / 500) * 500)} et {eur(Math.round(sim.gainHigh / 500) * 500)}.</p>
+                                <p>
+                                    {property.priceSource
+                                        ? `Prix local : ${num(property.pricePerM2)} €/m², ${property.priceSource}.`
+                                        : property.priceLookupDone
+                                            ? 'Prix local : 4 500 €/m² par défaut, pas assez de ventes connues à proximité.'
+                                            : 'Recherche des prix de vente locaux (DVF)…'}
+                                </p>
+                                {sim.greenValueBasis && <p>Écart entre classes : {sim.greenValueBasis}.</p>}
+                            </div>
                         )}
                     </div>
                 </>
