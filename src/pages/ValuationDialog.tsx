@@ -107,11 +107,11 @@ export default function ValuationDialog({ meta, simulation, onClose }: { meta: o
                                                 <p className="text-xs text-faint tabular-nums">reste à charge {eurRange(result.rest.low, result.rest.high)}</p>
                                             </div>
                                             <div className="rounded-xl bg-raised p-4">
-                                                <p className="text-xs text-muted">Plus-value nette des travaux</p>
+                                                <p className="text-xs text-muted">{(result.net_gain ?? 0) >= 0 ? 'Plus-value nette des travaux' : 'Bilan net des travaux'}</p>
                                                 <p className={`mt-1 font-serif text-2xl tabular-nums ${(result.net_gain || 0) >= 0 ? 'text-sage' : 'text-coral'}`}>
                                                     {(result.net_gain || 0) >= 0 ? '+' : '−'} {eur(Math.abs(result.net_gain || 0))}
                                                 </p>
-                                                <p className="text-xs text-faint">valeur gagnée moins le reste à charge</p>
+                                                <p className="text-xs text-faint">valeur gagnée moins le reste à charge, hors économies sur les factures</p>
                                             </div>
                                         </>
                                     ) : (
