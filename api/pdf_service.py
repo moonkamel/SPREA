@@ -731,7 +731,7 @@ class PDFReportGenerator:
             cells += [
                 [*kpi_cell(f"Après rénovation (classe {v['target_label']})", f"≈{NBSP}{eur(after['value'])}"),
                  Paragraph(f"entre {eur(after['low'])} et {eur(after['high'])}", style('ks2', fontSize=7.5, leading=10, textColor=MUTED))],
-                [*kpi_cell('Plus-value nette des travaux', f"<font color='{'#3E8E63' if (v['net_gain'] or 0) >= 0 else '#C4553A'}'>"
+                [*kpi_cell('Plus-value nette des travaux' if (v['net_gain'] or 0) >= 0 else 'Bilan net des travaux', f"<font color='{'#3E8E63' if (v['net_gain'] or 0) >= 0 else '#C4553A'}'>"
                                                           f"{'+' if (v['net_gain'] or 0) >= 0 else '−'}{NBSP}{eur(abs(v['net_gain'] or 0))}</font>"),
                  Paragraph("valeur gagnée moins le reste à charge", style('ks3', fontSize=7.5, leading=10, textColor=MUTED))],
             ]

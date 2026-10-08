@@ -120,7 +120,7 @@ WORKS_CATALOG = [
     {"id": "pac_air_eau", "range": (0.85, 1.25), "name": "Pompe à chaleur air/eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
      "description": "Remplace une chaudière gaz ou fioul : environ trois fois moins d'énergie consommée. Utilise vos radiateurs à eau ou votre plancher chauffant."},
     {"id": "heating", "range": (0.85, 1.2), "name": "Radiateurs électriques à inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
-     "description": "Remplacent d'anciens convecteurs électriques, avec une chaleur plus douce et mieux régulée. Utile seulement si le logement est déjà chauffé à l'électricité."},
+     "description": "Remplacent d'anciens convecteurs électriques, ou une chaudière gaz ou fioul dans un appartement : chaleur plus douce et mieux régulée, plus d'émissions de CO₂ sur place. À combiner avec l'isolation."},
     {"id": "ecs", "range": (0.85, 1.2), "name": "Chauffe-eau thermodynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
      "description": "Produit l'eau chaude avec une petite pompe à chaleur : deux à trois fois moins d'électricité qu'un ballon classique."},
     {"id": "windows", "range": (0.8, 1.3), "name": "Fenêtres double vitrage", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
