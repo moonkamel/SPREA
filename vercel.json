@@ -7,36 +7,8 @@
             "destination": "api/main.py"
         },
         {
-            "source": "/demo",
-            "destination": "/demo/index.html"
-        },
-        {
-            "source": "/tarifs",
-            "destination": "/tarifs/index.html"
-        },
-        {
-            "source": "/observatoire",
-            "destination": "/observatoire/index.html"
-        },
-        {
-            "source": "/cgv",
-            "destination": "/cgv/index.html"
-        },
-        {
-            "source": "/mentions-legales",
-            "destination": "/mentions-legales/index.html"
-        },
-        {
-            "source": "/confidentialite",
-            "destination": "/confidentialite/index.html"
-        },
-        {
-            "source": "/observatoire/:slug",
-            "destination": "/observatoire/:slug/index.html"
-        },
-        {
             "source": "/(.*)",
-            "destination": "/app.html"
+            "destination": "/"
         }
     ],
     "functions": {
