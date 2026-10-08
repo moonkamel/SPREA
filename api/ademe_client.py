@@ -85,6 +85,9 @@ class PropertySchema(BaseModel):
     longitude: Optional[float] = None
     building_type: Optional[str] = None # Maison, Appartement, etc.
     postcode: Optional[str] = None
+    # Per-element insulation quality and heat losses, when the DPE provides them
+    insulation_quality: Dict[str, Optional[str]] = {}
+    dpe_losses: Optional[Dict[str, Optional[float]]] = None
     walls: List[WallSchema] = []
     windows: List[WindowSchema] = []
     systems: List[SystemSchema] = []
@@ -242,6 +245,29 @@ class AdemeConnector:
             postcode=str(raw.get("code_postal_ban") or raw.get("code_postal_brut") or "") or None,
             is_estimated=is_estimated
         )
+
+        # Insulation quality per element (DPE 2021 fields, absent from older records)
+        prop.insulation_quality = {
+            "walls": raw.get("qualite_isolation_murs"),
+            "roof": raw.get("qualite_isolation_plancher_haut_comble_perdu")
+                or raw.get("qualite_isolation_plancher_haut_comble_amenage")
+                or raw.get("qualite_isolation_plancher_haut_toit_terrase"),
+            "floor": raw.get("qualite_isolation_plancher_bas"),
+            "windows": raw.get("qualite_isolation_menuiseries"),
+        }
+        # Heat losses per element (W/K); doors are not insulated by any work,
+        # so they are counted with thermal bridges
+        losses = {
+            "walls": raw.get("deperditions_murs"),
+            "roof": raw.get("deperditions_planchers_hauts"),
+            "floor": raw.get("deperditions_planchers_bas"),
+            "windows": raw.get("deperditions_baies_vitrees"),
+            "air": raw.get("deperditions_renouvellement_air"),
+            "bridges": raw.get("deperditions_ponts_thermiques"),
+        }
+        if all(v is not None for v in losses.values()):
+            prop.dpe_losses = {k: self._safe_float(v) for k, v in losses.items()}
+            prop.dpe_losses["bridges"] += self._safe_float(raw.get("deperditions_portes"))
 
         # Geopoint handling if present ([lat, lon])
         geopoint = raw.get("_geopoint")

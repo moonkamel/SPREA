@@ -16,12 +16,12 @@ except ImportError:
 
 try:
     from api.ademe_client import AdemeConnector, PropertySchema
-    from api.engine import DPECalculator
-    from api.simulation import WORKS_CATALOG, SimulationInput, suggest_works, simulate as run_simulation
+    from api.simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
+                                suggest_works, simulate as run_simulation)
 except ImportError:
     from ademe_client import AdemeConnector, PropertySchema
-    from engine import DPECalculator
-    from simulation import WORKS_CATALOG, SimulationInput, suggest_works, simulate as run_simulation
+    from simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
+                            suggest_works, simulate as run_simulation)
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
@@ -39,7 +39,6 @@ else:
 
 # Initialize Connector & Engine
 ademe = AdemeConnector()
-engine = DPECalculator()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -169,21 +168,27 @@ router = APIRouter(prefix="/api")
 async def api_root():
     return {"status": "online", "message": "SPREA API is running."}
 
-def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
-    """API representation of a property, with losses and suggested works."""
-    d = prop.model_dump(mode="json")
-    calc = engine.calculate(prop)
-    recos = engine.get_recommendations(prop)
-    suggestions = suggest_works(
-        prop.building_type,
-        prop.dpe_class_current.value if prop.dpe_class_current else None,
-        prop.consumption_level,
-        [r["id"] for r in recos],
-        calc["loss_breakdown"],
-        prop.systems[0].energy_source if prop.systems else None,
+def simulation_property(prop: PropertySchema) -> SimulationProperty:
+    return SimulationProperty(
+        surface=prop.shab or 50,
+        initial_cep=prop.consumption_level or 350,
+        ges_value=prop.ges_value,
+        building_type=prop.building_type,
+        postcode=prop.postcode,
+        construction_year=prop.construction_year,
+        construction_period=prop.construction_period,
+        heating_energy=prop.systems[0].energy_source if prop.systems else None,
+        final_consumption=prop.final_consumption,
+        insulation_quality=prop.insulation_quality,
+        dpe_losses=prop.dpe_losses,
     )
-    d["recommended_works"] = recos
-    d["loss_breakdown"] = calc["loss_breakdown"]
+
+def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
+    """API representation of a property, with heat losses and suggested works."""
+    d = prop.model_dump(mode="json")
+    sim_prop = simulation_property(prop)
+    suggestions = suggest_works(sim_prop, prop.dpe_class_current.value if prop.dpe_class_current else None)
+    d["loss_shares"] = build_envelope(sim_prop).shares()
     d["suggested_works"] = suggestions["suggested"]
     d["preselected_works"] = suggestions["preselected"]
     return d
@@ -229,7 +234,7 @@ async def search_dpe(dpe_number: str):
 async def works_catalog():
     """Catalog of retrofit works the simulation knows about."""
     return {"works": [
-        {"id": w["id"], "name": w["name"], "description": w["description"], "impact_kwh": w["impact_kwh"]}
+        {"id": w["id"], "name": w["name"], "description": w["description"]}
         for w in WORKS_CATALOG
     ]}
 

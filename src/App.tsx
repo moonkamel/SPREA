@@ -38,24 +38,18 @@ interface PropertyData {
     heatingType?: string;
     gesLabel?: string;
     gesValue?: number;
-    wallMaterials?: string;
     pricePerM2?: number; // Added for gain calculation
     suggestedWorks?: string[];
     finalConsumption?: number;
     preselectedWorks?: string[];
-    glassType?: string;
-    roofIsolation?: string;
-    floorIsolation?: string;
     heatingDetail?: string;
     ademe_dpe_number?: string;
     postcode?: string;
     city?: string;
     constructionPeriod?: string;
-    loss_breakdown?: {
-        walls: number;
-        windows: number;
-        ventilation: number;
-    }
+    lossShares?: Record<string, number>;
+    insulationQuality?: Record<string, string | null>;
+    dpeLosses?: Record<string, number | null> | null;
 }
 
 const DPE_COLORS: Record<DPEClass, string> = {
@@ -135,7 +129,9 @@ const toProperty = (r: any): PropertyData => ({
     finalConsumption: r.final_consumption || undefined,
     gesValue: r.ges_value || 10,
     postcode: r.postcode || undefined,
-    loss_breakdown: r.loss_breakdown,
+    lossShares: r.loss_shares,
+    insulationQuality: r.insulation_quality,
+    dpeLosses: r.dpe_losses,
     suggestedWorks: r.suggested_works || [],
     preselectedWorks: r.preselected_works || [],
 });
@@ -162,6 +158,15 @@ function useSimulation(input: object | null, setSim: (s: Simulation) => void) {
         return () => { clearTimeout(timer); controller.abort(); };
     }, [input, setSim]);
 }
+
+const LOSS_ELEMENTS = [
+    { id: 'roof', name: 'Toiture', color: '#3b82f6' },
+    { id: 'walls', name: 'Murs', color: '#60a5fa' },
+    { id: 'windows', name: 'Vitrage', color: '#93c5fd' },
+    { id: 'floor', name: 'Sols', color: '#bfdbfe' },
+    { id: 'air', name: 'Air', color: '#dbeafe' },
+    { id: 'bridges', name: 'Ponts thermiques', color: '#e0e7ff' },
+];
 
 const isHouse = (buildingType?: string) => (buildingType || '').toLowerCase().includes('maison');
 
@@ -319,33 +324,11 @@ function Simulator() {
 
     // --- Simulation Logic ---
 
+    // Heat losses before works, from the envelope model (api/envelope.py)
     const heatLoss = useMemo(() => {
-        if (!property) return null;
-
-        if (property.loss_breakdown) {
-            const b = property.loss_breakdown;
-            const total = b.walls + b.windows + b.ventilation + 15; // + floor/ceiling fallback
-            return [
-                { id: 'roof', name: 'Toiture', val: (5 / total) * 100, color: '#3b82f6' },
-                { id: 'walls', name: 'Murs', val: (b.walls / total) * 100, color: '#60a5fa' },
-                { id: 'windows', name: 'Vitrage', val: (b.windows / total) * 100, color: '#93c5fd' },
-                { id: 'floor', name: 'Sols', val: (10 / total) * 100, color: '#bfdbfe' },
-                { id: 'vent', name: 'Air', val: (b.ventilation / total) * 100, color: '#dbeafe' },
-            ];
-        }
-
-        let pRoof = 0.30, pWalls = 0.25, pWindows = 0.15, pFloor = 0.10, pAir = 0.20;
-        if (property.roofIsolation?.toLowerCase().includes('bonne')) pRoof *= 0.35;
-        if (property.wallMaterials?.toLowerCase().includes('bonne')) pWalls *= 0.40;
-        if (property.glassType?.toLowerCase().includes('performant')) pWindows *= 0.50;
-        const total = pRoof + pWalls + pWindows + pFloor + pAir;
-        return [
-            { id: 'roof', name: 'Toiture', val: (pRoof / total) * 100, color: '#3b82f6' },
-            { id: 'walls', name: 'Murs', val: (pWalls / total) * 100, color: '#60a5fa' },
-            { id: 'windows', name: 'Vitrage', val: (pWindows / total) * 100, color: '#93c5fd' },
-            { id: 'floor', name: 'Sols', val: (pFloor / total) * 100, color: '#bfdbfe' },
-            { id: 'vent', name: 'Air', val: (pAir / total) * 100, color: '#dbeafe' },
-        ];
+        const shares = property?.lossShares;
+        if (!shares) return null;
+        return LOSS_ELEMENTS.map(e => ({ ...e, val: (shares[e.id] || 0) * 100 }));
     }, [property]);
 
     const buildSimulationInput = (actions: RetrofitAction[]) => property && ({
@@ -360,6 +343,8 @@ function Simulator() {
             price_per_m2: property.pricePerM2 ?? null,
             heating_energy: property.heatingType ?? null,
             final_consumption: property.finalConsumption ?? null,
+            insulation_quality: property.insulationQuality ?? null,
+            dpe_losses: property.dpeLosses ?? null,
         },
         works: actions.filter(a => a.active).map(a => a.id),
         suggested_works: actions.filter(a => a.suggested).map(a => a.id),
@@ -759,7 +744,7 @@ function Simulator() {
                                 ))}
                             </div>
                             <div className="mt-8 pt-6 border-t border-white/5 text-[9px] font-medium text-slate-500 leading-relaxed italic">
-                                * Ces données proviennent du rapport ADEME et indiquent les zones de pertes de chaleur prioritaires avant travaux.
+                                * Répartition estimée à partir du DPE (type de logement, époque de construction, qualité d'isolation déclarée) : zones de pertes de chaleur prioritaires avant travaux.
                             </div>
                         </section>
                     </div>

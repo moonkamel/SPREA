@@ -2,22 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api import main
-from api.ademe_client import PropertySchema, SystemSchema, WallSchema, WindowSchema
-from api.engine import DPECalculator, normalize_energy
+from api.simulation import normalize_energy
 
 client = TestClient(main.app)
-
-
-def sample_property():
-    return PropertySchema(
-        address="1 rue de l'Église, Lille",
-        shab=80,
-        climate_zone="H1a",
-        building_type="Maison",
-        walls=[WallSchema(surface=120, u_value=2.5)],
-        windows=[WindowSchema(surface=15, u_value=3.5)],
-        systems=[SystemSchema(system_type="chauffage", energy_source="Gaz naturel")],
-    )
 
 
 def test_normalize_energy_french_labels():
@@ -53,14 +40,6 @@ def test_simulate_endpoint():
 def test_simulate_rejects_invalid_surface():
     res = client.post("/api/simulate", json={**SIM_INPUT, "property": {**SIM_INPUT["property"], "surface": 0}})
     assert res.status_code == 422
-
-
-def test_engine_uses_electricity_factor():
-    prop = sample_property()
-    gas = DPECalculator().calculate(prop)["cep_m2"]
-    prop.systems[0].energy_source = "Électricité"
-    elec = DPECalculator().calculate(prop)["cep_m2"]
-    assert elec > gas
 
 
 def test_errors_do_not_leak_internals():

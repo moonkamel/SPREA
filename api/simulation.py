@@ -1,7 +1,10 @@
 """Single retrofit simulation engine used by the UI, the API and the PDF report.
 
-The simulation starts from the official DPE consumption (ADEME) and applies
-average gains per work, so the starting label matches the real certificate.
+The simulation starts from the official DPE consumption (ADEME), split by
+usage (heating, hot water, other). Insulation works reduce the heating need
+according to the dwelling's own heat losses (api/envelope.py); heating and
+hot water systems then change the energy used. The result is scaled on the
+official DPE figures, so the starting label matches the real certificate.
 """
 import math
 from datetime import date
@@ -11,10 +14,10 @@ from pydantic import BaseModel, Field
 
 try:
     from api.aids import ResourceProfile, compute_aids, get_profile
-    from api.engine import ENERGY_CONVERSION, normalize_energy
+    from api.envelope import Envelope
 except ImportError:
     from aids import ResourceProfile, compute_aids, get_profile
-    from engine import ENERGY_CONVERSION, normalize_energy
+    from envelope import Envelope
 
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
 
@@ -31,6 +34,15 @@ INDEX_BT01_CATALOG = 120.0
 
 IDF_DEPARTMENTS = {"75", "77", "78", "91", "92", "93", "94", "95"}
 RURAL_DEPARTMENTS = {"23", "36", "15"}
+
+# Primary energy conversion coefficients (DPE)
+ENERGY_CONVERSION = {
+    "electricity": 1.9,  # Since 1 January 2026 (2.3 before)
+    "gas": 1.0,
+    "oil": 1.0,
+    "wood": 1.0,
+    "district_heating": 1.0,
+}
 
 # Average 2025-2026 prices per kWh of final energy, TTC, excluding subscription.
 # Check yearly (CRE regulated tariff for electricity, prix repère for gas).
@@ -51,9 +63,6 @@ EMISSION_FACTORS = {
     "district_heating": 0.150,
 }
 
-# Share of the 5-usage consumption that goes to space heating in an existing dwelling
-HEATING_SHARE = 0.70
-
 # Seasonal efficiency of the heating system being replaced
 CURRENT_HEATING_EFFICIENCY = {
     "electricity": 1.0,   # Joule effect convectors
@@ -70,6 +79,19 @@ HEATING_SYSTEMS = {
     # Better regulation than old convectors: ~10% saving on electric heating
     "heating": {"energy": "electricity", "efficiency": 1.1},
 }
+# Hot water production being replaced, and the thermodynamic water heater
+CURRENT_HOT_WATER_EFFICIENCY = {
+    "electricity": 0.9,
+    "gas": 0.75,
+    "oil": 0.70,
+    "wood": 0.60,
+    "district_heating": 0.9,
+}
+HEAT_PUMP_WATER_HEATER_COP = 2.5
+
+# Wall preparation before interior insulation of uninsulated walls (EUR/m2)
+WALL_PREPARATION_COST = 15
+
 GREEN_VALUE_PER_CLASS = 0.045  # Property value gain per DPE class gained
 DEFAULT_PRICE_PER_M2 = 4500
 SOCIAL_CHARGES = 0.172
@@ -77,26 +99,28 @@ LOAN_RATE = 0.045
 LOAN_MONTHS = 84
 
 # unit: how the default cost scales
-#   m2_wall  -> estimated wall area (8 * sqrt(surface))
-#   m2_floor -> living surface
+#   m2_wall  -> insulated wall area (envelope geometry)
+#   m2_roof  -> roof / top floor area
+#   m2_floor -> lowest floor area
+#   window   -> per window (price per dwelling given for a typical 8 windows)
 #   radiator -> one per 15 m2
 #   flat     -> one per dwelling
 WORKS_CATALOG = [
-    {"id": "iti", "name": "ITI (Murs Intérieurs)", "cost": 85, "unit": "m2_wall", "zone": True, "impact_kwh": 120, "impact_ges": 6, "days": 5,
+    {"id": "iti", "name": "ITI (Murs Intérieurs)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
      "description": "Isolation thermique par l'intérieur. Réduit les déperditions mais impacte la surface habitable (~1.5% de perte)."},
-    {"id": "roof", "name": "Isolation Toiture", "cost": 65, "unit": "m2_floor", "zone": True, "impact_kwh": 65, "impact_ges": 4, "days": 7,
+    {"id": "roof", "name": "Isolation Toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
      "description": "Isolation des combles ou de la toiture pour les maisons individuelles."},
-    {"id": "floor_ceiling", "name": "Isolation Plafond/Plancher", "cost": 55, "unit": "m2_floor", "zone": True, "impact_kwh": 45, "impact_ges": 4, "days": 3,
+    {"id": "floor_ceiling", "name": "Isolation Plafond/Plancher", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
      "description": "Isolation des plafonds ou planchers bas (garage, grenier)."},
-    {"id": "vmc", "name": "Ventilation (VMC)", "cost": 1100, "unit": "flat", "zone": True, "impact_kwh": 35, "impact_ges": 3, "days": 1,
+    {"id": "vmc", "name": "Ventilation (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
      "description": "Installation d'une VMC simple ou double flux pour une meilleure qualité d'air et moins d'humidité."},
-    {"id": "pac_air_eau", "name": "Pompe à Chaleur Air/Eau", "cost": 13000, "unit": "flat", "zone": True, "impact_kwh": 0, "impact_ges": 0, "days": 3,
+    {"id": "pac_air_eau", "name": "Pompe à Chaleur Air/Eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
      "description": "Remplace une chaudière (gaz, fioul) ou des convecteurs par une pompe à chaleur air/eau. Nécessite un circuit d'eau chaude (radiateurs ou plancher chauffant)."},
-    {"id": "heating", "name": "Radiateur inertie", "cost": 650, "unit": "radiator", "zone": False, "impact_kwh": 0, "impact_ges": 0, "days": 2,
+    {"id": "heating", "name": "Radiateur inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
      "description": "Remplacement des convecteurs électriques par des radiateurs à inertie mieux régulés. Pertinent uniquement pour un logement déjà chauffé à l'électricité."},
-    {"id": "ecs", "name": "Ballon Thermo-dynamique", "cost": 3500, "unit": "flat", "zone": True, "impact_kwh": 80, "impact_ges": 20, "days": 1,
+    {"id": "ecs", "name": "Ballon Thermo-dynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
      "description": "Système de chauffe-eau thermodynamique pour une production d'eau chaude économique."},
-    {"id": "windows", "name": "Menuiseries PVC", "cost": 6500, "unit": "flat", "zone": False, "impact_kwh": 45, "impact_ges": 4, "days": 2,
+    {"id": "windows", "name": "Menuiseries PVC", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
      "description": "Remplacement des fenêtres simple vitrage par du double vitrage PVC haute performance."},
 ]
 WORKS_BY_ID = {w["id"]: w for w in WORKS_CATALOG}
@@ -112,6 +136,7 @@ INCOME_LEVELS = {
 # --- Input schema ---
 
 class SimulationProperty(BaseModel):
+    """Dwelling as described by its DPE."""
     surface: float = Field(..., gt=0, le=10000)
     initial_cep: float = Field(..., ge=0)
     ges_value: Optional[float] = None
@@ -122,6 +147,10 @@ class SimulationProperty(BaseModel):
     price_per_m2: Optional[float] = None
     heating_energy: Optional[str] = None  # ADEME label, e.g. "Gaz naturel", "Électricité"
     final_consumption: Optional[float] = Field(None, ge=0)  # kWh EF/m2/year, from ADEME
+    # DPE insulation quality per element (walls, roof, floor, windows): insuffisante, moyenne, bonne, très bonne
+    insulation_quality: Optional[Dict[str, Optional[str]]] = None
+    # DPE heat losses per element (walls, roof, floor, windows, air, bridges), used as weights
+    dpe_losses: Optional[Dict[str, Optional[float]]] = None
 
 
 class SimulationInput(BaseModel):
@@ -167,15 +196,23 @@ def rental_ban_date(label: str, final_consumption: float, postcode: Optional[str
     return schedule.get(label)
 
 
-def infer_wall_materials(year: Optional[int], period: Optional[str]) -> str:
-    period = (period or "").lower()
-    if not year:
-        year = 1940 if "1948" in period else 1970
-    if year < 1948 or "1948" in period:
-        return "Pierre"
-    if year < 1975:
-        return "Béton non isolé"
-    return "Isolé RT2005"
+def normalize_energy(source: Optional[str]) -> str:
+    """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys."""
+    s = (source or "gas").lower()
+    if s in ENERGY_CONVERSION: return s
+    if "lectri" in s: return "electricity"
+    if "gaz" in s or "gpl" in s or "propane" in s: return "gas"
+    if "fioul" in s: return "oil"
+    if "bois" in s or "granul" in s: return "wood"
+    if "seau" in s: return "district_heating"
+    return "gas"
+
+
+def build_envelope(prop: "SimulationProperty", works: List[str] = ()) -> Envelope:
+    # An apartment insulating its roof or floor is on the top or ground floor
+    exposed = {element for work, element in (("roof", "roof"), ("floor_ceiling", "floor")) if work in works}
+    return Envelope(prop.surface, prop.building_type, prop.construction_year, prop.construction_period,
+                    prop.insulation_quality, prop.dpe_losses, exposed_elements=exposed)
 
 
 def zone_coefficient(postcode: Optional[str]) -> float:
@@ -204,32 +241,59 @@ def initial_final_consumption(prop: "SimulationProperty", energy: str) -> float:
     return prop.initial_cep / ENERGY_CONVERSION[energy]
 
 
-def heating_replacement(work_id: str, energy: str, final_kwh: float, ges: float) -> Dict:
-    """Consumption per m2 after replacing the heating system.
-
-    Heating is HEATING_SHARE of the consumption; the other usages (hot water,
-    lighting, auxiliaries) keep the current energy.
-    """
-    system = HEATING_SYSTEMS[work_id]
-    heat_final = final_kwh * HEATING_SHARE
-    other_final = final_kwh - heat_final
-    new_heat_final = heat_final * CURRENT_HEATING_EFFICIENCY[energy] / system["efficiency"]
-    new_energy = system["energy"]
-    return {
-        "heat_final": new_heat_final,
-        "heat_energy": new_energy,
-        "other_final": other_final,
-        "primary": new_heat_final * ENERGY_CONVERSION[new_energy] + other_final * ENERGY_CONVERSION[energy],
-        "ges": ges * (1 - HEATING_SHARE) + new_heat_final * EMISSION_FACTORS[new_energy],
+def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works: List[str]) -> Dict:
+    """Final consumption per usage (kWh/m2/year) and its energy, before and after the works."""
+    final = initial_final_consumption(prop, energy)
+    heating = final * env.heating_share
+    hot_water = final * env.hot_water_share
+    before = {
+        "heating": (heating, energy),
+        "hot_water": (hot_water, energy),
+        "other": (final - heating - hot_water, energy),
     }
 
+    # 1. Insulation reduces the heating need
+    need_factor = 1 - env.heating_reduction(works)
+    heating_after = (heating * need_factor, energy)
 
-def estimated_primary_gain(work_id: str, cep: float, energy: str) -> float:
-    """Primary energy gain of a work, used to build the default selection."""
-    if work_id in HEATING_SYSTEMS:
-        final = cep / ENERGY_CONVERSION[energy]
-        return cep - heating_replacement(work_id, energy, final, 0)["primary"]
-    return WORKS_BY_ID[work_id]["impact_kwh"]
+    # 2. A new heating system replaces the current one (best one if several are selected)
+    options = [
+        (heating_after[0] * CURRENT_HEATING_EFFICIENCY[energy] / HEATING_SYSTEMS[w]["efficiency"], HEATING_SYSTEMS[w]["energy"])
+        for w in works if w in HEATING_SYSTEMS
+    ]
+    if options:
+        heating_after = min(options, key=lambda o: o[0] * ENERGY_CONVERSION[o[1]])
+
+    # 3. Thermodynamic water heater
+    hot_water_after = (hot_water, energy)
+    if "ecs" in works:
+        hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[energy] / HEAT_PUMP_WATER_HEATER_COP, "electricity")
+
+    after = {"heating": heating_after, "hot_water": hot_water_after, "other": before["other"]}
+    return {"before": before, "after": after}
+
+
+def _total(usages: Dict, factors: Dict[str, float]) -> float:
+    return sum(kwh * factors[e] for kwh, e in usages.values())
+
+
+def projected_performance(prop: "SimulationProperty", works: List[str]) -> Dict:
+    """New primary consumption and GHG, scaled on the official DPE values."""
+    energy = normalize_energy(prop.heating_energy)
+    env = build_envelope(prop, works)
+    balance = energy_balance(prop, env, energy, works)
+    ges = prop.ges_value or 20
+    primary_before = _total(balance["before"], ENERGY_CONVERSION)
+    ghg_before = _total(balance["before"], EMISSION_FACTORS)
+    cep_ratio = _total(balance["after"], ENERGY_CONVERSION) / primary_before if primary_before > 0 else 1.0
+    ges_ratio = _total(balance["after"], EMISSION_FACTORS) / ghg_before if ghg_before > 0 else 1.0
+    return {
+        "energy": energy,
+        "envelope": env,
+        "balance": balance,
+        "new_cep": prop.initial_cep * cep_ratio,
+        "new_ges": ges * ges_ratio,
+    }
 
 
 # --- Simulation ---
@@ -238,9 +302,12 @@ def simulate(data: SimulationInput) -> Dict:
     prop = data.property
     surface = prop.surface
     ges = prop.ges_value or 20
-    energy = normalize_energy(prop.heating_energy)
     thresholds = adjusted_thresholds(surface)
     works = [WORKS_BY_ID[w] for w in dict.fromkeys(data.works) if w in WORKS_BY_ID]
+    work_ids = [w["id"] for w in works]
+    perf = projected_performance(prop, work_ids)
+    env = perf["envelope"]
+    energy = perf["energy"]
 
     # Cost coefficients
     index_ratio = INDEX_BT01_CURRENT / INDEX_BT01_CATALOG
@@ -250,67 +317,39 @@ def simulate(data: SimulationInput) -> Dict:
     duration = sum(w["days"] for w in works) or 1
     logistics = data.parking_cost * duration if data.is_urban_dense else 0.0
 
-    wall_area = 8 * math.sqrt(surface)
-    window_count = max(4, round(surface / 12))
-    walls_uninsulated = "non isolé" in infer_wall_materials(prop.construction_year, prop.construction_period).lower()
+    quantities = {
+        "m2_wall": env.wall_area,
+        "m2_roof": env.areas["roof"],
+        "m2_floor": env.areas["floor"],
+        "window": env.window_count,
+        "radiator": math.ceil(surface / 15),
+        "flat": 1,
+    }
 
     detailed_costs = []
     aid_works = []
-    heating_works = []
-    cep_red = 0.0
-    ges_red = 0.0
     for w in works:
-        unit = w["unit"]
-        if unit == "m2_wall":
-            item = w["cost"] * wall_area
-            quantity = wall_area
-            if walls_uninsulated:
-                item += 15 * wall_area  # Wall preparation
-        elif unit == "m2_floor":
-            item = w["cost"] * surface
-            quantity = surface
-        elif unit == "radiator":
-            quantity = math.ceil(surface / 15)
-            item = w["cost"] * quantity
-        else:
-            item = w["cost"]
-            quantity = window_count if w["id"] == "windows" else 1
+        quantity = quantities[w["unit"]]
+        item = w["cost"] * quantity
+        if w["unit"] == "m2_wall" and env.walls_uninsulated:
+            item += WALL_PREPARATION_COST * quantity
         if w["zone"]:
             item *= zone
         item *= index_ratio * coeff_access * coeff_urban
         detailed_costs.append({"id": w["id"], "name": w["name"], "cost": item, "suggested": w["id"] in data.suggested_works})
         aid_works.append({"id": w["id"], "cost_ttc": item, "quantity": quantity})
-        cep_red += w["impact_kwh"]
-        ges_red += w["impact_ges"]
-        if w["id"] in HEATING_SYSTEMS:
-            heating_works.append(w["id"])
 
     if logistics > 0:
         detailed_costs.append({"id": "parking", "name": "Frais de Stationnement", "cost": logistics, "suggested": False})
     cost = sum(d["cost"] for d in detailed_costs)
 
-    # 1. Envelope works: average primary gains, applied proportionally to the bill
-    final_before = initial_final_consumption(prop, energy)
-    cep_envelope = max(35.0, prop.initial_cep - cep_red)
-    ges_envelope = max(2.0, ges - ges_red)
-    ratio = cep_envelope / prop.initial_cep if prop.initial_cep > 0 else 1.0
-    final_envelope = final_before * ratio
-    bill_before = final_before * ENERGY_PRICES_EUR_KWH[energy] * surface
-
-    # 2. Heating system replacement (best one if several are selected)
-    if heating_works:
-        options = [heating_replacement(h, energy, final_envelope, ges_envelope) for h in heating_works]
-        best = min(options, key=lambda o: o["primary"])
-        new_cep = max(35.0, best["primary"])
-        new_ges = max(2.0, best["ges"])
-        final_after = best["heat_final"] + best["other_final"]
-        bill_after = (best["heat_final"] * ENERGY_PRICES_EUR_KWH[best["heat_energy"]]
-                      + best["other_final"] * ENERGY_PRICES_EUR_KWH[energy]) * surface
-    else:
-        new_cep = cep_envelope
-        new_ges = ges_envelope
-        final_after = final_envelope
-        bill_after = final_envelope * ENERGY_PRICES_EUR_KWH[energy] * surface
+    new_cep = perf["new_cep"]
+    new_ges = perf["new_ges"]
+    balance = perf["balance"]
+    final_before = sum(kwh for kwh, _ in balance["before"].values())
+    final_after = sum(kwh for kwh, _ in balance["after"].values())
+    bill_before = _total(balance["before"], ENERGY_PRICES_EUR_KWH) * surface
+    bill_after = _total(balance["after"], ENERGY_PRICES_EUR_KWH) * surface
     current = get_labels(prop.initial_cep, ges, thresholds)
     target = get_labels(new_cep, new_ges, thresholds)
     steps = max(0, LABELS.index(current["label"]) - LABELS.index(target["label"]))
@@ -379,6 +418,8 @@ def simulate(data: SimulationInput) -> Dict:
         "annual_bill_before": bill_before,
         "annual_bill_after": bill_after,
         "annual_savings": savings,
+        "heating_need_reduction": env.heating_reduction(work_ids),
+        "loss_shares": env.shares(),
         # None when the works bring no bill saving
         "roi_years": (rest - tax_benefit) / savings if savings > 0 else None,
         "latent_gain": steps * surface * price_per_m2 * GREEN_VALUE_PER_CLASS,
@@ -393,44 +434,48 @@ def simulate(data: SimulationInput) -> Dict:
 
 # --- Work suggestions ---
 
-def suggest_works(building_type: Optional[str], label: Optional[str], initial_cep: Optional[float],
-                  recommended_ids: List[str], loss_breakdown: Optional[Dict],
-                  heating_energy: Optional[str] = None) -> Dict[str, List[str]]:
-    """Works to suggest, and a default selection aiming at class C (or D for a G)."""
-    apartment = "appartement" in (building_type or "").lower()
-    energy = normalize_energy(heating_energy)
-    suggested = set(recommended_ids)
-    # Heating: heat pump for houses heated with fossil fuels, inertia radiators
-    # only make sense when the dwelling is already electric.
-    if energy != "electricity":
-        suggested.discard("heating")
-    if is_house(building_type) and energy in ("gas", "oil") and (label or "G") in ("D", "E", "F", "G"):
-        suggested.add("pac_air_eau")
-    if loss_breakdown:
-        if loss_breakdown.get("walls", 0) > 40: suggested.add("iti")
-        if loss_breakdown.get("windows", 0) > 20: suggested.add("windows")
-        if loss_breakdown.get("ventilation", 0) > 30: suggested.add("vmc")
-    if apartment:
-        suggested.discard("roof")
-
-    cep = initial_cep or 350
+def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, List[str]]:
+    """Works to suggest for this dwelling, and a default selection aiming at
+    class C (or D for a G), computed with the simulation model."""
+    house = is_house(prop.building_type)
+    energy = normalize_energy(prop.heating_energy)
+    env = build_envelope(prop)
+    shares = env.shares()
     label = label or "G"
-    if label in ("A", "B", "C"):
-        target = cep
-    elif label == "G":
-        target = 230
-    else:
-        target = 150
-    remaining = cep - target
+    poor_label = label in ("E", "F", "G")
 
-    priority = ["iti", "floor_ceiling", "heating", "windows", "vmc"] if apartment else \
-        ["roof", "iti", "floor_ceiling", "pac_air_eau", "heating", "windows", "vmc"]
-    ordered = sorted(WORKS_CATALOG, key=lambda w: priority.index(w["id"]) if w["id"] in priority else 99)
-    preselected = []
-    for w in ordered:
-        if remaining > 0 and w["id"] in suggested:
-            preselected.append(w["id"])
-            remaining -= estimated_primary_gain(w["id"], cep, energy)
+    suggested = set()
+    if shares["walls"] >= 0.18 and env.u["walls"] > 0.45:
+        suggested.add("iti")
+    if house and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
+        suggested.add("roof")
+    if house and shares["floor"] >= 0.08 and env.u["floor"] > 0.5:
+        suggested.add("floor_ceiling")
+    if env.u["windows"] > 2.0:
+        suggested.add("windows")
+    if shares["air"] >= 0.20 and env.period <= 2:
+        suggested.add("vmc")
+    # Heating: heat pump for houses heated with fossil fuels, inertia radiators
+    # only when the dwelling is already electric
+    if house and energy in ("gas", "oil") and label in ("D", "E", "F", "G"):
+        suggested.add("pac_air_eau")
+    if energy == "electricity" and poor_label:
+        suggested.update({"heating", "ecs"})
+
+    if label in ("A", "B", "C"):
+        target = prop.initial_cep
+    else:
+        target = 230 if label == "G" else 150
+
+    priority = ["iti", "floor_ceiling", "windows", "heating", "ecs", "vmc"] if not house else \
+        ["roof", "iti", "floor_ceiling", "pac_air_eau", "windows", "heating", "ecs", "vmc"]
+    preselected: List[str] = []
+    for work in priority:
+        if work not in suggested:
+            continue
+        if projected_performance(prop, preselected)["new_cep"] <= target:
+            break
+        preselected.append(work)
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],
