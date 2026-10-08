@@ -171,6 +171,19 @@ def build_report_data(meta: Dict[str, Any], simulation: SimulationInput) -> Dict
         "tax_benefit": sim["tax_benefit"],
         "has_iti": sim["has_iti"],
         "user_profile": "investisseur" if simulation.is_investor else "propriétaire",
+        "dpe_date": date.fromisoformat(meta["dpe_date"][:10]).strftime("%d/%m/%Y") if meta.get("dpe_date") else None,
+        "heating_energy": prop.heating_energy,
+        "gain_classes": sim["gain_classes"],
+        "annual_bill_before": sim["annual_bill_before"],
+        "annual_bill_after": sim["annual_bill_after"],
+        "aid_pathway": sim["aid_pathway"],
+        "aid_notes": sim["aid_notes"],
+        "income_profile": sim["income_profile"],
+        "thresholds": sim["thresholds"],
+        "duration_days": sim["duration_days"] if sim["cost"] else None,
+        "new_ban_year": date.fromisoformat(sim["new_ban_date"]).year if sim["new_ban_date"] else None,
+        "net_investor_cost": sim["net_investor_cost"],
+        "monthly_rent": simulation.monthly_rent,
     }
 
 
@@ -186,6 +199,7 @@ class ReportMeta(BaseModel):
     ademe_dpe_number: Optional[str] = Field(None, max_length=20)
     building_type: Optional[str] = Field(None, max_length=100)
     construction_period: Optional[str] = Field(None, max_length=100)
+    dpe_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}", max_length=30)
 
 
 class ReportCreate(BaseModel):

@@ -1,4 +1,5 @@
-import { Check } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
+import { Button } from '../ui';
 import { useAccount } from '../account';
 import { navigate } from '../router';
 import { PageShell } from './site';
@@ -79,47 +80,50 @@ export default function PricingPage() {
     return (
         <PageShell>
             <section className="text-center max-w-2xl mx-auto mb-12">
-                <h1 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tighter mb-4">Tarifs</h1>
-                <p className="text-slate-500">La simulation est gratuite. Payez uniquement les rapports dont vous avez besoin, ou passez Pro pour un usage régulier.</p>
+                <p className="text-sm text-brass tracking-wide mb-4">Tarifs</p>
+                <h1 className="text-4xl sm:text-5xl text-ink leading-tight">Simple et transparent</h1>
+                <p className="mt-5 text-lg text-muted">La simulation est gratuite. Payez uniquement les rapports dont vous avez besoin, ou passez Pro pour un usage régulier.</p>
             </section>
 
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {PLANS.map(plan => {
                     const { label, action, disabled } = cta(plan.id);
                     const highlighted = plan.id === 'pro';
                     return (
-                        <div key={plan.id} className={`rounded-[2rem] p-8 flex flex-col border ${highlighted ? 'bg-slate-900 text-white border-slate-900 shadow-2xl' : 'bg-white border-slate-100 shadow-sm'}`}>
-                            <h2 className={`text-xs font-black uppercase tracking-widest ${highlighted ? 'text-blue-300' : 'text-blue-600'}`}>{plan.name}</h2>
-                            <p className="mt-4 text-4xl font-black tracking-tighter">{prices[plan.id].amount}</p>
-                            <p className={`text-xs mt-1 h-4 ${highlighted ? 'text-slate-400' : 'text-slate-400'}`}>{prices[plan.id].unit}{prices[plan.id].unit && ' · TTC'}</p>
-                            <p className={`mt-4 text-sm ${highlighted ? 'text-slate-300' : 'text-slate-500'}`}>{plan.tagline}</p>
+                        <div key={plan.id} className={`rounded-2xl p-7 flex flex-col border ${highlighted ? 'border-brass/60 bg-panel shadow-2xl shadow-black/40' : 'border-line bg-panel'}`}>
+                            <div className="flex items-center justify-between">
+                                <h2 className="font-sans text-sm font-semibold tracking-wide text-brass">{plan.name}</h2>
+                                {highlighted && <span className="text-[11px] px-2 py-0.5 rounded-full bg-brass text-canvas font-semibold">Professionnels</span>}
+                            </div>
+                            <p className="mt-5 font-serif text-4xl text-ink">{prices[plan.id].amount}</p>
+                            <p className="text-sm mt-1 h-5 text-faint">{prices[plan.id].unit}{prices[plan.id].unit && ' · TTC'}</p>
+                            <p className="mt-4 text-sm text-muted">{plan.tagline}</p>
                             <ul className="mt-6 space-y-3 flex-1">
                                 {plan.features.map(f => (
-                                    <li key={f} className="flex items-start gap-2 text-sm">
-                                        <Check size={16} className={`shrink-0 mt-0.5 ${highlighted ? 'text-blue-300' : 'text-blue-600'}`} />
+                                    <li key={f} className="flex items-start gap-2.5 text-sm text-ink-soft">
+                                        <Check size={16} className="shrink-0 mt-0.5 text-brass" />
                                         <span>{f}</span>
                                     </li>
                                 ))}
                             </ul>
-                            <button
-                                onClick={action}
-                                disabled={disabled}
-                                className={`mt-8 h-12 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all disabled:opacity-60 ${highlighted ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-700'}`}
-                            >
+                            <Button onClick={action} disabled={disabled} variant={highlighted ? 'primary' : 'secondary'} className="mt-8 w-full">
                                 {label}
-                            </button>
+                            </Button>
                         </div>
                     );
                 })}
             </section>
 
-            <section className="max-w-3xl mx-auto mt-16 space-y-6">
-                <h2 className="text-xl font-black text-slate-800 tracking-tight">Questions fréquentes</h2>
+            <section className="max-w-3xl mx-auto mt-20 space-y-3">
+                <h2 className="text-2xl text-ink mb-4">Questions fréquentes</h2>
                 {FAQ.map(item => (
-                    <div key={item.q}>
-                        <h3 className="font-bold text-slate-800">{item.q}</h3>
-                        <p className="text-sm text-slate-500 mt-1 leading-relaxed">{item.a}</p>
-                    </div>
+                    <details key={item.q} className="group rounded-xl border border-line bg-panel px-5 py-4">
+                        <summary className="cursor-pointer list-none flex items-center justify-between gap-4 text-ink">
+                            {item.q}
+                            <ChevronDown size={18} className="shrink-0 text-faint transition-transform group-open:rotate-180" />
+                        </summary>
+                        <p className="text-sm text-muted mt-3 leading-relaxed">{item.a}</p>
+                    </details>
                 ))}
             </section>
         </PageShell>

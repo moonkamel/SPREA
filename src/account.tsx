@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import { Button } from './ui';
 import { Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
 
 // --- Types ---
@@ -36,6 +37,7 @@ export interface ReportRequest {
         ademe_dpe_number?: string | null;
         building_type?: string | null;
         construction_period?: string | null;
+        dpe_date?: string | null;
     };
     simulation: object;
 }
@@ -151,7 +153,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [authedFetch]);
 
     const requestReport = useCallback(async (req: ReportRequest) => {
-        if (!config?.auth_enabled) { setNotice("Les comptes ne sont pas encore disponibles."); return; }
+        if (!config?.auth_enabled) { setNotice("Le rapport PDF sera disponible très prochainement. Toute votre simulation reste consultable sur cette page."); return; }
         if (!session) {
             savePending(req);
             setLoginReason('Connectez-vous pour obtenir votre rapport PDF. Votre simulation sera conservée.');
@@ -166,7 +168,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [config, session, me, refreshMe, createReport]);
 
     const startSubscription = useCallback(() => {
-        if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement n'est pas encore disponible."); return; }
+        if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement Pro sera disponible très prochainement."); return; }
         if (!session) { setLoginReason("Connectez-vous pour souscrire à l'abonnement Pro."); return; }
         if (me?.is_pro) { setShowAccount(true); return; }
         setShowAccount(false);
@@ -304,7 +306,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                     <span>Reprendre votre rapport pour <b>{pending.meta.address}</b> ?</span>
                     <button
                         onClick={() => { const req = pending; clearPending(); setPending(null); requestReport(req); }}
-                        className="ml-3 px-3 py-1.5 rounded-lg bg-white text-slate-900 font-black text-[10px] uppercase tracking-widest"
+                        className="ml-3 px-3 py-1.5 rounded-lg bg-brass text-canvas font-semibold text-xs"
                     >
                         Obtenir le rapport
                     </button>
@@ -335,21 +337,26 @@ export function AccountButton({ className = '' }: { className?: string }) {
     return (
         <button
             onClick={() => (session ? openAccount() : openLogin())}
-            className={`h-14 px-6 rounded-2xl bg-white text-slate-700 font-black hover:bg-slate-900 hover:text-white transition-all text-[10px] uppercase tracking-widest border border-slate-200 flex items-center gap-2 ${className}`}
+            className={`h-10 px-4 rounded-xl border border-line text-sm text-ink-soft hover:text-ink hover:border-brass/60 transition-colors flex items-center gap-2 ${className}`}
         >
             <UserIcon size={16} />
-            {session ? 'Mon compte' : 'Se connecter'}
-            {me?.is_pro && <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white text-[8px]">PRO</span>}
+            <span className="hidden sm:inline">{session ? 'Mon compte' : 'Se connecter'}</span>
+            {me?.is_pro && <span className="px-1.5 py-0.5 rounded bg-brass text-canvas text-[10px] font-semibold">PRO</span>}
         </button>
     );
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onClose]);
     return (
-        <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-label={title}>
-                <button onClick={onClose} className="absolute top-5 right-5 text-slate-400 hover:text-slate-900" aria-label="Fermer"><X size={20} /></button>
-                <h2 className="text-xl font-black text-slate-800 tracking-tight mb-6">{title}</h2>
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-panel border border-line rounded-2xl shadow-2xl shadow-black/50 w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title}>
+                <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
+                <h2 className="text-2xl text-ink mb-6 pr-8">{title}</h2>
                 {children}
             </div>
         </div>
@@ -358,10 +365,19 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 function Toast({ children, onClose }: { children: ReactNode; onClose: () => void }) {
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] max-w-[calc(100%-2rem)] bg-slate-900 text-white text-sm rounded-2xl shadow-2xl px-5 py-4 flex items-center gap-3">
+        <div role="status" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] w-[min(560px,calc(100%-2rem))] bg-raised border border-line text-ink text-sm rounded-xl shadow-2xl shadow-black/50 px-5 py-4 flex items-center gap-3">
             <div className="flex-1 flex items-center flex-wrap gap-y-2">{children}</div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Fermer"><X size={16} /></button>
+            <button onClick={onClose} className="text-faint hover:text-ink" aria-label="Fermer"><X size={16} /></button>
         </div>
+    );
+}
+
+function Checkbox({ checked, onChange, children, danger }: { checked: boolean; onChange: (v: boolean) => void; children: ReactNode; danger?: boolean }) {
+    return (
+        <label className="flex items-start gap-3 text-sm text-ink-soft leading-relaxed cursor-pointer">
+            <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className={`mt-1 h-4 w-4 shrink-0 ${danger ? 'accent-coral' : 'accent-brass'}`} />
+            <span>{children}</span>
+        </label>
     );
 }
 
@@ -381,32 +397,35 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
 
     return (
         <Modal title="Connexion" onClose={onClose}>
-            {reason && <p className="text-sm text-slate-500 mb-5">{reason}</p>}
+            {reason && <p className="text-sm text-muted mb-5">{reason}</p>}
             {status === 'sent' ? (
                 <div className="text-center py-4">
-                    <Mail className="mx-auto text-blue-600 mb-3" size={32} />
-                    <p className="font-bold text-slate-800">Lien envoyé à {email}</p>
-                    <p className="text-sm text-slate-500 mt-2">Cliquez sur le lien reçu par email pour vous connecter. Pas de mot de passe à retenir.</p>
+                    <Mail className="mx-auto text-brass mb-3" size={32} />
+                    <p className="text-ink font-medium">Lien envoyé à {email}</p>
+                    <p className="text-sm text-muted mt-2">Ouvrez l'email et cliquez sur le lien pour vous connecter. Pas de mot de passe à retenir.</p>
                 </div>
             ) : (
                 <form onSubmit={send} className="space-y-4">
-                    <input
-                        type="email"
-                        required
-                        autoFocus
-                        placeholder="votre@email.fr"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        className="w-full h-14 px-5 rounded-2xl bg-slate-100 font-bold text-slate-900 outline-none border-2 border-transparent focus:border-blue-600 focus:bg-white"
-                    />
-                    <button type="submit" disabled={status === 'sending'} className="w-full h-14 rounded-2xl bg-blue-600 text-white font-black uppercase text-xs tracking-widest hover:bg-blue-700 flex items-center justify-center gap-2">
+                    <label className="block space-y-2">
+                        <span className="text-sm text-ink-soft">Adresse email</span>
+                        <input
+                            type="email"
+                            required
+                            autoFocus
+                            placeholder="vous@exemple.fr"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            className="w-full h-12 px-4 rounded-xl bg-raised border border-line text-ink placeholder:text-faint outline-none focus:border-brass/70"
+                        />
+                    </label>
+                    <Button type="submit" disabled={status === 'sending'} className="w-full">
                         {status === 'sending' && <Loader2 className="animate-spin" size={16} />}
                         Recevoir un lien de connexion
-                    </button>
-                    {status === 'error' && <p className="text-sm text-red-600">L'envoi a échoué, vérifiez l'adresse et réessayez.</p>}
-                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                    </Button>
+                    {status === 'error' && <p className="text-sm text-coral">L'envoi a échoué, vérifiez l'adresse et réessayez.</p>}
+                    <p className="text-xs text-faint leading-relaxed">
                         Votre email sert uniquement à vous connecter, à conserver vos rapports et à vous envoyer vos factures.{' '}
-                        <a href="/confidentialite" target="_blank" rel="noopener" className="underline">Politique de confidentialité</a>
+                        <a href="/confidentialite" target="_blank" rel="noopener" className="underline hover:text-ink">Politique de confidentialité</a>
                     </p>
                 </form>
             )}
@@ -435,51 +454,51 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
 
     return (
         <Modal title="Mon compte" onClose={onClose}>
-            {!me ? <Loader2 className="animate-spin text-slate-400" /> : (
+            {!me ? <Loader2 className="animate-spin text-faint" /> : (
                 <div className="space-y-6">
-                    <p className="text-sm text-slate-500">{me.email}</p>
+                    <p className="text-sm text-muted">{me.email}</p>
 
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                    <div className="rounded-xl border border-line bg-raised p-5">
                         {me.is_pro ? (
                             <>
-                                <p className="font-black text-slate-800 flex items-center gap-2"><Sparkles size={16} className="text-blue-600" /> Abonnement Pro actif</p>
-                                <p className="text-xs text-slate-500 mt-1">Rapports illimités{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
+                                <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement Pro actif</p>
+                                <p className="text-sm text-muted mt-1">Rapports illimités{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
                             </>
                         ) : (
                             <>
-                                <p className="font-black text-slate-800">Formule gratuite</p>
-                                <p className="text-xs text-slate-500 mt-1">
+                                <p className="text-ink font-medium">Formule gratuite</p>
+                                <p className="text-sm text-muted mt-1">
                                     Rapport à l'unité{config?.report_price ? ` : ${config.report_price}` : ''}. Professionnels : rapports illimités avec l'abonnement Pro{config?.pro_price ? ` (${config.pro_price})` : ''}.
                                 </p>
                                 {config?.billing_enabled && (
-                                    <button onClick={run('subscribe', onSubscribe)} className="mt-4 w-full h-12 rounded-xl bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 flex items-center justify-center gap-2">
+                                    <Button onClick={run('subscribe', onSubscribe)} className="mt-4 w-full">
                                         {busy === 'subscribe' && <Loader2 className="animate-spin" size={14} />}
                                         Passer Pro
-                                    </button>
+                                    </Button>
                                 )}
                             </>
                         )}
                         {me.has_billing_account && (
-                            <button onClick={run('portal', onPortal)} className="mt-3 w-full h-10 rounded-xl bg-white border border-slate-200 text-slate-600 font-black uppercase text-[10px] tracking-widest hover:bg-slate-100 flex items-center justify-center gap-2">
+                            <Button variant="secondary" onClick={run('portal', onPortal)} className="mt-3 w-full h-10">
                                 {busy === 'portal' && <Loader2 className="animate-spin" size={14} />}
                                 Factures et abonnement
-                            </button>
+                            </Button>
                         )}
                     </div>
 
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Mes rapports</p>
+                        <p className="text-sm text-ink-soft font-medium mb-3">Mes rapports</p>
                         {me.reports.length === 0 ? (
-                            <p className="text-sm text-slate-400">Aucun rapport pour le moment.</p>
+                            <p className="text-sm text-faint">Aucun rapport pour le moment.</p>
                         ) : (
                             <ul className="space-y-2 max-h-60 overflow-y-auto">
                                 {me.reports.map(r => (
                                     <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
-                                        <span className="truncate text-slate-700">
+                                        <span className="truncate text-ink-soft">
                                             {r.address}
-                                            <span className="block text-[10px] text-slate-400">{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
+                                            <span className="block text-xs text-faint">{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
                                         </span>
-                                        <button onClick={run(r.id, () => onDownload(r.id))} className="shrink-0 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 hover:text-white flex items-center gap-1">
+                                        <button onClick={run(r.id, () => onDownload(r.id))} className="shrink-0 px-3 py-1.5 rounded-lg border border-line text-brass hover:border-brass/60 text-xs font-semibold flex items-center gap-1">
                                             {busy === r.id && <Loader2 className="animate-spin" size={12} />}
                                             PDF
                                         </button>
@@ -489,11 +508,11 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
                         )}
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                        <button onClick={run('logout', onLogout)} className="text-xs font-bold text-slate-400 hover:text-slate-900 flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
+                        <button onClick={run('logout', onLogout)} className="text-sm text-muted hover:text-ink flex items-center gap-2">
                             <LogOut size={14} /> Se déconnecter
                         </button>
-                        <button onClick={onDelete} className="text-xs font-bold text-slate-400 hover:text-red-600 flex items-center gap-2">
+                        <button onClick={onDelete} className="text-sm text-faint hover:text-coral flex items-center gap-2">
                             <Trash2 size={14} /> Supprimer mon compte
                         </button>
                     </div>
@@ -512,35 +531,28 @@ function PurchaseModal({ kind, price, onClose, onConfirm }: {
     const [accepted, setAccepted] = useState(false);
     const [busy, setBusy] = useState(false);
     const isReport = kind === 'report';
-    const cgv = <a href="/cgv" target="_blank" rel="noopener" className="underline text-blue-600">conditions générales de vente</a>;
+    const cgv = <a href="/cgv" target="_blank" rel="noopener" className="underline text-brass">conditions générales de vente</a>;
 
     return (
         <Modal title={isReport ? 'Obtenir le rapport' : "Passer à l'abonnement Pro"} onClose={onClose}>
-            <div className="rounded-2xl bg-slate-50 border border-slate-100 p-5 mb-5">
-                <p className="text-2xl font-black text-slate-900">{price || '—'}<span className="text-xs font-bold text-slate-400 ml-2">TTC</span></p>
-                <p className="text-xs text-slate-500 mt-1">
+            <div className="rounded-xl border border-line bg-raised p-5 mb-5">
+                <p className="font-serif text-3xl text-ink">{price || '–'}<span className="font-sans text-xs text-faint ml-2">TTC</span></p>
+                <p className="text-sm text-muted mt-2">
                     {isReport
                         ? 'Rapport PDF de ce logement, téléchargeable immédiatement puis à tout moment depuis votre compte. Facture fournie.'
                         : 'Rapports illimités. Abonnement mensuel sans engagement, résiliable à tout moment depuis votre compte.'}
                 </p>
             </div>
-            <label className="flex items-start gap-3 text-xs text-slate-600 leading-relaxed cursor-pointer">
-                <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600" />
-                {isReport ? (
-                    <span>J'accepte les {cgv} et je demande l'accès immédiat à mon rapport. Je reconnais perdre mon droit de rétractation dès sa mise à disposition.</span>
-                ) : (
-                    <span>J'accepte les {cgv} et je demande le démarrage immédiat de l'abonnement. Si j'exerce mon droit de rétractation dans les 14 jours, je reste redevable du montant correspondant au service déjà fourni.</span>
-                )}
-            </label>
-            <button
-                disabled={!accepted || busy}
-                onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }}
-                className="mt-6 w-full h-14 rounded-2xl bg-blue-600 text-white font-black uppercase text-xs tracking-widest hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
+            <Checkbox checked={accepted} onChange={setAccepted}>
+                {isReport
+                    ? <>J'accepte les {cgv} et je demande l'accès immédiat à mon rapport. Je reconnais perdre mon droit de rétractation dès sa mise à disposition.</>
+                    : <>J'accepte les {cgv} et je demande le démarrage immédiat de l'abonnement. Si j'exerce mon droit de rétractation dans les 14 jours, je reste redevable du montant correspondant au service déjà fourni.</>}
+            </Checkbox>
+            <Button disabled={!accepted || busy} onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }} className="mt-6 w-full">
                 {busy && <Loader2 className="animate-spin" size={16} />}
                 Continuer vers le paiement
-            </button>
-            <p className="text-[10px] text-slate-400 text-center mt-3">Paiement sécurisé par Stripe</p>
+            </Button>
+            <p className="text-xs text-faint text-center mt-3">Paiement sécurisé par Stripe</p>
         </Modal>
     );
 }
@@ -556,29 +568,26 @@ function DeleteAccountModal({ me, onClose, onConfirm }: {
 
     return (
         <Modal title="Supprimer mon compte" onClose={onClose}>
-            <ul className="text-sm text-slate-600 leading-relaxed space-y-2 list-disc pl-5 mb-5">
+            <ul className="text-sm text-ink-soft leading-relaxed space-y-2 list-disc pl-5 mb-5">
                 <li>Votre compte et votre adresse email sont supprimés.</li>
                 <li>
                     {reportCount > 0
-                        ? <><b>Vos {reportCount} rapport{reportCount > 1 ? 's' : ''}</b> ne pourront plus être téléchargés : enregistrez-les avant de continuer.</>
+                        ? <><b className="text-ink">Vos {reportCount} rapport{reportCount > 1 ? 's' : ''}</b> ne pourront plus être téléchargés : enregistrez-les avant de continuer.</>
                         : 'Vos rapports sont supprimés.'}
                 </li>
-                {me?.is_pro && <li>Votre <b>abonnement Pro est résilié immédiatement</b>, sans remboursement de la période en cours.</li>}
+                {me?.is_pro && <li>Votre <b className="text-ink">abonnement Pro est résilié immédiatement</b>, sans remboursement de la période en cours.</li>}
                 <li>Les factures et une trace minimale de vos achats (date, montant, version des CGV acceptée) sont conservées pour nos obligations légales, sans vos simulations.</li>
             </ul>
-            <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer">
-                <input type="checkbox" checked={understood} onChange={e => setUnderstood(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-red-600" />
-                <span>Je comprends que cette suppression est définitive.</span>
-            </label>
+            <Checkbox checked={understood} onChange={setUnderstood} danger>Je comprends que cette suppression est définitive.</Checkbox>
             <button
                 disabled={!understood || busy}
                 onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }}
-                className="mt-6 w-full h-14 rounded-2xl bg-red-600 text-white font-black uppercase text-xs tracking-widest hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="mt-6 w-full h-12 rounded-xl bg-coral text-canvas font-semibold text-sm hover:opacity-90 disabled:bg-raised disabled:text-faint disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {busy && <Loader2 className="animate-spin" size={16} />}
                 Supprimer définitivement
             </button>
-            <button onClick={onClose} className="mt-3 w-full text-xs font-bold text-slate-400 hover:text-slate-900">Annuler</button>
+            <button onClick={onClose} className="mt-3 w-full text-sm text-muted hover:text-ink">Annuler</button>
         </Modal>
     );
 }

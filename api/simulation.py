@@ -106,22 +106,22 @@ LOAN_MONTHS = 84
 #   radiator -> one per 15 m2
 #   flat     -> one per dwelling
 WORKS_CATALOG = [
-    {"id": "iti", "name": "ITI (Murs Intérieurs)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
-     "description": "Isolation thermique par l'intérieur. Réduit les déperditions mais impacte la surface habitable (~1.5% de perte)."},
-    {"id": "roof", "name": "Isolation Toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
-     "description": "Isolation des combles ou de la toiture pour les maisons individuelles."},
-    {"id": "floor_ceiling", "name": "Isolation Plafond/Plancher", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
-     "description": "Isolation des plafonds ou planchers bas (garage, grenier)."},
-    {"id": "vmc", "name": "Ventilation (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
-     "description": "Installation d'une VMC simple ou double flux pour une meilleure qualité d'air et moins d'humidité."},
-    {"id": "pac_air_eau", "name": "Pompe à Chaleur Air/Eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
-     "description": "Remplace une chaudière (gaz, fioul) ou des convecteurs par une pompe à chaleur air/eau. Nécessite un circuit d'eau chaude (radiateurs ou plancher chauffant)."},
-    {"id": "heating", "name": "Radiateur inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
-     "description": "Remplacement des convecteurs électriques par des radiateurs à inertie mieux régulés. Pertinent uniquement pour un logement déjà chauffé à l'électricité."},
-    {"id": "ecs", "name": "Ballon Thermo-dynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
-     "description": "Système de chauffe-eau thermodynamique pour une production d'eau chaude économique."},
-    {"id": "windows", "name": "Menuiseries PVC", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
-     "description": "Remplacement des fenêtres simple vitrage par du double vitrage PVC haute performance."},
+    {"id": "iti", "name": "Isolation des murs (par l'intérieur)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
+     "description": "Doublage isolant posé côté intérieur des murs donnant sur l'extérieur. Efficace, mais réduit un peu la surface habitable."},
+    {"id": "roof", "name": "Isolation de la toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
+     "description": "Isolation des combles ou des rampants. Souvent le geste le plus rentable dans une maison : la chaleur monte."},
+    {"id": "floor_ceiling", "name": "Isolation du plancher bas", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
+     "description": "Isolant posé sous le plancher, côté cave, garage ou vide sanitaire. Supprime l'effet « sol froid »."},
+    {"id": "vmc", "name": "Ventilation mécanique (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
+     "description": "Renouvelle l'air en continu et en limitant les pertes de chaleur. Indispensable après isolation pour éviter l'humidité."},
+    {"id": "pac_air_eau", "name": "Pompe à chaleur air/eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
+     "description": "Remplace une chaudière gaz ou fioul : environ trois fois moins d'énergie consommée. Utilise vos radiateurs à eau ou votre plancher chauffant."},
+    {"id": "heating", "name": "Radiateurs électriques à inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
+     "description": "Remplacent d'anciens convecteurs électriques, avec une chaleur plus douce et mieux régulée. Utile seulement si le logement est déjà chauffé à l'électricité."},
+    {"id": "ecs", "name": "Chauffe-eau thermodynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
+     "description": "Produit l'eau chaude avec une petite pompe à chaleur : deux à trois fois moins d'électricité qu'un ballon classique."},
+    {"id": "windows", "name": "Fenêtres double vitrage", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
+     "description": "Remplacement des fenêtres anciennes ou en simple vitrage. Plus de confort, moins de courants d'air et de bruit."},
 ]
 WORKS_BY_ID = {w["id"]: w for w in WORKS_CATALOG}
 
@@ -340,7 +340,7 @@ def simulate(data: SimulationInput) -> Dict:
         aid_works.append({"id": w["id"], "cost_ttc": item, "quantity": quantity})
 
     if logistics > 0:
-        detailed_costs.append({"id": "parking", "name": "Frais de Stationnement", "cost": logistics, "suggested": False})
+        detailed_costs.append({"id": "parking", "name": "Stationnement des artisans", "cost": logistics, "suggested": False})
     cost = sum(d["cost"] for d in detailed_costs)
 
     new_cep = perf["new_cep"]
@@ -387,6 +387,7 @@ def simulate(data: SimulationInput) -> Dict:
 
     price_per_m2 = prop.price_per_m2 or DEFAULT_PRICE_PER_M2
     ban = rental_ban_date(current["label"], final_before, prop.postcode)
+    new_ban = rental_ban_date(target["label"], final_after, prop.postcode)
 
     return {
         "current_label": current["label"],
@@ -428,6 +429,7 @@ def simulate(data: SimulationInput) -> Dict:
         "yield_brut": yield_brut,
         "cashflow": cashflow,
         "ban_date": ban.isoformat() if ban else None,
+        "new_ban_date": new_ban.isoformat() if new_ban else None,
         "has_iti": any(w["id"] == "iti" for w in works),
     }
 

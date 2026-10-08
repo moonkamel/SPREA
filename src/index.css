@@ -1,9 +1,30 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/source-serif-4';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+    html {
+        color-scheme: dark;
+    }
+    body {
+        margin: 0;
+        @apply bg-canvas text-ink font-sans antialiased;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+    h1, h2, h3 {
+        @apply font-serif;
+    }
+    ::selection {
+        @apply bg-brass/30;
+    }
+    :focus-visible {
+        @apply outline outline-2 outline-offset-2 outline-brass;
+    }
+    input[type='number']::-webkit-inner-spin-button {
+        opacity: 0.4;
+    }
 }

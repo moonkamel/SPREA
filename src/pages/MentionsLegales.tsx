@@ -29,11 +29,11 @@ export default function MentionsLegalesPage() {
             </LegalSection>
 
             <LegalSection title="Propriété intellectuelle">
-                <p>Les contenus du site (textes, interface, méthodes de calcul, rapports) sont protégés. Toute reproduction ou extraction systématique sans autorisation de l'éditeur est interdite, sous réserve des droits d'usage des rapports prévus par les <Link to="/cgv" className="underline text-blue-600">conditions générales de vente</Link>.</p>
+                <p>Les contenus du site (textes, interface, méthodes de calcul, rapports) sont protégés. Toute reproduction ou extraction systématique sans autorisation de l'éditeur est interdite, sous réserve des droits d'usage des rapports prévus par les <Link to="/cgv" className="underline text-brass hover:text-brass-light">conditions générales de vente</Link>.</p>
             </LegalSection>
 
             <LegalSection title="Données personnelles">
-                <p>Le traitement des données personnelles est décrit dans la <Link to="/confidentialite" className="underline text-blue-600">politique de confidentialité</Link>.</p>
+                <p>Le traitement des données personnelles est décrit dans la <Link to="/confidentialite" className="underline text-brass hover:text-brass-light">politique de confidentialité</Link>.</p>
             </LegalSection>
         </LegalPage>
     );

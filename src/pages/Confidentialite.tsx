@@ -4,8 +4,8 @@ import { LegalPage, LegalSection } from './site';
 // Last update of this policy: change it whenever the data processing changes
 const UPDATED = '8 octobre 2026';
 
-const th = 'text-left font-black text-slate-700 p-3 align-top';
-const td = 'p-3 align-top border-t border-slate-100';
+const th = 'text-left font-semibold text-ink p-3 align-top';
+const td = 'p-3 align-top border-t border-line text-ink-soft';
 
 export default function ConfidentialitePage() {
     return (
@@ -16,8 +16,8 @@ export default function ConfidentialitePage() {
 
             <LegalSection title="Données traitées, finalités et bases légales">
                 <div className="overflow-x-auto -mx-2">
-                    <table className="w-full text-xs min-w-[560px]">
-                        <thead className="bg-slate-50">
+                    <table className="w-full text-sm min-w-[560px] border border-line rounded-xl overflow-hidden">
+                        <thead className="bg-raised">
                             <tr><th className={th}>Situation</th><th className={th}>Données</th><th className={th}>Finalité</th><th className={th}>Base légale</th></tr>
                         </thead>
                         <tbody>
