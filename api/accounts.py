@@ -9,31 +9,34 @@ Flow:
 - Paid reports can be downloaded again at any time. The AI narrative is
   generated once and stored.
 """
+import json
 import logging
 import os
 import re
 import unicodedata
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 try:
-    from api.ai_service import ai_service
+    from api.ai_service import ai_service, parse_stored
     from api.auth import User, current_user
     from api.billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
+    from api.report_content import build_report, facts_for_writer
     from api.ratelimit import ai_limiter
     from api.simulation import SimulationInput, simulate as run_simulation
     from api.store import SupabaseStore, get_store
 except ImportError:
-    from ai_service import ai_service
+    from ai_service import ai_service, parse_stored
     from auth import User, current_user
     from billing import PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
     from pdf_service import pdf_service
+    from report_content import build_report, facts_for_writer
     from ratelimit import ai_limiter
     from simulation import SimulationInput, simulate as run_simulation
     from store import SupabaseStore, get_store
@@ -138,55 +141,6 @@ async def sync_subscription(store: SupabaseStore, billing: Billing, subscription
     })
 
 
-def build_report_data(meta: Dict[str, Any], simulation: SimulationInput) -> Dict[str, Any]:
-    """Every figure of the report comes from the simulation engine."""
-    sim = run_simulation(simulation)
-    prop = simulation.property
-    return {
-        "address": meta.get("address") or "Adresse inconnue",
-        "year": meta.get("year") or "N/A",
-        "construction_period": meta.get("construction_period") or "N/A",
-        "building_type": meta.get("building_type") or "Logement",
-        "ademe_dpe_number": meta.get("ademe_dpe_number") or "N/A",
-        "surface": prop.surface,
-        "current_label": sim["current_label"],
-        "new_label": sim["new_label"],
-        "initial_cep": sim["initial_cep"],
-        "new_cep": sim["new_cep"],
-        "ges_value": sim["initial_ges"],
-        "new_ges": sim["new_ges"],
-        "total_cost": sim["cost"],
-        "subsidies": sim["subsidies"],
-        "cee_est": sim["cee_est"],
-        "rest_to_pay": sim["rest_to_pay"],
-        "latent_gain": sim["latent_gain"],
-        "annual_savings": sim["annual_savings"],
-        "roi_years": round(sim["roi_years"]) if sim["roi_years"] is not None else None,
-        "detailed_costs": sim["detailed_costs"],
-        "yield_brut": sim["yield_brut"],
-        "cashflow": sim["cashflow"],
-        "purchase_price": simulation.purchase_price,
-        "ban_date": date.fromisoformat(sim["ban_date"]).strftime("%d/%m/%Y") if sim["ban_date"] else None,
-        "eco_ptz_amount": sim["eco_ptz_amount"],
-        "tax_benefit": sim["tax_benefit"],
-        "has_iti": sim["has_iti"],
-        "user_profile": "investisseur" if simulation.is_investor else "propriétaire",
-        "dpe_date": date.fromisoformat(meta["dpe_date"][:10]).strftime("%d/%m/%Y") if meta.get("dpe_date") else None,
-        "heating_energy": prop.heating_energy,
-        "gain_classes": sim["gain_classes"],
-        "annual_bill_before": sim["annual_bill_before"],
-        "annual_bill_after": sim["annual_bill_after"],
-        "aid_pathway": sim["aid_pathway"],
-        "aid_notes": sim["aid_notes"],
-        "income_profile": sim["income_profile"],
-        "thresholds": sim["thresholds"],
-        "duration_days": sim["duration_days"] if sim["cost"] else None,
-        "new_ban_year": date.fromisoformat(sim["new_ban_date"]).year if sim["new_ban_date"] else None,
-        "net_investor_cost": sim["net_investor_cost"],
-        "monthly_rent": simulation.monthly_rent,
-    }
-
-
 def report_summary(report: Dict[str, Any]) -> Dict[str, Any]:
     return {k: report.get(k) for k in ("id", "address", "status", "created_at")}
 
@@ -200,6 +154,17 @@ class ReportMeta(BaseModel):
     building_type: Optional[str] = Field(None, max_length=100)
     construction_period: Optional[str] = Field(None, max_length=100)
     dpe_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}", max_length=30)
+    city: Optional[str] = Field(None, max_length=100)
+    postcode: Optional[str] = Field(None, max_length=10)
+    # Equipment labels from the DPE (heating, hot water, ventilation...)
+    details: Optional[Dict[str, Optional[str]]] = Field(None, max_length=10)
+
+    @field_validator("details")
+    @classmethod
+    def short_details(cls, v):
+        if v is None:
+            return v
+        return {str(k)[:40]: (str(val)[:120] if val is not None else None) for k, val in v.items()}
 
 
 class ReportCreate(BaseModel):
@@ -367,14 +332,15 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     if report["status"] not in ("paid", "included"):
         raise HTTPException(status_code=402, detail="Ce rapport n'a pas encore été payé.")
 
-    report_data = build_report_data(report["meta"], SimulationInput.model_validate(report["simulation"]))
-    narrative = report.get("narrative")
-    if not narrative:
-        narrative = await ai_service.generate_narrative(report_data, report_data["user_profile"])
-        await store.update_report(report["id"], {"narrative": narrative})
-    report_data["ai_narrative"] = narrative
+    content = build_report(report["meta"], SimulationInput.model_validate(report["simulation"]))
+    analysis = parse_stored(report.get("narrative"))
+    if not analysis:
+        analysis = await ai_service.write_analysis(facts_for_writer(content))
+        # Only Claude's text is kept: a rule-based fallback is regenerated next time
+        if analysis["source"] == "claude":
+            await store.update_report(report["id"], {"narrative": json.dumps(analysis, ensure_ascii=False)})
 
-    pdf_bytes = pdf_service.generate(report_data)
+    pdf_bytes = pdf_service.generate(content, analysis["sections"])
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

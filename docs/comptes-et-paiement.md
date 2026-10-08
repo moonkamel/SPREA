@@ -72,6 +72,13 @@ Renseigner toutes les variables de `.env.example` dans
 l'URL publique du site (`https://sprea.vercel.app`). Commencer avec les clés Stripe de test
 (`sk_test_…`), puis passer aux clés live une fois le parcours vérifié.
 
+Analyse des rapports : créer une clé sur console.anthropic.com (API Keys),
+avec une limite de dépense mensuelle, et la mettre dans `ANTHROPIC_API_KEY`.
+Un rapport consomme quelques milliers de jetons, soit quelques centimes. Sans
+clé, le rapport contient une analyse construite par règles à partir des
+mêmes chiffres. L'analyse de Claude est générée au premier téléchargement puis
+conservée avec le rapport.
+
 ## Test local du webhook
 
 ```
@@ -99,6 +106,6 @@ dans `src/legal.ts` (`CGV_VERSION`) et dans `api/accounts.py`
 
 La politique de confidentialité (`src/pages/Confidentialite.tsx`) décrit les
 traitements tels qu'ils sont codés : la mettre à jour (et sa date) à chaque
-nouveau prestataire ou nouvelle donnée collectée. Utiliser une clé Gemini
-d'un projet avec facturation activée : sur l'offre gratuite, Google peut
-utiliser les requêtes pour améliorer ses produits.
+nouveau prestataire ou nouvelle donnée collectée. L'analyse du rapport est
+rédigée par Claude via l'API Anthropic (`ANTHROPIC_API_KEY`) : les données
+envoyées par l'API ne servent pas à entraîner les modèles.

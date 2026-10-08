@@ -4,7 +4,6 @@ The page body stays light (ivory) so the report prints well; the navy header
 band and brass accents carry the brand.
 """
 import os
-import re
 from datetime import date
 from io import BytesIO
 from typing import Any, Dict, List, Optional
@@ -219,34 +218,6 @@ def kpi_cell(label: str, value: str, big: bool = False) -> List[Paragraph]:
     return [Paragraph(text(label), S['label']), Spacer(1, 3), Paragraph(value, S['kpi_big'] if big else S['kpi'])]
 
 
-def format_narrative(raw: str) -> List[Paragraph]:
-    """Turns the AI text (light markdown) into safe paragraphs; short standalone
-    lines (titles, possibly in bold or after #) become headings."""
-    out: List[Paragraph] = []
-    current: List[str] = []
-
-    def flush():
-        if current:
-            para = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', ' '.join(current)).replace('*', '')
-            out.append(Paragraph(para, S['narrative']))
-            current.clear()
-
-    for line in escape(raw.strip()).splitlines():
-        stripped = line.strip()
-        if not stripped:
-            flush()
-            continue
-        content = re.sub(r'^(#+|[-•])\s*', '', stripped).strip()
-        plain = content.replace('*', '').strip()
-        if (stripped.startswith('#') or re.fullmatch(r'\*\*.+\*\*:?', content)) or (len(plain) < 60 and not plain.endswith(('.', '!', '?', ':')) and not current):
-            flush()
-            out.append(Paragraph(plain.rstrip(':'), S['narrative_h']))
-        else:
-            current.append(content)
-    flush()
-    return out
-
-
 def boxed(flowables: List[Any], background=WHITE, rule=None, padding: float = 12) -> Table:
     t = Table([[flowables]], colWidths=[CONTENT_W])
     commands = [
@@ -297,68 +268,198 @@ def dpe_scale(thresholds: List[Dict], current: str, target: str) -> List[Any]:
     return [t, Spacer(1, 3), Paragraph("Consommation en kWh/m²/an d'énergie primaire.", S['small'])]
 
 
-# --- Report ---
 
-NEXT_STEPS = [
-    ("Faites-vous accompagner", "Contactez gratuitement un conseiller France Rénov' (france-renov.gouv.fr ou 0 808 800 700). Pour une rénovation d'ampleur, un Accompagnateur Rénov' est obligatoire."),
-    ("Demandez des devis", "Sollicitez au moins deux artisans certifiés RGE pour chaque type de travaux : la certification conditionne les aides."),
-    ("Réservez les primes CEE", "Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis."),
-    ("Déposez MaPrimeRénov'", "Sur maprimerenov.gouv.fr, avant le début des travaux."),
-    ("Financez le reste à charge", "Demandez un éco-prêt à taux zéro à une banque partenaire, avec vos devis."),
+
+def eur_r(value: Optional[float], step: int = 100) -> str:
+    """Estimates are shown rounded: 11 443 -> 11 400 €."""
+    return eur(round((value or 0) / step) * step)
+
+
+def eur_range(low: Optional[float], high: Optional[float]) -> str:
+    if round((low or 0) / 100) == round((high or 0) / 100):
+        return eur_r(low)
+    return f"{eur_r(low)} à {eur_r(high)}"
+
+
+def bullet_list(items: List[str], st: str = 'body') -> List[Any]:
+    out = []
+    for item in items:
+        row = Table([[Paragraph('–', style('dash', textColor=BRASS)), Paragraph(text(item), S[st])]],
+                    colWidths=[0.45 * cm, CONTENT_W - 0.45 * cm - 24])
+        row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                                 ('RIGHTPADDING', (0, 0), (-1, -1), 0), ('TOPPADDING', (0, 0), (-1, -1), 1.5),
+                                 ('BOTTOMPADDING', (0, 0), (-1, -1), 1.5)]))
+        out.append(row)
+    return out
+
+
+def share_bars(losses: List[Dict[str, Any]]) -> Table:
+    bar_w = CONTENT_W * 0.45
+    rows = []
+    for item in losses:
+        share = max(0.0, min(1.0, item['share']))
+        filled = max(0.01, share) * bar_w
+        bar = Table([['', '']], colWidths=[filled, bar_w - filled], rowHeights=[0.32 * cm])
+        bar.setStyle(TableStyle([('BACKGROUND', (0, 0), (0, 0), BRASS_LIGHT), ('BACKGROUND', (1, 0), (1, 0), TINT),
+                                 ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
+        rows.append([Paragraph(text(item['name']), S['body']), bar,
+                     Paragraph(f"{round(share * 100)}{NBSP}%", S['right_b'])])
+    t = Table(rows, colWidths=[CONTENT_W * 0.38, bar_w, CONTENT_W * 0.17])
+    t.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                           ('RIGHTPADDING', (0, 0), (-1, -1), 0), ('TOPPADDING', (0, 0), (-1, -1), 3),
+                           ('BOTTOMPADDING', (0, 0), (-1, -1), 3)]))
+    return t
+
+
+def grid(rows: List[List[Any]], widths: List[float], header: bool = True, bold_last: bool = False) -> Table:
+    t = Table(rows, colWidths=widths, repeatRows=1 if header else 0)
+    commands = [
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LINEBELOW', (0, 0), (-1, -1), 0.5, LINE),
+    ]
+    if header:
+        commands.append(('LINEBELOW', (0, 0), (-1, 0), 0.9, INK))
+    if bold_last:
+        commands.append(('LINEABOVE', (0, -1), (-1, -1), 0.9, INK))
+    t.setStyle(TableStyle(commands))
+    return t
+
+
+def head(label: str, align: int = 0) -> Paragraph:
+    return Paragraph(label, style('th', fontName='Inter-SemiBold', fontSize=8, leading=10, textColor=MUTED, alignment=align))
+
+
+ANALYSIS_TITLES = [
+    ('diagnostic', 'Diagnostic'),
+    ('strategie', 'Stratégie de travaux'),
+    ('financement', 'Financement'),
 ]
 
 
+# --- Report ---
+
 class PDFReportGenerator:
-    def generate(self, data: Dict[str, Any]) -> bytes:
+    def generate(self, report: Dict[str, Any], analysis: Dict[str, Any]) -> bytes:
         buffer = BytesIO()
-        address = str(data.get('address') or 'Adresse du bien')
+        sim = report['sim']
+        ident = report['identity']
+        address = report['address']
         doc = SimpleDocTemplate(
             buffer, pagesize=A4,
             leftMargin=MARGIN, rightMargin=MARGIN,
             topMargin=HEADER_H + 1.0 * cm, bottomMargin=2.0 * cm,
-            title=f"Rapport SPREA – {address}", author='SPREA',
+            title=f"Rapport SPREA – {address['full']}", author='SPREA',
         )
         story: List[Any] = []
-        is_investor = data.get('user_profile') == 'investisseur'
+        story += self._title(report)
+        story += self._summary(report, analysis)
+        n = 0
 
-        # Title
+        def next_section(title: str) -> Table:
+            nonlocal n
+            n += 1
+            return section(n, title)
+
+        # 1. Analysis
+        block: List[Any] = [next_section('Notre analyse'), Spacer(1, 8)]
+        for key, title in ANALYSIS_TITLES:
+            block += [Paragraph(title, S['narrative_h']), Spacer(1, 2), Paragraph(text(analysis[key]), S['narrative']), Spacer(1, 6)]
+        block += [Paragraph('Pour un bailleur' if report['is_investor'] else 'Pour vous, propriétaire occupant', S['narrative_h']),
+                  Spacer(1, 2), Paragraph(text(analysis['profil']), S['narrative']), Spacer(1, 6),
+                  Paragraph('Points de vigilance', S['narrative_h']), Spacer(1, 3), *bullet_list(analysis['vigilance'])]
+        story += [Spacer(1, 18), *block]
+
+        # 2. Today
+        story += [CondPageBreak(9 * cm), Spacer(1, 18), next_section("Le logement aujourd'hui"), Spacer(1, 8)]
+        story += self._today(report)
+
+        # 3. Works
+        story += [CondPageBreak(9 * cm), Spacer(1, 18), next_section('Le programme de travaux'), Spacer(1, 8)]
+        story += self._works(report)
+
+        # 4. Financing
+        story += [CondPageBreak(9 * cm), Spacer(1, 18), next_section('Le plan de financement'), Spacer(1, 8)]
+        story += self._financing(report)
+
+        # 5. Value
+        story += [CondPageBreak(6 * cm), Spacer(1, 18),
+                  next_section('Valeur et rentabilité locative' if report['is_investor'] else 'Valeur du bien'), Spacer(1, 8)]
+        story += self._value(report)
+
+        # 6. Steps
+        steps: List[Any] = [next_section('Calendrier et prochaines étapes'), Spacer(1, 8)]
+        for i, step in enumerate(report['steps'], 1):
+            row = Table([[Paragraph(str(i), style('ns', fontName='Serif-SemiBold', fontSize=12, textColor=BRASS)),
+                          [Paragraph(f"<b>{text(step['title'])}</b> <font color='#A8853F' size='8'>{text(step['when'])}</font>", S['body']),
+                           Paragraph(text(step['text']), S['muted'])]]],
+                        colWidths=[0.8 * cm, CONTENT_W - 0.8 * cm])
+            row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                                     ('BOTTOMPADDING', (0, 0), (-1, -1), 6)]))
+            steps.append(row)
+        story += [CondPageBreak(8 * cm), Spacer(1, 18), *steps]
+
+        # 7. Method
+        method = [next_section('Méthode et hypothèses'), Spacer(1, 8), *bullet_list(report['assumptions'], 'muted'), Spacer(1, 10),
+                  Paragraph(
+                      "Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. "
+                      "Ce document ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. "
+                      f"Les montants d'aides ({text(sim['aid_rules'])}) doivent être confirmés par France Rénov' "
+                      "ou un Accompagnateur Rénov' avant tout engagement.", S['small'])]
+        story += [CondPageBreak(6 * cm), Spacer(1, 18), KeepTogether(method)]
+
+        doc.build(story, onFirstPage=_paper, onLaterPages=_paper,
+                  canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address['full'], **k))
+        return buffer.getvalue()
+
+    # --- Parts ---
+
+    def _title(self, report: Dict[str, Any]) -> List[Any]:
+        ident = report['identity']
+        address = report['address']
         meta = ' · '.join(x for x in [
-            text(data.get('building_type', '')).capitalize(),
-            f"{data['surface']:g}".replace('.', ',') + f"{NBSP}m²" if data.get('surface') else '',
-            text(data.get('construction_period') if data.get('construction_period') not in (None, 'N/A') else data.get('year') if data.get('year') not in (None, 'N/A') else ''),
+            text(ident['building_type']),
+            f"{ident['surface']:g}".replace('.', ',') + f"{NBSP}m²" if ident.get('surface') else '',
+            text(ident['period']) if ident.get('period') else '',
+            f"étage {text(ident['floor'])}" if ident.get('floor') else '',
         ] if x)
         dpe_ref = ' · '.join(x for x in [
-            f"DPE du {text(data['dpe_date'])}" if data.get('dpe_date') else 'DPE',
-            f"n° {text(data['ademe_dpe_number'])}" if data.get('ademe_dpe_number') not in (None, 'N/A') else '',
+            f"DPE du {text(ident['dpe_date'])}" if ident.get('dpe_date') else 'DPE',
+            f"n° {text(ident['dpe_number'])}" if ident.get('dpe_number') else '',
         ] if x)
-        story += [
-            Paragraph(text(address), S['address']),
-            Spacer(1, 4),
-            Paragraph(meta, S['meta']),
-            Paragraph(dpe_ref, style('ref', fontSize=8, textColor=FAINT)),
-            Spacer(1, 16),
-        ]
+        out: List[Any] = [Paragraph(text(address['street']), S['address'])]
+        if address['locality']:
+            out.append(Paragraph(text(address['locality']), style('loc', fontName='Serif', fontSize=13, leading=17, textColor=MUTED)))
+        out += [Spacer(1, 4), Paragraph(meta, S['meta']), Paragraph(dpe_ref, style('ref', fontSize=8, textColor=FAINT)), Spacer(1, 16)]
+        return out
 
-        # Summary
-        gain = data.get('gain_classes') or 0
+    def _summary(self, report: Dict[str, Any], analysis: Dict[str, Any]) -> List[Any]:
+        sim = report['sim']
+        gain = sim['gain_classes']
         labels = Table([[
-            dpe_badge(data.get('current_label')),
+            dpe_badge(sim['current_label']),
             Paragraph('→', style('arrow', fontSize=18, alignment=1, textColor=FAINT, leading=20)),
-            dpe_badge(data.get('new_label')),
+            dpe_badge(sim['new_label']),
             [Paragraph(f"<b>{'+' + str(gain) + ' classe' + ('s' if gain > 1 else '') if gain else 'Pas de changement de classe'}</b>", S['body']),
-             Paragraph(f"{num(data.get('initial_cep'))} → {num(data.get('new_cep'))}{NBSP}kWh/m²/an", S['muted'])],
+             Paragraph(f"{num(sim['initial_cep'])} → {num(sim['new_cep'])}{NBSP}kWh/m²/an", S['muted'])],
         ]], colWidths=[1.6 * cm, 1.0 * cm, 1.6 * cm, CONTENT_W - 4.2 * cm - 24])
         labels.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
 
-        aids = (data.get('subsidies') or 0) + (data.get('cee_est') or 0)
-        roi = data.get('roi_years')
+        aids = sim['subsidies'] + sim['cee_est']
+        small = style('kpi_small', fontSize=7.5, leading=10, textColor=MUTED)
         kpi_w = (CONTENT_W - 24) / 4
-        kpis = Table([
-            [kpi_cell('Coût des travaux', eur(data.get('total_cost'))),
-             kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur(aids)}</font>"),
-             kpi_cell('Reste à charge', eur(data.get('rest_to_pay')), big=True),
-             kpi_cell('Économies d\'énergie', f"<font color='#3E8E63'>{eur(data.get('annual_savings'))}</font><font size='9' color='#5B6577'> / an</font>")],
-        ], colWidths=[kpi_w] * 4)
+        kpis = Table([[
+            [*kpi_cell('Coût des travaux', f"≈{NBSP}{eur_r(sim['cost'])}"),
+             Paragraph(f"entre {eur_r(sim['cost_low'])} et {eur_r(sim['cost_high'])}", small)],
+            kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_r(aids)}</font>"),
+            [*kpi_cell('Reste à charge', f"≈{NBSP}{eur_r(sim['rest_to_pay'])}", big=True),
+             Paragraph(f"entre {eur_r(sim['rest_to_pay_low'])} et {eur_r(sim['rest_to_pay_high'])}", small)],
+            kpi_cell("Économies d'énergie", f"<font color='#3E8E63'>{eur_r(sim['annual_savings'], 10)}</font>"
+                                             f"<font size='9' color='#5B6577'> / an</font>"),
+        ]], colWidths=[kpi_w] * 4)
         kpis.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('LEFTPADDING', (0, 0), (-1, -1), 8),
@@ -368,150 +469,203 @@ class PDFReportGenerator:
             ('LINEAFTER', (0, 0), (1, 0), 0.5, LINE),
         ]))
 
-        if roi is None:
-            roi_text = '–'
-        elif roi < 1:
-            roi_text = "moins d'un an"
-        else:
-            roi_text = f"{roi}{NBSP}ans"
-        if data.get('ban_date'):
-            climate = (f"<font color='#C4553A'>Location interdite dès {text(data['new_ban_year'])}</font>"
-                       if data.get('new_ban_year') else "<font color='#3E8E63'>Logement de nouveau louable</font>")
-        else:
-            climate = 'Aucune interdiction prévue'
+        roi = sim['roi_years']
+        roi_text = '–' if roi is None else ("moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}ans")
+        green = f"+{NBSP}{eur_r(sim['latent_gain'], 500)}" if sim['latent_gain'] else '–'
+        after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
         secondary = rows_table([
             kv('Retour sur investissement', roi_text),
-            kv('Valeur verte du bien', f"+{NBSP}{eur(data.get('latent_gain'))}" if data.get('latent_gain') else '–'),
-            kv('Loi Climat après travaux', climate),
-        ], [CONTENT_W * 0.55 - 24, CONTENT_W * 0.45])
+            kv('Valeur verte du bien' + (" <font size='7.5' color='#8A93A3'>(indicative, voir section 5)</font>" if report['price_is_default'] else ''), green),
+            kv('Location aujourd\'hui', text(sim['rental_status'])),
+            kv('Location après travaux', f"<font color='{after_color}'>{text(sim['new_rental_status'])}</font>"),
+        ], [CONTENT_W * 0.5 - 24, CONTENT_W * 0.5])
 
-        story.append(KeepTogether([
+        verdict = boxed([Paragraph("L'essentiel", S['narrative_h']), Spacer(1, 2), Paragraph(text(analysis['verdict']), S['narrative'])],
+                        rule=BRASS_LIGHT, padding=10)
+        return [KeepTogether([
             Paragraph('Synthèse', S['h2']),
             Spacer(1, 8),
             boxed([labels, Spacer(1, 12), kpis, Spacer(1, 8), secondary]),
-        ]))
+            Spacer(1, 10),
+            verdict,
+        ])]
 
-        # AI analysis
-        if data.get('ai_narrative'):
-            story += [
-                Spacer(1, 18),
-                Paragraph("L'analyse de votre projet", S['h2']),
-                Spacer(1, 8),
-                boxed(format_narrative(data['ai_narrative']), rule=BRASS_LIGHT),
-            ]
-
-        # 1. Today
-        today_rows = [
-            kv('Étiquette énergie recalculée', f"<b>{text(data.get('current_label'))}</b>"),
-            kv('Consommation', f"{num(data.get('initial_cep'))}{NBSP}kWh/m²/an"),
-            kv('Émissions de CO₂', f"{num(data.get('ges_value'))}{NBSP}kg/m²/an"),
+    def _today(self, report: Dict[str, Any]) -> List[Any]:
+        sim = report['sim']
+        ident = report['identity']
+        rows = [
+            kv('Étiquette DPE (énergie / climat)', f"<b>{text(sim['current_label'])}</b> "
+                                                   f"<font color='#5B6577'>({text(sim['current_cep_label'])} / {text(sim['current_ges_label'])})</font>"),
+            kv("Consommation d'énergie primaire", f"{num(sim['initial_cep'])}{NBSP}kWh/m²/an"),
+            kv('Émissions de gaz à effet de serre', f"{num(sim['initial_ges'])}{NBSP}kg CO₂/m²/an"),
         ]
-        if data.get('heating_energy'):
-            today_rows.append(kv('Énergie de chauffage', text(data['heating_energy']).capitalize()))
-        today_rows.append(kv("Facture d'énergie estimée", f"{eur(data.get('annual_bill_before'))} / an"))
-        today = [section(1, "Le logement aujourd'hui"), Spacer(1, 8), rows_table(today_rows, [CONTENT_W * 0.6, CONTENT_W * 0.4])]
-        if data.get('ban_date'):
-            today += [Spacer(1, 8), boxed([Paragraph(
-                f"<b>Loi Climat et Résilience :</b> les logements classés {text(data.get('current_label'))} ne peuvent plus être proposés "
-                f"à la location à partir du {text(data['ban_date'])}.", S['body'])], background=colors.HexColor('#FBEDE8'), rule=CORAL, padding=9)]
-        story += [CondPageBreak(7 * cm), Spacer(1, 18), KeepTogether(today)]
+        for label, key in (('Chauffage', 'heating'), ('Eau chaude', 'hot_water'), ('Ventilation', 'ventilation')):
+            if ident.get(key):
+                rows.append(kv(label, text(ident[key])))
+        rows.append(kv("Facture d'énergie estimée", f"{eur_r(sim['annual_bill_before'], 10)} / an"))
+        if ident.get('dpe_annual_cost'):
+            rows.append(kv('Coût annuel indiqué par le DPE', f"{eur(float(ident['dpe_annual_cost']))} / an"))
+        out: List[Any] = [rows_table(rows, [CONTENT_W * 0.5, CONTENT_W * 0.5])]
 
-        # 2. Works
-        works_rows = []
-        for item in data.get('detailed_costs') or []:
-            name = text(item.get('name', 'Travaux'))
-            if item.get('suggested'):
-                name += " <font size='7.5' color='#A8853F'>RECOMMANDÉ</font>"
-            works_rows.append(kv(name, eur(item.get('cost'))))
-        works_rows.append(kv('<b>Total des travaux TTC</b>', f"<b>{eur(data.get('total_cost'))}</b>"))
-        works = [section(2, 'Les travaux retenus'), Spacer(1, 8),
-                 rows_table(works_rows, [CONTENT_W * 0.7, CONTENT_W * 0.3], bold_last=True)]
+        out += [Spacer(1, 14), KeepTogether([
+            Paragraph('Où part la chaleur', S['h3']), Spacer(1, 2),
+            Paragraph('Répartition des pertes de chaleur du logement, calculée à partir de son DPE.', S['muted']), Spacer(1, 6),
+            share_bars(report['losses']),
+        ])]
+
+        usage_rows = [[head('Usage'), head("Aujourd'hui", 2), head('Après travaux', 2)]]
+        for u in report['usages']:
+            after = eur_r(u['eur_after'], 10)
+            if u['energy_after'] != u['energy_before']:
+                after += f" <font size='7.5' color='#8A93A3'>({text(u['energy_after'])})</font>"
+            usage_rows.append([Paragraph(text(u['name']), S['body']), Paragraph(eur_r(u['eur_before'], 10), S['right']),
+                               Paragraph(after, S['right'])])
+        usage_rows.append([Paragraph('<b>Total par an</b>', S['body']),
+                           Paragraph(f"<b>{eur_r(sum(u['eur_before'] for u in report['usages']), 10)}</b>", S['right']),
+                           Paragraph(f"<font color='#3E8E63'><b>{eur_r(sum(u['eur_after'] for u in report['usages']), 10)}</b></font>", S['right'])])
+        out += [Spacer(1, 14), KeepTogether([
+            Paragraph('Votre facture par usage', S['h3']), Spacer(1, 6),
+            grid(usage_rows, [CONTENT_W * 0.5, CONTENT_W * 0.25, CONTENT_W * 0.25], bold_last=True),
+            Spacer(1, 3), Paragraph("Énergie facturée aux prix moyens actuels, hors abonnement.", S['small']),
+        ])]
+
+        reg = report['regulatory']
+        calendar = ' · '.join(f"{label} : {d}" for label, d in reg['calendar'])
+        out += [Spacer(1, 14), KeepTogether([
+            Paragraph('Cadre réglementaire', S['h3']), Spacer(1, 6),
+            rows_table([kv(text(i['label']), text(i['value'])) for i in reg['items']], [CONTENT_W * 0.32, CONTENT_W * 0.68]),
+            Spacer(1, 3),
+            Paragraph(f"Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : {text(calendar)}. "
+                      "Il s'applique aux nouveaux baux et aux renouvellements.", S['small']),
+        ])]
+        return out
+
+    def _works(self, report: Dict[str, Any]) -> List[Any]:
+        sim = report['sim']
+        works = report['works']
+        if not works:
+            return [Paragraph('Aucun travaux sélectionnés.', S['muted'])]
+        out: List[Any] = [Paragraph(
+            "Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les "
+            "équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste apporterait "
+            "réalisé sans les autres ; les effets ne s'additionnent pas exactement.", S['muted']), Spacer(1, 8)]
+        rows = [[head('Travaux'), head('Fourchette TTC', 2)]]
+        for i, w in enumerate(works, 1):
+            name = f"<b>{i}. {text(w['name'])}</b>"
+            if w['suggested']:
+                name += " <font size='7' color='#A8853F'>RECOMMANDÉ</font>"
+            effect = []
+            if w['cep_saved'] >= 1:
+                effect.append(f"−{NBSP}{num(w['cep_saved'])}{NBSP}kWh/m²/an")
+            if w['bill_saving'] >= 5:
+                effect.append(f"−{NBSP}{eur_r(w['bill_saving'], 10)}/an sur la facture")
+            cell = [Paragraph(name, S['body'])]
+            if w['reason']:
+                cell.append(Paragraph(text(w['reason']), S['muted']))
+            if effect:
+                cell.append(Paragraph('Effet seul : ' + ' · '.join(effect), style('eff', fontSize=8.5, leading=12, textColor=SAGE)))
+            if w['caution']:
+                cell.append(Paragraph('À prévoir : ' + text(w['caution']), style('caut', fontSize=8.5, leading=12, textColor=CORAL)))
+            rows.append([cell, Paragraph(eur_range(w['cost_low'], w['cost_high']), S['right'])])
+        for extra in report['extra_costs']:
+            rows.append([Paragraph(text(extra['name']), S['body']), Paragraph(eur_r(extra['cost'], 10), S['right'])])
+        rows.append([Paragraph('<b>Total des travaux TTC</b>', S['body']),
+                     Paragraph(f"<b>{eur_range(sim['cost_low'], sim['cost_high'])}</b>", S['right'])])
+        table = grid(rows, [CONTENT_W * 0.7, CONTENT_W * 0.3], bold_last=True)
+        table.setStyle(TableStyle([('VALIGN', (0, 1), (-1, -2), 'TOP')]))
+        out.append(table)
         notes = []
-        if data.get('duration_days'):
-            notes.append(f"Durée indicative du chantier : {text(data['duration_days'])} jours ouvrés.")
-        if data.get('has_iti'):
-            notes.append("L'isolation des murs par l'intérieur réduit la surface habitable d'environ 1,5 %.")
-        if notes:
-            works += [Spacer(1, 6), Paragraph(' '.join(notes), S['muted'])]
-        story += [CondPageBreak(6 * cm), Spacer(1, 18), KeepTogether(works)]
+        if sim.get('duration_days'):
+            notes.append(f"Durée indicative du chantier : {text(sim['duration_days'])} jours ouvrés, hors délais d'approvisionnement.")
+        notes.append("TVA à 5,5 % incluse. Fourchettes fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.")
+        out += [Spacer(1, 6), Paragraph(' '.join(notes), S['muted'])]
 
-        if data.get('thresholds'):
-            story += [Spacer(1, 14), KeepTogether([
-                Paragraph('Effet sur l\'étiquette énergie', S['h3']), Spacer(1, 6),
-                *dpe_scale(data['thresholds'], data.get('current_label'), data.get('new_label')),
+        if sim.get('thresholds'):
+            out += [Spacer(1, 14), KeepTogether([
+                Paragraph("Effet sur l'étiquette énergie", S['h3']), Spacer(1, 6),
+                *dpe_scale(sim['thresholds'], sim['current_label'], sim['new_label']),
                 Spacer(1, 6),
-                Paragraph(f"Facture d'énergie estimée : {eur(data.get('annual_bill_before'))} → "
-                          f"<font color='#3E8E63'><b>{eur(data.get('annual_bill_after'))}</b></font> par an.", S['body']),
+                Paragraph(f"Facture d'énergie estimée : {eur_r(sim['annual_bill_before'], 10)} → "
+                          f"<font color='#3E8E63'><b>{eur_r(sim['annual_bill_after'], 10)}</b></font> par an.", S['body']),
             ])]
+        return out
 
-        # 3. Financing
-        pathway = data.get('aid_pathway')
-        mpr_label = "MaPrimeRénov' rénovation d'ampleur" if pathway == 'accompagne' else "MaPrimeRénov' par geste"
-        fin_rows = [
-            kv('Coût des travaux', eur(data.get('total_cost'))),
-            kv(mpr_label, f"<font color='#3E8E63'>−{NBSP}{eur(data.get('subsidies'))}</font>"),
-        ]
-        if data.get('cee_est'):
-            fin_rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur(data.get('cee_est'))}</font>"))
-        fin_rows += [
-            kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur(data.get('rest_to_pay'))}</b></font>"),
-        ]
-        financing = [section(3, 'Le plan de financement'), Spacer(1, 8),
-                     rows_table(fin_rows, [CONTENT_W * 0.7, CONTENT_W * 0.3], bold_last=True)]
-        extra = []
+    def _financing(self, report: Dict[str, Any]) -> List[Any]:
+        sim = report['sim']
+        fin = report['financing']
+        pathway = sim['aid_pathway']
+        rows = [kv('Coût des travaux', eur_range(sim['cost_low'], sim['cost_high']))]
         if pathway == 'accompagne':
-            extra.append("Les primes CEE ne se cumulent pas avec la rénovation d'ampleur : l'Anah les intègre déjà dans MaPrimeRénov'.")
-        if data.get('eco_ptz_amount'):
-            extra.append(f"Éco-prêt à taux zéro mobilisable : jusqu'à {eur(data['eco_ptz_amount'])}, sans intérêts.")
-        if data.get('income_profile'):
-            extra.append(f"Catégorie de revenus retenue : {text(data['income_profile'])}.")
-        for note in data.get('aid_notes') or []:
-            extra.append(text(note))
-        if extra:
-            financing += [Spacer(1, 6)] + [Paragraph(e, S['muted']) for e in extra]
-        story += [CondPageBreak(6 * cm), Spacer(1, 18), KeepTogether(financing)]
+            rows.append(kv("MaPrimeRénov' rénovation d'ampleur", f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['subsidies'])}</font>"))
+        else:
+            if sim['subsidies']:
+                rows.append(kv("MaPrimeRénov' par geste", f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['subsidies'])}</font>"))
+            if sim['cee_est']:
+                rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['cee_est'])}</font>"))
+            if not sim['subsidies'] and not sim['cee_est']:
+                rows.append(kv('Aides', '–'))
+        rows.append(kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_range(sim['rest_to_pay_low'], sim['rest_to_pay_high'])}</b></font>"))
+        out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True)]
 
-        # 4. Investor
-        step = 4
-        if is_investor:
+        per_work = [w for w in report['works'] if w['aid']]
+        if pathway == 'geste' and per_work:
+            detail = [[head('Aides par travaux'), head('Montant estimé', 2)]]
+            detail += [[Paragraph(text(w['name']), S['body']), Paragraph(eur_r(w['aid'], 10), S['right'])] for w in per_work]
+            out += [Spacer(1, 10), grid(detail, [CONTENT_W * 0.6, CONTENT_W * 0.4])]
+
+        notes = [f"Catégorie de revenus retenue : {text(sim['income_profile'])}."]
+        notes += [text(n) for n in sim.get('aid_notes') or []]
+        out += [Spacer(1, 6)] + [Paragraph(n, S['muted']) for n in notes]
+
+        if sim.get('aid_blockers') and fin['ampleur_possible_label']:
+            out += [Spacer(1, 10), boxed([Paragraph("<b>Pourquoi pas la rénovation d'ampleur ?</b>", S['body']), Spacer(1, 3),
+                                          *bullet_list(sim['aid_blockers'], 'muted')],
+                                         background=TINT, rule=BRASS_LIGHT, padding=9)]
+
+        if sim['eco_ptz_amount']:
+            loan = [
+                kv('Éco-prêt à taux zéro', eur_r(sim['eco_ptz_amount'])),
+                kv('Durée', f"{fin['eco_ptz_years']}{NBSP}ans"),
+                kv('Mensualité', f"{eur(fin['eco_ptz_monthly'])} / mois"),
+                kv('Économie sur la facture', f"<font color='#3E8E63'>−{NBSP}{eur(fin['monthly_saving'])} / mois</font>"),
+            ]
+            effort = fin['net_monthly_effort']
+            loan.append(kv('<b>Effort mensuel net</b>', f"<b>{eur(effort)} / mois</b>" if effort > 0
+                           else "<font color='#3E8E63'><b>Les économies couvrent la mensualité</b></font>"))
+            out += [Spacer(1, 14), KeepTogether([
+                Paragraph('Financer le reste à charge', S['h3']), Spacer(1, 6),
+                rows_table(loan, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True),
+                Spacer(1, 3),
+                Paragraph("Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.", S['small']),
+            ])]
+        return out
+
+    def _value(self, report: Dict[str, Any]) -> List[Any]:
+        sim = report['sim']
+        roi = sim['roi_years']
+        rows = [
+            kv('Retour sur investissement', '–' if roi is None else f"environ {round(roi)}{NBSP}ans"),
+            kv('Valeur verte estimée', f"+{NBSP}{eur_r(sim['latent_gain'], 500)}" if sim['latent_gain'] else '–'),
+        ]
+        out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 4),
+                          Paragraph(f"Valeur verte : écart de prix constaté entre classes DPE, appliqué sur {eur(report['price_per_m2'])}/m²"
+                                    + (" (prix par défaut : remplacez-le par le prix de votre secteur)." if report['price_is_default'] else "."),
+                                    S['small'])]
+        if report['is_investor']:
             inv_w = CONTENT_W / 4
             inv = Table([[
-                kpi_cell('Rendement brut', f"{(data.get('yield_brut') or 0):.1f}".replace('.', ',') + f"{NBSP}%"),
-                kpi_cell('Trésorerie mensuelle', eur(data.get('cashflow'))),
-                kpi_cell("Économie d'impôt", eur(data.get('tax_benefit'))),
-                kpi_cell('Coût net après impôt', eur(data.get('net_investor_cost'))),
+                kpi_cell('Rendement brut', f"{sim['yield_brut']:.1f}".replace('.', ',') + f"{NBSP}%"),
+                kpi_cell('Trésorerie mensuelle', eur(sim['cashflow'])),
+                kpi_cell("Économie d'impôt", eur_r(sim['tax_benefit'])),
+                kpi_cell('Coût net après impôt', eur_r(sim['net_investor_cost'])),
             ]], colWidths=[inv_w] * 4)
             inv.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
                                      ('LINEAFTER', (0, 0), (2, 0), 0.5, LINE), ('LEFTPADDING', (1, 0), (-1, 0), 8)]))
-            story += [CondPageBreak(5 * cm), Spacer(1, 18), KeepTogether([
-                section(step, 'La rentabilité locative'), Spacer(1, 10), inv, Spacer(1, 8),
-                Paragraph(f"Sur la base d'un prix d'achat de {eur(data.get('purchase_price'))} et d'un loyer de "
-                          f"{eur(data.get('monthly_rent'))} par mois. Trésorerie : loyer moins la mensualité d'un prêt "
-                          "finançant le reste à charge (7 ans, 4,5 %), hors charges et impôts.", S['muted']),
-            ])]
-            step += 1
-
-        # Next steps
-        steps = [section(step, 'Prochaines étapes'), Spacer(1, 8)]
-        for i, (title, body) in enumerate(NEXT_STEPS, 1):
-            row = Table([[Paragraph(str(i), style('ns', fontName='Serif-SemiBold', fontSize=12, textColor=BRASS)),
-                          [Paragraph(f"<b>{title}</b>", S['body']), Paragraph(body, S['muted'])]]],
-                        colWidths=[0.8 * cm, CONTENT_W - 0.8 * cm])
-            row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
-                                     ('BOTTOMPADDING', (0, 0), (-1, -1), 6)]))
-            steps.append(row)
-        story += [CondPageBreak(7 * cm), Spacer(1, 18), KeepTogether(steps)]
-
-        # Disclaimer
-        story += [Spacer(1, 18), Paragraph(
-            "Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. "
-            "Ce document ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. "
-            "Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' "
-            "ou un Accompagnateur Rénov' avant tout engagement.", S['small'])]
-
-        doc.build(story, onFirstPage=_paper, onLaterPages=_paper,
-                  canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address, **k))
-        return buffer.getvalue()
+            out += [Spacer(1, 12), inv, Spacer(1, 6), Paragraph(
+                f"Prix d'achat {eur(report['purchase_price'])}, loyer {eur(report['monthly_rent'])} par mois. Trésorerie : loyer moins la "
+                "mensualité d'un prêt finançant le reste à charge (7 ans, 4,5 %), hors charges et impôts. Économie d'impôt : "
+                "déduction des travaux des revenus fonciers au taux marginal saisi.", S['muted'])]
+        return out
 
 
 pdf_service = PDFReportGenerator()

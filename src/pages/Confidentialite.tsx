@@ -69,7 +69,7 @@ export default function ConfidentialitePage() {
                     <li><b>Vercel</b> (États-Unis) : hébergement du site et de l'API.</li>
                     <li><b>Supabase</b> (région {LEGAL.databaseRegion}) : comptes, authentification, base de données, envoi des liens de connexion.</li>
                     <li><b>Stripe</b> (Irlande, États-Unis) : paiement, factures, gestion de l'abonnement.</li>
-                    <li><b>Google (Gemini)</b> : rédaction de l'analyse du rapport, à partir des caractéristiques et chiffres du logement, sans votre email ni l'adresse exacte du bien.</li>
+                    <li><b>Anthropic</b> (États-Unis) : rédaction de l'analyse du rapport par le modèle Claude, à partir des caractéristiques et chiffres du logement et de sa commune, sans votre email ni le numéro et la rue du bien. Ces données ne servent pas à entraîner ses modèles.</li>
                     <li><b>OpenAI</b> : extraction des informations d'un PDF de DPE, uniquement si vous utilisez cette fonction.</li>
                     <li><b>Services publics</b> : l'adresse recherchée est transmise à la Base Adresse Nationale (adresse.data.gouv.fr) pour la localiser, et à l'ADEME pour retrouver le DPE.</li>
                 </ul>

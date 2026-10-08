@@ -32,7 +32,7 @@ export default function Results({ results, onSelect, onBack }: Props) {
                                 className="w-full text-left rounded-2xl border border-line bg-panel hover:border-brass/60 hover:bg-raised transition-colors p-5 flex items-center gap-5 group">
                                 <DpeBadge label={r.label} size="lg" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-ink font-medium truncate">{r.address}</p>
+                                    <p className="text-ink font-medium truncate">{r.address}{r.city && !r.address.includes(r.postcode || '#') ? `, ${[r.postcode, r.city].filter(Boolean).join(' ')}` : ''}</p>
                                     <p className="text-sm text-muted mt-1">
                                         {[capitalize(r.buildingType), r.surface ? `${r.surface} m²` : null, r.constructionPeriod || r.year].filter(Boolean).join(' · ')}
                                     </p>

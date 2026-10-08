@@ -10,5 +10,10 @@
             "source": "/(.*)",
             "destination": "/"
         }
-    ]
+    ],
+    "functions": {
+        "api/main.py": {
+            "maxDuration": 60
+        }
+    }
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info } from 'lucide-react';
-import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, num } from '../ui';
+import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, eurRange, num } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { INCOME_LEVELS, capitalize, formatDate, isHouse, type IncomeLevel, type PropertyData, type RetrofitAction, type Simulation } from '../model';
 
@@ -86,12 +86,13 @@ function Summary({ sim, property, report, updating, scenarioName }: {
             ) : (
                 <>
                     <div className="mt-5 divide-y divide-line/70">
-                        <Row label="Coût des travaux" help="cost" value={eur(sim?.cost)} />
+                        <Row label="Coût des travaux" help="cost" value={sim ? eurRange(sim.costLow, sim.costHigh) : '…'} />
                         <Row label="Aides estimées" help="mpr" value={aids > 0 ? `− ${eur(aids)}` : eur(0)} tone={aids > 0 ? 'positive' : 'muted'} />
                     </div>
                     <div className="mt-3 rounded-xl bg-raised p-4">
                         <p className="text-sm text-ink-soft flex items-center gap-1.5">Reste à charge <Help topic="rest" /></p>
-                        <p className="font-serif text-4xl text-brass-light mt-1 tabular-nums">{eur(sim?.rest)}</p>
+                        <p className="font-serif text-4xl text-brass-light mt-1 tabular-nums">≈ {eur(Math.round((sim?.rest || 0) / 100) * 100)}</p>
+                        {sim && <p className="text-xs text-muted mt-1 tabular-nums">entre {eurRange(sim.restLow, sim.restHigh)}</p>}
                         {!!sim?.ecoPTZAmount && (
                             <p className="text-xs text-muted mt-2 flex items-center gap-1.5">
                                 Finançable à 0 % jusqu'à {eur(sim.ecoPTZAmount)} <Help topic="ecoPtz" />
@@ -112,7 +113,7 @@ function Summary({ sim, property, report, updating, scenarioName }: {
                         ? <AlertTriangle size={16} className="text-coral mt-0.5 shrink-0" />
                         : <CheckCircle2 size={16} className="text-sage mt-0.5 shrink-0" />}
                     <span className="text-ink-soft">
-                        {sim.newBanDate ? `Après travaux : ${climateStatus(sim.newBanDate)?.toLowerCase()}.` : 'Après travaux : le logement reste louable.'}
+                        Après travaux : {sim.newRentalStatus.toLowerCase()}.
                     </span>
                     <Help topic="climateLaw" />
                 </div>
@@ -160,6 +161,9 @@ export default function Dashboard(props: Props) {
                 </button>
                 <div className="mb-8">
                     <h1 className="text-3xl sm:text-4xl text-ink">{property.address}</h1>
+                    {(property.postcode || property.city) && !property.address.includes(property.postcode || '#') && (
+                        <p className="mt-1 font-serif text-lg text-ink-soft">{[property.postcode, property.city].filter(Boolean).join(' ')}</p>
+                    )}
                     <p className="mt-2 text-muted">
                         {[capitalize(property.buildingType), property.surface ? `${property.surface} m²` : null, property.constructionPeriod || (property.year ? `construit en ${property.year}` : null)].filter(Boolean).join(' · ')}
                     </p>
@@ -309,8 +313,8 @@ export default function Dashboard(props: Props) {
                                         <tbody className="divide-y divide-line/70 tabular-nums">
                                             {[
                                                 ['Classe après travaux', (s: Simulation) => <DpeBadge label={s.newLabel} size="sm" />],
-                                                ['Coût des travaux', (s: Simulation) => eur(s.cost)],
-                                                ['Reste à charge', (s: Simulation) => eur(s.rest)],
+                                                ['Coût des travaux', (s: Simulation) => eurRange(s.costLow, s.costHigh)],
+                                                ['Reste à charge', (s: Simulation) => eurRange(s.restLow, s.restHigh)],
                                                 ['Économies / an', (s: Simulation) => eur(s.savings)],
                                             ].map(([label, f]) => (
                                                 <tr key={label as string}>
@@ -443,8 +447,8 @@ export default function Dashboard(props: Props) {
                                         <div>
                                             <p className="text-ink font-medium mb-2 flex items-center gap-1.5">Travaux <Help topic="cost" /></p>
                                             <div className="divide-y divide-line/70">
-                                                {sim.detailedCosts.map(c => <Row key={c.id} label={c.name} value={eur(c.cost)} />)}
-                                                <Row label="Total TTC" value={eur(sim.cost)} strong />
+                                                {sim.detailedCosts.map(c => <Row key={c.id} label={c.name} value={eurRange(c.cost_low, c.cost_high)} />)}
+                                                <Row label="Total TTC" value={eurRange(sim.costLow, sim.costHigh)} strong />
                                             </div>
                                         </div>
                                         <div>
@@ -456,9 +460,15 @@ export default function Dashboard(props: Props) {
                                                     value={`− ${eur(sim.sub)}`} tone={sim.sub > 0 ? 'positive' : 'muted'}
                                                 />
                                                 <Row label="Primes CEE (estimation)" help="cee" value={`− ${eur(sim.ceeEst)}`} tone={sim.ceeEst > 0 ? 'positive' : 'muted'} />
-                                                <Row label="Reste à charge" help="rest" value={eur(sim.rest)} strong />
+                                                <Row label="Reste à charge" help="rest" value={eurRange(sim.restLow, sim.restHigh)} strong />
                                                 {sim.ecoPTZAmount > 0 && <Row label="Dont finançable par Éco-PTZ" help="ecoPtz" value={eur(sim.ecoPTZAmount)} tone="muted" />}
                                             </div>
+                                            {sim.aidBlockers.length > 0 && ['E', 'F', 'G'].includes(sim.currentLabel) && (
+                                                <div className="mt-3 text-sm text-ink-soft">
+                                                    <p className="text-brass-light">Pourquoi pas la rénovation d'ampleur ?</p>
+                                                    <ul className="mt-1 list-disc pl-5 space-y-1">{sim.aidBlockers.map(b => <li key={b}>{b}</li>)}</ul>
+                                                </div>
+                                            )}
                                             {sim.aidNotes.map(n => (
                                                 <p key={n} className="mt-3 text-sm text-brass-light flex gap-2"><Info size={16} className="shrink-0 mt-0.5" />{n}</p>
                                             ))}
@@ -507,7 +517,7 @@ export default function Dashboard(props: Props) {
 
                         <p className="text-xs text-faint leading-relaxed px-1">
                             Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Elle ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis.
-                            Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+                            Les montants d'aides ({sims[scenario]?.aidRules || "barème MaPrimeRénov' en vigueur"}) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
                         </p>
                     </div>
                 </div>

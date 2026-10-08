@@ -38,6 +38,9 @@ export interface PropertyData {
     lossShares?: Record<string, number>;
     insulationQuality?: Record<string, string | null>;
     dpeLosses?: Record<string, number | null> | null;
+    city?: string;
+    // Equipment labels from the DPE (heating, hot water, ventilation...)
+    details?: Record<string, string | null>;
 }
 
 // Simulation results, computed by the API (api/simulation.py is the single engine)
@@ -50,14 +53,20 @@ export interface Simulation {
     newGes: number;
     thresholds: { label: DPEClass; max: number; max_ges: number }[];
     cost: number;
-    detailedCosts: { id: string; name: string; cost: number; suggested: boolean }[];
+    costLow: number;
+    costHigh: number;
+    detailedCosts: { id: string; name: string; cost: number; cost_low: number; cost_high: number; suggested: boolean }[];
     durationDays: number;
     sub: number;
     ceeEst: number;
     aidPathway: 'accompagne' | 'geste' | 'none';
     aidNotes: string[];
+    aidBlockers: string[];
+    aidRules: string;
     incomeProfile: string;
     rest: number;
+    restLow: number;
+    restHigh: number;
     ecoPTZAmount: number;
     ecoPTZLimit: number;
     savings: number;
@@ -71,6 +80,8 @@ export interface Simulation {
     cashflow: number;
     banDate: Date | null;
     newBanDate: Date | null;
+    rentalStatus: string;
+    newRentalStatus: string;
     hasITI: boolean;
 }
 
@@ -83,14 +94,20 @@ export const toSimulation = (r: any): Simulation => ({
     newGes: r.new_ges,
     thresholds: r.thresholds,
     cost: r.cost,
+    costLow: r.cost_low,
+    costHigh: r.cost_high,
     detailedCosts: r.detailed_costs,
     durationDays: r.duration_days,
     sub: r.subsidies,
     ceeEst: r.cee_est,
     aidPathway: r.aid_pathway,
     aidNotes: r.aid_notes,
+    aidBlockers: r.aid_blockers || [],
+    aidRules: r.aid_rules,
     incomeProfile: r.income_profile,
     rest: r.rest_to_pay,
+    restLow: r.rest_to_pay_low,
+    restHigh: r.rest_to_pay_high,
     ecoPTZAmount: r.eco_ptz_amount,
     ecoPTZLimit: r.eco_ptz_limit,
     savings: r.annual_savings,
@@ -104,6 +121,8 @@ export const toSimulation = (r: any): Simulation => ({
     cashflow: r.cashflow,
     banDate: r.ban_date ? new Date(r.ban_date) : null,
     newBanDate: r.new_ban_date ? new Date(r.new_ban_date) : null,
+    rentalStatus: r.rental_status,
+    newRentalStatus: r.new_rental_status,
     hasITI: r.has_iti,
 });
 
@@ -128,6 +147,8 @@ export const toProperty = (r: any): PropertyData => ({
     dpeLosses: r.dpe_losses,
     suggestedWorks: r.suggested_works || [],
     preselectedWorks: r.preselected_works || [],
+    city: r.city || undefined,
+    details: r.details || undefined,
 });
 
 export const isHouse = (buildingType?: string) => (buildingType || '').toLowerCase().includes('maison');
