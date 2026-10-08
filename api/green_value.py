@@ -107,6 +107,10 @@ def estimate(current: str, target: str, surface: float, price_m2: float, kind: s
         return max(0.0, value_now * (math.exp(d) - 1))
 
     scope = "du département" if m["scope"] == "department" else "nationales"
+    period = m["period"] or ""
+    # "2022T1-2025T4" -> "2022 à 2025"
+    years = period.replace("T1", "").replace("T2", "").replace("T3", "").replace("T4", "").split("-")
+    period = f"{years[0]} à {years[-1]}" if len(years) == 2 and years[0] != years[-1] else period
     return {
         "value": gain(delta),
         "low": gain(delta - Z_95 * se),
@@ -115,5 +119,5 @@ def estimate(current: str, target: str, surface: float, price_m2: float, kind: s
         "value_now": value_now,
         "premium_pct": round((math.exp(delta) - 1) * 100, 1),
         "basis": (f"écart de prix mesuré entre les classes {current} et {target} sur les ventes {scope} "
-                  f"({format(m['n'], ',').replace(',', ' ')} ventes rapprochées de leur DPE, {m['period']})"),
+                  f"({format(m['n'], ',').replace(',', ' ')} ventes rapprochées de leur DPE, {period})"),
     }
