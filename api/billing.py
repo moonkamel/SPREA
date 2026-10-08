@@ -32,6 +32,12 @@ def format_price(unit_amount: int, currency: str, interval: Optional[str] = None
     return f"{amount} {symbol}{suffix}"
 
 
+def as_dict(obj: Any) -> Dict[str, Any]:
+    """Stripe objects are not dicts since stripe-python 15 (obj.get() raises):
+    everything leaving this module is converted to plain dicts."""
+    return obj.to_dict() if isinstance(obj, stripe.StripeObject) else obj
+
+
 def subscription_period_end(subscription: Dict[str, Any]) -> Optional[int]:
     """current_period_end moved from the subscription to its items in recent API versions."""
     if subscription.get("current_period_end"):
@@ -54,10 +60,10 @@ class Billing:
     async def price_label(self, price_id: str) -> Optional[str]:
         if price_id not in self._price_labels:
             try:
-                price = await self.client.v1.prices.retrieve_async(price_id)
+                price = as_dict(await self.client.v1.prices.retrieve_async(price_id))
                 recurring = price.get("recurring") or {}
                 self._price_labels[price_id] = format_price(price["unit_amount"], price["currency"], recurring.get("interval"))
-            except stripe.StripeError as e:
+            except Exception as e:  # Never break /api/config over a price label
                 logger.error(f"Cannot load Stripe price {price_id}: {e}")
                 return None
         return self._price_labels[price_id]
@@ -131,14 +137,14 @@ class Billing:
             logger.info(f"Subscription {subscription_id} not cancelable: {e.user_message or e.code}")
 
     async def get_session(self, session_id: str) -> Dict[str, Any]:
-        return await self.client.v1.checkout.sessions.retrieve_async(session_id)
+        return as_dict(await self.client.v1.checkout.sessions.retrieve_async(session_id))
 
     async def get_subscription(self, subscription_id: str) -> Dict[str, Any]:
-        return await self.client.v1.subscriptions.retrieve_async(subscription_id)
+        return as_dict(await self.client.v1.subscriptions.retrieve_async(subscription_id))
 
     def parse_event(self, payload: bytes, signature: Optional[str]) -> Dict[str, Any]:
         """Raises ValueError / stripe.SignatureVerificationError on invalid input."""
-        return self.client.construct_event(payload, signature, self.webhook_secret)
+        return as_dict(self.client.construct_event(payload, signature, self.webhook_secret))
 
 
 _billing: Optional[Billing] = None
