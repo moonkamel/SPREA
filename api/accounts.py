@@ -410,7 +410,9 @@ async def stripe_webhook(request: Request, store: SupabaseStore = Depends(store_
     payload = await request.body()
     try:
         event = billing.parse_event(payload, request.headers.get("stripe-signature"))
-    except (ValueError, stripe.SignatureVerificationError):
+    except (ValueError, stripe.SignatureVerificationError) as e:
+        # Usually a STRIPE_WEBHOOK_SECRET that does not match the endpoint's signing secret
+        logger.warning(f"Rejected Stripe webhook: {type(e).__name__}")
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     event_type = event["type"]
