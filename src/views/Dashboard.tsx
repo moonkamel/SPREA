@@ -143,7 +143,7 @@ function Summary({ sim, property, report, updating, scenarioName, valuation }: {
                 <p className="mt-2 text-xs text-faint text-center flex items-center justify-center gap-1.5">
                     {!report.available
                         ? 'Le rapport PDF sera disponible très prochainement.'
-                        : report.included ? 'Inclus dans votre abonnement Pro' : report.price ? `${report.price} TTC · paiement sécurisé` : 'Paiement sécurisé'}
+                        : report.included ? 'Inclus dans votre abonnement' : report.price ? `${report.price} TTC · paiement sécurisé` : 'Paiement sécurisé'}
                     <Help topic="report" />
                 </p>
                 {valuation && (

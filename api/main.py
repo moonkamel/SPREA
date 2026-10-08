@@ -73,19 +73,21 @@ async def global_exception_handler(request, exc):
 try:
     from api.ratelimit import search_limiter, simulate_limiter, ai_limiter
     from api.auth import current_user
-    from api.accounts import router as accounts_router
+    from api.accounts import router as accounts_router, subscriber_access
     from api.contacts import router as contacts_router
     from api.alerts import router as alerts_router
     from api.valuation import router as valuation_router
     from api.observatoire import router as observatoire_router
+    from api.quotes import router as quotes_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
-    from accounts import router as accounts_router
+    from accounts import router as accounts_router, subscriber_access
     from contacts import router as contacts_router
     from alerts import router as alerts_router
     from valuation import router as valuation_router
     from observatoire import router as observatoire_router
+    from quotes import router as quotes_router
 
 @app.get("/")
 async def root():
@@ -206,7 +208,7 @@ def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
     d["preselected_works"] = suggestions["preselected"]
     return d
 
-@router.get("/search-address", dependencies=[Depends(search_limiter)])
+@router.get("/search-address", dependencies=[Depends(search_limiter), Depends(subscriber_access)])
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
@@ -226,7 +228,7 @@ async def search_address(q: str):
         logger.error(f"Address search crash: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter)])
+@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter), Depends(subscriber_access)])
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
@@ -243,7 +245,7 @@ async def search_dpe(dpe_number: str):
         logger.error(f"DPE search failed: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/market-price", dependencies=[Depends(search_limiter)])
+@router.get("/market-price", dependencies=[Depends(search_limiter), Depends(subscriber_access)])
 async def get_market_price(insee: str, building_type: str = "", lat: Optional[float] = None, lon: Optional[float] = None,
                            surface: Optional[float] = None):
     """Local price per m2 of comparable DVF sales, for the green value. None when unknown."""
@@ -262,7 +264,7 @@ async def works_catalog():
         for w in WORKS_CATALOG
     ]}
 
-@router.post("/simulate", dependencies=[Depends(simulate_limiter)])
+@router.post("/simulate", dependencies=[Depends(simulate_limiter), Depends(subscriber_access)])
 async def simulate(data: SimulationInput):
     """Run the technical-economic simulation for a set of works."""
     try:
@@ -271,7 +273,7 @@ async def simulate(data: SimulationInput):
         logger.error(f"Simulation failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="La simulation a échoué.")
 
-@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(current_user)])
+@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(subscriber_access)])
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
     logger.info("Received DPE PDF upload")
@@ -309,6 +311,7 @@ app.include_router(contacts_router)
 app.include_router(alerts_router)
 app.include_router(valuation_router)
 app.include_router(observatoire_router)
+app.include_router(quotes_router)
 
 if __name__ == "__main__":
     import uvicorn

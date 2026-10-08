@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { Button } from './ui';
+import { navigate } from './router';
 import { Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
 
 // --- Types ---
@@ -12,7 +13,11 @@ interface PublicConfig {
     billing_enabled: boolean;
     report_price: string | null;
     pro_price: string | null;
+    // Subscription plans, prices excluding VAT
+    plans?: Partial<Record<Plan, string | null>>;
 }
+
+export type Plan = 'solo_monthly' | 'solo_yearly';
 
 interface ReportSummary {
     id: string;
@@ -53,7 +58,7 @@ interface AccountContextValue {
     session: Session | null;
     me: Me | null;
     requestReport: (req: ReportRequest) => Promise<void>;
-    startSubscription: () => void;
+    startSubscription: (plan?: Plan) => void;
     openLogin: (reason?: string) => void;
     openAccount: () => void;
     authedFetch: (url: string, init?: RequestInit) => Promise<Response>;
@@ -94,7 +99,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const [notice, setNotice] = useState<string | null>(null);
     const [pending, setPending] = useState<ReportRequest | null>(null);
     // Purchase waiting for the CGV acceptance
-    const [purchase, setPurchase] = useState<{ kind: 'report'; req: ReportRequest } | { kind: 'pro' } | null>(null);
+    const [purchase, setPurchase] = useState<{ plan: Plan } | null>(null);
     const supabase = useRef<SupabaseClient | null>(null);
 
     // Fresh access token (supabase-js refreshes it when needed)
@@ -141,45 +146,38 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         });
         if (!res.ok) { setNotice(await errorMessage(res)); return; }
         const data = await res.json();
-        if (data.checkout_url) {
-            window.location.assign(data.checkout_url);
-            return;
-        }
         await downloadReport(data.id);
         refreshMe();
     }, [authedFetch, downloadReport, refreshMe]);
 
-    const subscribe = useCallback(async () => {
+    const subscribe = useCallback(async (plan: Plan) => {
         const res = await authedFetch('/api/billing/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accept_terms: true }),
+            body: JSON.stringify({ accept_terms: true, plan }),
         });
         if (!res.ok) { setNotice(await errorMessage(res)); return; }
         window.location.assign((await res.json()).checkout_url);
     }, [authedFetch]);
 
+    // Reports are included in the subscription
     const requestReport = useCallback(async (req: ReportRequest) => {
-        if (!config?.auth_enabled) { setNotice("Le rapport PDF sera disponible très prochainement. Toute votre simulation reste consultable sur cette page."); return; }
         if (!session) {
             savePending(req);
-            setLoginReason('Connectez-vous pour obtenir votre rapport PDF. Votre simulation sera conservée.');
+            setLoginReason('Connectez-vous pour obtenir le rapport PDF. La simulation sera conservée.');
             return;
         }
         const account = me || await refreshMe();
-        if (account?.is_pro) {
-            await createReport(req, false);
-            return;
-        }
-        setPurchase({ kind: 'report', req });
-    }, [config, session, me, refreshMe, createReport]);
+        if (!account?.is_pro) { navigate('/tarifs'); return; }
+        await createReport(req, false);
+    }, [session, me, refreshMe, createReport]);
 
-    const startSubscription = useCallback(() => {
-        if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement Pro sera disponible très prochainement."); return; }
-        if (!session) { setLoginReason("Connectez-vous pour souscrire à l'abonnement Pro."); return; }
+    const startSubscription = useCallback((plan: Plan = 'solo_monthly') => {
+        if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement sera disponible très prochainement."); return; }
+        if (!session) { setLoginReason("Créez votre compte avec votre email professionnel : vous choisirez ensuite votre formule."); return; }
         if (me?.is_pro) { setShowAccount(true); return; }
         setShowAccount(false);
-        setPurchase({ kind: 'pro' });
+        setPurchase({ plan });
     }, [config, session, me]);
 
     // Back from Stripe Checkout: wait until the payment is confirmed
@@ -209,10 +207,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
             setNotice('Paiement en cours de confirmation. Votre rapport sera disponible dans « Mon compte ».');
         }
         if (checkout === 'pro_success') {
-            setNotice('Activation de votre abonnement Pro…');
+            setNotice('Activation de votre abonnement…');
             for (let i = 0; i < 15; i++) {
                 if ((await refreshMe())?.is_pro) {
-                    setNotice('Votre abonnement Pro est actif : vos rapports sont désormais inclus.');
+                    setNotice('Votre abonnement est actif : tous les outils SPREA sont débloqués.');
                     return;
                 }
                 await sleep(2000);
@@ -273,10 +271,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
             {showAccount && session && (
                 <AccountModal
                     me={me}
-                    config={config}
                     onClose={() => setShowAccount(false)}
                     onDownload={downloadReport}
-                    onSubscribe={async () => startSubscription()}
+                    onSubscribe={async () => { setShowAccount(false); navigate('/tarifs'); }}
                     onPortal={async () => {
                         const res = await authedFetch('/api/billing/portal', { method: 'POST' });
                         if (!res.ok) { setNotice(await errorMessage(res)); return; }
@@ -321,12 +318,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
             )}
             {purchase && (
                 <PurchaseModal
-                    kind={purchase.kind}
-                    price={purchase.kind === 'report' ? config?.report_price : config?.pro_price}
+                    plan={purchase.plan}
+                    price={config?.plans?.[purchase.plan] ?? null}
                     onClose={() => setPurchase(null)}
                     onConfirm={async () => {
-                        if (purchase.kind === 'report') await createReport(purchase.req, true);
-                        else await subscribe();
+                        await subscribe(purchase.plan);
                         setPurchase(null);
                     }}
                 />
@@ -440,9 +436,8 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
     );
 }
 
-function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
+function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
     me: Me | null;
-    config: PublicConfig | null;
     onClose: () => void;
     onDownload: (id: string) => Promise<void>;
     onSubscribe: () => Promise<void>;
@@ -468,21 +463,18 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
                     <div className="rounded-xl border border-line bg-raised p-5">
                         {me.is_pro ? (
                             <>
-                                <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement Pro actif</p>
-                                <p className="text-sm text-muted mt-1">Rapports illimités{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
+                                <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement actif</p>
+                                <p className="text-sm text-muted mt-1">Tous les outils inclus{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
                             </>
                         ) : (
                             <>
-                                <p className="text-ink font-medium">Formule gratuite</p>
+                                <p className="text-ink font-medium">Aucun abonnement actif</p>
                                 <p className="text-sm text-muted mt-1">
-                                    Rapport à l'unité{config?.report_price ? ` : ${config.report_price}` : ''}. Professionnels : rapports illimités avec l'abonnement Pro{config?.pro_price ? ` (${config.pro_price})` : ''}.
+                                    Simulateur, carte de prospection, alertes, avis de valeur et rapports sont réservés aux abonnés. Satisfait ou remboursé pendant 14 jours.
                                 </p>
-                                {config?.billing_enabled && (
-                                    <Button onClick={run('subscribe', onSubscribe)} className="mt-4 w-full">
-                                        {busy === 'subscribe' && <Loader2 className="animate-spin" size={14} />}
-                                        Passer Pro
-                                    </Button>
-                                )}
+                                <Button onClick={run('subscribe', onSubscribe)} className="mt-4 w-full">
+                                    Choisir ma formule
+                                </Button>
                             </>
                         )}
                         {me.has_billing_account && (
@@ -529,31 +521,29 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
     );
 }
 
-function PurchaseModal({ kind, price, onClose, onConfirm }: {
-    kind: 'report' | 'pro';
+const PLAN_NAMES: Record<Plan, string> = { solo_monthly: 'Solo · mensuel', solo_yearly: 'Solo · annuel' };
+
+function PurchaseModal({ plan, price, onClose, onConfirm }: {
+    plan: Plan;
     price: string | null | undefined;
     onClose: () => void;
     onConfirm: () => Promise<void>;
 }) {
     const [accepted, setAccepted] = useState(false);
     const [busy, setBusy] = useState(false);
-    const isReport = kind === 'report';
     const cgv = <a href="/cgv" target="_blank" rel="noopener" className="underline text-brass">conditions générales de vente</a>;
 
     return (
-        <Modal title={isReport ? 'Obtenir le rapport' : "Passer à l'abonnement Pro"} onClose={onClose}>
+        <Modal title={`Abonnement ${PLAN_NAMES[plan]}`} onClose={onClose}>
             <div className="rounded-xl border border-line bg-raised p-5 mb-5">
-                <p className="font-serif text-3xl text-ink">{price || '–'}<span className="font-sans text-xs text-faint ml-2">TTC</span></p>
+                <p className="font-serif text-3xl text-ink">{price || '–'}<span className="font-sans text-xs text-faint ml-2">HT</span></p>
                 <p className="text-sm text-muted mt-2">
-                    {isReport
-                        ? 'Rapport PDF de ce logement, téléchargeable immédiatement puis à tout moment depuis votre compte. Facture fournie.'
-                        : 'Rapports illimités. Abonnement mensuel sans engagement, résiliable à tout moment depuis votre compte.'}
+                    Tous les outils SPREA, sans limite. Sans engagement, résiliable à tout moment depuis votre compte.
+                    Satisfait ou remboursé pendant 14 jours. Facture avec TVA.
                 </p>
             </div>
             <Checkbox checked={accepted} onChange={setAccepted}>
-                {isReport
-                    ? <>J'accepte les {cgv} et je demande l'accès immédiat à mon rapport. Je reconnais perdre mon droit de rétractation dès sa mise à disposition.</>
-                    : <>J'accepte les {cgv} et je demande le démarrage immédiat de l'abonnement. Si j'exerce mon droit de rétractation dans les 14 jours, je reste redevable du montant correspondant au service déjà fourni.</>}
+                J'accepte les {cgv} et je souscris pour les besoins de mon activité professionnelle.
             </Checkbox>
             <Button disabled={!accepted || busy} onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }} className="mt-6 w-full">
                 {busy && <Loader2 className="animate-spin" size={16} />}
@@ -582,7 +572,7 @@ function DeleteAccountModal({ me, onClose, onConfirm }: {
                         ? <><b className="text-ink">Vos {reportCount} rapport{reportCount > 1 ? 's' : ''}</b> ne pourront plus être téléchargés : enregistrez-les avant de continuer.</>
                         : 'Vos rapports sont supprimés.'}
                 </li>
-                {me?.is_pro && <li>Votre <b className="text-ink">abonnement Pro est résilié immédiatement</b>, sans remboursement de la période en cours.</li>}
+                {me?.is_pro && <li>Votre <b className="text-ink">abonnement est résilié immédiatement</b>, sans remboursement de la période en cours.</li>}
                 <li>Les factures et une trace minimale de vos achats (date, montant, version des CGV acceptée) sont conservées pour nos obligations légales, sans vos simulations.</li>
             </ul>
             <Checkbox checked={understood} onChange={setUnderstood} danger>Je comprends que cette suppression est définitive.</Checkbox>

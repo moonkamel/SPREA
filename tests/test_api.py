@@ -9,6 +9,14 @@ from api.simulation import normalize_energy
 client = TestClient(main.app)
 
 
+@pytest.fixture(autouse=True)
+def subscriber():
+    """These tests exercise the tools themselves, as a subscriber."""
+    main.app.dependency_overrides[main.subscriber_access] = lambda: None
+    yield
+    main.app.dependency_overrides.pop(main.subscriber_access, None)
+
+
 def test_normalize_energy_french_labels():
     assert normalize_energy("Électricité") == "electricity"
     assert normalize_energy("Gaz naturel") == "gas"

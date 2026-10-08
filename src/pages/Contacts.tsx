@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, Mail, Phone, Trash2 } from 'lucide-react';
 import { useAccount } from '../account';
-import { Link } from '../router';
+import { Link, navigate } from '../router';
 import { Button, Card } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
@@ -103,7 +103,7 @@ export function AgentPageForm({ initial, onSaved }: { initial: AgentPageData; on
 }
 
 export default function ContactsPage() {
-    const { session, me, config, openLogin, startSubscription, authedFetch } = useAccount();
+    const { session, me, config, openLogin, authedFetch } = useAccount();
     const [page, setPage] = useState<AgentPageData>({});
     const [leads, setLeads] = useState<Lead[]>([]);
     const [links, setLinks] = useState<LinkStat[]>([]);
@@ -164,9 +164,9 @@ export default function ContactsPage() {
                     </Card>
                 ) : me && !me.is_pro ? (
                     <Card className="p-5">
-                        <p className="text-ink font-medium">Réservé aux abonnés Pro</p>
+                        <p className="text-ink font-medium">Réservé aux abonnés</p>
                         <p className="mt-1 text-sm text-muted">Courriers avec QR code, pages de contact à vos couleurs et demandes de rappel des propriétaires.</p>
-                        <Button className="mt-4" onClick={startSubscription}>Passer Pro</Button>
+                        <Button className="mt-4" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
                     </Card>
                 ) : loading ? (
                     <Loader2 className="animate-spin text-brass" />

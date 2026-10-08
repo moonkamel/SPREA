@@ -1,8 +1,10 @@
 """Stripe integration: Checkout for single reports and the Pro subscription,
 Customer Portal, webhook signature verification.
 
-Prices are created in the Stripe dashboard; their ids are given through
-STRIPE_PRICE_REPORT (one-time) and STRIPE_PRICE_PRO (recurring).
+Prices are created in the Stripe dashboard. The subscription plans are found
+by their lookup key (solo_monthly, solo_yearly), prices excluding VAT; the
+former STRIPE_PRICE_PRO is the fallback. STRIPE_PRICE_REPORT (one-time) is
+kept for the reports bought before the subscription-only offer.
 """
 import logging
 import os
@@ -20,9 +22,13 @@ REPORT_CHECKOUT_MESSAGE = (
     "vous renoncez à votre droit de rétractation dès sa mise à disposition."
 )
 PRO_CHECKOUT_MESSAGE = (
-    "En payant, vous confirmez avoir accepté les CGV. Abonnement mensuel sans engagement, "
-    "résiliable à tout moment depuis votre compte."
+    "En payant, vous confirmez avoir accepté les CGV. Abonnement sans engagement, résiliable à tout moment "
+    "depuis votre compte. Satisfait ou remboursé pendant 14 jours."
 )
+
+# Subscription plans: Stripe lookup keys
+PLANS = ("solo_monthly", "solo_yearly")
+VAT_RATE_KEY = "tva20"
 
 
 def format_price(unit_amount: int, currency: str, interval: Optional[str] = None) -> str:
@@ -56,6 +62,8 @@ class Billing:
         self.price_pro = price_pro
         self.app_url = app_url.rstrip("/")
         self._price_labels: Dict[str, str] = {}
+        self._plan_prices: Dict[str, str] = {}
+        self._vat_rate: Optional[str] = None
 
     async def price_label(self, price_id: str) -> Optional[str]:
         if price_id not in self._price_labels:
@@ -67,6 +75,42 @@ class Billing:
                 logger.error(f"Cannot load Stripe price {price_id}: {e}")
                 return None
         return self._price_labels[price_id]
+
+    async def plan_price(self, plan: str) -> str:
+        """Price id of a plan, from its lookup key (falls back to STRIPE_PRICE_PRO)."""
+        if plan not in self._plan_prices:
+            try:
+                prices = as_dict(await self.client.v1.prices.list_async(params={"lookup_keys": [plan], "active": True}))
+                found = prices.get("data") or []
+                if not found:
+                    return self.price_pro
+                self._plan_prices[plan] = found[0]["id"]
+            except Exception as e:
+                logger.error(f"Cannot load Stripe plan {plan}: {e}")
+                return self.price_pro
+        return self._plan_prices[plan]
+
+    async def plan_labels(self) -> Dict[str, Optional[str]]:
+        return {plan: await self.price_label(await self.plan_price(plan)) for plan in PLANS}
+
+    async def vat_rate(self) -> Optional[str]:
+        """20 % VAT tax rate added to prices excluding VAT when Stripe Tax is off
+        (found or created once, tagged with metadata sprea=tva20)."""
+        if self._vat_rate is None:
+            try:
+                rates = as_dict(await self.client.v1.tax_rates.list_async(params={"active": True, "limit": 100}))
+                rate = next((r for r in rates.get("data") or [] if (r.get("metadata") or {}).get("sprea") == VAT_RATE_KEY), None)
+                if rate is None:
+                    rate = as_dict(await self.client.v1.tax_rates.create_async(params={
+                        "display_name": "TVA", "percentage": 20, "inclusive": False, "country": "FR",
+                        "jurisdiction": "FR", "tax_type": "vat", "description": "TVA 20 % (France)",
+                        "metadata": {"sprea": VAT_RATE_KEY},
+                    }))
+                self._vat_rate = rate["id"]
+            except Exception as e:
+                logger.error(f"Cannot load the VAT rate: {e}")
+                return None
+        return self._vat_rate
 
     def _tax_params(self) -> Dict[str, Any]:
         """Stripe Tax: VAT computed from the customer's address, VAT number
@@ -106,19 +150,29 @@ class Billing:
         })
         return {"id": session["id"], "url": session["url"]}
 
-    async def subscription_checkout(self, user_id: str, customer_id: str) -> str:
+    async def subscription_checkout(self, user_id: str, customer_id: str, plan: str = "solo_monthly") -> str:
+        line = {"price": await self.plan_price(plan), "quantity": 1}
+        if not self.automatic_tax:
+            # Prices excluding VAT: add the VAT rate ourselves
+            rate = await self.vat_rate()
+            if rate:
+                line["tax_rates"] = [rate]
         session = await self.client.v1.checkout.sessions.create_async(params={
             "mode": "subscription",
             "customer": customer_id,
             "client_reference_id": user_id,
-            "line_items": [{"price": self.price_pro, "quantity": 1}],
-            "metadata": {"kind": "subscription", "user_id": user_id},
-            "subscription_data": {"metadata": {"user_id": user_id}},
+            "line_items": [line],
+            "metadata": {"kind": "subscription", "user_id": user_id, "plan": plan},
+            "subscription_data": {"metadata": {"user_id": user_id, "plan": plan}},
             "allow_promotion_codes": True,
+            # Professionals: company name and VAT number on the invoice
+            "tax_id_collection": {"enabled": True},
+            "billing_address_collection": "required",
+            "customer_update": {"address": "auto", "name": "auto"},
             "custom_text": {"submit": {"message": PRO_CHECKOUT_MESSAGE}},
             **self._tax_params(),
             "success_url": f"{self.app_url}/?checkout=pro_success",
-            "cancel_url": f"{self.app_url}/?checkout=pro_cancel",
+            "cancel_url": f"{self.app_url}/tarifs?checkout=pro_cancel",
         })
         return session["url"]
 

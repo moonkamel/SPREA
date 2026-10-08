@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Building2, FileSearch, Loader2, MapPin, Search, ShieldCheck, Sliders, Wallet } from 'lucide-react';
+import { ArrowRight, Bell, Building2, Loader2, MapPin, Search, ShieldCheck, Users } from 'lucide-react';
 import { Button, Card, Help, Segmented } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
+import { Link } from '../router';
 
 interface Props {
     loading: boolean;
@@ -10,17 +11,11 @@ interface Props {
     onSearchDpe: (dpeNumber: string) => void;
 }
 
-const STEPS = [
-    { icon: FileSearch, title: 'Retrouvez le DPE', text: "Saisissez l'adresse : nous récupérons le diagnostic officiel publié par l'ADEME." },
-    { icon: Sliders, title: 'Choisissez les travaux', text: 'Nous recommandons les travaux utiles à votre logement. Ajustez-les librement.' },
-    { icon: Wallet, title: 'Connaissez votre budget', text: 'Nouvelle étiquette, aides, reste à charge et économies, calculés instantanément.' },
-];
-
-const AUDIENCES = [
-    { title: 'Propriétaires', text: 'Savoir quels travaux engager, combien ils coûtent vraiment et quelles aides demander.' },
-    { title: 'Investisseurs', text: "Anticiper l'interdiction de louer, mesurer la rentabilité et l'avantage fiscal des travaux." },
-    { title: 'Professionnels', text: 'Agents, courtiers, gestionnaires : un rapport clair à remettre à vos clients.' },
-];
+const SHORTCUTS = [
+    { to: '/prospection', icon: MapPin, title: 'Carte de prospection', text: 'Les passoires E, F, G de votre secteur, adresse par adresse.' },
+    { to: '/alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
+    { to: '/contacts', icon: Users, title: 'Contacts', text: 'Les propriétaires qui ont répondu à vos courriers.' },
+]
 
 export default function Landing({ loading, error, onSearchAddress, onSearchDpe }: Props) {
     const [mode, setMode] = useState<'address' | 'dpe'>('address');
@@ -60,12 +55,12 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                 <section className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,164,92,0.10),transparent_60%)] pointer-events-none" />
                     <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-14 text-center">
-                        <p className="text-sm text-brass tracking-wide mb-5">Simulation de rénovation énergétique</p>
+                        <p className="text-sm text-brass tracking-wide mb-5">Simulateur</p>
                         <h1 className="text-4xl sm:text-5xl leading-[1.1] text-ink">
-                            Sachez quels travaux engager, et ce qu'ils vous coûteront vraiment.
+                            Quel logement étudions-nous ?
                         </h1>
                         <p className="mt-6 text-lg text-muted max-w-2xl mx-auto">
-                            À partir du DPE officiel de votre logement : travaux recommandés, nouvelle étiquette, aides de l'État, reste à charge et économies sur vos factures.
+                            Adresse ou numéro de DPE : travaux, nouvelle étiquette, aides, reste à charge, valeur verte et avis de valeur en quelques secondes.
                         </p>
 
                         <Card className="mt-10 p-4 sm:p-6 text-left shadow-2xl shadow-black/40">
@@ -136,39 +131,23 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                             {error && <p role="alert" className="mt-4 text-sm text-coral">{error}</p>}
                             <p className="mt-4 text-xs text-faint flex items-center gap-2">
                                 <ShieldCheck size={14} className="text-sage shrink-0" />
-                                Gratuit, sans inscription. Données officielles de l'ADEME.
+                                Données officielles : DPE de l'ADEME, ventes DVF de la DGFiP.
                             </p>
                         </Card>
                     </div>
                 </section>
 
-                {/* How it works */}
+                {/* The other tools */}
                 <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 border-t border-line/60">
-                    <h2 className="text-2xl sm:text-3xl text-ink text-center mb-10">Comment ça marche</h2>
-                    <ol className="grid gap-5 md:grid-cols-3">
-                        {STEPS.map((s, i) => (
-                            <li key={s.title}>
-                                <Card className="p-6 h-full">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className="h-8 w-8 rounded-full border border-brass/50 text-brass font-serif flex items-center justify-center">{i + 1}</span>
-                                        <s.icon size={20} className="text-muted" />
-                                    </div>
-                                    <h3 className="text-lg text-ink mb-2">{s.title}</h3>
-                                    <p className="text-sm text-muted leading-relaxed">{s.text}</p>
-                                </Card>
-                            </li>
-                        ))}
-                    </ol>
-                </section>
-
-                {/* Audiences */}
-                <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
                     <div className="grid gap-5 md:grid-cols-3">
-                        {AUDIENCES.map(a => (
-                            <div key={a.title} className="border-l-2 border-brass/60 pl-5 py-1">
-                                <h3 className="text-lg text-ink mb-1">{a.title}</h3>
-                                <p className="text-sm text-muted leading-relaxed">{a.text}</p>
-                            </div>
+                        {SHORTCUTS.map(t => (
+                            <Link key={t.to} to={t.to} className="block">
+                                <Card className="p-6 h-full hover:border-brass/50 transition-colors">
+                                    <t.icon size={20} className="text-brass mb-4" />
+                                    <h2 className="text-lg text-ink mb-2">{t.title}</h2>
+                                    <p className="text-sm text-muted leading-relaxed">{t.text}</p>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
                 </section>

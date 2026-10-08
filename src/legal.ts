@@ -2,7 +2,7 @@
 // Every value in [brackets] must be replaced before selling: a banner is shown
 // on the legal pages while some are missing.
 
-export const CGV_VERSION = '2026-10-08.3'; // Keep in sync with TERMS_VERSION in api/accounts.py
+export const CGV_VERSION = '2026-10-08.4'; // Keep in sync with TERMS_VERSION in api/accounts.py
 
 export const LEGAL = {
     brand: 'SPREA',
@@ -13,10 +13,7 @@ export const LEGAL = {
     // e.g. "TVA intracommunautaire : FR12345678901" or "TVA non applicable, art. 293 B du CGI"
     vat: '[Numéro de TVA intracommunautaire ou mention de franchise en base]',
     email: '[contact@votre-domaine.fr]',
-    // Consumer mediator (mandatory to sell to consumers, art. L612-1 Code de la consommation)
-    mediatorName: '[Nom du médiateur de la consommation]',
-    mediatorUrl: '[https://site-du-mediateur.fr]',
-    // Court competent for disputes with professional customers
+    // Court competent for disputes (customers are professionals only)
     court: '[Tribunal de commerce de ...]',
     phone: '[Numéro de téléphone]',
     publicationDirector: '[Nom du directeur de la publication]',

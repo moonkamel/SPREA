@@ -33,6 +33,8 @@ export default function OwnerPage({ code }: { code: string }) {
     const [error, setError] = useState<string | null>(null);
 
     // Page, then the dwelling's DPE, local price and simulation of the recommended works
+    // (the tools are for subscribers: the link code opens them for this page)
+    const link = { 'X-Link-Code': code };
     useEffect(() => {
         (async () => {
             try {
@@ -41,13 +43,13 @@ export default function OwnerPage({ code }: { code: string }) {
                 const data: PageData = await res.json();
                 setPage(data);
                 document.title = `Votre logement · ${data.agency.agency_name}`;
-                const dpe = await (await fetch(`/api/search-dpe/${encodeURIComponent(data.dpe_number)}`)).json();
+                const dpe = await (await fetch(`/api/search-dpe/${encodeURIComponent(data.dpe_number)}`, { headers: link })).json();
                 if (!dpe.results?.length) return;
                 let p = toProperty(dpe.results[0]);
                 if (p.inseeCode) {
                     const params = new URLSearchParams({ insee: p.inseeCode, building_type: p.buildingType || '', surface: String(p.surface || '') });
                     if (p.latitude != null && p.longitude != null) { params.set('lat', String(p.latitude)); params.set('lon', String(p.longitude)); }
-                    const market = await fetch(`/api/market-price?${params}`).then(r => (r.ok ? r.json() : null)).catch(() => null);
+                    const market = await fetch(`/api/market-price?${params}`, { headers: link }).then(r => (r.ok ? r.json() : null)).catch(() => null);
                     if (market?.price_per_m2) p = { ...p, pricePerM2: market.price_per_m2, priceSource: market.source };
                 }
                 setProperty(p);
@@ -55,7 +57,7 @@ export default function OwnerPage({ code }: { code: string }) {
                 setWorks(selected);
                 const simRes = await fetch('/api/simulate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', ...link },
                     body: JSON.stringify({ property: propertyInput(p), works: selected, suggested_works: selected }),
                 });
                 if (simRes.ok) setSim(toSimulation(await simRes.json()));

@@ -22,7 +22,7 @@ export default function ConfidentialitePage() {
                         </thead>
                         <tbody>
                             <tr>
-                                <td className={td}>Simulation, sans compte</td>
+                                <td className={td}>Simulation (abonnés)</td>
                                 <td className={td}>Adresse ou numéro de DPE recherché, paramètres saisis (revenus du foyer par tranche, étages, loyer, prix d'achat…)</td>
                                 <td className={td}>Calculer la simulation. Ces données ne sont pas enregistrées par le site.</td>
                                 <td className={td}>Intérêt légitime (fournir le service demandé)</td>
@@ -32,6 +32,12 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Nom, téléphone et/ou email, message, date et texte du consentement</td>
                                 <td className={td}>Transmettre la demande à l'agence qui a envoyé le courrier, seule destinataire. L'agence est responsable de ce traitement ; SPREA l'héberge pour son compte (sous-traitant). Le site compte aussi les visites de la page, sans donnée personnelle.</td>
                                 <td className={td}>Consentement de la personne, recueilli par l'agence</td>
+                            </tr>
+                            <tr>
+                                <td className={td}>Demande de devis (formules Agence et Réseau)</td>
+                                <td className={td}>Nom, société, email, téléphone, nombre d'agents, message</td>
+                                <td className={td}>Répondre à la demande et établir le devis</td>
+                                <td className={td}>Mesures précontractuelles prises à la demande de la personne</td>
                             </tr>
                             <tr>
                                 <td className={td}>Compte</td>
@@ -86,10 +92,11 @@ export default function ConfidentialitePage() {
                 <ul className="list-disc pl-5 space-y-1">
                     <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Demandes de rappel laissées sur une page d'agence : jusqu'à leur suppression par l'agence, à la suppression de son compte ou au plus tard 3 ans après leur envoi. Pour exercer vos droits, adressez-vous à l'agence indiquée sur la page, ou à nous : nous transmettrons.</li>
+                    <li>Demandes de devis : 3 ans après la demande si elle n'aboutit pas à un contrat.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>
                     <li>Après suppression du compte, trace minimale des achats et des acceptations (date, montant, références de paiement, version des CGV ou des conditions de la carte de prospection acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
                     <li>Journaux techniques : quelques jours, selon la politique de l'hébergeur.</li>
-                    <li>Données de simulation sans compte : non conservées.</li>
+                    <li>Données de simulation hors rapport : non conservées.</li>
                 </ul>
             </LegalSection>
 
