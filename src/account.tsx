@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
-import { Loader2, LogOut, Mail, Sparkles, User as UserIcon, X } from 'lucide-react';
+import { Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
 
 // --- Types ---
 
@@ -81,6 +81,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const [me, setMe] = useState<Me | null>(null);
     const [loginReason, setLoginReason] = useState<string | null>(null);
     const [showAccount, setShowAccount] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [pending, setPending] = useState<ReportRequest | null>(null);
     // Purchase waiting for the CGV acceptance
@@ -276,6 +277,26 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                         await supabase.current?.auth.signOut();
                         setShowAccount(false);
                     }}
+                    onDelete={() => { setShowAccount(false); setShowDelete(true); }}
+                />
+            )}
+            {showDelete && session && (
+                <DeleteAccountModal
+                    me={me}
+                    onClose={() => setShowDelete(false)}
+                    onConfirm={async () => {
+                        const res = await authedFetch('/api/me', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ confirm: true }),
+                        });
+                        if (!res.ok) { setNotice(await errorMessage(res)); return; }
+                        clearPending();
+                        setPending(null);
+                        setShowDelete(false);
+                        await supabase.current?.auth.signOut();
+                        setNotice('Votre compte et vos rapports ont été supprimés.');
+                    }}
                 />
             )}
             {pending && session && (
@@ -393,7 +414,7 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
     );
 }
 
-function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, onLogout }: {
+function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
     me: Me | null;
     config: PublicConfig | null;
     onClose: () => void;
@@ -401,6 +422,7 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
     onSubscribe: () => Promise<void>;
     onPortal: () => Promise<void>;
     onLogout: () => Promise<void>;
+    onDelete: () => void;
 }) {
     const [busy, setBusy] = useState<string | null>(null);
     const run = (key: string, fn: () => Promise<void>) => async () => {
@@ -467,9 +489,14 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
                         )}
                     </div>
 
-                    <button onClick={run('logout', onLogout)} className="text-xs font-bold text-slate-400 hover:text-slate-900 flex items-center gap-2">
-                        <LogOut size={14} /> Se déconnecter
-                    </button>
+                    <div className="flex items-center justify-between gap-4">
+                        <button onClick={run('logout', onLogout)} className="text-xs font-bold text-slate-400 hover:text-slate-900 flex items-center gap-2">
+                            <LogOut size={14} /> Se déconnecter
+                        </button>
+                        <button onClick={onDelete} className="text-xs font-bold text-slate-400 hover:text-red-600 flex items-center gap-2">
+                            <Trash2 size={14} /> Supprimer mon compte
+                        </button>
+                    </div>
                 </div>
             )}
         </Modal>
@@ -514,6 +541,44 @@ function PurchaseModal({ kind, price, onClose, onConfirm }: {
                 Continuer vers le paiement
             </button>
             <p className="text-[10px] text-slate-400 text-center mt-3">Paiement sécurisé par Stripe</p>
+        </Modal>
+    );
+}
+
+function DeleteAccountModal({ me, onClose, onConfirm }: {
+    me: Me | null;
+    onClose: () => void;
+    onConfirm: () => Promise<void>;
+}) {
+    const [understood, setUnderstood] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const reportCount = me?.reports.length || 0;
+
+    return (
+        <Modal title="Supprimer mon compte" onClose={onClose}>
+            <ul className="text-sm text-slate-600 leading-relaxed space-y-2 list-disc pl-5 mb-5">
+                <li>Votre compte et votre adresse email sont supprimés.</li>
+                <li>
+                    {reportCount > 0
+                        ? <><b>Vos {reportCount} rapport{reportCount > 1 ? 's' : ''}</b> ne pourront plus être téléchargés : enregistrez-les avant de continuer.</>
+                        : 'Vos rapports sont supprimés.'}
+                </li>
+                {me?.is_pro && <li>Votre <b>abonnement Pro est résilié immédiatement</b>, sans remboursement de la période en cours.</li>}
+                <li>Les factures et une trace minimale de vos achats (date, montant, version des CGV acceptée) sont conservées pour nos obligations légales, sans vos simulations.</li>
+            </ul>
+            <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer">
+                <input type="checkbox" checked={understood} onChange={e => setUnderstood(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-red-600" />
+                <span>Je comprends que cette suppression est définitive.</span>
+            </label>
+            <button
+                disabled={!understood || busy}
+                onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }}
+                className="mt-6 w-full h-14 rounded-2xl bg-red-600 text-white font-black uppercase text-xs tracking-widest hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+                {busy && <Loader2 className="animate-spin" size={16} />}
+                Supprimer définitivement
+            </button>
+            <button onClick={onClose} className="mt-3 w-full text-xs font-bold text-slate-400 hover:text-slate-900">Annuler</button>
         </Modal>
     );
 }

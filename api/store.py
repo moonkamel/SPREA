@@ -10,21 +10,24 @@ import httpx
 
 
 class SupabaseStore:
-    def __init__(self, url: str, service_key: str, timeout: float = 10.0):
+    def __init__(self, url: str, service_key: str, timeout: float = 10.0,
+                 transport: Optional[httpx.AsyncBaseTransport] = None):
         self.base = f"{url.rstrip('/')}/rest/v1"
+        self.auth_base = f"{url.rstrip('/')}/auth/v1"
         self.headers = {
             "apikey": service_key,
             "Authorization": f"Bearer {service_key}",
             "Content-Type": "application/json",
         }
         self.timeout = timeout
+        self.transport = transport  # Tests only
 
     async def _request(self, method: str, table: str, params: Optional[Dict[str, str]] = None,
                        json: Any = None, prefer: Optional[str] = None) -> List[Dict[str, Any]]:
         headers = dict(self.headers)
         if prefer:
             headers["Prefer"] = prefer
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
             res = await client.request(method, f"{self.base}/{table}", params=params, json=json, headers=headers)
             res.raise_for_status()
             return res.json() if res.content else []
@@ -71,6 +74,30 @@ class SupabaseStore:
             "order": "created_at.desc",
             "limit": "50",
         })
+
+    async def paid_reports(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "reports", params={
+            "user_id": f"eq.{user_id}",
+            "status": "eq.paid",
+            "select": "stripe_session_id,terms_version,terms_accepted_at,amount_paid,currency,paid_at",
+        })
+
+    # --- Account deletion ---
+
+    async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:
+        # PostgREST bulk inserts need the same keys in every row
+        columns = sorted({k for row in rows for k in row})
+        rows = [{k: row.get(k) for k in columns} for row in rows]
+        # Idempotent: a retried deletion does not duplicate records
+        await self._request("POST", "purchase_archive", params={"on_conflict": "stripe_session_id"}, json=rows,
+                            prefer="resolution=ignore-duplicates")
+
+    async def delete_user(self, user_id: str) -> None:
+        """Deletes the Supabase Auth user; profile and reports follow (on delete cascade)."""
+        async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
+            res = await client.delete(f"{self.auth_base}/admin/users/{user_id}", headers=self.headers)
+            if res.status_code != 404:  # Already deleted
+                res.raise_for_status()
 
 
 _store: Optional[SupabaseStore] = None

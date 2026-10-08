@@ -105,6 +105,13 @@ class Billing:
         })
         return session["url"]
 
+    async def cancel_subscription(self, subscription_id: str) -> None:
+        """Immediate cancellation (account deletion). Already canceled: nothing to do."""
+        try:
+            await self.client.v1.subscriptions.cancel_async(subscription_id)
+        except stripe.InvalidRequestError as e:
+            logger.info(f"Subscription {subscription_id} not cancelable: {e.user_message or e.code}")
+
     async def get_session(self, session_id: str) -> Dict[str, Any]:
         return await self.client.v1.checkout.sessions.retrieve_async(session_id)
 

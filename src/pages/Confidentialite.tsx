@@ -78,9 +78,9 @@ export default function ConfidentialitePage() {
 
             <LegalSection title="Durées de conservation">
                 <ul className="list-disc pl-5 space-y-1">
-                    <li>Compte et rapports : jusqu'à la suppression du compte.</li>
+                    <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>
-                    <li>Preuve d'acceptation des CGV : durée de la relation contractuelle, puis 5 ans (prescription).</li>
+                    <li>Après suppression du compte, trace minimale des achats (date, montant, références de paiement, version des CGV acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
                     <li>Journaux techniques : quelques jours, selon la politique de l'hébergeur.</li>
                     <li>Données de simulation sans compte : non conservées.</li>
                 </ul>
@@ -96,7 +96,7 @@ export default function ConfidentialitePage() {
             </LegalSection>
 
             <LegalSection title="Vos droits">
-                <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données, ainsi que du droit de définir des directives sur leur sort après votre décès. Pour supprimer votre compte ou exercer ces droits, écrivez à {LEGAL.email} depuis l'adresse email de votre compte. Une réponse vous est apportée dans un délai d'un mois.</p>
+                <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données, ainsi que du droit de définir des directives sur leur sort après votre décès. Vous pouvez supprimer votre compte à tout moment depuis « Mon compte », rubrique « Supprimer mon compte ». Pour exercer vos autres droits, écrivez à {LEGAL.email} depuis l'adresse email de votre compte. Une réponse vous est apportée dans un délai d'un mois.</p>
                 <p>Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).</p>
             </LegalSection>
 

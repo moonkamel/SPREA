@@ -197,6 +197,10 @@ class ReportCreate(BaseModel):
     accept_terms: bool = False
 
 
+class DeleteAccountRequest(BaseModel):
+    confirm: bool = False
+
+
 class SubscribeRequest(BaseModel):
     # CGV accepted and immediate start of the subscription requested
     accept_terms: bool = False
@@ -242,6 +246,62 @@ async def me(user: User = Depends(current_user), store: SupabaseStore = Depends(
         "has_billing_account": bool(profile.get("stripe_customer_id")),
         "reports": [report_summary(r) for r in reports],
     }
+
+
+# Subscription states that still bill or may bill the customer
+ENDED_SUBSCRIPTION_STATUSES = {"canceled", "incomplete_expired"}
+
+
+@router.delete("/me")
+async def delete_account(data: DeleteAccountRequest, user: User = Depends(current_user),
+                         store: SupabaseStore = Depends(store_dep),
+                         billing: Optional[Billing] = Depends(optional_billing_dep)):
+    """Deletes the account, its reports and any running subscription.
+
+    Kept afterwards (legal obligations): invoices at Stripe, and a minimal
+    record of each purchase (CGV version and date, payment references).
+    """
+    if not data.confirm:
+        raise HTTPException(status_code=400, detail="Confirmez la suppression du compte.")
+    profile = await store.get_profile(user.id) or {}
+
+    # 1. Stop billing first: abort if Stripe cannot be reached
+    subscription_id = profile.get("subscription_id")
+    if subscription_id and profile.get("subscription_status") not in ENDED_SUBSCRIPTION_STATUSES:
+        if billing is None:
+            raise HTTPException(status_code=503, detail="Suppression impossible pour le moment, réessayez plus tard.")
+        await billing.cancel_subscription(subscription_id)
+
+    # 2. Keep the proof of purchases, without personal data
+    deleted_at = datetime.now(timezone.utc).isoformat()
+    customer_id = profile.get("stripe_customer_id")
+    archive = [{
+        "kind": "report",
+        "stripe_customer_id": customer_id,
+        "stripe_session_id": r.get("stripe_session_id"),
+        "terms_version": r.get("terms_version"),
+        "terms_accepted_at": r.get("terms_accepted_at"),
+        "amount_paid": r.get("amount_paid"),
+        "currency": r.get("currency"),
+        "paid_at": r.get("paid_at"),
+        "account_deleted_at": deleted_at,
+    } for r in await store.paid_reports(user.id)]
+    if subscription_id:
+        archive.append({
+            "kind": "subscription",
+            "stripe_customer_id": customer_id,
+            "subscription_id": subscription_id,
+            "terms_version": profile.get("terms_version"),
+            "terms_accepted_at": profile.get("terms_accepted_at"),
+            "account_deleted_at": deleted_at,
+        })
+    if archive:
+        await store.archive_purchases(archive)
+
+    # 3. Delete the user: profile and reports are removed by cascade
+    await store.delete_user(user.id)
+    logger.info("Account deleted")
+    return {"deleted": True}
 
 
 @router.post("/reports")

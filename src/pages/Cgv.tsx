@@ -40,7 +40,7 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={5} title="Compte client">
-                    <p>L'achat d'un rapport ou d'un abonnement nécessite un compte, créé à partir d'une adresse email. La connexion s'effectue par un lien envoyé à cette adresse. Le Client est responsable de l'accès à sa messagerie et de l'exactitude de son adresse email.</p>
+                    <p>L'achat d'un rapport ou d'un abonnement nécessite un compte, créé à partir d'une adresse email. La connexion s'effectue par un lien envoyé à cette adresse. Le Client est responsable de l'accès à sa messagerie et de l'exactitude de son adresse email. Il peut supprimer son compte à tout moment depuis l'espace « Mon compte » ; ses rapports ne sont alors plus accessibles.</p>
                 </Article>
 
                 <Article n={6} title="Prix">
@@ -67,6 +67,7 @@ export default function CgvPage() {
                 <Article n={10} title="Durée et résiliation de l'abonnement Pro">
                     <p>L'abonnement est conclu pour une durée d'un mois, renouvelée automatiquement. Il est sans engagement : le Client peut le résilier à tout moment depuis « Mon compte », rubrique « Factures et abonnement ». La résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée. Les rapports obtenus restent téléchargeables.</p>
                     <p>En cas d'échec du paiement, l'accès aux nouveaux rapports est suspendu jusqu'à régularisation.</p>
+                    <p>La suppression du compte par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours.</p>
                 </Article>
 
                 <Article n={11} title="Garanties légales">

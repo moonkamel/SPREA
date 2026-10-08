@@ -8,7 +8,9 @@ l'abonnement Pro.
 
 1. Créer un projet sur supabase.com.
 2. **SQL Editor** : exécuter les fichiers de `supabase/migrations/` dans l'ordre
-   (`001_accounts.sql`, puis `002_terms_acceptance.sql`).
+   (`001_accounts.sql`, `002_terms_acceptance.sql`, `003_purchase_archive.sql`).
+   La table `purchase_archive` garde 5 ans une trace des achats des comptes
+   supprimés : planifier sa purge (requête en tête du fichier, via pg_cron).
 3. **Authentication > URL Configuration** : mettre l'URL du site dans
    *Site URL* et l'ajouter aux *Redirect URLs* (et `http://localhost:5173`
    pour le développement).
