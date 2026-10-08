@@ -10,6 +10,7 @@ const ProspectionPage = lazy(() => import('./pages/Prospection'));
 const OwnerPage = lazy(() => import('./pages/Owner'));
 const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
+const ValuationDialog = lazy(() => import('./pages/ValuationDialog'));
 import Landing from './views/Landing';
 import Results from './views/Results';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
@@ -100,6 +101,7 @@ function Simulator() {
     const [sims, setSims] = useState<Record<Scenario, Simulation | null>>({ A: null, B: null });
     const [busy, setBusy] = useState<Record<Scenario, boolean>>({ A: false, B: false });
     const [downloading, setDownloading] = useState(false);
+    const [showValuation, setShowValuation] = useState(false);
 
     useEffect(() => {
         fetch('/api/works')
@@ -217,26 +219,28 @@ function Simulator() {
     useSimulation(inputA, setSimA, setBusyA);
     useSimulation(inputB, setSimB, setBusyB);
 
+    const reportMeta = () => property && ({
+        address: property.address || 'Adresse inconnue',
+        year: property.year || null,
+        ademe_dpe_number: property.ademe_dpe_number || null,
+        building_type: property.buildingType || null,
+        construction_period: property.constructionPeriod || null,
+        dpe_date: property.dpeDate || null,
+        city: property.city || null,
+        postcode: property.postcode || null,
+        details: property.details || null,
+        insee_code: property.inseeCode || null,
+        latitude: property.latitude ?? null,
+        longitude: property.longitude ?? null,
+    });
+
     const downloadReport = async () => {
         const simulation = scenario === 'A' ? inputA : inputB;
         if (!property || !simulation) return;
         setDownloading(true);
         try {
             await requestReport({
-                meta: {
-                    address: property.address || 'Adresse inconnue',
-                    year: property.year || null,
-                    ademe_dpe_number: property.ademe_dpe_number || null,
-                    building_type: property.buildingType || null,
-                    construction_period: property.constructionPeriod || null,
-                    dpe_date: property.dpeDate || null,
-                    city: property.city || null,
-                    postcode: property.postcode || null,
-                    details: property.details || null,
-                    insee_code: property.inseeCode || null,
-                    latitude: property.latitude ?? null,
-                    longitude: property.longitude ?? null,
-                },
+                meta: reportMeta()!,
                 simulation,
             });
         } finally {
@@ -249,7 +253,14 @@ function Simulator() {
     }
 
     if (view === 'dashboard' && property) {
+        const currentInput = scenario === 'A' ? inputA : inputB;
         return (
+            <>
+            {showValuation && currentInput && (
+                <Suspense fallback={null}>
+                    <ValuationDialog meta={reportMeta()!} simulation={currentInput} onClose={() => setShowValuation(false)} />
+                </Suspense>
+            )}
             <Dashboard
                 property={property}
                 scenario={scenario}
@@ -269,8 +280,10 @@ function Simulator() {
                     downloading,
                     onDownload: downloadReport,
                 }}
+                valuation={me?.is_pro && property.inseeCode ? () => setShowValuation(true) : undefined}
                 onBack={goHome}
             />
+            </>
         );
     }
 

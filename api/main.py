@@ -76,12 +76,14 @@ try:
     from api.accounts import router as accounts_router
     from api.contacts import router as contacts_router
     from api.alerts import router as alerts_router
+    from api.valuation import router as valuation_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
     from accounts import router as accounts_router
     from contacts import router as contacts_router
     from alerts import router as alerts_router
+    from valuation import router as valuation_router
 
 @app.get("/")
 async def root():
@@ -301,6 +303,7 @@ app.include_router(router)
 app.include_router(accounts_router)
 app.include_router(contacts_router)
 app.include_router(alerts_router)
+app.include_router(valuation_router)
 
 if __name__ == "__main__":
     import uvicorn
