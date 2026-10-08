@@ -36,12 +36,13 @@ async def test_delete_user_calls_auth_admin_api():
 
     def handler(request):
         seen["method"], seen["url"] = request.method, str(request.url)
-        seen["auth"] = request.headers["authorization"]
+        seen["apikey"] = request.headers["apikey"]
+        seen["auth"] = request.headers.get("authorization")
         return httpx.Response(200, json={})
 
     await make_store(handler).delete_user("uid-1")
     assert seen == {"method": "DELETE", "url": "https://proj.supabase.co/auth/v1/admin/users/uid-1",
-                    "auth": "Bearer service-key"}
+                    "apikey": "service-key", "auth": None}
 
 
 @pytest.mark.anyio
@@ -54,3 +55,9 @@ async def test_delete_user_tolerates_already_deleted_but_not_errors():
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+def test_legacy_jwt_key_is_also_sent_as_bearer():
+    store = SupabaseStore("https://proj.supabase.co", "eyJhbGciOiJIUzI1NiJ9.x.y")
+    assert store.headers["Authorization"] == "Bearer eyJhbGciOiJIUzI1NiJ9.x.y"
+    assert "Authorization" not in SupabaseStore("https://proj.supabase.co", "sb_secret_abc").headers

@@ -14,11 +14,11 @@ class SupabaseStore:
                  transport: Optional[httpx.AsyncBaseTransport] = None):
         self.base = f"{url.rstrip('/')}/rest/v1"
         self.auth_base = f"{url.rstrip('/')}/auth/v1"
-        self.headers = {
-            "apikey": service_key,
-            "Authorization": f"Bearer {service_key}",
-            "Content-Type": "application/json",
-        }
+        self.headers = {"apikey": service_key, "Content-Type": "application/json"}
+        # Legacy service_role keys are JWTs and also go in Authorization. The new
+        # secret keys (sb_secret_...) are not JWTs: they must only be sent as apikey.
+        if service_key.startswith("eyJ"):
+            self.headers["Authorization"] = f"Bearer {service_key}"
         self.timeout = timeout
         self.transport = transport  # Tests only
 
