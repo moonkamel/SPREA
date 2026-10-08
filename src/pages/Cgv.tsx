@@ -31,7 +31,7 @@ export default function CgvPage() {
                     <p><b>Simulation gratuite.</b> À partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME, le site estime les travaux de rénovation envisageables, leur coût, l'étiquette énergétique après travaux, les aides mobilisables, le reste à charge et les économies d'énergie. La simulation est accessible sans compte et sans paiement.</p>
                     <p><b>Rapport.</b> Document PDF reprenant la simulation d'un logement, accompagné d'une analyse rédigée. Il est vendu à l'unité.</p>
                     <p><b>Abonnement Pro.</b> Abonnement mensuel donnant accès à un nombre illimité de rapports pendant sa durée. Il s'adresse principalement aux professionnels de l'immobilier et de la rénovation.</p>
-                    <p>Les caractéristiques essentielles de chaque offre sont présentées sur la page <Link to="/tarifs" className="underline text-blue-600">Tarifs</Link> et rappelées avant le paiement.</p>
+                    <p>Les caractéristiques essentielles de chaque offre sont présentées sur la page <Link to="/tarifs" className="underline text-brass hover:text-brass-light">Tarifs</Link> et rappelées avant le paiement.</p>
                 </Article>
 
                 <Article n={4} title="Nature des résultats">
@@ -86,7 +86,7 @@ export default function CgvPage() {
 
                 <Article n={14} title="Données personnelles">
                     <p>Le Vendeur traite l'adresse email du Client, les simulations enregistrées dans ses rapports et les informations de facturation pour fournir le service, facturer et respecter ses obligations comptables. Les paiements sont traités par Stripe, l'authentification et l'hébergement des données par Supabase. Les données sont conservées pendant la durée du compte, puis le temps des obligations légales (10 ans pour les pièces comptables).</p>
-                    <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL. Le détail figure dans la <Link to="/confidentialite" className="underline text-blue-600">politique de confidentialité</Link>.</p>
+                    <p>Le Client dispose d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, qu'il exerce à {LEGAL.email}. Il peut introduire une réclamation auprès de la CNIL. Le détail figure dans la <Link to="/confidentialite" className="underline text-brass hover:text-brass-light">politique de confidentialité</Link>.</p>
                 </Article>
 
                 <Article n={15} title="Réclamations et médiation">
@@ -97,10 +97,10 @@ export default function CgvPage() {
                     <p>Les présentes CGV sont soumises au droit français. Pour les consommateurs, les litiges relèvent des juridictions désignées par les règles légales. Pour les Clients professionnels, compétence exclusive est attribuée au {LEGAL.court}.</p>
                 </Article>
 
-                <section className="space-y-3 border-t border-slate-100 pt-8">
-                    <h2 className="text-lg font-black text-slate-800 tracking-tight">Annexe – Formulaire de rétractation</h2>
-                    <p className="text-xs text-slate-400">À compléter et renvoyer uniquement si vous souhaitez vous rétracter du contrat.</p>
-                    <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-2xl p-5 space-y-2">
+                <section className="space-y-3 border-t border-line pt-8">
+                    <h2 className="text-xl text-ink">Annexe – Formulaire de rétractation</h2>
+                    <p className="text-sm text-faint">À compléter et renvoyer uniquement si vous souhaitez vous rétracter du contrat.</p>
+                    <div className="text-sm text-ink-soft leading-relaxed bg-panel border border-line rounded-xl p-5 space-y-2">
                         <p>À l'attention de {LEGAL.companyName}, {LEGAL.address}, {LEGAL.email} :</p>
                         <p>Je vous notifie par la présente ma rétractation du contrat portant sur la prestation de services ci-dessous :</p>
                         <p>Commandé le : …………… · Nom du consommateur : …………… · Adresse email du compte : ……………</p>

@@ -1,38 +1,63 @@
 import type { ReactNode } from 'react';
-import { Building2 } from 'lucide-react';
 import { AccountButton } from '../account';
 import { isLegalIncomplete, LEGAL } from '../legal';
-import { Link } from '../router';
+import { Link, navigate } from '../router';
+
+export function Logo({ onClick }: { onClick?: () => void }) {
+    return (
+        <a
+            href="/"
+            onClick={e => {
+                e.preventDefault();
+                if (onClick) onClick();
+                navigate('/');
+            }}
+            className="flex items-baseline gap-3 group"
+        >
+            <span className="font-serif text-2xl tracking-tight text-ink group-hover:text-brass-light transition-colors">{LEGAL.brand}</span>
+            <span className="hidden sm:inline text-xs text-faint tracking-wide">Rénovation énergétique</span>
+        </a>
+    );
+}
+
+export function SiteHeader({ onHome }: { onHome?: () => void }) {
+    return (
+        <header className="border-b border-line/70 bg-canvas/90 backdrop-blur sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+                <Logo onClick={onHome} />
+                <nav className="flex items-center gap-1 sm:gap-3">
+                    <Link to="/tarifs" className="px-3 py-2 text-sm text-muted hover:text-ink transition-colors">Tarifs</Link>
+                    <AccountButton />
+                </nav>
+            </div>
+        </header>
+    );
+}
 
 export function SiteFooter({ className = '' }: { className?: string }) {
     return (
-        <footer className={`text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 py-6 ${className}`}>
-            <span>© {new Date().getFullYear()} {LEGAL.brand}</span>
-            <Link to="/tarifs" className="hover:text-slate-900">Tarifs</Link>
-            <Link to="/cgv" className="hover:text-slate-900">Conditions générales de vente</Link>
-            <Link to="/mentions-legales" className="hover:text-slate-900">Mentions légales</Link>
-            <Link to="/confidentialite" className="hover:text-slate-900">Confidentialité</Link>
-            {!LEGAL.email.startsWith('[') && <a href={`mailto:${LEGAL.email}`} className="hover:text-slate-900">Contact</a>}
+        <footer className={`border-t border-line/70 ${className}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-faint">
+                <span>© {new Date().getFullYear()} {LEGAL.brand} · Estimations indicatives, sans valeur de DPE, d'audit ni de devis.</span>
+                <nav className="flex flex-wrap gap-x-5 gap-y-2">
+                    <Link to="/tarifs" className="hover:text-ink">Tarifs</Link>
+                    <Link to="/cgv" className="hover:text-ink">CGV</Link>
+                    <Link to="/mentions-legales" className="hover:text-ink">Mentions légales</Link>
+                    <Link to="/confidentialite" className="hover:text-ink">Confidentialité</Link>
+                    {!LEGAL.email.startsWith('[') && <a href={`mailto:${LEGAL.email}`} className="hover:text-ink">Contact</a>}
+                </nav>
+            </div>
         </footer>
     );
 }
 
-// Header + footer for the content pages (pricing, CGV)
+// Header + footer for the content pages (pricing, legal)
 export function PageShell({ children }: { children: ReactNode }) {
     return (
-        <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
-            <header className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 flex items-center justify-between gap-4">
-                <Link to="/" className="flex items-center gap-3">
-                    <Building2 className="text-blue-600" size={24} />
-                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{LEGAL.brand}</span>
-                </Link>
-                <nav className="flex items-center gap-3">
-                    <Link to="/tarifs" className="hidden sm:inline text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 px-3">Tarifs</Link>
-                    <AccountButton />
-                </nav>
-            </header>
-            <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 flex-1">{children}</main>
-            <SiteFooter className="mt-12" />
+        <div className="min-h-screen flex flex-col">
+            <SiteHeader />
+            <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14 flex-1">{children}</main>
+            <SiteFooter />
         </div>
     );
 }
@@ -40,8 +65,8 @@ export function PageShell({ children }: { children: ReactNode }) {
 export function LegalIncompleteBanner() {
     if (!isLegalIncomplete()) return null;
     return (
-        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
-            Informations légales à compléter dans <code>src/legal.ts</code> (raison sociale, SIREN, médiateur…) avant toute vente.
+        <div className="rounded-xl border border-brass/40 bg-brass/10 p-4 text-sm text-brass-light">
+            Informations légales à compléter dans <code className="text-ink">src/legal.ts</code> (raison sociale, SIREN, médiateur…) avant toute vente.
         </div>
     );
 }
@@ -49,8 +74,8 @@ export function LegalIncompleteBanner() {
 export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
     return (
         <section className="space-y-3">
-            <h2 className="text-lg font-black text-slate-800 tracking-tight">{title}</h2>
-            <div className="space-y-3 text-sm text-slate-600 leading-relaxed">{children}</div>
+            <h2 className="text-xl text-ink">{title}</h2>
+            <div className="space-y-3 text-[15px] text-ink-soft leading-relaxed">{children}</div>
         </section>
     );
 }
@@ -58,11 +83,11 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 export function LegalPage({ title, updated, children }: { title: string; updated?: string; children: ReactNode }) {
     return (
         <PageShell>
-            <article className="max-w-3xl mx-auto bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 sm:p-10 space-y-8">
+            <article className="max-w-3xl mx-auto space-y-10">
                 <LegalIncompleteBanner />
-                <header>
-                    <h1 className="text-3xl font-black text-slate-800 tracking-tighter">{title}</h1>
-                    {updated && <p className="text-xs text-slate-400 mt-2">{updated}</p>}
+                <header className="border-b border-line pb-8">
+                    <h1 className="text-4xl text-ink">{title}</h1>
+                    {updated && <p className="text-sm text-faint mt-3">{updated}</p>}
                 </header>
                 {children}
             </article>

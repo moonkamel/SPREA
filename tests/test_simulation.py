@@ -160,3 +160,9 @@ def test_electric_homes_get_radiators_and_water_heater():
 def test_insulated_house_gets_fewer_insulation_suggestions():
     res = suggest(label="D", construction_year=2015, initial_cep=200)
     assert not {"iti", "roof", "floor_ceiling", "windows"} & set(res["suggested"])
+
+
+def test_rental_ban_after_works():
+    res = run(works=["roof", "iti", "pac_air_eau"])
+    assert res["ban_date"] == "2028-01-01"  # F today
+    assert res["new_ban_date"] is None  # C after works
