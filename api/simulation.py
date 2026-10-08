@@ -1,0 +1,483 @@
+"""Single retrofit simulation engine used by the UI, the API and the PDF report.
+
+The simulation starts from the official DPE consumption (ADEME), split by
+usage (heating, hot water, other). Insulation works reduce the heating need
+according to the dwelling's own heat losses (api/envelope.py); heating and
+hot water systems then change the energy used. The result is scaled on the
+official DPE figures, so the starting label matches the real certificate.
+"""
+import math
+from datetime import date
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
+try:
+    from api.aids import ResourceProfile, compute_aids, get_profile
+    from api.envelope import Envelope
+except ImportError:
+    from aids import ResourceProfile, compute_aids, get_profile
+    from envelope import Envelope
+
+LABELS = ["A", "B", "C", "D", "E", "F", "G"]
+
+# --- Reference data ---
+
+DPE_THRESHOLDS = [
+    ("A", 70, 6), ("B", 110, 11), ("C", 180, 30), ("D", 250, 50),
+    ("E", 330, 70), ("F", 420, 100), ("G", 999, 999),
+]
+
+# BT01 construction cost index (2024/2025) vs the index the catalog prices were set at
+INDEX_BT01_CURRENT = 131.0
+INDEX_BT01_CATALOG = 120.0
+
+IDF_DEPARTMENTS = {"75", "77", "78", "91", "92", "93", "94", "95"}
+RURAL_DEPARTMENTS = {"23", "36", "15"}
+
+# Primary energy conversion coefficients (DPE)
+ENERGY_CONVERSION = {
+    "electricity": 1.9,  # Since 1 January 2026 (2.3 before)
+    "gas": 1.0,
+    "oil": 1.0,
+    "wood": 1.0,
+    "district_heating": 1.0,
+}
+
+# Average 2025-2026 prices per kWh of final energy, TTC, excluding subscription.
+# Check yearly (CRE regulated tariff for electricity, prix repère for gas).
+ENERGY_PRICES_EUR_KWH = {
+    "electricity": 0.20,
+    "gas": 0.11,
+    "oil": 0.12,
+    "wood": 0.09,
+    "district_heating": 0.12,
+}
+
+# GHG emission factors, kgCO2e per kWh of final energy (DPE 3CL-2021 method)
+EMISSION_FACTORS = {
+    "electricity": 0.079,
+    "gas": 0.227,
+    "oil": 0.324,
+    "wood": 0.030,
+    "district_heating": 0.150,
+}
+
+# Seasonal efficiency of the heating system being replaced
+CURRENT_HEATING_EFFICIENCY = {
+    "electricity": 1.0,   # Joule effect convectors
+    "gas": 0.85,
+    "oil": 0.80,
+    "wood": 0.70,
+    "district_heating": 1.0,
+}
+
+# Works that replace the heating system: new energy and seasonal efficiency
+HEATING_SYSTEMS = {
+    # Conservative SCOP for an air/water heat pump in an existing house
+    "pac_air_eau": {"energy": "electricity", "efficiency": 2.9},
+    # Better regulation than old convectors: ~10% saving on electric heating
+    "heating": {"energy": "electricity", "efficiency": 1.1},
+}
+# Hot water production being replaced, and the thermodynamic water heater
+CURRENT_HOT_WATER_EFFICIENCY = {
+    "electricity": 0.9,
+    "gas": 0.75,
+    "oil": 0.70,
+    "wood": 0.60,
+    "district_heating": 0.9,
+}
+HEAT_PUMP_WATER_HEATER_COP = 2.5
+
+# Wall preparation before interior insulation of uninsulated walls (EUR/m2)
+WALL_PREPARATION_COST = 15
+
+GREEN_VALUE_PER_CLASS = 0.045  # Property value gain per DPE class gained
+DEFAULT_PRICE_PER_M2 = 4500
+SOCIAL_CHARGES = 0.172
+LOAN_RATE = 0.045
+LOAN_MONTHS = 84
+
+# unit: how the default cost scales
+#   m2_wall  -> insulated wall area (envelope geometry)
+#   m2_roof  -> roof / top floor area
+#   m2_floor -> lowest floor area
+#   window   -> per window (price per dwelling given for a typical 8 windows)
+#   radiator -> one per 15 m2
+#   flat     -> one per dwelling
+WORKS_CATALOG = [
+    {"id": "iti", "name": "ITI (Murs Intérieurs)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
+     "description": "Isolation thermique par l'intérieur. Réduit les déperditions mais impacte la surface habitable (~1.5% de perte)."},
+    {"id": "roof", "name": "Isolation Toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
+     "description": "Isolation des combles ou de la toiture pour les maisons individuelles."},
+    {"id": "floor_ceiling", "name": "Isolation Plafond/Plancher", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
+     "description": "Isolation des plafonds ou planchers bas (garage, grenier)."},
+    {"id": "vmc", "name": "Ventilation (VMC)", "cost": 1100, "unit": "flat", "zone": True, "days": 1,
+     "description": "Installation d'une VMC simple ou double flux pour une meilleure qualité d'air et moins d'humidité."},
+    {"id": "pac_air_eau", "name": "Pompe à Chaleur Air/Eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
+     "description": "Remplace une chaudière (gaz, fioul) ou des convecteurs par une pompe à chaleur air/eau. Nécessite un circuit d'eau chaude (radiateurs ou plancher chauffant)."},
+    {"id": "heating", "name": "Radiateur inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
+     "description": "Remplacement des convecteurs électriques par des radiateurs à inertie mieux régulés. Pertinent uniquement pour un logement déjà chauffé à l'électricité."},
+    {"id": "ecs", "name": "Ballon Thermo-dynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
+     "description": "Système de chauffe-eau thermodynamique pour une production d'eau chaude économique."},
+    {"id": "windows", "name": "Menuiseries PVC", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
+     "description": "Remplacement des fenêtres simple vitrage par du double vitrage PVC haute performance."},
+]
+WORKS_BY_ID = {w["id"]: w for w in WORKS_CATALOG}
+
+INCOME_LEVELS = {
+    "tres_modeste": ResourceProfile.BLEU,
+    "modeste": ResourceProfile.JAUNE,
+    "intermediaire": ResourceProfile.VIOLET,
+    "superieur": ResourceProfile.ROSE,
+}
+
+
+# --- Input schema ---
+
+class SimulationProperty(BaseModel):
+    """Dwelling as described by its DPE."""
+    surface: float = Field(..., gt=0, le=10000)
+    initial_cep: float = Field(..., ge=0)
+    ges_value: Optional[float] = None
+    building_type: Optional[str] = None
+    postcode: Optional[str] = None
+    construction_year: Optional[int] = None
+    construction_period: Optional[str] = None
+    price_per_m2: Optional[float] = None
+    heating_energy: Optional[str] = None  # ADEME label, e.g. "Gaz naturel", "Électricité"
+    final_consumption: Optional[float] = Field(None, ge=0)  # kWh EF/m2/year, from ADEME
+    # DPE insulation quality per element (walls, roof, floor, windows): insuffisante, moyenne, bonne, très bonne
+    insulation_quality: Optional[Dict[str, Optional[str]]] = None
+    # DPE heat losses per element (walls, roof, floor, windows, air, bridges), used as weights
+    dpe_losses: Optional[Dict[str, Optional[float]]] = None
+
+
+class SimulationInput(BaseModel):
+    property: SimulationProperty
+    works: List[str] = []
+    # Works flagged as recommended, shown as such in the report
+    suggested_works: List[str] = []
+    income_level: str = "intermediaire"
+    # When given, the income category is derived from the RFR instead of income_level
+    rfr: Optional[float] = None
+    occupants: int = Field(1, ge=1, le=20)
+    nb_etages: int = Field(0, ge=0, le=60)
+    has_ascenseur: bool = True
+    is_urban_dense: bool = False
+    parking_cost: float = Field(35.0, ge=0)
+    is_investor: bool = False
+    monthly_rent: float = Field(0.0, ge=0)
+    purchase_price: float = Field(0.0, ge=0)
+    tmi: float = Field(30.0, ge=0, le=100)
+
+
+# --- Helpers ---
+
+def adjusted_thresholds(surface: float) -> List[Dict]:
+    """Small dwellings (< 40 m2) get relaxed consumption thresholds."""
+    factor = 1 + (40 - surface) * 0.04 if surface < 40 else 1
+    return [{"label": label, "max": round(cep * factor), "max_ges": ges} for label, cep, ges in DPE_THRESHOLDS]
+
+
+def get_labels(cep: float, ges: float, thresholds: List[Dict]) -> Dict[str, str]:
+    cep_idx = next((i for i, t in enumerate(thresholds) if cep <= t["max"]), 6)
+    ges_idx = next((i for i, t in enumerate(thresholds) if ges <= t["max_ges"]), 6)
+    return {"label": LABELS[max(cep_idx, ges_idx)], "cep_label": LABELS[cep_idx], "ges_label": LABELS[ges_idx]}
+
+
+def rental_ban_date(label: str, final_consumption: float, postcode: Optional[str]) -> Optional[date]:
+    """Loi Climat & Résilience rental ban schedule (the 450 kWh rule is in final energy)."""
+    overseas = bool(postcode) and postcode.startswith("97")
+    if not overseas and final_consumption > 450:
+        return date(2023, 1, 1)
+    schedule = {"G": date(2028, 1, 1), "F": date(2031, 1, 1)} if overseas else \
+        {"G": date(2025, 1, 1), "F": date(2028, 1, 1), "E": date(2034, 1, 1)}
+    return schedule.get(label)
+
+
+def normalize_energy(source: Optional[str]) -> str:
+    """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys."""
+    s = (source or "gas").lower()
+    if s in ENERGY_CONVERSION: return s
+    if "lectri" in s: return "electricity"
+    if "gaz" in s or "gpl" in s or "propane" in s: return "gas"
+    if "fioul" in s: return "oil"
+    if "bois" in s or "granul" in s: return "wood"
+    if "seau" in s: return "district_heating"
+    return "gas"
+
+
+def build_envelope(prop: "SimulationProperty", works: List[str] = ()) -> Envelope:
+    # An apartment insulating its roof or floor is on the top or ground floor
+    exposed = {element for work, element in (("roof", "roof"), ("floor_ceiling", "floor")) if work in works}
+    return Envelope(prop.surface, prop.building_type, prop.construction_year, prop.construction_period,
+                    prop.insulation_quality, prop.dpe_losses, exposed_elements=exposed)
+
+
+def zone_coefficient(postcode: Optional[str]) -> float:
+    dept = (postcode or "00")[:2]
+    if dept in IDF_DEPARTMENTS:
+        return 1.2
+    if dept in RURAL_DEPARTMENTS:
+        return 0.9
+    return 1.0
+
+
+def monthly_payment(principal: float, annual_rate: float = LOAN_RATE, months: int = LOAN_MONTHS) -> float:
+    if principal <= 0:
+        return 0.0
+    r = annual_rate / 12
+    return principal * r * (1 + r) ** months / ((1 + r) ** months - 1)
+
+
+def is_house(building_type: Optional[str]) -> bool:
+    return "maison" in (building_type or "").lower()
+
+
+def initial_final_consumption(prop: "SimulationProperty", energy: str) -> float:
+    if prop.final_consumption:
+        return prop.final_consumption
+    return prop.initial_cep / ENERGY_CONVERSION[energy]
+
+
+def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works: List[str]) -> Dict:
+    """Final consumption per usage (kWh/m2/year) and its energy, before and after the works."""
+    final = initial_final_consumption(prop, energy)
+    heating = final * env.heating_share
+    hot_water = final * env.hot_water_share
+    before = {
+        "heating": (heating, energy),
+        "hot_water": (hot_water, energy),
+        "other": (final - heating - hot_water, energy),
+    }
+
+    # 1. Insulation reduces the heating need
+    need_factor = 1 - env.heating_reduction(works)
+    heating_after = (heating * need_factor, energy)
+
+    # 2. A new heating system replaces the current one (best one if several are selected)
+    options = [
+        (heating_after[0] * CURRENT_HEATING_EFFICIENCY[energy] / HEATING_SYSTEMS[w]["efficiency"], HEATING_SYSTEMS[w]["energy"])
+        for w in works if w in HEATING_SYSTEMS
+    ]
+    if options:
+        heating_after = min(options, key=lambda o: o[0] * ENERGY_CONVERSION[o[1]])
+
+    # 3. Thermodynamic water heater
+    hot_water_after = (hot_water, energy)
+    if "ecs" in works:
+        hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[energy] / HEAT_PUMP_WATER_HEATER_COP, "electricity")
+
+    after = {"heating": heating_after, "hot_water": hot_water_after, "other": before["other"]}
+    return {"before": before, "after": after}
+
+
+def _total(usages: Dict, factors: Dict[str, float]) -> float:
+    return sum(kwh * factors[e] for kwh, e in usages.values())
+
+
+def projected_performance(prop: "SimulationProperty", works: List[str]) -> Dict:
+    """New primary consumption and GHG, scaled on the official DPE values."""
+    energy = normalize_energy(prop.heating_energy)
+    env = build_envelope(prop, works)
+    balance = energy_balance(prop, env, energy, works)
+    ges = prop.ges_value or 20
+    primary_before = _total(balance["before"], ENERGY_CONVERSION)
+    ghg_before = _total(balance["before"], EMISSION_FACTORS)
+    cep_ratio = _total(balance["after"], ENERGY_CONVERSION) / primary_before if primary_before > 0 else 1.0
+    ges_ratio = _total(balance["after"], EMISSION_FACTORS) / ghg_before if ghg_before > 0 else 1.0
+    return {
+        "energy": energy,
+        "envelope": env,
+        "balance": balance,
+        "new_cep": prop.initial_cep * cep_ratio,
+        "new_ges": ges * ges_ratio,
+    }
+
+
+# --- Simulation ---
+
+def simulate(data: SimulationInput) -> Dict:
+    prop = data.property
+    surface = prop.surface
+    ges = prop.ges_value or 20
+    thresholds = adjusted_thresholds(surface)
+    works = [WORKS_BY_ID[w] for w in dict.fromkeys(data.works) if w in WORKS_BY_ID]
+    work_ids = [w["id"] for w in works]
+    perf = projected_performance(prop, work_ids)
+    env = perf["envelope"]
+    energy = perf["energy"]
+
+    # Cost coefficients
+    index_ratio = INDEX_BT01_CURRENT / INDEX_BT01_CATALOG
+    coeff_access = 1.0 + (data.nb_etages * 0.05 if data.nb_etages > 0 and not data.has_ascenseur else 0)
+    coeff_urban = 1.10 if data.is_urban_dense else 1.0
+    zone = zone_coefficient(prop.postcode)
+    duration = sum(w["days"] for w in works) or 1
+    logistics = data.parking_cost * duration if data.is_urban_dense else 0.0
+
+    quantities = {
+        "m2_wall": env.wall_area,
+        "m2_roof": env.areas["roof"],
+        "m2_floor": env.areas["floor"],
+        "window": env.window_count,
+        "radiator": math.ceil(surface / 15),
+        "flat": 1,
+    }
+
+    detailed_costs = []
+    aid_works = []
+    for w in works:
+        quantity = quantities[w["unit"]]
+        item = w["cost"] * quantity
+        if w["unit"] == "m2_wall" and env.walls_uninsulated:
+            item += WALL_PREPARATION_COST * quantity
+        if w["zone"]:
+            item *= zone
+        item *= index_ratio * coeff_access * coeff_urban
+        detailed_costs.append({"id": w["id"], "name": w["name"], "cost": item, "suggested": w["id"] in data.suggested_works})
+        aid_works.append({"id": w["id"], "cost_ttc": item, "quantity": quantity})
+
+    if logistics > 0:
+        detailed_costs.append({"id": "parking", "name": "Frais de Stationnement", "cost": logistics, "suggested": False})
+    cost = sum(d["cost"] for d in detailed_costs)
+
+    new_cep = perf["new_cep"]
+    new_ges = perf["new_ges"]
+    balance = perf["balance"]
+    final_before = sum(kwh for kwh, _ in balance["before"].values())
+    final_after = sum(kwh for kwh, _ in balance["after"].values())
+    bill_before = _total(balance["before"], ENERGY_PRICES_EUR_KWH) * surface
+    bill_after = _total(balance["after"], ENERGY_PRICES_EUR_KWH) * surface
+    current = get_labels(prop.initial_cep, ges, thresholds)
+    target = get_labels(new_cep, new_ges, thresholds)
+    steps = max(0, LABELS.index(current["label"]) - LABELS.index(target["label"]))
+
+    # Aids
+    if data.rfr is not None:
+        profile = get_profile(data.rfr, data.occupants, prop.postcode)
+    else:
+        profile = INCOME_LEVELS.get(data.income_level, ResourceProfile.VIOLET)
+    aids = compute_aids(aid_works, profile, current["label"], target["label"])
+    rest = max(0.0, cost - aids["mpr"] - aids["cee"])
+
+    # Éco-PTZ: ceiling depends on the number of work categories
+    categories = set()
+    for w in works:
+        if w["id"] == "roof" and not is_house(prop.building_type):
+            continue
+        if w["id"] in ("iti", "roof", "floor_ceiling"):
+            categories.add("isolation")
+        elif w["id"] in ("heating", "ecs", "pac_air_eau"):
+            categories.add("heating")
+        else:
+            categories.add("other")
+    eco_ptz_limit = {0: 0, 1: 15000, 2: 25000}.get(len(categories), 30000)
+    eco_ptz_amount = min(rest, eco_ptz_limit)
+
+    # Savings on the energy bill, in final energy at current prices
+    savings = max(0.0, bill_before - bill_after)
+
+    # Investor metrics
+    tax_benefit = rest * (data.tmi / 100 + SOCIAL_CHARGES) if data.is_investor else 0.0
+    total_investment = data.purchase_price + cost
+    yield_brut = (data.monthly_rent * 12 / total_investment * 100) if total_investment > 0 else 0.0
+    cashflow = data.monthly_rent - monthly_payment(rest) if data.is_investor else 0.0
+
+    price_per_m2 = prop.price_per_m2 or DEFAULT_PRICE_PER_M2
+    ban = rental_ban_date(current["label"], final_before, prop.postcode)
+
+    return {
+        "current_label": current["label"],
+        "current_cep_label": current["cep_label"],
+        "current_ges_label": current["ges_label"],
+        "new_label": target["label"],
+        "new_cep_label": target["cep_label"],
+        "new_ges_label": target["ges_label"],
+        "initial_cep": prop.initial_cep,
+        "new_cep": new_cep,
+        "initial_ges": ges,
+        "new_ges": new_ges,
+        "gain_classes": steps,
+        "thresholds": thresholds,
+        "cost": cost,
+        "detailed_costs": detailed_costs,
+        "duration_days": duration,
+        "subsidies": aids["mpr"],
+        "cee_est": aids["cee"],
+        "aid_pathway": aids["pathway"],
+        "aid_notes": aids["notes"],
+        "income_profile": profile.value,
+        "rest_to_pay": rest,
+        "eco_ptz_limit": eco_ptz_limit,
+        "eco_ptz_amount": eco_ptz_amount,
+        "heating_energy": energy,
+        "initial_final_consumption": final_before,
+        "new_final_consumption": final_after,
+        "annual_bill_before": bill_before,
+        "annual_bill_after": bill_after,
+        "annual_savings": savings,
+        "heating_need_reduction": env.heating_reduction(work_ids),
+        "loss_shares": env.shares(),
+        # None when the works bring no bill saving
+        "roi_years": (rest - tax_benefit) / savings if savings > 0 else None,
+        "latent_gain": steps * surface * price_per_m2 * GREEN_VALUE_PER_CLASS,
+        "tax_benefit": tax_benefit,
+        "net_investor_cost": rest - tax_benefit,
+        "yield_brut": yield_brut,
+        "cashflow": cashflow,
+        "ban_date": ban.isoformat() if ban else None,
+        "has_iti": any(w["id"] == "iti" for w in works),
+    }
+
+
+# --- Work suggestions ---
+
+def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, List[str]]:
+    """Works to suggest for this dwelling, and a default selection aiming at
+    class C (or D for a G), computed with the simulation model."""
+    house = is_house(prop.building_type)
+    energy = normalize_energy(prop.heating_energy)
+    env = build_envelope(prop)
+    shares = env.shares()
+    label = label or "G"
+    poor_label = label in ("E", "F", "G")
+
+    suggested = set()
+    if shares["walls"] >= 0.18 and env.u["walls"] > 0.45:
+        suggested.add("iti")
+    if house and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
+        suggested.add("roof")
+    if house and shares["floor"] >= 0.08 and env.u["floor"] > 0.5:
+        suggested.add("floor_ceiling")
+    if env.u["windows"] > 2.0:
+        suggested.add("windows")
+    if shares["air"] >= 0.20 and env.period <= 2:
+        suggested.add("vmc")
+    # Heating: heat pump for houses heated with fossil fuels, inertia radiators
+    # only when the dwelling is already electric
+    if house and energy in ("gas", "oil") and label in ("D", "E", "F", "G"):
+        suggested.add("pac_air_eau")
+    if energy == "electricity" and poor_label:
+        suggested.update({"heating", "ecs"})
+
+    if label in ("A", "B", "C"):
+        target = prop.initial_cep
+    else:
+        target = 230 if label == "G" else 150
+
+    priority = ["iti", "floor_ceiling", "windows", "heating", "ecs", "vmc"] if not house else \
+        ["roof", "iti", "floor_ceiling", "pac_air_eau", "windows", "heating", "ecs", "vmc"]
+    preselected: List[str] = []
+    for work in priority:
+        if work not in suggested:
+            continue
+        if projected_performance(prop, preselected)["new_cep"] <= target:
+            break
+        preselected.append(work)
+
+    return {
+        "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],
+        "preselected": preselected,
+    }

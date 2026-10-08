@@ -5,9 +5,9 @@ from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# Configure Gemini
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCLlZZd0RNX7EYm49yOD2jeAhlXCT9O2aE")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_KEY}"
+# Configure Gemini (the key must come from the environment, never from the code)
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
+FALLBACK_NARRATIVE = "L'analyse personnalisée n'est pas disponible pour le moment. Veuillez consulter les chiffres techniques détaillés ci-dessous."
 
 class AIService:
     def __init__(self, model_name: str = "gemini-1.5-flash"):
@@ -17,13 +17,17 @@ class AIService:
         """
         Generates a personalized narrative for the renovation report using direct REST API.
         """
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_key:
+            logger.warning("GEMINI_API_KEY not set, skipping AI narrative.")
+            return FALLBACK_NARRATIVE
+
         try:
             prompt_text = f"""
             Tu es un expert en rénovation énergétique pour SPREA (Intelligent Property). 
             Rédige une analyse synthétique et percutante (150-200 mots) pour un rapport de rénovation.
             
             DONNÉES DU BIEN :
-            - Adresse : {data.get('address')}
             - État actuel : DPE {data.get('current_label')} ({data.get('initial_cep')} kWh/m².an)
             - État projeté : DPE {data.get('new_label')} ({data.get('new_cep')} kWh/m².an)
             - Reste à charge après aides : {data.get('rest_to_pay')} €
@@ -49,10 +53,15 @@ class AIService:
             }
             
             async with httpx.AsyncClient() as client:
-                response = await client.post(GEMINI_URL, json=payload, timeout=30.0)
+                # Key sent as a header so it never appears in URLs or logs
+                response = await client.post(
+                    GEMINI_URL,
+                    json=payload,
+                    headers={"x-goog-api-key": gemini_key},
+                    timeout=30.0,
+                )
                 response.raise_for_status()
                 res_json = response.json()
-                logger.info(f"Gemini Response: {res_json}")
                 
                 # Extract text from Gemini structure
                 if 'candidates' in res_json and len(res_json['candidates']) > 0:
@@ -60,11 +69,11 @@ class AIService:
                     if parts:
                         return parts[0].get('text', '')
                 
-                logger.error(f"Unexpected Gemini structure: {res_json}")
-                return "L'IA n'a pas pu générer l'analyse. Veuillez vérifier les paramètres."
+                logger.error("Unexpected Gemini response structure")
+                return FALLBACK_NARRATIVE
                 
         except Exception as e:
-            logger.error(f"Gemini REST Error: {e}")
-            return "Une erreur est survenue lors de la génération de l'analyse personnalisée par l'IA. Veuillez consulter les chiffres techniques détaillés ci-dessous."
+            logger.error(f"Gemini REST Error: {type(e).__name__}")
+            return FALLBACK_NARRATIVE
 
 ai_service = AIService()

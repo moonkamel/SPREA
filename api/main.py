@@ -5,9 +5,8 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response
-from pydantic import BaseModel, Field
+from typing import Dict, Any
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Depends
 try:
     import pytesseract
     from PIL import Image
@@ -17,10 +16,12 @@ except ImportError:
 
 try:
     from api.ademe_client import AdemeConnector, PropertySchema
-    from api.engine import DPECalculator
+    from api.simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
+                                suggest_works, simulate as run_simulation)
 except ImportError:
     from ademe_client import AdemeConnector, PropertySchema
-    from engine import DPECalculator
+    from simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
+                            suggest_works, simulate as run_simulation)
 
 # LLM Client setup (OpenAI style)
 api_key = os.getenv("OPENAI_API_KEY")
@@ -38,11 +39,6 @@ else:
 
 # Initialize Connector & Engine
 ademe = AdemeConnector()
-engine = DPECalculator()
-try:
-    from api.ai_service import ai_service
-except ImportError:
-    from ai_service import ai_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,21 +47,34 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="SPREA DPE PDF Parser")
 
 from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Frontend and API are served from the same origin on Vercel, so CORS is only
+# needed for extra origins explicitly listed in ALLOWED_ORIGINS (comma separated).
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+if ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     logger.error(f"Global Error on {request.url}: {exc}", exc_info=True)
     return Response(
-        content=json.dumps({"detail": str(exc), "path": request.url.path}),
+        content=json.dumps({"detail": "Erreur interne du serveur.", "path": request.url.path}),
         status_code=500,
         media_type="application/json"
     )
+
+try:
+    from api.ratelimit import search_limiter, simulate_limiter, ai_limiter
+    from api.auth import current_user
+    from api.accounts import router as accounts_router
+except ImportError:
+    from ratelimit import search_limiter, simulate_limiter, ai_limiter
+    from auth import current_user
+    from accounts import router as accounts_router
 
 @app.get("/")
 async def root():
@@ -151,7 +160,7 @@ def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
         return json.loads(response.choices[0].message.content)
     except Exception as e:
         logger.error(f"Error during LLM analysis: {e}")
-        return {"error": "LLM analysis failed", "details": str(e)}
+        return {"error": "LLM analysis failed"}
 
 router = APIRouter(prefix="/api")
 
@@ -159,159 +168,89 @@ router = APIRouter(prefix="/api")
 async def api_root():
     return {"status": "online", "message": "SPREA API is running."}
 
-@router.get("/search-address")
+def simulation_property(prop: PropertySchema) -> SimulationProperty:
+    return SimulationProperty(
+        surface=prop.shab or 50,
+        initial_cep=prop.consumption_level or 350,
+        ges_value=prop.ges_value,
+        building_type=prop.building_type,
+        postcode=prop.postcode,
+        construction_year=prop.construction_year,
+        construction_period=prop.construction_period,
+        heating_energy=prop.systems[0].energy_source if prop.systems else None,
+        final_consumption=prop.final_consumption,
+        insulation_quality=prop.insulation_quality,
+        dpe_losses=prop.dpe_losses,
+    )
+
+def enrich_property(prop: PropertySchema) -> Dict[str, Any]:
+    """API representation of a property, with heat losses and suggested works."""
+    d = prop.model_dump(mode="json")
+    sim_prop = simulation_property(prop)
+    suggestions = suggest_works(sim_prop, prop.dpe_class_current.value if prop.dpe_class_current else None)
+    d["loss_shares"] = build_envelope(sim_prop).shares()
+    d["suggested_works"] = suggestions["suggested"]
+    d["preselected_works"] = suggestions["preselected"]
+    return d
+
+@router.get("/search-address", dependencies=[Depends(search_limiter)])
 async def search_address(q: str):
     """Search for a property by address using BAN + ADEME."""
     try:
-        logger.info(f"Searching address: {q}")
+        logger.info("Searching by address")
         results = await ademe.search_by_address(q)
-        
+
         api_results = []
         for r in results:
             try:
-                d = r.dict()
-                calc = engine.calculate(r)
-                d["recommended_works"] = engine.get_recommendations(r)
-                d["loss_breakdown"] = calc["loss_breakdown"]
-                d["building_type"] = r.building_type
-                d["construction_period"] = r.construction_period
-                api_results.append(d)
+                api_results.append(enrich_property(r))
             except Exception as item_err:
-                logger.error(f"Error mapping item {r.address}: {item_err}")
+                logger.error(f"Error mapping item: {item_err}")
                 continue
-            
+
         return {"count": len(api_results), "results": api_results}
     except Exception as e:
         logger.error(f"Address search crash: {e}", exc_info=True)
-        return {"count": 0, "results": [], "error": str(e)}
+        return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/search-dpe/{dpe_number}")
+@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter)])
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
-        logger.info(f"Searching DPE: {dpe_number}")
+        logger.info("Searching by DPE number")
         prop = await ademe.search_by_dpe_number(dpe_number)
         if prop:
             try:
-                d = prop.dict()
-                calc = engine.calculate(prop)
-                d["recommended_works"] = engine.get_recommendations(prop)
-                d["loss_breakdown"] = calc["loss_breakdown"]
-                d["building_type"] = prop.building_type
-                d["construction_period"] = prop.construction_period
-                return {"count": 1, "results": [d]}
+                return {"count": 1, "results": [enrich_property(prop)]}
             except Exception as map_err:
                 logger.error(f"DPE Mapping Error: {map_err}")
-                return {"count": 1, "results": [prop.dict()]}
+                return {"count": 1, "results": [prop.model_dump(mode="json")]}
         return {"count": 0, "results": []}
     except Exception as e:
         logger.error(f"DPE search failed: {e}", exc_info=True)
-        return {"count": 0, "results": [], "error": str(e)}
+        return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-class SimulationRequest(BaseModel):
-    property_data: PropertySchema
-    selected_works: List[str]
-    rfr: float
-    postcode: Optional[str] = "59000"
-    # New Precision Parameters
-    index_insee: Optional[float] = 125.0
-    nb_etages: Optional[int] = 0
-    has_ascenseur: Optional[bool] = True
-    is_urban_dense: Optional[bool] = False
-    parking_cost: Optional[float] = 35.0
-    chantier_duration: Optional[int] = 5
+@router.get("/works")
+async def works_catalog():
+    """Catalog of retrofit works the simulation knows about."""
+    return {"works": [
+        {"id": w["id"], "name": w["name"], "description": w["description"]}
+        for w in WORKS_CATALOG
+    ]}
 
-@router.post("/simulate")
-async def simulate(data: SimulationRequest):
-    """Run 2025 technical-economic simulation."""
+@router.post("/simulate", dependencies=[Depends(simulate_limiter)])
+async def simulate(data: SimulationInput):
+    """Run the technical-economic simulation for a set of works."""
     try:
-        # Pass extra params as a dict
-        params = {
-            "index_insee": data.index_insee,
-            "nb_etages": data.nb_etages,
-            "has_ascenseur": data.has_ascenseur,
-            "is_urban_dense": data.is_urban_dense,
-            "parking_cost": data.parking_cost,
-            "chantier_duration": data.chantier_duration
-        }
-        res = engine.simulate_retrofit(
-            data.property_data, 
-            data.selected_works, 
-            data.rfr, 
-            data.postcode,
-            params=params
-        )
-        return res
+        return run_simulation(data)
     except Exception as e:
-        logger.error(f"Simulation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Simulation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="La simulation a échoué.")
 
-try:
-    from api.pdf_service import pdf_service
-except ImportError:
-    from pdf_service import pdf_service
-
-class ReportRequest(BaseModel):
-    address: str
-    surface: float
-    year: Any = "N/A"
-    construction_period: Optional[str] = "N/A"
-    building_type: Optional[str] = "Logement"
-    ademe_dpe_number: Optional[str] = "N/A"
-    current_label: str = "G"
-    new_label: str = "G"
-    initial_cep: float = 0.0
-    new_cep: float = 0.0
-    ges_value: float = 0.0
-    new_ges: float = 0.0
-    total_cost: float = 0.0
-    subsidies: float = 0.0
-    rest_to_pay: float = 0.0
-    latent_gain: float = 0.0
-    annual_savings: float = 0.0
-    roi_years: int = 0
-    detailed_costs: Optional[list] = []
-    yield_brut: Optional[float] = 0.0
-    cashflow: Optional[float] = 0.0
-    purchase_price: Optional[float] = 0.0
-    ban_date: Optional[str] = None
-    cee_est: Optional[float] = 0.0
-    eco_ptz_amount: Optional[float] = 0.0
-    pam_amount: Optional[float] = 0.0
-    tax_benefit: Optional[float] = 0.0
-    has_iti: Optional[bool] = False
-    user_profile: Optional[str] = "propriétaire"
-    focus_mpr: Optional[str] = None
-    focus_cee: Optional[str] = None
-    focus_eco_ptz: Optional[str] = None
-
-@router.post("/generate-report")
-async def generate_report(data: ReportRequest):
-    """Generates a PDF report from simulation results with AI narrative."""
-    try:
-        report_data = data.dict()
-        
-        # 1. Generate AI Narrative
-        logger.info(f"Generating AI narrative for profile: {data.user_profile}")
-        narrative = await ai_service.generate_narrative(report_data, data.user_profile)
-        report_data["ai_narrative"] = narrative
-        
-        # 2. Generate PDF
-        pdf_bytes = pdf_service.generate(report_data)
-        
-        return Response(
-            content=pdf_bytes,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=Rapport_SPREA_{data.address.replace(' ', '_')}.pdf"}
-        )
-    except Exception as e:
-        logger.error(f"PDF Generation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/analyze-dpe")
+@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(current_user)])
 async def analyze_dpe(file: UploadFile = File(...)):
     # 1. Validation
-    logger.info(f"Received PDF upload request: {file.filename}")
+    logger.info("Received DPE PDF upload")
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDFs are allowed.")
     
@@ -341,6 +280,7 @@ async def analyze_dpe(file: UploadFile = File(...)):
     }
 
 app.include_router(router)
+app.include_router(accounts_router)
 
 if __name__ == "__main__":
     import uvicorn

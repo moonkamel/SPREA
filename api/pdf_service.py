@@ -284,7 +284,7 @@ class PDFReportGenerator:
             [
                 Paragraph(f"<font size='18'><b>{data.get('yield_brut', 0):.1f} %</b></font>", self.body_style), 
                 Paragraph(f"<font size='18' color='#16a34a'><b>+ {data.get('latent_gain', 0):,.0f} €</b></font>", self.body_style), 
-                Paragraph(f"<font size='18'><b>{data.get('roi_years', 0)} ans</b></font>", self.body_style)
+                Paragraph(f"<font size='18'><b>{data['roi_years']} ans</b></font>" if data.get('roi_years') is not None else "<font size='18'><b>-</b></font>", self.body_style)
             ]
         ]
         
@@ -295,6 +295,16 @@ class PDFReportGenerator:
             ('BOTTOMPADDING', (0,0), (-1,0), 4),
         ]))
         elements.append(t_roi)
+
+        # Legal disclaimer
+        elements.append(Spacer(1, 18))
+        elements.append(Paragraph(
+            "Simulation indicative fondée sur les données publiques ADEME et des coûts moyens de marché. "
+            "Ce document ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. "
+            "Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' "
+            "ou un Accompagnateur Rénov' avant tout engagement.",
+            ParagraphStyle('Disclaimer', parent=self.body_style, fontSize=7, leading=9, textColor=colors.HexColor('#94a3b8'))
+        ))
 
         doc.build(elements)
         buffer.seek(0)

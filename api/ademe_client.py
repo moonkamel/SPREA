@@ -77,12 +77,17 @@ class PropertySchema(BaseModel):
     climate_zone: Optional[ClimateZone] = None
     dpe_class_current: Optional[DPEClass] = None
     ges_class_current: Optional[DPEClass] = None
-    consumption_level: Optional[float] = None
+    consumption_level: Optional[float] = None  # Primary energy, kWh/m2/year
+    final_consumption: Optional[float] = None  # Final energy (what is billed), kWh/m2/year
     ges_value: Optional[float] = None
     date_etablissement: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     building_type: Optional[str] = None # Maison, Appartement, etc.
+    postcode: Optional[str] = None
+    # Per-element insulation quality and heat losses, when the DPE provides them
+    insulation_quality: Dict[str, Optional[str]] = {}
+    dpe_losses: Optional[Dict[str, Optional[float]]] = None
     walls: List[WallSchema] = []
     windows: List[WindowSchema] = []
     systems: List[SystemSchema] = []
@@ -115,7 +120,7 @@ class AdemeConnector:
                 data = await self._make_request(client, self.BASE_URL, params)
                 
                 if not data.get("results"):
-                    logger.warning(f"No DPE found for number: {dpe_number}")
+                    logger.warning("No DPE found for this number")
                     return None
                 
                 raw_data = data["results"][0]
@@ -133,7 +138,7 @@ class AdemeConnector:
                 ban_data = await self._make_request(client, self.BAN_URL, ban_params)
                 
                 if not ban_data.get("features"):
-                    logger.warning(f"Address not found via BAN: {address}")
+                    logger.warning("Address not found via BAN")
                     return []
                 
                 feature = ban_data["features"][0]
@@ -164,13 +169,15 @@ class AdemeConnector:
                     "size": 100
                 }
                 
-                logger.info(f"Querying ADEME with Hyper-Precision: {ademe_params}")
+                logger.info("Querying ADEME by address")
                 ademe_data = await self._make_request(client, self.BASE_URL, ademe_params)
                 
                 results = []
                 for raw_item in ademe_data.get("results", []):
                     mapped = self._map_to_internal(raw_item)
                     # We might not have exact coords from ADEME, so we use BAN's
+                    if not mapped.postcode:
+                        mapped.postcode = postcode
                     if not mapped.latitude:
                         mapped.latitude = coords[1]
                         mapped.longitude = coords[0]
@@ -231,11 +238,36 @@ class AdemeConnector:
             dpe_class_current=self._map_dpe_label(raw.get("etiquette_dpe")),
             ges_class_current=self._map_dpe_label(raw.get("etiquette_ges")),
             consumption_level=self._safe_float(raw.get("conso_5_usages_par_m2_ep", raw.get("consommation_energie_primaire_logement"))),
+            final_consumption=self._safe_float(raw.get("conso_5_usages_par_m2_ef"), None),
             ges_value=self._safe_float(raw.get("emission_ges_5_usages_par_m2")),
             date_etablissement=raw.get("date_etablissement_dpe"),
             building_type=raw.get("type_batiment", "Logement"),
+            postcode=str(raw.get("code_postal_ban") or raw.get("code_postal_brut") or "") or None,
             is_estimated=is_estimated
         )
+
+        # Insulation quality per element (DPE 2021 fields, absent from older records)
+        prop.insulation_quality = {
+            "walls": raw.get("qualite_isolation_murs"),
+            "roof": raw.get("qualite_isolation_plancher_haut_comble_perdu")
+                or raw.get("qualite_isolation_plancher_haut_comble_amenage")
+                or raw.get("qualite_isolation_plancher_haut_toit_terrase"),
+            "floor": raw.get("qualite_isolation_plancher_bas"),
+            "windows": raw.get("qualite_isolation_menuiseries"),
+        }
+        # Heat losses per element (W/K); doors are not insulated by any work,
+        # so they are counted with thermal bridges
+        losses = {
+            "walls": raw.get("deperditions_murs"),
+            "roof": raw.get("deperditions_planchers_hauts"),
+            "floor": raw.get("deperditions_planchers_bas"),
+            "windows": raw.get("deperditions_baies_vitrees"),
+            "air": raw.get("deperditions_renouvellement_air"),
+            "bridges": raw.get("deperditions_ponts_thermiques"),
+        }
+        if all(v is not None for v in losses.values()):
+            prop.dpe_losses = {k: self._safe_float(v) for k, v in losses.items()}
+            prop.dpe_losses["bridges"] += self._safe_float(raw.get("deperditions_portes"))
 
         # Geopoint handling if present ([lat, lon])
         geopoint = raw.get("_geopoint")
@@ -275,7 +307,9 @@ class AdemeConnector:
             prop.systems.append(SystemSchema(
                 system_type="chauffage",
                 energy_source=str(energy_source),
-                efficiency_etas=self._safe_float(raw.get("ubat_w_par_m2_k"))
+                # ADEME does not expose the generator efficiency: leave it unset so the
+                # engine applies its default (ubat_w_par_m2_k is an envelope U value).
+                efficiency_etas=None
             ))
 
         return prop
