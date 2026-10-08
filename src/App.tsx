@@ -13,6 +13,10 @@ import {
     Zap
 } from 'lucide-react';
 import { AccountButton, AccountProvider, useAccount } from './account';
+import { Link, usePath } from './router';
+import CgvPage from './pages/Cgv';
+import PricingPage from './pages/Pricing';
+import { SiteFooter } from './pages/site';
 
 type IncomeLevel = 'tres_modeste' | 'modeste' | 'intermediaire' | 'superieur';
 
@@ -175,8 +179,20 @@ const isHouse = (buildingType?: string) => (buildingType || '').toLowerCase().in
 export default function App() {
     return (
         <AccountProvider>
-            <Simulator />
+            <Pages />
         </AccountProvider>
+    );
+}
+
+function Pages() {
+    const path = usePath();
+    const page = path === '/tarifs' ? <PricingPage /> : path === '/cgv' ? <CgvPage /> : null;
+    return (
+        <>
+            {page}
+            {/* Kept mounted so the current simulation survives a visit to the other pages */}
+            <div hidden={page !== null}><Simulator /></div>
+        </>
     );
 }
 
@@ -389,7 +405,10 @@ function Simulator() {
 
     if (view === 'landing') return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans relative">
-            <div className="absolute top-6 right-6"><AccountButton /></div>
+            <div className="absolute top-6 right-6 flex items-center gap-3">
+                <Link to="/tarifs" className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 px-3">Tarifs</Link>
+                <AccountButton />
+            </div>
             <div className="max-w-2xl w-full text-center">
                 <div className="mb-12">
                     <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-8 mx-auto w-fit">
@@ -400,26 +419,26 @@ function Simulator() {
                         L'intelligence DPE au service de votre <span className="text-blue-600">rénovation.</span>
                     </h1>
                 </div>
-                <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 relative z-10">
+                <div className="bg-white rounded-[2.5rem] p-5 sm:p-10 shadow-2xl border border-slate-100 relative z-10">
                     <div className="relative">
-                        <div className="flex items-center bg-slate-100 rounded-2xl px-6 h-16 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all">
-                            <Search size={24} className="text-slate-400 mr-4" />
+                        <div className="flex items-center bg-slate-100 rounded-2xl px-4 sm:px-6 h-16 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all">
+                            <Search size={24} className="text-slate-400 mr-4 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Adresse (ex: 43 rue Brule Maison, Lille)..."
-                                className="flex-1 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
+                                className="flex-1 min-w-0 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             {loading && <Loader2 className="animate-spin text-blue-600" size={24} />}
                         </div>
 
-                        <div className="flex items-center bg-slate-100 rounded-2xl px-6 h-16 border-2 border-transparent focus-within:border-emerald-600 focus-within:bg-white transition-all mt-4">
-                            <FileText size={24} className="text-slate-400 mr-4" />
+                        <div className="flex items-center bg-slate-100 rounded-2xl px-4 sm:px-6 h-16 border-2 border-transparent focus-within:border-emerald-600 focus-within:bg-white transition-all mt-4">
+                            <FileText size={24} className="text-slate-400 mr-4 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Numéro DPE ADEME (Ex: 2134E...)"
-                                className="flex-1 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
+                                className="flex-1 min-w-0 bg-transparent text-lg font-bold outline-none text-slate-900 placeholder:text-slate-400"
                                 value={dpeSearchQuery}
                                 onChange={(e) => setDpeSearchQuery(e.target.value)}
                             />
@@ -443,6 +462,7 @@ function Simulator() {
                 </div>
                 {error && <p className="mt-4 text-red-600 font-bold">{error}</p>}
             </div>
+            <SiteFooter className="absolute bottom-0 inset-x-0" />
         </div>
     );
 
@@ -858,6 +878,7 @@ function Simulator() {
                     <p className="text-[10px] text-slate-400 leading-relaxed text-center max-w-3xl mx-auto px-4">
                         Simulation indicative fondée sur les données publiques ADEME et des coûts moyens de marché. Elle ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' 2025) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
                     </p>
+                    <SiteFooter />
                 </main>
             </div>
         </div>

@@ -42,6 +42,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api")
 
+# Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
+# each acceptance so we know which terms a customer agreed to.
+TERMS_VERSION = "2026-10-08"
+TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
+
 
 # --- Dependencies ---
 
@@ -186,6 +191,19 @@ class ReportMeta(BaseModel):
 class ReportCreate(BaseModel):
     meta: ReportMeta
     simulation: SimulationInput
+    # CGV accepted, immediate access requested and loss of the withdrawal
+    # right acknowledged (art. L221-28 13° Code de la consommation).
+    # Not needed for Pro subscribers, who accepted the terms when subscribing.
+    accept_terms: bool = False
+
+
+class SubscribeRequest(BaseModel):
+    # CGV accepted and immediate start of the subscription requested
+    accept_terms: bool = False
+
+
+def terms_acceptance() -> Dict[str, str]:
+    return {"terms_accepted_at": datetime.now(timezone.utc).isoformat(), "terms_version": TERMS_VERSION}
 
 
 # --- Endpoints ---
@@ -208,6 +226,7 @@ async def public_config():
         "billing_enabled": billing_enabled,
         "report_price": report_price,
         "pro_price": pro_price,
+        "terms_version": TERMS_VERSION,
     }
 
 
@@ -245,8 +264,10 @@ async def create_report(data: ReportCreate, user: User = Depends(current_user),
 
     if billing is None:
         raise HTTPException(status_code=503, detail="Le paiement n'est pas encore configuré.")
+    if not data.accept_terms:
+        raise HTTPException(status_code=400, detail=TERMS_REQUIRED)
     customer_id = await ensure_customer(store, billing, user, profile)
-    report = await store.create_report({**row, "status": "pending"})
+    report = await store.create_report({**row, "status": "pending", **terms_acceptance()})
     session = await billing.report_checkout(report["id"], user.id, customer_id)
     await store.update_report(report["id"], {"stripe_session_id": session["id"]})
     return {"id": report["id"], "status": "pending", "checkout_url": session["url"]}
@@ -288,11 +309,14 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
 
 
 @router.post("/billing/subscribe")
-async def subscribe(user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep),
-                    billing: Billing = Depends(billing_dep)):
+async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
+                    store: SupabaseStore = Depends(store_dep), billing: Billing = Depends(billing_dep)):
     profile = await store.ensure_profile(user.id, user.email)
     if is_pro(profile):
         raise HTTPException(status_code=400, detail="Votre abonnement Pro est déjà actif.")
+    if not data.accept_terms:
+        raise HTTPException(status_code=400, detail=TERMS_REQUIRED)
+    await store.update_profile(user.id, terms_acceptance())
     customer_id = await ensure_customer(store, billing, user, profile)
     return {"checkout_url": await billing.subscription_checkout(user.id, customer_id)}
 

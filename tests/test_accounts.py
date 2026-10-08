@@ -15,7 +15,9 @@ SIM_INPUT = {
     "works": ["iti", "roof", "pac_air_eau"],
     "income_level": "modeste",
 }
-REPORT_REQUEST = {"meta": {"address": "1 rue de l'Église, Lille", "year": 1960}, "simulation": SIM_INPUT}
+REPORT_REQUEST = {"meta": {"address": "1 rue de l'Église, Lille", "year": 1960}, "simulation": SIM_INPUT,
+                  "accept_terms": True}
+SUBSCRIBE = {"accept_terms": True}
 
 
 class FakeStore:
@@ -192,7 +194,7 @@ def test_reports_are_private(env):
 
 def test_pro_subscription_flow(env):
     client, store, billing, _ = env
-    assert client.post("/api/billing/subscribe").json()["checkout_url"] == "https://checkout.stripe.test/sub"
+    assert client.post("/api/billing/subscribe", json=SUBSCRIBE).json()["checkout_url"] == "https://checkout.stripe.test/sub"
     customer = store.profiles[ALICE.id]["stripe_customer_id"]
 
     billing.subscriptions["sub_1"] = {"id": "sub_1", "customer": customer, "status": "active", "metadata": {},
@@ -207,7 +209,7 @@ def test_pro_subscription_flow(env):
     res = client.post("/api/reports", json=REPORT_REQUEST).json()
     assert res["status"] == "included" and "checkout_url" not in res
     assert client.get(f"/api/reports/{res['id']}/pdf").status_code == 200
-    assert client.post("/api/billing/subscribe").status_code == 400
+    assert client.post("/api/billing/subscribe", json=SUBSCRIBE).status_code == 400
     assert client.post("/api/billing/portal").json()["url"].startswith("https://billing.stripe.test")
 
     # Cancellation
@@ -288,3 +290,27 @@ def test_price_labels():
     assert format_price(4990, "eur", "month") == "49,90 € / mois"
     assert subscription_period_end({"items": {"data": [{"current_period_end": 42}]}}) == 42
     assert subscription_period_end({"current_period_end": 7}) == 7
+
+
+def test_purchase_requires_terms_acceptance(env):
+    client, store, billing, _ = env
+    res = client.post("/api/reports", json={**REPORT_REQUEST, "accept_terms": False})
+    assert res.status_code == 400
+    assert not billing.sessions and not store.reports
+    assert client.post("/api/billing/subscribe", json={"accept_terms": False}).status_code == 400
+
+
+def test_terms_acceptance_is_recorded(env):
+    client, store, billing, _ = env
+    report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
+    assert store.reports[report_id]["terms_version"] == accounts.TERMS_VERSION
+    assert store.reports[report_id]["terms_accepted_at"]
+    client.post("/api/billing/subscribe", json=SUBSCRIBE)
+    assert store.profiles[ALICE.id]["terms_version"] == accounts.TERMS_VERSION
+
+
+def test_pro_reports_do_not_need_a_new_acceptance(env):
+    client, store, billing, _ = env
+    store.profiles[ALICE.id] = {"id": ALICE.id, "subscription_status": "active"}
+    res = client.post("/api/reports", json={**REPORT_REQUEST, "accept_terms": False})
+    assert res.json()["status"] == "included"

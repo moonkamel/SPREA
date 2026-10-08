@@ -7,7 +7,8 @@ l'abonnement Pro.
 ## 1. Supabase
 
 1. Créer un projet sur supabase.com.
-2. **SQL Editor** : exécuter `supabase/migrations/001_accounts.sql`.
+2. **SQL Editor** : exécuter les fichiers de `supabase/migrations/` dans l'ordre
+   (`001_accounts.sql`, puis `002_terms_acceptance.sql`).
 3. **Authentication > URL Configuration** : mettre l'URL du site dans
    *Site URL* et l'ajouter aux *Redirect URLs* (et `http://localhost:5173`
    pour le développement).
@@ -56,3 +57,15 @@ stripe listen --forward-to localhost:8000/api/stripe/webhook
 
 La commande affiche un `whsec_…` à utiliser comme `STRIPE_WEBHOOK_SECRET`.
 Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque.
+
+## 4. Informations légales et CGV
+
+Avant toute vente, compléter `src/legal.ts` : raison sociale, forme juridique,
+adresse, SIREN/RCS, TVA, email de contact, médiateur de la consommation
+(adhésion obligatoire pour vendre aux particuliers) et tribunal compétent.
+Tant qu'une valeur reste entre crochets, un bandeau l'indique sur la page CGV.
+
+Les CGV (`src/pages/Cgv.tsx`) sont un modèle adapté au service : à faire
+relire par un juriste. À chaque modification, changer la date de version
+dans `src/legal.ts` (`CGV_VERSION`) et dans `api/accounts.py`
+(`TERMS_VERSION`) : chaque achat enregistre la version acceptée.

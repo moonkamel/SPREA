@@ -14,6 +14,16 @@ logger = logging.getLogger(__name__)
 
 PRO_ACTIVE_STATUSES = {"active", "trialing"}
 
+# Reminder shown next to the pay button (acceptance itself is recorded before Checkout)
+REPORT_CHECKOUT_MESSAGE = (
+    "En payant, vous confirmez avoir accepté les CGV et demandé l'accès immédiat à votre rapport : "
+    "vous renoncez à votre droit de rétractation dès sa mise à disposition."
+)
+PRO_CHECKOUT_MESSAGE = (
+    "En payant, vous confirmez avoir accepté les CGV. Abonnement mensuel sans engagement, "
+    "résiliable à tout moment depuis votre compte."
+)
+
 
 def format_price(unit_amount: int, currency: str, interval: Optional[str] = None) -> str:
     amount = f"{unit_amount // 100}" if unit_amount % 100 == 0 else f"{unit_amount / 100:.2f}".replace(".", ",")
@@ -67,6 +77,7 @@ class Billing:
             # Invoice available to professionals buying a single report
             "invoice_creation": {"enabled": True},
             "allow_promotion_codes": True,
+            "custom_text": {"submit": {"message": REPORT_CHECKOUT_MESSAGE}},
             "success_url": f"{self.app_url}/?report={report_id}&checkout=success",
             "cancel_url": f"{self.app_url}/?report={report_id}&checkout=cancel",
         })
@@ -81,6 +92,7 @@ class Billing:
             "metadata": {"kind": "subscription", "user_id": user_id},
             "subscription_data": {"metadata": {"user_id": user_id}},
             "allow_promotion_codes": True,
+            "custom_text": {"submit": {"message": PRO_CHECKOUT_MESSAGE}},
             "success_url": f"{self.app_url}/?checkout=pro_success",
             "cancel_url": f"{self.app_url}/?checkout=pro_cancel",
         })

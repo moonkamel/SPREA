@@ -45,6 +45,7 @@ interface AccountContextValue {
     session: Session | null;
     me: Me | null;
     requestReport: (req: ReportRequest) => Promise<void>;
+    startSubscription: () => void;
     openLogin: (reason?: string) => void;
     openAccount: () => void;
 }
@@ -82,6 +83,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const [showAccount, setShowAccount] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [pending, setPending] = useState<ReportRequest | null>(null);
+    // Purchase waiting for the CGV acceptance
+    const [purchase, setPurchase] = useState<{ kind: 'report'; req: ReportRequest } | { kind: 'pro' } | null>(null);
     const supabase = useRef<SupabaseClient | null>(null);
 
     // Fresh access token (supabase-js refreshes it when needed)
@@ -120,17 +123,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         URL.revokeObjectURL(url);
     }, [authedFetch]);
 
-    const requestReport = useCallback(async (req: ReportRequest) => {
-        if (!config?.auth_enabled) { setNotice("Les comptes ne sont pas encore disponibles."); return; }
-        if (!session) {
-            savePending(req);
-            setLoginReason('Connectez-vous pour obtenir votre rapport PDF. Votre simulation sera conservée.');
-            return;
-        }
+    const createReport = useCallback(async (req: ReportRequest, acceptTerms: boolean) => {
         const res = await authedFetch('/api/reports', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(req),
+            body: JSON.stringify({ ...req, accept_terms: acceptTerms }),
         });
         if (!res.ok) { setNotice(await errorMessage(res)); return; }
         const data = await res.json();
@@ -140,7 +137,40 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         }
         await downloadReport(data.id);
         refreshMe();
-    }, [config, session, authedFetch, downloadReport, refreshMe]);
+    }, [authedFetch, downloadReport, refreshMe]);
+
+    const subscribe = useCallback(async () => {
+        const res = await authedFetch('/api/billing/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accept_terms: true }),
+        });
+        if (!res.ok) { setNotice(await errorMessage(res)); return; }
+        window.location.assign((await res.json()).checkout_url);
+    }, [authedFetch]);
+
+    const requestReport = useCallback(async (req: ReportRequest) => {
+        if (!config?.auth_enabled) { setNotice("Les comptes ne sont pas encore disponibles."); return; }
+        if (!session) {
+            savePending(req);
+            setLoginReason('Connectez-vous pour obtenir votre rapport PDF. Votre simulation sera conservée.');
+            return;
+        }
+        const account = me || await refreshMe();
+        if (account?.is_pro) {
+            await createReport(req, false);
+            return;
+        }
+        setPurchase({ kind: 'report', req });
+    }, [config, session, me, refreshMe, createReport]);
+
+    const startSubscription = useCallback(() => {
+        if (!config?.auth_enabled || !config.billing_enabled) { setNotice("L'abonnement n'est pas encore disponible."); return; }
+        if (!session) { setLoginReason("Connectez-vous pour souscrire à l'abonnement Pro."); return; }
+        if (me?.is_pro) { setShowAccount(true); return; }
+        setShowAccount(false);
+        setPurchase({ kind: 'pro' });
+    }, [config, session, me]);
 
     // Back from Stripe Checkout: wait until the payment is confirmed
     const handleCheckoutReturn = useCallback(async () => {
@@ -219,7 +249,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [config]);
 
     const value: AccountContextValue = {
-        config, session, me, requestReport,
+        config, session, me, requestReport, startSubscription,
         openLogin: (reason?: string) => setLoginReason(reason || ''),
         openAccount: () => { setShowAccount(true); refreshMe(); },
     };
@@ -236,11 +266,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                     config={config}
                     onClose={() => setShowAccount(false)}
                     onDownload={downloadReport}
-                    onSubscribe={async () => {
-                        const res = await authedFetch('/api/billing/subscribe', { method: 'POST' });
-                        if (!res.ok) { setNotice(await errorMessage(res)); return; }
-                        window.location.assign((await res.json()).checkout_url);
-                    }}
+                    onSubscribe={async () => startSubscription()}
                     onPortal={async () => {
                         const res = await authedFetch('/api/billing/portal', { method: 'POST' });
                         if (!res.ok) { setNotice(await errorMessage(res)); return; }
@@ -262,6 +288,18 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                         Obtenir le rapport
                     </button>
                 </Toast>
+            )}
+            {purchase && (
+                <PurchaseModal
+                    kind={purchase.kind}
+                    price={purchase.kind === 'report' ? config?.report_price : config?.pro_price}
+                    onClose={() => setPurchase(null)}
+                    onConfirm={async () => {
+                        if (purchase.kind === 'report') await createReport(purchase.req, true);
+                        else await subscribe();
+                        setPurchase(null);
+                    }}
+                />
             )}
             {notice && <Toast onClose={() => setNotice(null)}>{notice}</Toast>}
         </AccountContext.Provider>
@@ -430,6 +468,48 @@ function AccountModal({ me, config, onClose, onDownload, onSubscribe, onPortal, 
                     </button>
                 </div>
             )}
+        </Modal>
+    );
+}
+
+function PurchaseModal({ kind, price, onClose, onConfirm }: {
+    kind: 'report' | 'pro';
+    price: string | null | undefined;
+    onClose: () => void;
+    onConfirm: () => Promise<void>;
+}) {
+    const [accepted, setAccepted] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const isReport = kind === 'report';
+    const cgv = <a href="/cgv" target="_blank" rel="noopener" className="underline text-blue-600">conditions générales de vente</a>;
+
+    return (
+        <Modal title={isReport ? 'Obtenir le rapport' : "Passer à l'abonnement Pro"} onClose={onClose}>
+            <div className="rounded-2xl bg-slate-50 border border-slate-100 p-5 mb-5">
+                <p className="text-2xl font-black text-slate-900">{price || '—'}<span className="text-xs font-bold text-slate-400 ml-2">TTC</span></p>
+                <p className="text-xs text-slate-500 mt-1">
+                    {isReport
+                        ? 'Rapport PDF de ce logement, téléchargeable immédiatement puis à tout moment depuis votre compte. Facture fournie.'
+                        : 'Rapports illimités. Abonnement mensuel sans engagement, résiliable à tout moment depuis votre compte.'}
+                </p>
+            </div>
+            <label className="flex items-start gap-3 text-xs text-slate-600 leading-relaxed cursor-pointer">
+                <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600" />
+                {isReport ? (
+                    <span>J'accepte les {cgv} et je demande l'accès immédiat à mon rapport. Je reconnais perdre mon droit de rétractation dès sa mise à disposition.</span>
+                ) : (
+                    <span>J'accepte les {cgv} et je demande le démarrage immédiat de l'abonnement. Si j'exerce mon droit de rétractation dans les 14 jours, je reste redevable du montant correspondant au service déjà fourni.</span>
+                )}
+            </label>
+            <button
+                disabled={!accepted || busy}
+                onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }}
+                className="mt-6 w-full h-14 rounded-2xl bg-blue-600 text-white font-black uppercase text-xs tracking-widest hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+                {busy && <Loader2 className="animate-spin" size={16} />}
+                Continuer vers le paiement
+            </button>
+            <p className="text-[10px] text-slate-400 text-center mt-3">Paiement sécurisé par Stripe</p>
         </Modal>
     );
 }
