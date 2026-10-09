@@ -69,24 +69,25 @@ const KINDS = [
     { value: 'appartement', label: 'Appartements' },
     { value: 'immeuble', label: 'Immeubles entiers' },
 ];
-// Recent DPE only: a new DPE usually announces a sale or a letting
+// Recent DPE only: a new DPE usually announces a sale or a letting.
+// DPE reach the ADEME within a few days: the last week may still fill up.
 const SINCE = [
-    { value: '3', label: 'DPE des 3 derniers mois' },
-    { value: '6', label: 'DPE des 6 derniers mois' },
-    { value: '12', label: 'DPE des 12 derniers mois' },
+    { value: '7', label: 'DPE des 7 derniers jours' },
+    { value: '31', label: 'DPE du dernier mois' },
+    { value: '92', label: 'DPE des 3 derniers mois' },
+    { value: '183', label: 'DPE des 6 derniers mois' },
+    { value: '365', label: 'DPE des 12 derniers mois' },
 ];
-const DEFAULT_SINCE = '6';
-const monthsAgo = (months: string) => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - Number(months));
-    return d.toISOString().slice(0, 10);
-};
+const DEFAULT_SINCE = '183';
+const daysAgo = (days: string) => new Date(Date.now() - Number(days) * 86400000).toISOString().slice(0, 10);
 
 // IGN Plan v2 (Géoplateforme), free and up to date for France
 const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2'
     + '&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+// Date of the most recent DPE at an address
+const latestDate = (a: Address) => (a.dpe || []).reduce((m, d) => (d.date && d.date > m ? d.date : m), '');
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
 
 function toCsv(addresses: Address[]) {
@@ -232,7 +233,7 @@ export default function ProspectionPage() {
             try {
                 const params = new URLSearchParams({ bbox: areaKey, labels: labels.join(',') });
                 if (kind) params.set('kind', kind);
-                params.set('since', monthsAgo(since));
+                params.set('since', daysAgo(since));
                 const res = await authedFetch(`/api/prospection?${params}`, { signal: controller.signal });
                 if (!res.ok) {
                     const detail = await res.json().catch(() => ({}));
@@ -348,7 +349,11 @@ export default function ProspectionPage() {
         URL.revokeObjectURL(url);
     };
 
-    const visible = useMemo(() => (showDetails ? result!.addresses : []), [result, showDetails]);
+    // Newest DPE first: the hottest prospects at the top of the list
+    const visible = useMemo(() => {
+        if (!showDetails) return [];
+        return [...result!.addresses].sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
+    }, [result, showDetails]);
     const open = useCallback((d: Dpe) => navigate(`/?dpe=${encodeURIComponent(d.number)}`), []);
 
     return (
@@ -468,7 +473,7 @@ export default function ProspectionPage() {
                                                     <span className="block text-sm text-ink truncate">{a.address}</span>
                                                     <span className="block text-xs text-faint">
                                                         {a.dpe!.length} logement{a.dpe!.length > 1 ? 's' : ''} · {a.dpe![0].kind || 'Logement'}
-                                                        {a.dpe![0].surface ? ` · ${Math.round(a.dpe![0].surface)} m²` : ''} · DPE du {formatDate(a.dpe![0].date)}
+                                                        {a.dpe![0].surface ? ` · ${Math.round(a.dpe![0].surface)} m²` : ''} · DPE du {formatDate(latestDate(a))}
                                                     </span>
                                                 </span>
                                             </button>
