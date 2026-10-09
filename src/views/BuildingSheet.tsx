@@ -116,6 +116,12 @@ export default function BuildingSheet({ property, n }: { property: PropertyData;
                                     <span key={l} className="flex items-center gap-1.5 text-sm text-ink-soft"><DpeBadge label={l} size="sm" />× {c}</span>
                                 ))}
                             </div>
+                            {sheet.dimensions.dwellings != null && sheet.apartments.count > sheet.dimensions.dwellings && (
+                                <p className="mt-2 text-xs text-faint">
+                                    Plus de DPE que de logements ({sheet.dimensions.dwellings}) : certains logements ont été diagnostiqués plusieurs fois,
+                                    ou plusieurs bâtiments partagent cette adresse.
+                                </p>
+                            )}
                         </div>
                     </div>
 

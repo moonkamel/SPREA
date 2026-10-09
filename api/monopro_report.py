@@ -11,18 +11,18 @@ Built from public data only:
 
 Every figure is an order of magnitude, stated as such in the dossier.
 """
-import re
-import unicodedata
 from datetime import date
 from statistics import median
 from typing import Any, Dict, List, Optional
 
 try:
+    from api.address import address_key, same_address  # noqa: F401 (address_key: used by the audit)
     from api.green_value import LABELS, department, kind_of, model
     from api.immeuble import (DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since,
                               _float, _int)
     from api.valuation import class_factor, round_value
 except ImportError:
+    from address import address_key, same_address  # noqa: F401
     from green_value import LABELS, department, kind_of, model
     from immeuble import DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since, _float, _int
     from valuation import class_factor, round_value
@@ -50,25 +50,10 @@ def _date_fr(d: date) -> str:
     return d.strftime("%d/%m/%Y")
 
 
-def address_key(address: Optional[str]) -> str:
-    """'121 Rue de Solférino 59800 Lille' -> '121 rue de solferino 59800 lille'."""
-    plain = re.sub(r"[’‘`´]", "'", address or "")
-    plain = unicodedata.normalize("NFKD", plain).encode("ascii", "ignore").decode().lower()
-    # "(Saint-Pol-sur-Mer)": former commune, written by some sources only
-    plain = re.sub(r"\([^)]*\)", " ", plain)
-    plain = re.sub(r"[^a-z0-9]+", " ", plain).strip()
-    # "18bis" and "18 bis"
-    plain = re.sub(r"^(\d+) (bis|ter|quater|[a-h])\b", r"\1\2", plain)
-    # Up to the postcode: the commune is written in full or not
-    m = re.match(r"(.*?\b\d{5})\b", plain)
-    return m.group(1) if m else plain
-
-
 def rows_at_address(rows: List[Dict], address: Optional[str]) -> List[Dict]:
     """DPE published at the address of the building: the search around its
     position also returns the DPE of the neighbouring buildings."""
-    key = address_key(address)
-    return [r for r in rows if key and address_key(r.get("adresse_ban")) == key]
+    return [r for r in rows if same_address(r.get("adresse_ban"), address)]
 
 
 def scale_to(counts: Dict[str, int], total: int) -> Dict[str, int]:

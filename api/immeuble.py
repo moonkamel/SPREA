@@ -24,10 +24,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 try:
     from api.accounts import store_dep, subscriber_access
+    from api.address import same_address, same_street
     from api.prospection import ADEME_URL, dwelling_detail
     from api.ratelimit import search_limiter
 except ImportError:
     from accounts import store_dep, subscriber_access
+    from address import same_address, same_street
     from prospection import ADEME_URL, dwelling_detail
     from ratelimit import search_limiter
 
@@ -331,7 +333,13 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
     }
 
 
-def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: float = 40) -> Optional[Dict]:
+def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: float = 40,
+                  address: Optional[str] = None) -> Optional[Dict]:
+    """The registered copropriété at this position: at the same address when
+    one is, never one registered on another street (the next building)."""
+    if address:
+        here = [c for c in candidates if same_address(c.get("address"), address)]
+        candidates = here or [c for c in candidates if not c.get("address") or same_street(c.get("address"), address)]
     best, best_d = None, max_m
     for c in candidates:
         if c.get("lat") is None or c.get("lon") is None:
@@ -383,7 +391,7 @@ async def sheet(dpe_number: str, store, transport: Optional[httpx.AsyncBaseTrans
             if immat:
                 copro, match = await store.get_copro(str(immat).strip().upper()), "immat"
             if not copro and point:
-                copro, match = nearest_copro(await store.copros_near(*point), point), "position"
+                copro, match = nearest_copro(await store.copros_near(*point), point, address=apartment.get("adresse_ban")), "position"
         except httpx.HTTPError as e:
             logger.warning(f"Copro registry lookup failed: {type(e).__name__}")
             copro = None

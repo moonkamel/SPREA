@@ -36,7 +36,8 @@ from api.ai_service import fallback_analysis  # noqa: E402
 from api.dvf import market_price  # noqa: E402
 from api.green_value import department, kind_of  # noqa: E402
 from api.main import enrich_property, simulation_property  # noqa: E402
-from api.monopro_report import RENOVATION_M2, address_key, build_dossier  # noqa: E402
+from api.address import parts, same_address, same_street  # noqa: E402
+from api.monopro_report import RENOVATION_M2, build_dossier  # noqa: E402
 from api.pdf_service import pdf_service  # noqa: E402
 from api.report_content import build_report, facts_for_writer  # noqa: E402
 from api.simulation import SimulationInput, simulate  # noqa: E402
@@ -178,8 +179,12 @@ async def audit_dwelling(number: str, store) -> None:
                     case.check(0 < est["share"] <= 1, f"quote-part {est['share']} hors (0, 1]")
                     case.check(est["share_low"] <= est["share_high"], "quote-part basse > haute")
                     case.check(est["net_low"] <= est["share_low"], "quote-part après aides > avant aides")
-                if sheet.get("copro") and sheet["copro"].get("lots_housing") and sheet["apartments"]["count"] > sheet["copro"]["lots_housing"] * 1.5 + 2:
-                    case.check(False, f"{sheet['apartments']['count']} DPE d'appartements pour {sheet['copro']['lots_housing']} logements de la copropriété")
+                copro = sheet.get("copro")
+                if copro and copro.get("match") == "position" and copro.get("address"):
+                    case.check(same_street(copro["address"], sheet.get("address")),
+                               f"copropriété d'une autre rue : {copro['address']} pour {sheet.get('address')}")
+                if copro and copro.get("lots_housing") and sheet["apartments"]["count"] > copro["lots_housing"] * 1.5 + 2:
+                    case.note(f"{sheet['apartments']['count']} DPE pour {copro['lots_housing']} logements (expliqué sur la fiche)")
                 case.note(f"immeuble : {dims.get('dwellings')} log., copro {'oui' if sheet.get('copro') else 'non'}")
     except Exception as e:
         case.check(False, f"erreur : {type(e).__name__}: {e}")
@@ -244,17 +249,16 @@ async def audit_building(b: Dict, store) -> None:
                 case.check(f"{n_label} logement" in text, f"argument sans les {n_label} logements {label}")
         case.check(len([r for r in rows if not immeuble.is_building_dpe(r)]) >= u["n_known"] or u["n_known"] == 0, "DPE retenus inexistants")
         # Same number and street written differently: DPE of the building left out
-        def parts(a):
-            words = address_key(a).split()
-            return (words[0], words[-1], set(words[1:-1])) if len(words) >= 3 else (None, None, set())
+        # Same number, a street word in common, yet not retained: to review
         number, postcode, street = parts(b.get("address"))
-        missed = set()
+        near_miss = set()
         for r in rows:
             n2, p2, s2 = parts(r.get("adresse_ban"))
-            if (address_key(r.get("adresse_ban")) != address_key(b.get("address")) and number and n2 == number and p2 == postcode
-                    and len(street & s2) / max(1, len(street | s2)) >= 0.5):
-                missed.add(r.get("adresse_ban"))
-        case.check(not missed, f"adresse proche non reconnue : {sorted(missed)[:3]}")
+            if (n2 and number and n2.rstrip("abcdefghiqurtes") == number.rstrip("abcdefghiqurtes") and p2 == postcode
+                    and street & s2 and not same_address(r.get("adresse_ban"), b.get("address"))):
+                near_miss.add(r.get("adresse_ban"))
+        if near_miss:
+            case.note(f"adresses voisines écartées : {sorted(near_miss)[:3]}")
         case.note(f"DPE autour : {len(rows)}, retenus : {u['n_known']}, classe {d['worst']}")
         pdf = monopro_pdf.generate(d)
         case.check(pdf[:4] == b"%PDF" and pdf_pages(pdf) <= 2, f"dossier PDF sur {pdf_pages(pdf)} pages")

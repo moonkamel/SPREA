@@ -238,3 +238,13 @@ def test_apartment_dpe_drawn_from_the_building_dpe_is_an_apartment():
                                 "methode_application_dpe": "dpe appartement généré à partir des données DPE immeuble"})
     assert is_building_dpe({"type_batiment": "immeuble", "methode_application_dpe": "dpe immeuble collectif"})
     assert is_building_dpe({"type_batiment": "", "methode_application_dpe": "dpe immeuble collectif"})
+
+
+def test_copro_matched_by_position_must_be_on_the_same_street():
+    """Audit: a flat at 68 rue de Vesoul got the copropriété of 2 chemin des
+    Grands Bas, 30 m away (4 dwellings for 11 DPE)."""
+    other = {**COPRO, "immat": "OTHER", "address": "2 che des grands bas 25000 Besançon", "lat": 50.63, "lon": 3.06}
+    assert nearest_copro([other], (50.63, 3.06), address="68 rue de Vesoul 25000 Besançon") is None
+    here = {**other, "immat": "HERE", "address": "68 Rue de Vesoul 25000 Besançon", "lat": 50.6302}
+    assert nearest_copro([other, here], (50.63, 3.06), address="68 rue de Vesoul 25000 Besançon")["immat"] == "HERE"
+    assert nearest_copro([other], (50.63, 3.06))["immat"] == "OTHER"  # Address unknown: position only
