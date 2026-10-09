@@ -6,7 +6,7 @@ import { useAccount } from '../account';
 import type { PropertyData } from '../model';
 
 interface Copro {
-    immat: string; name: string | null; lots_main: number | null; lots_housing: number | null; lots_parking: number | null;
+    immat: string; name: string | null; address: string | null; lots_main: number | null; lots_housing: number | null; lots_parking: number | null;
     period: string | null; syndic_type: string | null; syndic_name: string | null; mandate_end: string | null;
     aided: boolean; in_pdp: boolean; qpv: string | null; match: 'immat' | 'position' | 'corner';
 }
