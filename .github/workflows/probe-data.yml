@@ -1,0 +1,42 @@
+# Temporary: inspects the RGE, DPE and copropriétés open data (not merged)
+name: Probe open data
+on:
+  push:
+    branches: ["claude/**"]
+    paths: [".github/workflows/probe-data.yml"]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: RGE schema
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2" | jq '{title, count, updatedAt, dataUpdatedAt, schema: [.schema[] | {key, type, title}]}'
+      - name: RGE sample around Lille
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/lines?size=3&geo_distance=3.06,50.63,3000" | jq '.total, .results'
+      - name: RGE domain values
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/values_agg?field=domaine&agg_size=60" | jq '[.aggs[] | {value, total}]' || true
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/values_agg?field=meta_domaine&agg_size=30" | jq '[.aggs[] | {value, total}]' || true
+      - name: DPE schema (copro / immeuble fields)
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe" | jq '[.schema[] | .key] | map(select(test("copro|immeuble|batiment|appartement|lots|logements|methode|ban|parcelle|rnic|immatric"; "i")))'
+      - name: DPE sample immeuble Lille
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?size=2&qs=type_batiment:immeuble&geo_distance=3.06,50.63,2000" | jq '.total, .results'
+      - name: Audits energetiques dataset
+        run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets?q=audit&size=10&select=id,title,count,updatedAt" | jq '.results'
+      - name: RNIC resources
+        run: |
+          curl -s "https://www.data.gouv.fr/api/1/datasets/registre-national-dimmatriculation-des-coproprietes/" | jq '{title, last_update, resources: [.resources[] | {id, title, format, filesize, url, last_modified}]}'
+      - name: RNIC CSV header and sample
+        run: |
+          url=$(curl -s "https://www.data.gouv.fr/api/1/datasets/registre-national-dimmatriculation-des-coproprietes/" | jq -r '[.resources[] | select(.format=="csv")][0].url')
+          echo "URL: $url"
+          curl -sL "$url" | head -c 6000 || true
+      - name: RNIC tabular API
+        run: |
+          id=$(curl -s "https://www.data.gouv.fr/api/1/datasets/registre-national-dimmatriculation-des-coproprietes/" | jq -r '[.resources[] | select(.format=="csv")][0].id')
+          curl -s "https://tabular-api.data.gouv.fr/api/resources/$id/profile/" | head -c 4000; echo
+          curl -s "https://tabular-api.data.gouv.fr/api/resources/$id/data/?page_size=2" | head -c 4000; echo
