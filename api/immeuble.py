@@ -114,8 +114,10 @@ def metres(a: Tuple[float, float], b: Tuple[float, float]) -> float:
 
 
 def is_building_dpe(r: Dict) -> bool:
-    return (r.get("type_batiment") or "").lower() == "immeuble" or \
-        "immeuble" in (r.get("methode_application_dpe") or "").lower()
+    """DPE of the whole building. "dpe appartement généré à partir des données
+    DPE immeuble" is the DPE of one apartment, drawn from the building's."""
+    method = (r.get("methode_application_dpe") or "").lower()
+    return (r.get("type_batiment") or "").lower() == "immeuble" or ("immeuble" in method and "appartement" not in method)
 
 
 def last_year(period: Optional[str]) -> Optional[int]:

@@ -229,3 +229,12 @@ def test_unknown_registry_period_falls_back_to_dpe():
     for unknown in ("NON_CONNUE", "non renseigné"):
         s = build_sheet(APT, [], {**COPRO, "period": unknown}, "immat", TODAY)
         assert s["period"] == "1948-1974" and s["copro"]["period"] is None
+
+
+def test_apartment_dpe_drawn_from_the_building_dpe_is_an_apartment():
+    """Audit: the sheet of such an apartment did not count the apartment itself."""
+    from api.immeuble import is_building_dpe
+    assert not is_building_dpe({"type_batiment": "appartement",
+                                "methode_application_dpe": "dpe appartement généré à partir des données DPE immeuble"})
+    assert is_building_dpe({"type_batiment": "immeuble", "methode_application_dpe": "dpe immeuble collectif"})
+    assert is_building_dpe({"type_batiment": "", "methode_application_dpe": "dpe immeuble collectif"})

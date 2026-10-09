@@ -546,7 +546,7 @@ export default function ProspectionPage() {
                             <Card className="p-5">
                                 <p className="text-ink font-medium flex items-center gap-2"><Lock size={16} className="text-brass" />Adresses réservées aux abonnés</p>
                                 <p className="mt-2 text-sm text-muted">
-                                    {result.dwellings.toLocaleString('fr-FR')} logements classés {labels.join(', ')} dans cette zone.
+                                    {result.dwellings.toLocaleString('fr-FR')} {result.dwellings > 1 ? 'logements classés' : 'logement classé'} {labels.join(', ')} dans cette zone.
                                     Avec l'abonnement : les adresses, le détail de chaque DPE, l'export CSV et un modèle de courrier par adresse.
                                 </p>
                                 <Button className="mt-4 w-full" onClick={() => navigate('/tarifs')}>Voir les formules</Button>

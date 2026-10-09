@@ -36,7 +36,7 @@ from api.ai_service import fallback_analysis  # noqa: E402
 from api.dvf import market_price  # noqa: E402
 from api.green_value import department, kind_of  # noqa: E402
 from api.main import enrich_property, simulation_property  # noqa: E402
-from api.monopro_report import RENOVATION_M2, build_dossier  # noqa: E402
+from api.monopro_report import RENOVATION_M2, address_key, build_dossier  # noqa: E402
 from api.pdf_service import pdf_service  # noqa: E402
 from api.report_content import build_report, facts_for_writer  # noqa: E402
 from api.simulation import SimulationInput, simulate  # noqa: E402
@@ -56,6 +56,7 @@ class Case:
         self.kind, self.name = kind, name
         self.failures: List[str] = []
         self.notes: List[str] = []
+        self.data: Dict[str, Any] = {}
 
     def check(self, ok: bool, message: str):
         if not ok:
@@ -69,6 +70,9 @@ class Case:
         print(f"{status} [{self.kind}] {self.name}" + (f" | {' ; '.join(self.notes)}" if self.notes else ""), flush=True)
         for f in self.failures:
             print(f"     ✗ {f}", flush=True)
+        if self.failures and self.data:
+            # What it takes to reproduce the case without the network
+            print("     DATA " + json.dumps(self.data, ensure_ascii=False, default=str), flush=True)
         results.append({"kind": self.kind, "name": self.name, "failures": self.failures, "notes": self.notes})
 
 
@@ -105,6 +109,7 @@ async def audit_dwelling(number: str, store) -> None:
         if not prop:
             case.check(False, "DPE introuvable par son numéro")
             return case.done()
+        case.data["property"] = prop.model_dump(mode="json")
         enriched = enrich_property(prop)
         sp = simulation_property(prop)
         label = prop.dpe_class_current.value if prop.dpe_class_current else None
@@ -117,9 +122,17 @@ async def audit_dwelling(number: str, store) -> None:
         case.check(idx(sim["new_label"]) <= idx(sim["current_label"]), f"classe après travaux {sim['new_label']} pire que {sim['current_label']}")
         if label in ("E", "F", "G"):
             case.check(bool(works), "aucun travaux proposé pour une passoire")
+            # Best reachable: every work that applies to this kind of dwelling
+            house = (prop.building_type or "").lower().startswith("maison")
+            every = ["iti", "windows", "vmc", "ecs", "heating"] + (["roof", "floor_ceiling", "pac_air_eau"] if house else [])
+            best = simulate(SimulationInput(property=sp, works=every))["new_label"]
             if works:
-                case.check(idx(sim["new_label"]) < idx(label), f"travaux proposés sans gain de classe ({label} → {sim['new_label']})")
-                case.check(idx(sim["new_label"]) <= idx("D"), f"scénario recommandé n'atteint pas D ({label} → {sim['new_label']})")
+                case.check(idx(sim["new_label"]) < idx(label) or idx(best) >= idx(label),
+                           f"travaux proposés sans gain de classe ({label} → {sim['new_label']}, possible : {best})")
+                case.check(idx(sim["new_label"]) <= idx("D") or idx(best) > idx("D"),
+                           f"scénario recommandé n'atteint pas D ({label} → {sim['new_label']}) alors que {best} est atteignable")
+            if idx(best) > idx("D"):
+                case.note(f"D inatteignable (au mieux {best})")
         if works:
             case.check(0 < sim["cost_low"] <= sim["cost"] <= sim["cost_high"], f"coûts incohérents {sim['cost_low']}/{sim['cost']}/{sim['cost_high']}")
             per_m2 = sim["cost"] / prop.shab
@@ -158,6 +171,7 @@ async def audit_dwelling(number: str, store) -> None:
         if (prop.building_type or "").lower().startswith("appartement"):
             sheet = await immeuble.sheet(number, store)
             if sheet:
+                case.data["sheet"] = {k: sheet.get(k) for k in ("address", "copro", "building_dpe", "apartments", "dimensions")}
                 dims, est = sheet["dimensions"], sheet.get("estimate")
                 case.check(sheet["apartments"]["count"] >= 1, "fiche immeuble sans l'appartement lui-même")
                 if est:
@@ -197,6 +211,9 @@ async def audit_building(b: Dict, store) -> None:
         async with httpx.AsyncClient(timeout=15) as client:
             rows = await immeuble.ademe_rows(client, {"geo_distance": f"{b['lon']},{b['lat']},30", "size": "300"})
         market = await market_price(b.get("insee") or "", "Appartement", b["lat"], b["lon"], 50)
+        case.data = {"building": b, "rows": [{k: r.get(k) for k in ("numero_dpe", "type_batiment", "methode_application_dpe", "adresse_ban",
+                                                                  "etiquette_dpe", "date_etablissement_dpe", "surface_habitable_logement",
+                                                                  "surface_habitable_immeuble")} for r in rows]}
         d = build_dossier(b, owners[0] if owners else None, None, 0, rows, market, {"agency_name": "Audit"})
         u, nb = d["units"], b["nb_log"]
         counted = sum(u["total"].values()) + u["unknown"]
@@ -226,6 +243,18 @@ async def audit_building(b: Dict, store) -> None:
             if n_label:
                 case.check(f"{n_label} logement" in text, f"argument sans les {n_label} logements {label}")
         case.check(len([r for r in rows if not immeuble.is_building_dpe(r)]) >= u["n_known"] or u["n_known"] == 0, "DPE retenus inexistants")
+        # Same number and street written differently: DPE of the building left out
+        def parts(a):
+            words = address_key(a).split()
+            return (words[0], words[-1], set(words[1:-1])) if len(words) >= 3 else (None, None, set())
+        number, postcode, street = parts(b.get("address"))
+        missed = set()
+        for r in rows:
+            n2, p2, s2 = parts(r.get("adresse_ban"))
+            if (address_key(r.get("adresse_ban")) != address_key(b.get("address")) and number and n2 == number and p2 == postcode
+                    and len(street & s2) / max(1, len(street | s2)) >= 0.5):
+                missed.add(r.get("adresse_ban"))
+        case.check(not missed, f"adresse proche non reconnue : {sorted(missed)[:3]}")
         case.note(f"DPE autour : {len(rows)}, retenus : {u['n_known']}, classe {d['worst']}")
         pdf = monopro_pdf.generate(d)
         case.check(pdf[:4] == b"%PDF" and pdf_pages(pdf) <= 2, f"dossier PDF sur {pdf_pages(pdf)} pages")

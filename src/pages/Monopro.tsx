@@ -85,7 +85,7 @@ export function ownerLetter(s: Sheet, agency: AgentPageData) {
     const company = s.company?.name || s.owner?.name || 'la société propriétaire';
     const signature = [agency.agent_name, agency.agency_name, agency.phone, agency.email].filter(Boolean).join('\n');
     const optOut = agency.email || agency.phone || "l'agence";
-    const dpe = s.dpe_fg ? `\n\nPar ailleurs, ${s.dpe_fg} des logements de l'immeuble sont classés F ou G au diagnostic de performance énergétique : ils sont progressivement interdits à la location (G depuis 2025, F en 2028). C'est souvent le bon moment pour envisager une cession.` : '';
+    const dpe = s.dpe_fg ? `\n\nPar ailleurs, ${s.dpe_fg > 1 ? `${s.dpe_fg} des logements de l'immeuble sont classés` : "un logement de l'immeuble est classé"} F ou G au diagnostic de performance énergétique : ${s.dpe_fg > 1 ? 'ils sont' : 'il est'} progressivement interdit${s.dpe_fg > 1 ? 's' : ''} à la location (G depuis 2025, F en 2028). C'est souvent le bon moment pour envisager une cession.` : '';
     return `${company}
 À l'attention de la gérance
 ${s.company?.address || s.owner?.city || ''}
