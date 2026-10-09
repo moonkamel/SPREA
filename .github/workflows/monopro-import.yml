@@ -1,0 +1,48 @@
+name: Monopropriétés (BDNB)
+
+# Loads the whole buildings held by a single owner, per department, from the
+# BDNB open data (CSTB), for the "Immeubles entiers" mode of the prospection
+# map. The BDNB is published about twice a year: run it from the Actions tab
+# (Run workflow), with the departments to load and the BDNB release.
+# Requires the repository secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+on:
+  workflow_dispatch:
+    inputs:
+      departments:
+        description: "Départements, séparés par des espaces (ex. : 59 62 75)"
+        required: true
+        default: "59 62"
+      millesime:
+        description: "Millésime BDNB (bdnb.io/download)"
+        required: true
+        default: "2026-02-a"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monopro-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyproj==3.7.1
+      - name: Import
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BDNB_MILLESIME: ${{ inputs.millesime }}
+          DEPARTMENTS: ${{ inputs.departments }}
+        run: |
+          for dep in $DEPARTMENTS; do
+            [[ "$dep" =~ ^([0-9]{2,3}|2[AB])$ ]] || { echo "Département invalide : $dep"; exit 1; }
+            python scripts/monopro/import_bdnb.py --dep "$dep"
+            rm -f "bdnb_$dep.zip"
+          done

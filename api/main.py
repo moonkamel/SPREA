@@ -82,6 +82,7 @@ try:
     from api.teams import router as teams_router
     from api.rge import router as rge_router
     from api.immeuble import router as immeuble_router
+    from api.monopro import router as monopro_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
@@ -94,6 +95,7 @@ except ImportError:
     from teams import router as teams_router
     from rge import router as rge_router
     from immeuble import router as immeuble_router
+    from monopro import router as monopro_router
 
 @app.get("/")
 async def root():
@@ -321,6 +323,7 @@ app.include_router(quotes_router)
 app.include_router(teams_router)
 app.include_router(rge_router)
 app.include_router(immeuble_router)
+app.include_router(monopro_router)
 
 if __name__ == "__main__":
     import uvicorn
