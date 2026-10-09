@@ -125,7 +125,8 @@ def test_private_companies_only():
     assert private("SCI", "DU BRUNIOL") and private("SAS", "FONCIERE LILLOISE FAMILIALE") and private("SC", "CDEF")
     for form, name in [("SA", "NOREVIE"), ("SA", "CPH ARCADE-VYV"), ("SA", "SIA HABITAT"), ("EPIC", "OFFICE PUBLIC DE L'HABITAT DU NORD"),
                        ("ASS", "ASSOCIATION DIOCESAINE LILLE"), ("SEM", "ADOMA"), ("SCPI", "KYANEOS PIERRE"),
-                       ("SA", "LA FABRIQUE DES QUARTIERS SPLA"), ("SA", "SOCIETE NATIONALE SNCF")]:
+                       ("SA", "LA FABRIQUE DES QUARTIERS SPLA"), ("SA", "SOCIETE NATIONALE SNCF"),
+                       ("SA", "SA D ECONOMIE MIXTE URBAVILEO"), ("SA", "SOCIETE PUBLIQUE LOCALE EURALILLE")]:
         assert not private(form, name), name
 
 
