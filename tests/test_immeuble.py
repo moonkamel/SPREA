@@ -223,3 +223,9 @@ def test_class_d_only_insufficient_and_recent_walls_kept():
     # Rated F: walls redone whatever the period
     f = {**d, "etiquette_dpe": "F"}
     assert "facade" in [w["id"] for w in immeuble.collective_works(f, 1000, 5, 18, 2010)]
+
+
+def test_unknown_registry_period_falls_back_to_dpe():
+    for unknown in ("NON_CONNUE", "non renseigné"):
+        s = build_sheet(APT, [], {**COPRO, "period": unknown}, "immat", TODAY)
+        assert s["period"] == "1948-1974" and s["copro"]["period"] is None

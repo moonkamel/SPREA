@@ -131,7 +131,8 @@ def last_year(period: Optional[str]) -> Optional[int]:
 
 
 def period_label(period: Optional[str]) -> Optional[str]:
-    if not period:
+    """None when unknown ("NON_CONNUE", "non renseigné"): the DPE period is used instead."""
+    if not period or "NON" in period.upper():
         return None
     return PERIODS.get(period.upper(), period.replace("_", " ").capitalize())
 
