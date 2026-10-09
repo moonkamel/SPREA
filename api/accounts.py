@@ -470,6 +470,13 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     if not simulation.property.insee_code and meta.get("insee_code"):
         simulation.property.insee_code = meta["insee_code"]
     content = build_report(meta, simulation)
+    # Qualified companies near the dwelling for the works retained (ADEME open data)
+    try:
+        from api.rge import nearby_or_empty
+    except ImportError:
+        from rge import nearby_or_empty
+    content["rge"] = await nearby_or_empty(meta.get("latitude"), meta.get("longitude"), list(simulation.works),
+                                           simulation.property.building_type)
     analysis = parse_stored(report.get("narrative"))
     if not analysis:
         analysis = await ai_service.write_analysis(facts_for_writer(content))

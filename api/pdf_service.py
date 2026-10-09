@@ -357,6 +357,31 @@ ANALYSIS_TITLES = [
 # --- Report ---
 
 class PDFReportGenerator:
+    def _rge(self, report: Dict[str, Any], next_section) -> List[Any]:
+        rge = report.get('rge') or {}
+        names = {w['id']: w['name'] for w in report.get('works', [])}
+        groups = [(names.get(w, w), companies) for w, companies in (rge.get('works') or {}).items() if companies]
+        if rge.get('global'):
+            groups.append(('Rénovation globale (un seul interlocuteur)', rge['global']))
+        if rge.get('audit'):
+            groups.append(('Audit énergétique', rge['audit']))
+        if not groups:
+            return []
+        out: List[Any] = [CondPageBreak(8 * cm), Spacer(1, 18), next_section('Des artisans RGE près du logement'), Spacer(1, 6),
+                          Paragraph("Les aides de l'État ne sont versées que pour des travaux réalisés par une entreprise RGE. "
+                                    "Voici les entreprises qualifiées les plus proches pour chaque travail, d'après l'annuaire public "
+                                    "de l'ADEME, sans classement ni recommandation. Demandez plusieurs devis et vérifiez la "
+                                    "qualification sur france-renov.gouv.fr.", S['muted']), Spacer(1, 8)]
+        for title, companies in groups:
+            rows = [[Paragraph(f"<b>{text(c['name'])}</b>", S['body']),
+                     Paragraph(f"{text(c['city'])} · {str(c['distance_km']).replace('.', ',')}{NBSP}km", S['muted']),
+                     Paragraph(text(' · '.join(x for x in (c.get('phone'), c.get('website')) if x) or '–'), S['muted'])]
+                    for c in companies]
+            block = [Paragraph(text(title), S['narrative_h']), Spacer(1, 2),
+                     grid(rows, [CONTENT_W * 0.38, CONTENT_W * 0.24, CONTENT_W * 0.38], header=False), Spacer(1, 8)]
+            out.append(KeepTogether(block))
+        return out
+
     def generate(self, report: Dict[str, Any], analysis: Dict[str, Any]) -> bytes:
         buffer = BytesIO()
         sim = report['sim']
@@ -415,6 +440,9 @@ class PDFReportGenerator:
                                      ('BOTTOMPADDING', (0, 0), (-1, -1), 6)]))
             steps.append(row)
         story += [CondPageBreak(8 * cm), Spacer(1, 18), *steps]
+
+        # Qualified companies near the dwelling
+        story += self._rge(report, next_section)
 
         # 7. Method
         method = [next_section('Méthode et hypothèses'), Spacer(1, 8), *bullet_list(report['assumptions'], 'muted'), Spacer(1, 10),
