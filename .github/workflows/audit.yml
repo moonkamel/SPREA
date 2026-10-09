@@ -1,0 +1,46 @@
+name: Consistency audit
+
+# Runs the app's code on real cases (dwellings, whole buildings, map areas)
+# and checks that every figure holds together. Read-only. On demand from the
+# Actions tab, or on a push touching the audit.
+on:
+  workflow_dispatch:
+    inputs:
+      dwellings:
+        description: "Number of dwellings"
+        default: "60"
+      buildings:
+        description: "Number of buildings"
+        default: "40"
+      seed:
+        description: "Random seed (empty = today)"
+        default: ""
+  push:
+    paths:
+      - "scripts/audit/**"
+      - ".github/workflows/audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/audit/audit.py --dwellings ${{ inputs.dwellings || '60' }} --buildings ${{ inputs.buildings || '40' }} ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit
+          path: audit.json
+          retention-days: 14
