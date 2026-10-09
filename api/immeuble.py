@@ -333,6 +333,11 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
     }
 
 
+# A copropriété registered on another street is taken only this close (the
+# same corner building, entered under its other address)
+CORNER_M = 15
+
+
 def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: float = 40,
                   address: Optional[str] = None) -> Optional[Dict]:
     """The registered copropriété at this position: at the same address when
@@ -348,6 +353,20 @@ def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: flo
         if d <= best_d:
             best, best_d = c, d
     return best
+
+
+def match_copro(candidates: List[Dict], point: Tuple[float, float], address: Optional[str]) -> Tuple[Optional[Dict], Optional[str]]:
+    """Copropriété of the building and how it was found: "position" (same
+    address or street), "corner" (another street, a few metres away: a corner
+    building registered under its other address, to check)."""
+    found = nearest_copro(candidates, point, address=address)
+    if found:
+        return found, "position"
+    if address:
+        corner = nearest_copro(candidates, point, max_m=CORNER_M)
+        if corner:
+            return corner, "corner"
+    return None, None
 
 
 async def ademe_rows(client: httpx.AsyncClient, params: Dict[str, str]) -> List[Dict]:
@@ -391,7 +410,7 @@ async def sheet(dpe_number: str, store, transport: Optional[httpx.AsyncBaseTrans
             if immat:
                 copro, match = await store.get_copro(str(immat).strip().upper()), "immat"
             if not copro and point:
-                copro, match = nearest_copro(await store.copros_near(*point), point, address=apartment.get("adresse_ban")), "position"
+                copro, match = match_copro(await store.copros_near(*point), point, apartment.get("adresse_ban"))
         except httpx.HTTPError as e:
             logger.warning(f"Copro registry lookup failed: {type(e).__name__}")
             copro = None

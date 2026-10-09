@@ -8,7 +8,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from api import immeuble, main
-from api.immeuble import build_sheet, last_year, nearest_copro, obligations, sheet
+from api.immeuble import build_sheet, last_year, match_copro, nearest_copro, obligations, sheet
 
 TODAY = date(2026, 10, 9)
 APT = {"numero_dpe": "2659E0000001A", "type_batiment": "appartement", "etiquette_dpe": "F", "etiquette_ges": "E",
@@ -248,3 +248,13 @@ def test_copro_matched_by_position_must_be_on_the_same_street():
     here = {**other, "immat": "HERE", "address": "68 Rue de Vesoul 25000 Besançon", "lat": 50.6302}
     assert nearest_copro([other, here], (50.63, 3.06), address="68 rue de Vesoul 25000 Besançon")["immat"] == "HERE"
     assert nearest_copro([other], (50.63, 3.06))["immat"] == "OTHER"  # Address unknown: position only
+
+
+def test_corner_building_registered_on_the_other_street():
+    """Another street: kept only a few metres away (corner building), and flagged."""
+    other = {**COPRO, "immat": "CORNER", "address": "53 Rue de Son Tay 33800 Bordeaux", "lat": 50.63, "lon": 3.06}
+    here = "28bis Place Ferdinand Buisson 33800 Bordeaux"
+    assert match_copro([{**other, "lat": 50.63008}], (50.63, 3.06), here) == ({**other, "lat": 50.63008}, "corner")
+    assert match_copro([{**other, "lat": 50.6302}], (50.63, 3.06), here) == (None, None)  # 22 m: the next building
+    same = {**other, "immat": "SAME", "address": here, "lat": 50.6302}
+    assert match_copro([other, same], (50.63, 3.06), here)[1] == "position"

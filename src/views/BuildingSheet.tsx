@@ -8,7 +8,7 @@ import type { PropertyData } from '../model';
 interface Copro {
     immat: string; name: string | null; lots_main: number | null; lots_housing: number | null; lots_parking: number | null;
     period: string | null; syndic_type: string | null; syndic_name: string | null; mandate_end: string | null;
-    aided: boolean; in_pdp: boolean; qpv: string | null; match: 'immat' | 'position';
+    aided: boolean; in_pdp: boolean; qpv: string | null; match: 'immat' | 'position' | 'corner';
 }
 interface Obligation { id: string; title: string; since: string | null; status: 'due' | 'upcoming' | 'check' | 'done'; detail: string }
 interface Work { id: string; name: string; reason: string; low: number; high: number }
@@ -80,7 +80,7 @@ export default function BuildingSheet({ property, n }: { property: PropertyData;
                             <div>
                                 <p className="text-ink">{copro.name || `Copropriété n° ${copro.immat}`}</p>
                                 <p className="text-xs text-faint">
-                                    Registre national des copropriétés · n° {copro.immat}{copro.match === 'position' ? ' · rapprochée par l’adresse' : ''}
+                                    Registre national des copropriétés · n° {copro.immat}{copro.match === 'position' ? ' · rapprochée par l’adresse' : ''}{copro.match === 'corner' ? ` · immatriculée au ${copro.address || 'une autre adresse'} (immeuble d’angle probable, à vérifier)` : ''}
                                 </p>
                             </div>
                         ) : (
