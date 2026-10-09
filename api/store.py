@@ -311,6 +311,27 @@ class SupabaseStore:
             "and": f"(lat.gte.{lat - delta},lat.lte.{lat + delta},lon.gte.{lon - delta},lon.lte.{lon + delta})",
             "select": "*", "limit": "20"})
 
+    # --- Monopropriétés: whole buildings with a single owner (011_monopro.sql) ---
+
+    async def monopro_in_bbox(self, west: float, south: float, east: float, north: float,
+                              company_only: bool, min_log: int, limit: int) -> List[Dict[str, Any]]:
+        params = {"and": f"(lat.gte.{south},lat.lte.{north},lon.gte.{west},lon.lte.{east})",
+                  "nb_log": f"gte.{min_log}", "select": "*", "order": "nb_log.desc", "limit": str(limit)}
+        if company_only:
+            params["owner_siren"] = "not.is.null"
+        return await self._request("GET", "monopro_buildings", params=params)
+
+    async def get_monopro(self, building_id: str) -> Optional[Dict[str, Any]]:
+        return await self._one("monopro_buildings", {"id": f"eq.{building_id}"})
+
+    async def monopro_by_owner(self, siren: str, limit: int) -> List[Dict[str, Any]]:
+        return await self._request("GET", "monopro_buildings", params={
+            "owner_siren": f"eq.{siren}", "select": "id,address,nb_log,dpe_label,lat,lon", "order": "nb_log.desc",
+            "limit": str(limit)})
+
+    async def monopro_owners(self, sirens: List[str]) -> List[Dict[str, Any]]:
+        return await self._request("GET", "monopro_owners", params={"siren": self._in(sirens), "select": "*"})
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:

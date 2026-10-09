@@ -2,7 +2,7 @@ import { LEGAL } from '../legal';
 import { LegalPage, LegalSection } from './site';
 
 // Last update of this policy: change it whenever the data processing changes
-const UPDATED = '8 octobre 2026';
+const UPDATED = '9 octobre 2026';
 
 const th = 'text-left font-semibold text-ink p-3 align-top';
 const td = 'p-3 align-top border-t border-line text-ink-soft';
@@ -120,6 +120,10 @@ export default function ConfidentialitePage() {
                     <li>la simulation en attente lorsque vous vous connectez pour obtenir un rapport, effacée une fois le rapport demandé.</li>
                 </ul>
                 <p>La page de paiement est hébergée par Stripe, qui y dépose ses propres cookies nécessaires à la sécurité des paiements et à la lutte contre la fraude.</p>
+            </LegalSection>
+
+            <LegalSection title="Dirigeants des sociétés propriétaires d'immeubles">
+                <p>La carte de prospection affiche, pour un immeuble détenu par une société, les dirigeants publiés par l'Annuaire des entreprises (INSEE, registre national des entreprises) : prénom, nom et qualité. Ces informations sont lues au moment de l'affichage, à des fins de prospection commerciale par courrier postal auprès de la société (intérêt légitime des abonnés), et ne sont pas conservées par SPREA. Les abonnés qui les utilisent sont responsables de leur traitement (article 14 des CGV). Un dirigeant peut s'opposer à leur affichage en écrivant à {LEGAL.email}.</p>
             </LegalSection>
 
             <LegalSection title="Vos droits">

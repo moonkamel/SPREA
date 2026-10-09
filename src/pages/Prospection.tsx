@@ -7,6 +7,7 @@ import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
+import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
 
 interface Dpe {
@@ -125,6 +126,12 @@ export default function ProspectionPage() {
     const [ready, setReady] = useState(false);
     const [locating, setLocating] = useState(false);
     const [framed, setFramed] = useState(false);
+    // 'immeubles': whole buildings held by a single owner (BDNB)
+    const [mode, setMode] = useState<'dpe' | 'immeubles'>('dpe');
+    const [ownerFilter, setOwnerFilter] = useState<'all' | 'company'>('all');
+    const [minLog, setMinLog] = useState('3');
+    const [mono, setMono] = useState<{ buildings: MonoBuilding[]; truncated: boolean } | null>(null);
+    const [sheetId, setSheetId] = useState<string | null>(null);
 
     // Centers the map on a place, with the starting circle around it
     const goHome = useCallback((lat: number, lon: number) => {
@@ -221,7 +228,7 @@ export default function ProspectionPage() {
     // Last loaded area: zooming in or moving inside it needs no new search
     const loaded = useRef<{ box: number[]; filters: string } | null>(null);
     useEffect(() => {
-        if (!session || !ready || !zoomOk || !areaKey || !labels.length) return;
+        if (mode !== 'dpe' || !session || !ready || !zoomOk || !areaKey || !labels.length) return;
         const box = areaKey.split(',').map(Number);
         const filters = [labels.join(','), kind, since, me?.is_pro].join('|');
         const last = loaded.current;
@@ -250,7 +257,38 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [session, ready, zoomOk, areaKey, labels, kind, since, authedFetch, me?.is_pro]);
+    }, [mode, session, ready, zoomOk, areaKey, labels, kind, since, authedFetch, me?.is_pro]);
+
+    // Whole buildings for the visible area
+    const monoLoaded = useRef<{ box: number[]; filters: string } | null>(null);
+    useEffect(() => {
+        if (mode !== 'immeubles' || !session || !ready || !zoomOk || !areaKey) return;
+        const box = areaKey.split(',').map(Number);
+        const filters = [ownerFilter, minLog].join('|');
+        const last = monoLoaded.current;
+        if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const params = new URLSearchParams({ bbox: areaKey, owner: ownerFilter, min_log: minLog });
+                const res = await authedFetch(`/api/monopro?${params}`, { signal: controller.signal });
+                if (!res.ok) {
+                    const detail = await res.json().catch(() => ({}));
+                    throw new Error(res.status === 429 ? 'Trop de recherches : patientez une minute.' : detail.detail || 'La recherche a échoué.');
+                }
+                const data = await res.json();
+                monoLoaded.current = data.truncated ? null : { box, filters };
+                setMono(data);
+            } catch (e) {
+                if ((e as Error).name !== 'AbortError') setError((e as Error).message);
+            } finally {
+                setLoading(false);
+            }
+        }, 450);
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [mode, session, ready, zoomOk, areaKey, ownerFilter, minLog, authedFetch]);
 
     const showDetails = !!result && !result.locked;
 
@@ -260,6 +298,21 @@ export default function ProspectionPage() {
         if (!layer) return;
         layer.clearLayers();
         markers.current.clear();
+        if (mode === 'immeubles') {
+            if (!mono || !zoomOk) return;
+            for (const b of mono.buildings) {
+                const marker = L.circleMarker([b.lat, b.lon], {
+                    radius: Math.min(16, 4 + Math.sqrt(b.nb_log) * 2),
+                    // Gold outline: owned by a company (owner identified)
+                    color: b.owner ? '#E3C98F' : '#0A0F1A', weight: b.owner ? 2 : 1.5, opacity: 0.95,
+                    fillColor: monoColor(b), fillOpacity: 0.95,
+                });
+                marker.bindTooltip(`${escapeHtml(b.address || '')}<br>${b.nb_log} logements · ${escapeHtml(b.owner ? `${b.owner.legal_form || ''} ${b.owner.name || ''}` : 'propriétaire non identifié')}`);
+                marker.on('click', () => setSheetId(b.id));
+                marker.addTo(layer);
+            }
+            return;
+        }
         if (!result || !zoomOk) return;
         for (const a of result.addresses) {
             const n = a.dpe?.length ?? a.count ?? 1;
@@ -289,7 +342,7 @@ export default function ProspectionPage() {
             }
             marker.addTo(layer);
         }
-    }, [result, showDetails, zoomOk]);
+    }, [mode, mono, result, showDetails, zoomOk]);
 
     const locate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -366,6 +419,21 @@ export default function ProspectionPage() {
                         Les logements classés G, F ou E dont le DPE vient d'être réalisé : un DPE récent annonce souvent une vente ou une
                         location. Contactez ces propriétaires les premiers, avec une estimation et un plan de rénovation chiffré.
                     </p>
+                    <div className="mt-5 inline-flex rounded-xl border border-line bg-raised p-1" role="tablist" aria-label="Que chercher">
+                        {([['dpe', 'Logements à rénover'], ['immeubles', 'Immeubles entiers']] as const).map(([m, label]) => (
+                            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
+                                className={`h-9 px-4 rounded-lg text-sm transition-colors ${mode === m ? 'bg-brass text-canvas font-medium' : 'text-muted hover:text-ink'}`}>
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                    {mode === 'immeubles' && (
+                        <p className="mt-3 text-sm text-muted max-w-3xl">
+                            Les immeubles de 3 logements ou plus détenus par un seul propriétaire, hors copropriété et hors logement social :
+                            à vendre en bloc à un investisseur, ou lot par lot après découpe. Quand le propriétaire est une société, sa fiche donne
+                            son siège, ses dirigeants et ses autres immeubles.
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-3 lg:items-center mb-4">
@@ -379,6 +447,21 @@ export default function ProspectionPage() {
                             <span className="hidden sm:inline">Autour de moi</span>
                         </button>
                     </form>
+                    {mode === 'immeubles' ? (
+                        <>
+                            <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value as 'all' | 'company')} aria-label="Propriétaire"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                <option value="all">Tous les propriétaires</option>
+                                <option value="company">Sociétés identifiées</option>
+                            </select>
+                            <select value={minLog} onChange={e => setMinLog(e.target.value)} aria-label="Nombre de logements"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                <option value="3">3 logements ou plus</option>
+                                <option value="5">5 logements ou plus</option>
+                                <option value="10">10 logements ou plus</option>
+                            </select>
+                        </>
+                    ) : <>
                     <div className="flex gap-2" role="group" aria-label="Classes DPE">
                         {LABEL_OPTIONS.map(l => (
                             <button key={l} type="button" onClick={() => toggleLabel(l)} aria-pressed={labels.includes(l)}
@@ -396,6 +479,7 @@ export default function ProspectionPage() {
                         className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
                         {SINCE.map(k => <option key={k.value} value={k.value}>{k.label}</option>)}
                     </select>
+                    </>}
                 </div>
 
                 <div className="grid lg:grid-cols-[1fr_380px] gap-4">
@@ -405,7 +489,13 @@ export default function ProspectionPage() {
                             {zoom < MIN_ZOOM && (
                                 <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink">Rapprochez-vous pour afficher les logements.</span>
                             )}
-                            {zoom >= MIN_ZOOM && result && (
+                            {zoom >= MIN_ZOOM && mode === 'immeubles' && mono && (
+                                <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink tabular-nums">
+                                    {mono.buildings.length.toLocaleString('fr-FR')} immeuble{mono.buildings.length > 1 ? 's' : ''}
+                                    {mono.truncated ? ' · zone dense : zoomez pour tout voir' : framed ? ' · dans le cadre en pointillés' : ''}
+                                </span>
+                            )}
+                            {zoom >= MIN_ZOOM && mode === 'dpe' && result && (
                                 <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink tabular-nums">
                                     {result.dwellings.toLocaleString('fr-FR')} logement{result.dwellings > 1 ? 's' : ''} · {result.addresses.length.toLocaleString('fr-FR')} adresse{result.addresses.length > 1 ? 's' : ''}
                                     {result.truncated ? ' · zone dense : zoomez pour tout voir' : framed ? ' · dans le cadre en pointillés' : ''}
@@ -414,12 +504,16 @@ export default function ProspectionPage() {
                             {loading && <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink flex items-center gap-2"><Loader2 size={14} className="animate-spin" />Chargement</span>}
                         </div>
                         <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-3 rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-xs text-muted pointer-events-none">
-                            {LABEL_OPTIONS.filter(l => labels.includes(l)).map(l => (
+                            {mode === 'immeubles' ? <>
+                                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full ring-2 ring-brass-light bg-faint" />société</span>
+                                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NO_DPE_COLOR }} />sans DPE</span>
+                                <span className="text-faint">· couleur : DPE</span>
+                            </> : LABEL_OPTIONS.filter(l => labels.includes(l)).map(l => (
                                 <span key={l} className="flex items-center gap-1.5">
                                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: DPE_COLORS[l].bg }} />{l}
                                 </span>
                             ))}
-                            <span className="hidden sm:inline text-faint">· taille : nombre de logements</span>
+                            {mode === 'dpe' && <span className="hidden sm:inline text-faint">· taille : nombre de logements</span>}
                         </div>
                     </div>
 
@@ -433,7 +527,7 @@ export default function ProspectionPage() {
                                 <Button className="mt-4 w-full" onClick={() => openLogin('Connectez-vous pour utiliser la carte de prospection.')}
                                     disabled={!config?.auth_enabled}>Se connecter</Button>
                             </Card>
-                        ) : result?.locked ? (
+                        ) : mode === 'dpe' && result?.locked ? (
                             <Card className="p-5">
                                 <p className="text-ink font-medium flex items-center gap-2"><Lock size={16} className="text-brass" />Adresses réservées aux abonnés</p>
                                 <p className="mt-2 text-sm text-muted">
@@ -444,7 +538,19 @@ export default function ProspectionPage() {
                             </Card>
                         ) : null}
 
-                        {showDetails && (
+                        {mode === 'immeubles' && mono && (
+                            <Card className="p-0 overflow-hidden">
+                                <div className="px-4 py-3 border-b border-line">
+                                    <p className="text-sm text-ink font-medium">{mono.buildings.length.toLocaleString('fr-FR')} immeubles</p>
+                                    <p className="text-xs text-faint">Les plus grands d'abord · contour doré : société identifiée</p>
+                                </div>
+                                <MonoproList buildings={mono.buildings}
+                                    onFocus={b => mapRef.current?.setView([b.lat, b.lon], Math.max(mapRef.current.getZoom(), 17))}
+                                    onOpen={b => setSheetId(b.id)} />
+                            </Card>
+                        )}
+
+                        {mode === 'dpe' && showDetails && (
                             <Card className="p-4">
                                 <Button variant="secondary" className="h-10 w-full" onClick={createAlert}>
                                     <Bell size={14} />Créer une alerte sur cette zone
@@ -456,7 +562,7 @@ export default function ProspectionPage() {
                             </Card>
                         )}
 
-                        {showDetails && (
+                        {mode === 'dpe' && showDetails && (
                             <Card className="p-0 overflow-hidden">
                                 <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-line">
                                     <p className="text-sm text-ink font-medium">{visible.length.toLocaleString('fr-FR')} adresses</p>
@@ -502,12 +608,15 @@ export default function ProspectionPage() {
                 <p className="mt-6 text-xs text-faint max-w-4xl">
                     Source : DPE des logements existants, ADEME (Licence Ouverte 2.0), géolocalisés par la Base Adresse Nationale. Le DPE affiché est le plus
                     récent parmi les DPE E, F ou G du logement : un DPE plus favorable établi depuis, après travaux, n'est pas vérifié. Fond de carte © IGN.
+                    Immeubles entiers : base nationale des bâtiments (CSTB, Licence Ouverte), propriétaires personnes morales (DGFiP), Annuaire des entreprises.
                     Les adresses s'utilisent dans le cadre de l'<Link to="/cgv" className="underline hover:text-ink">article 14 des CGV</Link> : origine des données
                     indiquée dans chaque courrier, oppositions respectées, pas de démarchage téléphonique.
                 </p>
             </main>
             <SiteFooter />
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
+            {sheetId && <MonoproSheet id={sheetId} onClose={() => setSheetId(null)}
+                onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
         </div>
     );
 }
