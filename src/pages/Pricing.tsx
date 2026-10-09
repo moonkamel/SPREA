@@ -17,6 +17,7 @@ const INCLUDED = [
     'Courriers avec QR code et page propriétaire à vos couleurs',
     'Suivi des contacts reçus',
     'Artisans RGE les plus proches pour chaque travail',
+    'Fiche immeuble des copropriétés : registre, DPE collectif, travaux à venir',
 ];
 
 const FAQ = [

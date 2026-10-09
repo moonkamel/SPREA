@@ -357,6 +357,65 @@ ANALYSIS_TITLES = [
 # --- Report ---
 
 class PDFReportGenerator:
+    def _immeuble(self, report: Dict[str, Any], next_section) -> List[Any]:
+        sheet = report.get('immeuble')
+        if not sheet:
+            return []
+        copro, building, dims = sheet.get('copro'), sheet.get('building_dpe'), sheet['dimensions']
+        rows = []
+        if copro:
+            lots = f"{copro['lots_main'] or '–'} lots principaux" + (f" dont {copro['lots_housing']} logements" if copro.get('lots_housing') else '')
+            rows.append(kv('Copropriété', text(copro.get('name') or f"n° {copro['immat']}"), 'right_b'))
+            rows.append(kv('Taille', text(lots), 'right'))
+            syndic = copro.get('syndic_name') or (copro.get('syndic_type') or 'non renseigné').capitalize()
+            rows.append(kv('Syndic', text(syndic), 'right'))
+        if sheet.get('period'):
+            rows.append(kv('Construction', text(sheet['period']), 'right'))
+        if building:
+            rows.append(kv("DPE de l'immeuble", text(f"Classe {building['label']} · {building['date_fr']}"), 'right_b'))
+        apartments = sheet['apartments']
+        if apartments['count'] > 1:
+            dist = ', '.join(f"{n} en {l}" for l, n in apartments['distribution'].items() if n)
+            rows.append(kv('DPE des appartements', text(f"{apartments['count']} publiés : {dist}"), 'right'))
+        out: List[Any] = [CondPageBreak(8 * cm), Spacer(1, 18), next_section("L'immeuble et ses travaux à venir"), Spacer(1, 6)]
+        if rows:
+            out += [rows_table(rows, [CONTENT_W * 0.4, CONTENT_W * 0.6]), Spacer(1, 10)]
+        if not copro:
+            out += [Paragraph("Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.", S['muted']), Spacer(1, 8)]
+        if sheet.get('obligations'):
+            out.append(Paragraph('Obligations de la copropriété', S['narrative_h']))
+            items = []
+            for o in sheet['obligations']:
+                when = f" (depuis le {o['since'][8:10]}/{o['since'][5:7]}/{o['since'][:4]})" if o.get('since') and o['status'] != 'done' else ''
+                items.append(f"{o['title']}{when} : {o['detail']}")
+            out += [*bullet_list(items, 'muted'), Spacer(1, 8)]
+        if sheet.get('works'):
+            source = "du DPE de l'immeuble" if sheet['works_source'] == 'immeuble' else "du DPE de l'appartement"
+            table = [[head('Travaux collectifs probables'), head('Constat'), head('Immeuble', 2)]]
+            for w in sheet['works']:
+                table.append([Paragraph(text(w['name']), S['body']), Paragraph(text(w['reason']), S['muted']),
+                              Paragraph(eur_range(w['low'], w['high']), S['right'])])
+            table.append([Paragraph('<b>Total</b>', S['body']), Paragraph('', S['muted']),
+                          Paragraph(eur_range(*sheet['total']), S['right_b'])])
+            out.append(KeepTogether([Paragraph('Travaux collectifs à prévoir', S['narrative_h']), Spacer(1, 2),
+                                     grid(table, [CONTENT_W * 0.38, CONTENT_W * 0.34, CONTENT_W * 0.28], bold_last=True)]))
+            est = sheet.get('estimate')
+            if est:
+                pct = str(round(est['share'] * 100, 1)).replace('.', ',')
+                out += [Spacer(1, 8), boxed([
+                    Paragraph(f"Quote-part de l'appartement (environ {pct}{NBSP}% de la surface) : "
+                              f"<b>{eur_range(est['share_low'], est['share_high'])}</b>", S['body']),
+                    Spacer(1, 2),
+                    Paragraph(f"Après MaPrimeRénov' Copropriété ({round(est['aid_rates'][0] * 100)} à {round(est['aid_rates'][1] * 100)}{NBSP}% "
+                              f"des travaux si le gain énergétique atteint 35{NBSP}%) : environ {eur_range(est['net_low'], est['net_high'])}.",
+                              S['muted'])], rule=BRASS)]
+            out += [Spacer(1, 6), Paragraph(
+                f"Ordres de grandeur déduits {source} ({num(dims.get('surface'))}{NBSP}m² habitables{' estimés' if sheet['works_source'] != 'immeuble' else ''}, "
+                f"{dims.get('levels')} niveaux, {dims.get('dwellings')} logements). Le montant réel dépend du plan pluriannuel "
+                "de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. "
+                "Sources : registre national des copropriétés (Anah), base DPE de l'ADEME.", S['small'])]
+        return out
+
     def _rge(self, report: Dict[str, Any], next_section) -> List[Any]:
         rge = report.get('rge') or {}
         names = {w['id']: w['name'] for w in report.get('works', [])}
@@ -428,6 +487,9 @@ class PDFReportGenerator:
         story += [CondPageBreak(6 * cm), Spacer(1, 18),
                   next_section('Valeur et rentabilité locative' if report['is_investor'] else 'Valeur du bien'), Spacer(1, 8)]
         story += self._value(report)
+
+        # Building of an apartment in a copropriété
+        story += self._immeuble(report, next_section)
 
         # 6. Steps
         steps: List[Any] = [next_section('Calendrier et prochaines étapes'), Spacer(1, 8)]

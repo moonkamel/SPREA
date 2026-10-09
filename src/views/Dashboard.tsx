@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2,
 import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, eurRange, num } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import RgeCompanies from './RgeCompanies';
+import BuildingSheet from './BuildingSheet';
 import { INCOME_LEVELS, capitalize, formatDate, isHouse, type IncomeLevel, type PropertyData, type RetrofitAction, type Simulation } from '../model';
 
 export interface Settings {
@@ -538,6 +539,7 @@ export default function Dashboard(props: Props) {
                         </Step>
 
                         <RgeCompanies property={property} actions={actions} />
+                        <BuildingSheet property={property} n={property.latitude != null && actions.some(a => a.active) ? 6 : 5} />
 
                         <p className="text-xs text-faint leading-relaxed px-1">
                             Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Elle ne constitue ni un DPE, ni un audit énergétique réglementaire, ni un devis.

@@ -1,0 +1,32 @@
+name: Copropriétés registry
+
+# Loads the national registry of copropriétés (RNIC, Anah) into Supabase for
+# the building sheet. The file is published quarterly: monthly run (the 12th),
+# or on demand from the Actions tab.
+# Requires the repository secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
+# (Settings > Secrets and variables > Actions).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 2 12 * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: copro-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/copro/import_rnic.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

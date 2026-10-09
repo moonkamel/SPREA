@@ -85,3 +85,15 @@ def test_rge_companies_section():
     # No companies found: no section
     content["rge"] = None
     assert "annuaire public" not in pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+
+
+def test_building_sheet_section():
+    from api.immeuble import build_sheet
+    from tests.test_immeuble import APT, BUILDING, COPRO, TODAY, flat
+    content = build_report(META, SimulationInput(property=PROP, works=["roof"]))
+    content["immeuble"] = build_sheet(APT, [BUILDING, flat(1, "E", 1)], COPRO, "immat", TODAY)
+    out = pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+    assert "L'immeuble et ses travaux" in out and "Résidence Meurein" in out and "Syndic du Nord" in out
+    assert "Quote-part" in out and "plan pluriannuel" in out
+    content["immeuble"] = None
+    assert "Quote-part" not in pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
