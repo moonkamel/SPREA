@@ -399,18 +399,20 @@ class PDFReportGenerator:
                               Paragraph(eur_range(w['low'], w['high']), S['right'])])
             table.append([Paragraph('<b>Total</b>', S['body']), Paragraph('', S['muted']),
                           Paragraph(eur_range(*sheet['total']), S['right_b'])])
-            out.append(KeepTogether([Paragraph('Travaux collectifs à prévoir', S['narrative_h']), Spacer(1, 2),
-                                     grid(table, [CONTENT_W * 0.38, CONTENT_W * 0.34, CONTENT_W * 0.28], bold_last=True)]))
+            works_block: List[Any] = [Paragraph('Travaux collectifs à prévoir', S['narrative_h']), Spacer(1, 2),
+                                      grid(table, [CONTENT_W * 0.38, CONTENT_W * 0.34, CONTENT_W * 0.28], bold_last=True)]
             est = sheet.get('estimate')
             if est:
+                # The flat's share stays with the works table
                 pct = str(round(est['share'] * 100, 1)).replace('.', ',')
-                out += [Spacer(1, 8), boxed([
+                works_block += [Spacer(1, 8), boxed([
                     Paragraph(f"Quote-part de l'appartement (environ {pct}{NBSP}% de la surface) : "
                               f"<b>{eur_range(est['share_low'], est['share_high'])}</b>", S['body']),
                     Spacer(1, 2),
                     Paragraph(f"Après MaPrimeRénov' Copropriété ({round(est['aid_rates'][0] * 100)} à {round(est['aid_rates'][1] * 100)}{NBSP}% "
                               f"des travaux si le gain énergétique atteint 35{NBSP}%) : environ {eur_range(est['net_low'], est['net_high'])}.",
                               S['muted'])], rule=BRASS)]
+            out.append(KeepTogether(works_block))
             out += [Spacer(1, 6), Paragraph(
                 f"Ordres de grandeur déduits {source} ({num(dims.get('surface'))}{NBSP}m² habitables{' estimés' if sheet['works_source'] != 'immeuble' else ''}, "
                 f"{dims.get('levels')} niveaux, {dims.get('dwellings')} logements). Le montant réel dépend du plan pluriannuel "

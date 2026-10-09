@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { Button } from './ui';
 import { navigate } from './router';
-import { Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
+import { KeyRound, Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
 
 // --- Types ---
 
@@ -123,6 +123,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const [me, setMe] = useState<Me | null>(null);
     const [loginReason, setLoginReason] = useState<string | null>(null);
     const [showAccount, setShowAccount] = useState(false);
+    // Password form: 'recovery' after a reset link, 'set' from the account
+    const [passwordForm, setPasswordForm] = useState<'recovery' | 'set' | null>(null);
     const [showDelete, setShowDelete] = useState(false);
     const [notice, setNotice] = useState<string | null>(null);
     const [pending, setPending] = useState<ReportRequest | null>(null);
@@ -277,7 +279,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                 supabase.current = createClient(cfg.supabase_url, cfg.supabase_anon_key);
                 const { data } = await supabase.current.auth.getSession();
                 setSession(data.session);
-                const sub = supabase.current.auth.onAuthStateChange((_event, s) => setSession(s));
+                const sub = supabase.current.auth.onAuthStateChange((event, s) => {
+                    setSession(s);
+                    if (event === 'PASSWORD_RECOVERY') setPasswordForm('recovery');
+                });
                 unsubscribe = () => sub.data.subscription.unsubscribe();
             })
             .catch(err => console.error('Config error:', err));
@@ -314,10 +319,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
             {loginReason !== null && supabase.current && (
                 <LoginModal reason={loginReason} supabase={supabase.current} onClose={() => setLoginReason(null)} />
             )}
+            {passwordForm && session && supabase.current && (
+                <PasswordModal supabase={supabase.current} recovery={passwordForm === 'recovery'} onClose={() => setPasswordForm(null)} />
+            )}
             {showAccount && session && (
                 <AccountModal
                     me={me}
                     onClose={() => setShowAccount(false)}
+                    onPassword={() => { setShowAccount(false); setPasswordForm('set'); }}
                     onDownload={downloadReport}
                     onSubscribe={async () => { setShowAccount(false); navigate('/tarifs'); }}
                     onPortal={async () => {
@@ -431,48 +440,112 @@ function Checkbox({ checked, onChange, children, danger }: { checked: boolean; o
     );
 }
 
-function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: SupabaseClient; onClose: () => void }) {
-    const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+// Identifiers without "@" (shared test accounts such as "test") are stored
+// under a reserved domain that can never receive an email (RFC 2606)
+export const LOGIN_DOMAIN = 'sprea.invalid';
+const toEmail = (id: string) => (id.includes('@') ? id.trim() : `${id.trim().toLowerCase()}@${LOGIN_DOMAIN}`);
+export const isSharedAccount = (email?: string | null) => !!email && email.endsWith(`@${LOGIN_DOMAIN}`);
+const MIN_PASSWORD = 8;
 
-    const send = async (e: React.FormEvent) => {
+const inputClass = 'w-full h-12 px-4 rounded-xl bg-raised border border-line text-ink placeholder:text-faint outline-none focus:border-brass/70';
+
+function authError(message: string): string {
+    const m = message.toLowerCase();
+    if (m.includes('invalid login credentials')) return 'Identifiant ou mot de passe incorrect.';
+    if (m.includes('email not confirmed')) return "Confirmez d'abord votre adresse : cliquez sur le lien reçu par email.";
+    if (m.includes('already registered') || m.includes('already been registered')) return 'Un compte existe déjà avec cette adresse : connectez-vous, ou utilisez « Mot de passe oublié ».';
+    if (m.includes('rate limit') || m.includes('security purposes')) return 'Trop de tentatives : patientez une minute et réessayez.';
+    if (m.includes('password')) return `Mot de passe trop faible : au moins ${MIN_PASSWORD} caractères.`;
+    return "L'opération a échoué, réessayez.";
+}
+
+type LoginMode = 'password' | 'signup' | 'magic' | 'reset';
+
+function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: SupabaseClient; onClose: () => void }) {
+    const [mode, setMode] = useState<LoginMode>('password');
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [sent, setSent] = useState<string | null>(null);
+
+    const go = (m: LoginMode) => { setMode(m); setError(null); setSent(null); };
+
+    const submit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setStatus('sending');
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: window.location.origin },
-        });
-        setStatus(error ? 'error' : 'sent');
+        setBusy(true);
+        setError(null);
+        const email = toEmail(identifier);
+        try {
+            if (mode === 'password') {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) setError(authError(error.message));
+                // Success: the session listener closes the modal
+            } else if (mode === 'signup') {
+                if (password.length < MIN_PASSWORD) { setError(`Au moins ${MIN_PASSWORD} caractères.`); return; }
+                const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+                if (error) setError(authError(error.message));
+                else if (!data.session) setSent(`Un email de confirmation a été envoyé à ${email}. Cliquez sur le lien pour activer votre compte.`);
+            } else if (mode === 'magic') {
+                const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+                if (error) setError(authError(error.message));
+                else setSent(`Lien envoyé à ${email}. Ouvrez l'email et cliquez sur le lien pour vous connecter.`);
+            } else {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+                if (error) setError(authError(error.message));
+                else setSent(`Si un compte existe pour ${email}, un lien pour choisir un nouveau mot de passe vient d'être envoyé.`);
+            }
+        } finally {
+            setBusy(false);
+        }
     };
 
+    const titles: Record<LoginMode, string> = {
+        password: 'Connexion', signup: 'Créer un compte', magic: 'Connexion par lien email', reset: 'Mot de passe oublié',
+    };
+    const actions: Record<LoginMode, string> = {
+        password: 'Se connecter', signup: 'Créer mon compte', magic: 'Recevoir un lien de connexion', reset: 'Recevoir le lien',
+    };
+    const withPassword = mode === 'password' || mode === 'signup';
+
     return (
-        <Modal title="Connexion" onClose={onClose}>
-            {reason && <p className="text-sm text-muted mb-5">{reason}</p>}
-            {status === 'sent' ? (
+        <Modal title={titles[mode]} onClose={onClose}>
+            {reason && mode === 'password' && <p className="text-sm text-muted mb-5">{reason}</p>}
+            {sent ? (
                 <div className="text-center py-4">
                     <Mail className="mx-auto text-brass mb-3" size={32} />
-                    <p className="text-ink font-medium">Lien envoyé à {email}</p>
-                    <p className="text-sm text-muted mt-2">Ouvrez l'email et cliquez sur le lien pour vous connecter. Pas de mot de passe à retenir.</p>
+                    <p className="text-sm text-ink-soft">{sent}</p>
+                    <button onClick={() => go('password')} className="mt-5 text-sm text-brass-light hover:underline">Retour à la connexion</button>
                 </div>
             ) : (
-                <form onSubmit={send} className="space-y-4">
+                <form onSubmit={submit} className="space-y-4">
                     <label className="block space-y-2">
-                        <span className="text-sm text-ink-soft">Adresse email</span>
-                        <input
-                            type="email"
-                            required
-                            autoFocus
-                            placeholder="vous@exemple.fr"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="w-full h-12 px-4 rounded-xl bg-raised border border-line text-ink placeholder:text-faint outline-none focus:border-brass/70"
-                        />
+                        <span className="text-sm text-ink-soft">{mode === 'password' ? 'Email ou identifiant' : 'Adresse email'}</span>
+                        <input type={mode === 'password' ? 'text' : 'email'} required autoFocus autoComplete={mode === 'password' ? 'username' : 'email'}
+                               placeholder="vous@exemple.fr" value={identifier} onChange={e => setIdentifier(e.target.value)} className={inputClass} />
                     </label>
-                    <Button type="submit" disabled={status === 'sending'} className="w-full">
-                        {status === 'sending' && <Loader2 className="animate-spin" size={16} />}
-                        Recevoir un lien de connexion
+                    {withPassword && (
+                        <label className="block space-y-2">
+                            <span className="flex items-center justify-between text-sm text-ink-soft">
+                                Mot de passe
+                                {mode === 'password' && <button type="button" onClick={() => go('reset')} className="text-xs text-muted hover:text-ink">Mot de passe oublié ?</button>}
+                            </span>
+                            <input type="password" required autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                                   minLength={mode === 'signup' ? MIN_PASSWORD : undefined}
+                                   placeholder={mode === 'signup' ? `Au moins ${MIN_PASSWORD} caractères` : ''}
+                                   value={password} onChange={e => setPassword(e.target.value)} className={inputClass} />
+                        </label>
+                    )}
+                    <Button type="submit" disabled={busy} className="w-full">
+                        {busy && <Loader2 className="animate-spin" size={16} />}
+                        {actions[mode]}
                     </Button>
-                    {status === 'error' && <p className="text-sm text-coral">L'envoi a échoué, vérifiez l'adresse et réessayez.</p>}
+                    {error && <p role="alert" className="text-sm text-coral">{error}</p>}
+                    <div className="flex flex-col items-center gap-2 text-sm">
+                        {mode !== 'password' && <button type="button" onClick={() => go('password')} className="text-muted hover:text-ink">J'ai un mot de passe : me connecter</button>}
+                        {mode !== 'signup' && <button type="button" onClick={() => go('signup')} className="text-muted hover:text-ink">Pas encore de compte ? <span className="text-brass-light">Créer un compte</span></button>}
+                        {mode !== 'magic' && <button type="button" onClick={() => go('magic')} className="text-faint hover:text-ink">Recevoir plutôt un lien de connexion par email</button>}
+                    </div>
                     <p className="text-xs text-faint leading-relaxed">
                         Votre email sert uniquement à vous connecter, à conserver vos rapports et à vous envoyer vos factures.{' '}
                         <a href="/confidentialite" target="_blank" rel="noopener" className="underline hover:text-ink">Politique de confidentialité</a>
@@ -483,11 +556,61 @@ function LoginModal({ reason, supabase, onClose }: { reason: string; supabase: S
     );
 }
 
+// Choose a password: after a reset link, or from the account to stop using email links
+function PasswordModal({ supabase, recovery, onClose }: { supabase: SupabaseClient; recovery: boolean; onClose: () => void }) {
+    const [password, setPassword] = useState('');
+    const [confirm, setConfirm] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [done, setDone] = useState(false);
+
+    const submit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password.length < MIN_PASSWORD) { setError(`Au moins ${MIN_PASSWORD} caractères.`); return; }
+        if (password !== confirm) { setError('Les deux mots de passe ne sont pas identiques.'); return; }
+        setBusy(true);
+        const { error } = await supabase.auth.updateUser({ password });
+        setBusy(false);
+        if (error) setError(authError(error.message));
+        else setDone(true);
+    };
+
+    return (
+        <Modal title={recovery ? 'Nouveau mot de passe' : 'Mon mot de passe'} onClose={onClose}>
+            {done ? (
+                <div className="text-center py-4">
+                    <p className="text-ink">Mot de passe enregistré.</p>
+                    <p className="text-sm text-muted mt-2">Vous pourrez désormais vous connecter avec votre email et ce mot de passe.</p>
+                    <Button className="mt-5" onClick={onClose}>Continuer</Button>
+                </div>
+            ) : (
+                <form onSubmit={submit} className="space-y-4">
+                    <label className="block space-y-2">
+                        <span className="text-sm text-ink-soft">Nouveau mot de passe</span>
+                        <input type="password" required autoFocus autoComplete="new-password" minLength={MIN_PASSWORD} placeholder={`Au moins ${MIN_PASSWORD} caractères`}
+                               value={password} onChange={e => setPassword(e.target.value)} className={inputClass} />
+                    </label>
+                    <label className="block space-y-2">
+                        <span className="text-sm text-ink-soft">Confirmation</span>
+                        <input type="password" required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} className={inputClass} />
+                    </label>
+                    <Button type="submit" disabled={busy} className="w-full">
+                        {busy && <Loader2 className="animate-spin" size={16} />}
+                        Enregistrer
+                    </Button>
+                    {error && <p role="alert" className="text-sm text-coral">{error}</p>}
+                </form>
+            )}
+        </Modal>
+    );
+}
+
 export const ROLE_NAMES = { owner: "Titulaire de l'abonnement", admin: 'Responsable', agent: 'Agent' } as const;
 
-function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
+function AccountModal({ me, onClose, onPassword, onDownload, onSubscribe, onPortal, onLogout, onDelete }: {
     me: Me | null;
     onClose: () => void;
+    onPassword: () => void;
     onDownload: (id: string) => Promise<void>;
     onSubscribe: () => Promise<void>;
     onPortal: () => Promise<void>;
@@ -507,7 +630,7 @@ function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout
         <Modal title="Mon compte" onClose={onClose}>
             {!me ? <Loader2 className="animate-spin text-faint" /> : (
                 <div className="space-y-6">
-                    <p className="text-sm text-muted">{me.email}</p>
+                    <p className="text-sm text-muted">{isSharedAccount(me.email) ? `Compte de test partagé · identifiant « ${(me.email || '').split('@')[0]} »` : me.email}</p>
 
                     <div className="rounded-xl border border-line bg-raised p-5">
                         {me.team ? (
@@ -566,13 +689,21 @@ function AccountModal({ me, onClose, onDownload, onSubscribe, onPortal, onLogout
                         )}
                     </div>
 
+                    {!isSharedAccount(me.email) && (
+                        <button onClick={onPassword} className="text-sm text-muted hover:text-ink flex items-center gap-2">
+                            <KeyRound size={14} /> Choisir ou changer mon mot de passe
+                        </button>
+                    )}
+
                     <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
                         <button onClick={run('logout', onLogout)} className="text-sm text-muted hover:text-ink flex items-center gap-2">
                             <LogOut size={14} /> Se déconnecter
                         </button>
-                        <button onClick={onDelete} className="text-sm text-faint hover:text-coral flex items-center gap-2">
-                            <Trash2 size={14} /> Supprimer mon compte
-                        </button>
+                        {!isSharedAccount(me.email) && (
+                            <button onClick={onDelete} className="text-sm text-faint hover:text-coral flex items-center gap-2">
+                                <Trash2 size={14} /> Supprimer mon compte
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

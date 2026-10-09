@@ -114,8 +114,8 @@ ${ul([
 
 pages.push(page({
     path: '/demo',
-    title: 'Démo SPREA : prospection DPE, alertes, avis de valeur avant / après travaux',
-    description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux : découvrez SPREA en images.",
+    title: 'Démo SPREA : prospection DPE, alertes, avis de valeur, fiche copropriété',
+    description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux, fiche immeuble des copropriétés et artisans RGE : découvrez SPREA en images.",
     jsonld: [SOFTWARE, BREADCRUMB([['SPREA', '/'], ['Démo', '/demo']])],
     body: `${nav}
 <h1>Une matinée avec SPREA</h1>
@@ -130,10 +130,16 @@ pages.push(page({
 <p>Nom, téléphone, email et message, avec l'adresse et le DPE du logement, et le consentement horodaté.</p>
 <h2>14 h · Le simulateur : travaux, aides, reste à charge</h2>
 <p>Travaux recommandés selon le DPE, nouvelle étiquette, MaPrimeRénov', CEE et éco-PTZ selon les barèmes en vigueur, deux scénarios à comparer.</p>
+<h2>14 h 10 · La fiche immeuble des copropriétés</h2>
+<p>Registre national des copropriétés, DPE collectif, plan pluriannuel de travaux : les gros travaux à venir et la quote-part de l'appartement, avant et après aides.</p>
+<h2>14 h 20 · Les artisans RGE les plus proches</h2>
+<p>Pour chaque travail retenu, les entreprises qualifiées RGE les plus proches d'après l'annuaire de l'ADEME, reprises dans le rapport.</p>
 <h2>L'avis de valeur avant / après travaux</h2>
 <p>Ventes DVF comparables autour du bien, écart de prix par classe DPE mesuré sur ${int(obs.total_sales)} ventes, ajustement du conseiller, PDF à votre nom.</p>
 <h2>Un rapport complet pour le client</h2>
-<p>Synthèse, analyse rédigée, plan de travaux et de financement, valeur verte et calendrier de la loi Climat.</p>
+<p>Synthèse, analyse rédigée, plan de travaux et de financement, valeur verte et calendrier de la loi Climat, fiche immeuble et artisans RGE.</p>
+<h2>Toute l'agence sur le même outil</h2>
+<p>Une place par agent, invitations par lien, contacts et alertes partagés dans l'agence, console réseau.</p>
 <p><a href="/tarifs">Démarrer à 79 € HT / mois</a></p>`,
 }));
 

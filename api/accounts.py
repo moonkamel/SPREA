@@ -87,6 +87,15 @@ def org_active(profile: Optional[Dict[str, Any]]) -> bool:
                for o in (profile.get("org"), profile.get("org_parent")))
 
 
+# Shared test accounts ("test" on the login form), created by hand in Supabase
+# under a reserved domain that cannot receive emails (src/account.tsx)
+SHARED_ACCOUNT_DOMAIN = "@sprea.invalid"
+
+
+def is_shared_account(email: Optional[str]) -> bool:
+    return bool(email) and email.lower().endswith(SHARED_ACCOUNT_DOMAIN)
+
+
 def is_pro(profile: Optional[Dict[str, Any]]) -> bool:
     return bool(profile) and (profile.get("subscription_status") in PRO_ACTIVE_STATUSES or org_active(profile))
 
@@ -341,6 +350,8 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
     """
     if not data.confirm:
         raise HTTPException(status_code=400, detail="Confirmez la suppression du compte.")
+    if is_shared_account(user.email):
+        raise HTTPException(status_code=403, detail="Le compte de test partagé ne peut pas être supprimé.")
     profile = await store.get_profile(user.id) or {}
     org = profile.get("org")
     org_subscription = None
