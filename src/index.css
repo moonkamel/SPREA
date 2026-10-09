@@ -28,3 +28,19 @@
         opacity: 0.4;
     }
 }
+
+/* Prospection map in the site theme: IGN plan turned to night colors */
+.sprea-map.leaflet-container { background: #0B1322; font-family: inherit; }
+.sprea-map .sprea-tiles { filter: grayscale(1) invert(0.95) brightness(0.85) contrast(1.05) sepia(0.7) hue-rotate(178deg) saturate(2.6); }
+.sprea-map .leaflet-bar { border: 1px solid #25324C; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); }
+.sprea-map .leaflet-bar a { width: 36px; height: 36px; line-height: 36px; background: #111A2B; color: #ECEFF4; border-bottom-color: #25324C; }
+.sprea-map .leaflet-bar a:hover { background: #18233A; color: #E3C98F; }
+.sprea-map .leaflet-bar a.leaflet-disabled { background: #111A2B; color: #6C778C; }
+.sprea-map .leaflet-popup-content-wrapper, .sprea-map .leaflet-popup-tip { background: #111A2B; color: #ECEFF4; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55); }
+.sprea-map .leaflet-popup-content-wrapper { border: 1px solid #25324C; border-radius: 14px; }
+.sprea-map .leaflet-popup-content { margin: 14px 18px; font-size: 13px; line-height: 1.5; }
+.sprea-map .leaflet-container a.leaflet-popup-close-button, .sprea-map a.leaflet-popup-close-button { color: #97A1B3; }
+.sprea-map .leaflet-tooltip { background: #111A2B; color: #ECEFF4; border: 1px solid #25324C; border-radius: 8px; box-shadow: none; }
+.sprea-map .leaflet-tooltip-top::before { border-top-color: #25324C; }
+.sprea-map .leaflet-control-attribution { background: rgba(10, 15, 26, 0.75); color: #6C778C; border-top-left-radius: 8px; }
+.sprea-map .leaflet-control-attribution a { color: #97A1B3; }

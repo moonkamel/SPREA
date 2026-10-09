@@ -16,6 +16,7 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Dict, Literal, Optional
+from urllib.parse import unquote
 from uuid import UUID
 
 import httpx
@@ -294,6 +295,25 @@ def terms_acceptance() -> Dict[str, str]:
 
 
 # --- Endpoints ---
+
+# Countries and overseas departments covered by the DPE database
+DPE_COUNTRIES = {"FR", "GP", "MQ", "GF", "RE", "YT"}
+
+
+@router.get("/geo")
+async def approximate_location(request: Request):
+    """Approximate position of the visitor, from the IP geolocation headers
+    added by Vercel (city level): where the prospection map opens. Nothing is
+    stored, and no browser permission is asked."""
+    h = request.headers
+    try:
+        lat, lon = float(h.get("x-vercel-ip-latitude", "")), float(h.get("x-vercel-ip-longitude", ""))
+    except ValueError:
+        return {"lat": None, "lon": None, "city": None}
+    if (h.get("x-vercel-ip-country") or "").upper() not in DPE_COUNTRIES:
+        return {"lat": None, "lon": None, "city": None}
+    return {"lat": round(lat, 4), "lon": round(lon, 4), "city": unquote(h.get("x-vercel-ip-city") or "") or None}
+
 
 @router.get("/config")
 async def public_config():

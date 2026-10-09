@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Download, Loader2, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
+import { Bell, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
@@ -39,7 +39,32 @@ interface Result {
     truncated: boolean;
 }
 
-const MIN_ZOOM = 15;
+// Below this zoom the loaded area would only be a dot on the map
+const MIN_ZOOM = 12;
+// Loaded area, in degrees: the server accepts 0.045 (about 3 km x 5 km)
+const MAX_SPAN = 0.044;
+// The map opens on the visitor's area: 1.5 km around their approximate position
+const START_RADIUS = 1500;
+const DEFAULT_CENTER: [number, number] = [50.6329, 3.0573];
+const VIEW_KEY = 'sprea-prospection-view';
+const BRASS = '#C9A45C';
+
+interface Area { key: string; clamped: boolean; bounds: L.LatLngBounds }
+
+// The visible map, reduced around its center when larger than the server limit
+function searchArea(map: L.Map): Area {
+    const b = map.getBounds();
+    const c = map.getCenter();
+    let [w, s, e, n] = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+    let clamped = false;
+    if (e - w > MAX_SPAN) { w = c.lng - MAX_SPAN / 2; e = c.lng + MAX_SPAN / 2; clamped = true; }
+    if (n - s > MAX_SPAN) { s = c.lat - MAX_SPAN / 2; n = c.lat + MAX_SPAN / 2; clamped = true; }
+    return { key: [w, s, e, n].map(v => v.toFixed(4)).join(','), clamped, bounds: L.latLngBounds([s, w], [n, e]) };
+}
+
+function savedView(): { lat: number; lon: number; zoom: number } | null {
+    try { return JSON.parse(sessionStorage.getItem(VIEW_KEY) || 'null'); } catch { return null; }
+}
 const LABEL_OPTIONS: DPEClass[] = ['G', 'F', 'E'];
 const KINDS = [
     { value: '', label: 'Tous les biens' },
@@ -78,6 +103,8 @@ export default function ProspectionPage() {
     const layerRef = useRef<L.LayerGroup | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const markers = useRef<Map<string, L.CircleMarker>>(new Map());
+    const homeRef = useRef<L.Circle | null>(null);
+    const areaRef = useRef<L.Rectangle | null>(null);
     const [labels, setLabels] = useState<DPEClass[]>(['G', 'F']);
     const [kind, setKind] = useState('');
     const [since, setSince] = useState('');
@@ -90,18 +117,40 @@ export default function ProspectionPage() {
     const [accepting, setAccepting] = useState(false);
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [boundsKey, setBoundsKey] = useState('');
+    const [area, setArea] = useState<Area | null>(null);
+    // The first search waits for the starting position
+    const [ready, setReady] = useState(false);
+    const [locating, setLocating] = useState(false);
+    const [framed, setFramed] = useState(false);
+
+    // Centers the map on a place, with the starting circle around it
+    const goHome = useCallback((lat: number, lon: number) => {
+        const map = mapRef.current;
+        if (!map) return;
+        homeRef.current?.remove();
+        homeRef.current = L.circle([lat, lon], {
+            radius: START_RADIUS, color: BRASS, weight: 2, opacity: 0.9, dashArray: '6 6', fillColor: BRASS, fillOpacity: 0.05, interactive: false,
+        }).addTo(map);
+        map.fitBounds(L.latLng(lat, lon).toBounds(START_RADIUS * 2), { animate: false });
+    }, []);
 
     // Map
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
-        const map = L.map(containerRef.current, { zoomControl: true }).setView([50.6329, 3.0573], 13);
-        L.tileLayer(TILES, { maxZoom: 19, minZoom: 6, attribution: '© IGN, données DPE ADEME' }).addTo(map);
+        const saved = savedView();
+        let started = !!saved;
+        const map = L.map(containerRef.current, { zoomControl: false, preferCanvas: true })
+            .setView(saved ? [saved.lat, saved.lon] : DEFAULT_CENTER, saved?.zoom ?? 14);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.tileLayer(TILES, { maxZoom: 19, minZoom: 6, attribution: '© IGN, données DPE ADEME', className: 'sprea-tiles' }).addTo(map);
         layerRef.current = L.layerGroup().addTo(map);
         const update = () => {
             setZoom(map.getZoom());
-            const b = map.getBounds();
-            setBoundsKey([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map(v => v.toFixed(4)).join(','));
+            setArea(searchArea(map));
+            // Remembered once placed on the visitor's area (back from a simulation)
+            if (!started) return;
+            const c = map.getCenter();
+            try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ lat: c.lat, lon: c.lng, zoom: map.getZoom() })); } catch { /* private mode */ }
         };
         map.on('moveend', update);
         // Actions in the popups (plain HTML, built by Leaflet)
@@ -115,20 +164,70 @@ export default function ProspectionPage() {
                 };
             });
         });
-        update();
         mapRef.current = map;
+        update();
+        if (saved) {
+            // Back from a simulation: same place as before
+            setReady(true);
+        } else {
+            // First visit in this tab: the visitor's area, from their IP address
+            // (city level, no permission asked), else the default place
+            fetch('/api/geo')
+                .then(res => (res.ok ? res.json() : null))
+                .catch(() => null)
+                .then(geo => {
+                    if (mapRef.current !== map) return;
+                    started = true;
+                    if (geo?.lat != null && geo?.lon != null) goHome(geo.lat, geo.lon);
+                    else goHome(...DEFAULT_CENTER);
+                    setReady(true);
+                });
+        }
         return () => { map.remove(); mapRef.current = null; };
-    }, []);
+    }, [goHome]);
+
+    // Precise position, only on request (the browser asks for permission)
+    const aroundMe = () => {
+        if (!navigator.geolocation) { setError('La localisation n\'est pas disponible sur cet appareil : tapez une adresse.'); return; }
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            pos => { setLocating(false); setError(null); goHome(pos.coords.latitude, pos.coords.longitude); },
+            () => { setLocating(false); setError('Position indisponible : autorisez la localisation ou tapez une adresse.'); },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+        );
+    };
+
+    // Outline of the loaded area when the map shows more than that
+    useEffect(() => {
+        const map = mapRef.current;
+        areaRef.current?.remove();
+        areaRef.current = null;
+        const home = homeRef.current;
+        // Not needed while the starting circle fits in the loaded area
+        const show = !!map && !!area?.clamped && zoom >= MIN_ZOOM && !!session
+            && !(home && map.hasLayer(home) && area.bounds.contains(home.getBounds()));
+        setFramed(show);
+        if (!show) return;
+        areaRef.current = L.rectangle(area.bounds, { color: BRASS, weight: 1, opacity: 0.45, dashArray: '2 6', fill: false, interactive: false }).addTo(map);
+    }, [area, zoom, session]);
 
     // Data for the visible area
+    const areaKey = area?.key;
+    const zoomOk = zoom >= MIN_ZOOM;
+    // Last loaded area: zooming in or moving inside it needs no new search
+    const loaded = useRef<{ box: number[]; filters: string } | null>(null);
     useEffect(() => {
-        if (!session || zoom < MIN_ZOOM || !boundsKey || !labels.length) return;
+        if (!session || !ready || !zoomOk || !areaKey || !labels.length) return;
+        const box = areaKey.split(',').map(Number);
+        const filters = [labels.join(','), kind, since, reload, me?.is_pro].join('|');
+        const last = loaded.current;
+        if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({ bbox: boundsKey, labels: labels.join(',') });
+                const params = new URLSearchParams({ bbox: areaKey, labels: labels.join(',') });
                 if (kind) params.set('kind', kind);
                 if (since) params.set('since', since);
                 const res = await authedFetch(`/api/prospection?${params}`, { signal: controller.signal });
@@ -136,7 +235,10 @@ export default function ProspectionPage() {
                     const detail = await res.json().catch(() => ({}));
                     throw new Error(res.status === 429 ? 'Trop de recherches : patientez une minute.' : detail.detail || 'La recherche a échoué.');
                 }
-                setResult(await res.json());
+                const data: Result = await res.json();
+                // A truncated result is only the start of a dense area: search again on any move
+                loaded.current = data.truncated ? null : { box, filters };
+                setResult(data);
             } catch (e) {
                 if ((e as Error).name !== 'AbortError') setError((e as Error).message);
             } finally {
@@ -144,7 +246,7 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [session, zoom, boundsKey, labels, kind, since, authedFetch, reload]);
+    }, [session, ready, zoomOk, areaKey, labels, kind, since, authedFetch, reload, me?.is_pro]);
 
     const showDetails = !!result && !result.locked && !result.terms_required;
 
@@ -154,25 +256,27 @@ export default function ProspectionPage() {
         if (!layer) return;
         layer.clearLayers();
         markers.current.clear();
-        if (!result || zoom < MIN_ZOOM) return;
+        if (!result || !zoomOk) return;
         for (const a of result.addresses) {
             const n = a.dpe?.length ?? a.count ?? 1;
             const marker = L.circleMarker([a.lat, a.lon], {
-                radius: Math.min(14, 5 + Math.sqrt(n) * 2),
-                color: '#0A0F1A', weight: 1, fillColor: DPE_COLORS[a.worst].bg, fillOpacity: 0.9,
+                radius: Math.min(14, 4.5 + Math.sqrt(n) * 2),
+                color: '#0A0F1A', weight: 1.5, opacity: 0.9, fillColor: DPE_COLORS[a.worst].bg, fillOpacity: 0.95,
             });
+            marker.on('mouseover', () => marker.setStyle({ color: '#E3C98F', weight: 2.5 }));
+            marker.on('mouseout', () => marker.setStyle({ color: '#0A0F1A', weight: 1.5 }));
             if (showDetails && a.dpe) {
-                const link = 'color:#8A6417;font-weight:600;text-decoration:none;cursor:pointer';
+                const link = 'color:#E3C98F;font-weight:600;text-decoration:none;cursor:pointer';
                 const lines = a.dpe.slice(0, 8).map(d =>
                     `<li style="margin:3px 0"><b style="color:${DPE_COLORS[d.label].bg}">${d.label}</b> · ${escapeHtml(d.kind || 'Logement')}`
                     + `${d.surface ? ` · ${Math.round(d.surface)} m²` : ''}${d.detail ? ` · ${escapeHtml(String(d.detail))}` : ''}`
-                    + ` <span style="color:#666">(${formatDate(d.date)})</span>`
+                    + ` <span style="color:#97A1B3">(${formatDate(d.date)})</span>`
                     + (d.number ? ` · <a href="#" data-action="simulate" data-dpe="${escapeHtml(d.number)}" style="${link}">Simuler</a>` : '')
                     + '</li>').join('');
                 const first = a.dpe[0];
                 marker.bindPopup(`<b>${escapeHtml(a.address || '')}</b><ul style="margin:6px 0 0;padding-left:16px">${lines}</ul>`
-                    + (a.dpe.length > 8 ? `<div style="color:#666">+ ${a.dpe.length - 8} autres</div>` : '')
-                    + (first?.number ? `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #ddd"><a href="#" data-action="letter"`
+                    + (a.dpe.length > 8 ? `<div style="color:#97A1B3">+ ${a.dpe.length - 8} autres</div>` : '')
+                    + (first?.number ? `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #25324C"><a href="#" data-action="letter"`
                         + ` data-dpe="${escapeHtml(first.number)}" data-address="${escapeHtml(a.address || '')}" data-label="${a.worst}" style="${link}">`
                         + 'Courrier avec QR code</a></div>' : ''), { minWidth: 260 });
                 markers.current.set(a.address || `${a.lat},${a.lon}`, marker);
@@ -181,7 +285,7 @@ export default function ProspectionPage() {
             }
             marker.addTo(layer);
         }
-    }, [result, showDetails, zoom]);
+    }, [result, showDetails, zoomOk]);
 
     const locate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -284,6 +388,11 @@ export default function ProspectionPage() {
                         <Search size={16} className="ml-3.5 text-faint" />
                         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Commune, quartier ou adresse"
                             className="w-full bg-transparent px-3 h-11 text-ink outline-none" aria-label="Commune ou adresse" />
+                        <button type="button" onClick={aroundMe} disabled={locating} title="Autour de ma position"
+                            className="mr-1.5 h-8 px-2.5 shrink-0 flex items-center gap-1.5 rounded-lg text-xs text-muted hover:text-ink hover:bg-panel">
+                            {locating ? <Loader2 size={14} className="animate-spin" /> : <LocateFixed size={14} />}
+                            <span className="hidden sm:inline">Autour de moi</span>
+                        </button>
                     </form>
                     <div className="flex gap-2" role="group" aria-label="Classes DPE">
                         {LABEL_OPTIONS.map(l => (
@@ -305,19 +414,27 @@ export default function ProspectionPage() {
                 </div>
 
                 <div className="grid lg:grid-cols-[1fr_380px] gap-4">
-                    <div className="relative rounded-2xl overflow-hidden border border-line">
-                        <div ref={containerRef} className="h-[60vh] lg:h-[70vh] w-full bg-raised" />
-                        <div className="absolute top-3 left-14 right-3 z-[500] flex flex-wrap gap-2 pointer-events-none">
+                    <div className="relative rounded-2xl overflow-hidden border border-line lg:self-start">
+                        <div ref={containerRef} className="sprea-map h-[60vh] lg:h-[70vh] w-full" />
+                        <div className="absolute top-3 left-3 right-16 z-[500] flex flex-wrap gap-2 pointer-events-none">
                             {zoom < MIN_ZOOM && (
-                                <span className="rounded-lg bg-canvas/90 px-3 py-1.5 text-sm text-ink">Zoomez sur un quartier pour afficher les logements.</span>
+                                <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink">Rapprochez-vous pour afficher les logements.</span>
                             )}
                             {zoom >= MIN_ZOOM && result && (
-                                <span className="rounded-lg bg-canvas/90 px-3 py-1.5 text-sm text-ink tabular-nums">
+                                <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink tabular-nums">
                                     {result.dwellings.toLocaleString('fr-FR')} logement{result.dwellings > 1 ? 's' : ''} · {result.addresses.length.toLocaleString('fr-FR')} adresse{result.addresses.length > 1 ? 's' : ''}
-                                    {result.truncated && ' (zone dense : zoomez pour tout voir)'}
+                                    {result.truncated ? ' · zone dense : zoomez pour tout voir' : framed ? ' · dans le cadre en pointillés' : ''}
                                 </span>
                             )}
-                            {loading && <span className="rounded-lg bg-canvas/90 px-3 py-1.5 text-sm text-ink flex items-center gap-2"><Loader2 size={14} className="animate-spin" />Chargement</span>}
+                            {loading && <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink flex items-center gap-2"><Loader2 size={14} className="animate-spin" />Chargement</span>}
+                        </div>
+                        <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-3 rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-xs text-muted pointer-events-none">
+                            {LABEL_OPTIONS.filter(l => labels.includes(l)).map(l => (
+                                <span key={l} className="flex items-center gap-1.5">
+                                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: DPE_COLORS[l].bg }} />{l}
+                                </span>
+                            ))}
+                            <span className="hidden sm:inline text-faint">· taille : nombre de logements</span>
                         </div>
                     </div>
 

@@ -75,6 +75,12 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Sécurité, limitation des abus, diagnostic des erreurs</td>
                                 <td className={td}>Intérêt légitime</td>
                             </tr>
+                            <tr>
+                                <td className={td}>Carte de prospection</td>
+                                <td className={td}>Ville approximative déduite de l'adresse IP par l'hébergeur, non conservée ; position précise seulement si vous cliquez sur « Autour de moi » et l'autorisez, non conservée</td>
+                                <td className={td}>Ouvrir la carte sur votre secteur</td>
+                                <td className={td}>Intérêt légitime ; consentement pour la position précise</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
