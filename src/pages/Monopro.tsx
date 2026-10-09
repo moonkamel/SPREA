@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Building2, Copy, ExternalLink, Loader2, MapPin, Printer, X } from 'lucide-react';
+import { Building2, Copy, ExternalLink, FileText, Loader2, MapPin, Printer, X } from 'lucide-react';
 import { useAccount } from '../account';
 import { Button, Card, DPE_COLORS, DpeBadge, eur, type DPEClass } from '../ui';
-import { AgentPageForm, type AgentPageData } from './Contacts';
+import { AgentPageForm, errorDetail, type AgentPageData } from './Contacts';
 
 // Whole buildings held by a single owner (BDNB): the "Immeubles entiers" mode
 // of the prospection map, and the sheet of a building with its owner.
@@ -46,7 +46,10 @@ export const NO_DPE_COLOR = '#6C778C';
 export const monoColor = (b: Pick<MonoBuilding, 'dpe_label'>) => (b.dpe_label ? DPE_COLORS[b.dpe_label].bg : NO_DPE_COLOR);
 const year = (iso: string | null) => (iso ? iso.slice(0, 4) : '');
 const dateFr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '');
-const ownerLabel = (b: MonoBuilding) => b.owner ? [b.owner.legal_form, b.owner.name].filter(Boolean).join(' ') : 'Propriétaire non identifié';
+// "SCI DU BRUNIOL" already carries its legal form
+const withForm = (form: string | null, name: string | null) =>
+    !form || (name || '').toUpperCase().startsWith(`${form.toUpperCase()} `) ? (name || '') : `${form} ${name || ''}`.trim();
+const ownerLabel = (b: MonoBuilding) => (b.owner ? withForm(b.owner.legal_form, b.owner.name) : 'Propriétaire non identifié');
 
 export function MonoproList({ buildings, onFocus, onOpen }: {
     buildings: MonoBuilding[];
@@ -93,6 +96,8 @@ Votre société est propriétaire de l'immeuble situé ${s.address || ''} (${s.n
 
 Notre agence accompagne les propriétaires d'immeubles de rapport du secteur : estimation de la valeur de l'immeuble entier ou lot par lot, mise en relation avec des investisseurs, ou vente à la découpe.${dpe}
 
+Vous trouverez joint un dossier sur votre immeuble : performance énergétique des logements, obligations à venir, travaux à prévoir et valeur estimée, en bloc et lot par lot.
+
 Je serais heureux de vous proposer une estimation gratuite et confidentielle, sans engagement.
 
 ${signature}
@@ -113,6 +118,35 @@ export function MonoproSheet({ target, onClose, onFocus }: { target: SheetTarget
     const [agency, setAgency] = useState<AgentPageData | null>(null);
     const [writing, setWriting] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+    const [dossierError, setDossierError] = useState<string | null>(null);
+    const [needsAgency, setNeedsAgency] = useState(false);
+
+    // Sale dossier (PDF): units, rental bans, works, value, obligations
+    const downloadDossier = async () => {
+        if (!sheet) return;
+        setDownloading(true);
+        setDossierError(null);
+        try {
+            const res = await authedFetch(`/api/monopro/${encodeURIComponent(sheet.id)}/dossier`);
+            if (res.status === 409) {
+                setNeedsAgency(true);
+                if (!agency) setAgency(await authedFetch('/api/agent-page').then(r => (r.ok ? r.json() : {})).catch(() => ({})));
+                return;
+            }
+            if (!res.ok) throw new Error(await errorDetail(res, "Le dossier n'a pas pu être généré."));
+            const url = URL.createObjectURL(await res.blob());
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = res.headers.get('content-disposition')?.match(/filename=([^;]+)/)?.[1] || 'Dossier_immeuble.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            setDossierError((e as Error).message);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     useEffect(() => {
         setSheet(null);
@@ -194,7 +228,7 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                             <p className="text-xs text-faint">Propriétaire</p>
                             {sheet.owner ? (
                                 <>
-                                    <p className="mt-1 text-ink">{[sheet.owner.legal_form, sheet.company?.name || sheet.owner.name].filter(Boolean).join(' · ')}</p>
+                                    <p className="mt-1 text-ink">{withForm(sheet.owner.legal_form, sheet.company?.name || sheet.owner.name)}</p>
                                     <p className="text-sm text-muted">
                                         SIREN {sheet.owner.siren}{sheet.company?.created ? ` · créée en ${year(sheet.company.created)}` : ''}
                                         {sheet.company && !sheet.company.active ? ' · société fermée' : ''}
@@ -238,8 +272,27 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                             </div>
                         )}
 
+                        {needsAgency && agency && !agency.agency_name ? (
+                            <div>
+                                <p className="text-sm text-muted mb-3">Renseignez d'abord votre agence : elle signe le dossier et le courrier.</p>
+                                <AgentPageForm initial={agency} onSaved={a => { setAgency(a); setNeedsAgency(false); }} />
+                            </div>
+                        ) : (
+                            <div className="rounded-xl border border-brass/40 bg-brass/5 p-4">
+                                <p className="text-sm text-ink">Dossier de cession à remettre au propriétaire</p>
+                                <p className="mt-1 text-xs text-muted">
+                                    Logements interdits à la location et calendrier, gel des loyers, travaux à prévoir, valeur lot par lot et en bloc,
+                                    décote liée au DPE, audit obligatoire à la vente : à vos couleurs, en PDF.
+                                </p>
+                                <Button onClick={downloadDossier} disabled={downloading} className="mt-3 h-10 w-full">
+                                    {downloading ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}Télécharger le dossier (PDF)
+                                </Button>
+                                {dossierError && <p className="mt-2 text-xs text-coral">{dossierError}</p>}
+                            </div>
+                        )}
+
                         {sheet.owner && !writing && (
-                            <Button onClick={() => setWriting(true)} className="w-full">Préparer un courrier à la société</Button>
+                            <Button variant="secondary" onClick={() => setWriting(true)} className="w-full">Préparer un courrier à la société</Button>
                         )}
                         {writing && (!agency ? <Loader2 className="animate-spin text-brass" /> : !agency.agency_name ? (
                             <div>

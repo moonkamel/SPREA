@@ -21,19 +21,27 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 try:
-    from api.accounts import is_pro, store_dep
+    from api import monopro_pdf
+    from api.accounts import is_pro, safe_filename, store_dep
     from api.auth import User, current_user
+    from api.dvf import market_price
+    from api.immeuble import ademe_rows
+    from api.monopro_report import DEFAULT_UNIT_M2, build_dossier
     from api.prospection import parse_bbox
-    from api.ratelimit import search_limiter
+    from api.ratelimit import ai_limiter, search_limiter
     from api.store import SupabaseStore
 except ImportError:
-    from accounts import is_pro, store_dep
+    import monopro_pdf
+    from accounts import is_pro, safe_filename, store_dep
     from auth import User, current_user
+    from dvf import market_price
+    from immeuble import ademe_rows
+    from monopro_report import DEFAULT_UNIT_M2, build_dossier
     from prospection import parse_bbox
-    from ratelimit import search_limiter
+    from ratelimit import ai_limiter, search_limiter
     from store import SupabaseStore
 
 logger = logging.getLogger(__name__)
@@ -155,6 +163,37 @@ async def monopro_map(bbox: str, owner: str = Query("all", pattern="^(all|compan
         "buildings": [building_summary(b, owners) for b in buildings[:MAX_BUILDINGS]],
         "truncated": len(buildings) > MAX_BUILDINGS,
     }
+
+
+@router.get("/monopro/{building_id}/dossier", dependencies=[Depends(ai_limiter)])
+async def monopro_dossier(building_id: str, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """Sale dossier of the building (PDF), in the agency's name."""
+    await require_pro(store, user)
+    building = await store.get_monopro(building_id) if building_id.startswith("bdnb-") and len(building_id) <= 40 else None
+    if not building:
+        raise HTTPException(status_code=404, detail="Immeuble introuvable.")
+    agency = await store.get_agent_page(user.id) or {}
+    if not agency.get("agency_name"):
+        raise HTTPException(status_code=409, detail="Renseignez d'abord le nom de votre agence : il figure sur le dossier.")
+    siren = building.get("owner_siren")
+    owner = (await store.monopro_owners([siren]) or [None])[0] if siren else None
+    portfolio = len(await store.monopro_by_owner(siren, PORTFOLIO_LIMIT + 1)) - 1 if siren else 0
+    company = await fetch_company(siren) if siren else None
+    rows: List[Dict] = []
+    try:
+        async with httpx.AsyncClient(timeout=12) as client:
+            rows = await ademe_rows(client, {"geo_distance": f"{building['lon']},{building['lat']},30", "size": "300"})
+    except httpx.HTTPError as e:
+        logger.warning(f"ADEME lookup failed for the dossier: {type(e).__name__}")
+    market = None
+    try:
+        market = await market_price(building.get("insee") or "", "Appartement", building["lat"], building["lon"], DEFAULT_UNIT_M2)
+    except Exception as e:  # The dossier is still useful without prices
+        logger.warning(f"DVF lookup failed for the dossier: {type(e).__name__}")
+    dossier = build_dossier(building, owner, company, max(portfolio, 0), rows, market, agency)
+    filename = safe_filename(building.get("address") or "immeuble")[:60]
+    return Response(content=monopro_pdf.generate(dossier), media_type="application/pdf",
+                    headers={"Content-Disposition": f"attachment; filename=Dossier_immeuble_{filename}.pdf"})
 
 
 @router.get("/monopro/{building_id}", dependencies=[Depends(search_limiter)])

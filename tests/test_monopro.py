@@ -191,3 +191,72 @@ def test_building_found_from_a_dpe_position(env):
     # Nothing within 40 m: copropriété or several owners
     assert client.get("/api/monopro/near?lat=50.6500&lon=3.0900").status_code == 404
     main.search_limiter.calls.clear()
+
+
+# --- Sale dossier ---
+
+from datetime import date as _date  # noqa: E402
+
+from api import monopro_report  # noqa: E402
+
+TODAY = _date(2026, 10, 9)
+DOSSIER_BUILDING = {"id": "bdnb-bg-AAAA", "address": "38 Rue de Bourgogne 59800 Lille", "lat": 50.6301, "lon": 3.0702, "insee": "59350",
+                    "nb_log": 6, "levels": 4, "year_built": 1900, "owner_siren": "444315543", "dpe_label": "F",
+                    "last_sale_date": "2016-03-02", "last_sale_price": 410000}
+
+
+def flat(n, label, surface=40, date_="2025-01-01"):
+    return {"numero_dpe": f"N{n}", "type_batiment": "appartement", "etiquette_dpe": label, "surface_habitable_logement": surface,
+            "numero_etage_appartement": n, "date_etablissement_dpe": date_}
+
+
+def test_dossier_units_bans_and_arguments():
+    rows = [flat(1, "G"), flat(2, "G"), flat(3, "F", 45), {**flat(4, "F"), "qualite_isolation_murs": "insuffisante"}]
+    market = {"price_per_m2": 3000, "source": "prix médian DVF"}
+    d = monopro_report.build_dossier(DOSSIER_BUILDING, OWNERS[0], None, 2, rows, market, {"agency_name": "Agence du Beffroi"}, TODAY)
+    # 4 dwellings with a DPE, the 2 others estimated at the class of the building (F)
+    assert d["units"]["known"]["G"] == 2 and d["units"]["known"]["F"] == 2 and d["units"]["estimated"]["F"] == 2
+    assert d["worst"] == "G" and d["shab"] == 6 * 40 and d["shab_estimated"]
+    bans = {r["label"]: r for r in d["rental_ban"]}
+    assert bans["G"]["passed"] and bans["G"]["units"] == 2 and not bans["F"]["passed"] and bans["F"]["units"] == 4
+    text = " ".join(d["arguments"])
+    assert "2 logements classés G ne peuvent plus être reloués depuis le 01/01/2025" in text
+    assert "Loyers gelés" in text and "Audit énergétique obligatoire" in text and "détenu depuis environ 10 ans" in text
+    # No envelope detail: works per m² for a G building
+    assert not d["works"]["detailed"] and d["works"]["low"] == 240 * 450
+    v = d["value"]
+    assert v["block_low"] < v["block_high"] < v["lots_now"] < v["after_works"] and v["dpe_discount"] > 0
+    assert d["collective_dpe"] == {"done": False, "text": "DPE collectif obligatoire depuis le 01/01/2026 pour un immeuble de 6 logements ; "
+                                                          "aucun n'est publié à cette adresse."}
+
+
+def test_dossier_without_dpe_nor_prices():
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": None, "last_sale_date": None}, None, None, 0, [], None, {}, TODAY)
+    assert d["works"] is None and d["value"] is None and d["units"]["unknown"] == 6
+    assert d["arguments"] == ["Aucune vente de l'immeuble depuis 2014 (base DVF) : détenu depuis plus de dix ans."]
+
+
+def test_dossier_pdf_route(env, monkeypatch):
+    client, store, _, _ = env
+    add_monopro(store)
+    make_pro(store)
+
+    async def no_company(siren):
+        return None
+
+    async def rows(client_, params):
+        return [flat(1, "G"), flat(2, "F")]
+
+    async def market(*a, **k):
+        return {"price_per_m2": 3000, "source": "prix médian DVF"}
+    monkeypatch.setattr(monopro, "fetch_company", no_company)
+    monkeypatch.setattr(monopro, "ademe_rows", rows)
+    monkeypatch.setattr(monopro, "market_price", market)
+    # The dossier is in the agency's name
+    assert client.get("/api/monopro/bdnb-bg-AAAA/dossier").status_code == 409
+    asyncio.run(store.upsert_agent_page(ALICE.id, {"agency_name": "Agence du Beffroi", "phone": "03 20 00 00 00"}))
+    res = client.get("/api/monopro/bdnb-bg-AAAA/dossier")
+    assert res.status_code == 200 and res.content[:4] == b"%PDF"
+    assert "Dossier_immeuble_38_Rue_de_Bourgogne" in res.headers["content-disposition"]
+    assert client.get("/api/monopro/bdnb-bg-ZZZZ/dossier").status_code == 404
+    main.ai_limiter.calls.clear()
