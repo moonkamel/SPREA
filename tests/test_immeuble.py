@@ -203,3 +203,23 @@ def test_sheet_retries_without_field_selection():
         return httpx.Response(200, json={"results": [APT]})
     s = asyncio.run(sheet("2659E0000001A", None, transport=httpx.MockTransport(handler), today=TODAY))
     assert s["apartments"]["count"] == 1
+
+
+def test_no_collective_works_for_a_performing_building():
+    # The case seen in production: building rated C, built 2006-2012, walls "insuffisante"
+    recent = {**BUILDING, "etiquette_dpe": "C"}
+    apt = {**APT, "periode_construction": "2006-2012", "etiquette_dpe": "C"}
+    s = build_sheet(apt, [recent], None, None, TODAY)
+    assert s["works"] == [] and s["estimate"] is None
+    assert s["works_note"].startswith("Immeuble classé C")
+
+
+def test_class_d_only_insufficient_and_recent_walls_kept():
+    d = {**APT, "etiquette_dpe": "D", "qualite_isolation_murs": "insuffisante",
+         "qualite_isolation_plancher_haut_toit_terrase": "moyenne"}
+    assert [w["id"] for w in immeuble.collective_works(d, 1000, 5, 18, 1974)] == ["facade", "vmc"]
+    # Built after 2000 and rated D: walls are not redone
+    assert [w["id"] for w in immeuble.collective_works(d, 1000, 5, 18, 2010)] == ["vmc"]
+    # Rated F: walls redone whatever the period
+    f = {**d, "etiquette_dpe": "F"}
+    assert "facade" in [w["id"] for w in immeuble.collective_works(f, 1000, 5, 18, 2010)]

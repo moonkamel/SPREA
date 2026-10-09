@@ -22,6 +22,7 @@ interface Sheet {
     works: Work[]; total: [number, number] | null;
     estimate: { share: number; share_low: number; share_high: number; net_low: number; net_high: number; aid_rates: [number, number] } | null;
     works_source: 'immeuble' | 'appartement';
+    works_note: string | null;
 }
 
 const dateFr = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
@@ -135,6 +136,13 @@ export default function BuildingSheet({ property, n }: { property: PropertyData;
                                     </li>
                                 ))}
                             </ul>
+                        </div>
+                    )}
+
+                    {sheet.works.length === 0 && sheet.works_note && (
+                        <div>
+                            <p className="text-sm font-medium text-ink-soft">Travaux collectifs</p>
+                            <p className="mt-1 text-sm text-muted">{sheet.works_note}</p>
                         </div>
                     )}
 

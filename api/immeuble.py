@@ -200,31 +200,46 @@ def building_summary(r: Dict) -> Dict:
     }
 
 
-def collective_works(source: Dict, shab: float, levels: int, dwellings: int) -> List[Dict]:
+def poor_levels(label: Optional[str]) -> Tuple[str, ...]:
+    """Insulation qualities worth collective works, by energy class: none for
+    A to C (the building already performs), "insuffisante" only for D."""
+    if label in ("A", "B", "C"):
+        return ()
+    if label in ("E", "F", "G"):
+        return POOR
+    return ("insuffisante",)
+
+
+def collective_works(source: Dict, shab: float, levels: int, dwellings: int,
+                     built_until: Optional[int] = None) -> List[Dict]:
     """Collective works suggested by the insulation and systems of the DPE
     (the building's when published, else the apartment's)."""
     works = []
     roof_area = shab / max(levels, 1)
+    label = source.get("etiquette_dpe")
+    poor = poor_levels(label)
+    # Since the RT 2000, walls are insulated: a façade is only redone for a poor class
+    recent = built_until is not None and built_until > 2000
 
     def add(work_id: str, reason: str, low: float, high: float):
         works.append({"id": work_id, "name": WORK_NAMES[work_id], "reason": reason,
                       "low": round(low, -2), "high": round(high, -2)})
 
     walls = (source.get("qualite_isolation_murs") or "").lower()
-    if walls in POOR:
+    if walls in poor and not (recent and label not in ("E", "F", "G")):
         area = shab * FACADE_PER_SHAB
         add("facade", f"Isolation des murs {walls}", area * COSTS["facade"][0], area * COSTS["facade"][1])
     terrace = (source.get("qualite_isolation_plancher_haut_toit_terrase") or "").lower()
     attic = (source.get("qualite_isolation_plancher_haut_comble_perdu") or "").lower()
     other_roof = (source.get("qualite_isolation_plancher_haut_comble_amenage") or "").lower()
-    if terrace in POOR:
+    if terrace in poor:
         add("roof", f"Toiture-terrasse : isolation {terrace}", roof_area * COSTS["roof_terrace"][0], roof_area * COSTS["roof_terrace"][1])
-    elif attic in POOR:
+    elif attic in poor:
         add("roof", f"Combles : isolation {attic}", roof_area * COSTS["roof_attic"][0], roof_area * COSTS["roof_attic"][1])
-    elif other_roof in POOR:
+    elif other_roof in poor:
         add("roof", f"Toiture : isolation {other_roof}", roof_area * COSTS["roof"][0], roof_area * COSTS["roof"][1])
     floor = (source.get("qualite_isolation_plancher_bas") or "").lower()
-    if floor in POOR:
+    if floor in poor:
         add("floor", f"Plancher bas : isolation {floor}", roof_area * COSTS["floor"][0], roof_area * COSTS["floor"][1])
     collective = "collectif" in (source.get("type_installation_chauffage") or "").lower()
     if collective and source.get("etiquette_dpe") in ("E", "F", "G"):
@@ -232,7 +247,7 @@ def collective_works(source: Dict, shab: float, levels: int, dwellings: int) -> 
         add("heating", f"Chauffage collectif{(' ' + energy) if energy else ''}, classe {source['etiquette_dpe']}",
             dwellings * COSTS["heating"][0], dwellings * COSTS["heating"][1])
     ventilation = (source.get("type_ventilation") or "").lower()
-    if ventilation and ("naturelle" in ventilation or "ouverture" in ventilation or "sans" in ventilation):
+    if poor and ventilation and ("naturelle" in ventilation or "ouverture" in ventilation or "sans" in ventilation):
         add("vmc", f"Ventilation actuelle : {source['type_ventilation']}", dwellings * COSTS["vmc"][0], dwellings * COSTS["vmc"][1])
     return works
 
@@ -276,7 +291,14 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
 
     built_until = last_year((copro or {}).get("period")) or last_year(apartment.get("periode_construction"))
     lots = (copro or {}).get("lots_main") or dwellings
-    works = collective_works(building_row or apartment, shab, levels, dwellings) if shab and dwellings else []
+    source = building_row or apartment
+    works = collective_works(source, shab, levels, dwellings, built_until) if shab and dwellings else []
+    works_note = None
+    if not works and source.get("etiquette_dpe") in ("A", "B", "C"):
+        works_note = (f"{'Immeuble' if building_row else 'Appartement'} classé {source['etiquette_dpe']} : "
+                      "pas de gros travaux énergétiques collectifs à prévoir d'après le DPE.")
+    elif not works:
+        works_note = "Le DPE ne fait pas ressortir de travaux énergétiques collectifs importants."
     total = [sum(w["low"] for w in works), sum(w["high"] for w in works)]
     share = min(surface / shab, 1.0) if surface and shab else None
     estimate = None
@@ -301,7 +323,7 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
                        "apartment_surface": surface},
         "period": period_label((copro or {}).get("period")) or apartment.get("periode_construction"),
         "obligations": obligations(lots, built_until, building, today),
-        "works": works, "total": total if works else None, "estimate": estimate,
+        "works": works, "total": total if works else None, "estimate": estimate, "works_note": works_note,
         "works_source": "immeuble" if building_row else "appartement",
     }
 

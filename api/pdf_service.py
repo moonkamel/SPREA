@@ -389,6 +389,8 @@ class PDFReportGenerator:
                 when = f" (depuis le {o['since'][8:10]}/{o['since'][5:7]}/{o['since'][:4]})" if o.get('since') and o['status'] != 'done' else ''
                 items.append(f"{o['title']}{when} : {o['detail']}")
             out += [*bullet_list(items, 'muted'), Spacer(1, 8)]
+        if not sheet.get('works') and sheet.get('works_note'):
+            out += [Paragraph('Travaux collectifs', S['narrative_h']), Paragraph(text(sheet['works_note']), S['muted'])]
         if sheet.get('works'):
             source = "du DPE de l'immeuble" if sheet['works_source'] == 'immeuble' else "du DPE de l'appartement"
             table = [[head('Travaux collectifs probables'), head('Constat'), head('Immeuble', 2)]]
