@@ -7,6 +7,7 @@ several poor DPE, only the latest is kept. A better DPE established since
 (after works) is not checked: the date of each DPE is shown.
 """
 import logging
+import re
 import time
 from typing import Dict, List, Optional, Tuple
 
@@ -117,7 +118,7 @@ def group_by_address(rows: List[Dict], labels: set) -> List[Dict]:
     return out
 
 
-async def search(bbox: str, labels: List[str], kind: Optional[str] = None, since: Optional[int] = None,
+async def search(bbox: str, labels: List[str], kind: Optional[str] = None, since: Optional[str] = None,
                  transport: Optional[httpx.AsyncBaseTransport] = None) -> Dict:
     west, south, east, north = parse_bbox(bbox)
     wanted = {l for l in labels if l in LABELS} or {"F", "G"}
@@ -130,7 +131,11 @@ async def search(bbox: str, labels: List[str], kind: Optional[str] = None, since
         if kind in ("maison", "appartement", "immeuble"):
             query.append(f"type_batiment:{kind}")
         if since:
-            query.append(f"date_etablissement_dpe:[{int(since)}-01-01 TO *]")
+            # A year (from 1 January) or a date: recent DPE are the hottest prospects
+            start = f"{since}-01-01" if len(str(since)) == 4 else str(since)
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", start):
+                raise ValueError("Date de DPE invalide.")
+            query.append(f"date_etablissement_dpe:[{start} TO *]")
         params = {"bbox": f"{west},{south},{east},{north}", "size": str(MAX_RESULTS), "select": ",".join(FIELDS),
                   "qs": " AND ".join(query)}
         async with httpx.AsyncClient(timeout=20, transport=transport) as client:

@@ -16,12 +16,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from api.accounts import TERMS_VERSION, is_pro, prospection_terms_accepted, store_dep
+    from api.accounts import is_pro, store_dep
     from api.auth import User, current_user
     from api.ratelimit import lead_limiter, search_limiter
     from api.store import SupabaseStore
 except ImportError:
-    from accounts import TERMS_VERSION, is_pro, prospection_terms_accepted, store_dep
+    from accounts import is_pro, store_dep
     from auth import User, current_user
     from ratelimit import lead_limiter, search_limiter
     from store import SupabaseStore
@@ -105,8 +105,6 @@ async def create_link(data: LinkRequest, user: User = Depends(current_user), sto
     profile = await store.ensure_profile(user.id, user.email)
     if not is_pro(profile):
         raise HTTPException(status_code=402, detail="Réservé aux abonnés Pro.")
-    if not await prospection_terms_accepted(store, user.id):
-        raise HTTPException(status_code=403, detail="Acceptez d'abord les conditions d'utilisation de la carte.")
     if not await store.get_agent_page(user.id):
         raise HTTPException(status_code=409, detail="Renseignez d'abord le nom de votre agence.")
     dpe = data.dpe_number.upper()

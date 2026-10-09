@@ -48,6 +48,9 @@ def test_search_queries_ademe_with_area_and_labels():
     assert seen["bbox"] == "3.05,50.63,3.07,50.64"
     assert seen["qs"] == "etiquette_dpe:(G) AND type_batiment:maison AND date_etablissement_dpe:[2023-01-01 TO *]"
     assert res["dwellings"] == 1 and not res["truncated"]
+    # Recent DPE: from a date
+    asyncio.run(prospection.search("3.05,50.63,3.07,50.64", ["F"], None, "2026-04-09", transport=httpx.MockTransport(handler)))
+    assert seen["qs"] == "etiquette_dpe:(F) AND date_etablissement_dpe:[2026-04-09 TO *]"
 
 
 def test_real_ademe_types_numeric_floor_and_missing_fields():

@@ -673,30 +673,21 @@ def test_prospection_is_detailed_for_pro_only(env, monkeypatch):
     assert res["locked"] is True
     assert res["addresses"] == [{"lat": 50.633, "lon": 3.069, "worst": "G", "count": 1}]
 
+    # Pro: the addresses straight away (CGV article 14 accepted at subscription)
     store.profiles[ALICE.id]["subscription_status"] = "active"
-    # Pro, but the map terms are not accepted yet: still no address
-    res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
-    assert res["terms_required"] is True and "address" not in res["addresses"][0]
-
-    assert client.post("/api/prospection/terms", json={"terms_version": "old", "accept": True}).status_code == 409
-    assert client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION}).status_code == 400
-    ok = client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION, "accept": True}).json()
-    assert ok["accepted"] and store.acceptances[-1]["terms_version"] == accounts.TERMS_VERSION
-
     res = client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()
     assert res["locked"] is False and res["addresses"][0]["address"].startswith("1 Rue")
 
-    # New version of the terms: acceptance asked again
-    monkeypatch.setattr(accounts, "TERMS_VERSION", "2099-01-01")
-    assert client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64").json()["terms_required"] is True
-    monkeypatch.undo()
-    monkeypatch.setattr(accounts.prospection, "search", fake_search)
+    # Recent DPE only: a date (or a year) is passed on to the search
+    seen = {}
 
-    # The acceptance survives account deletion in the archive
-    assert client.request("DELETE", "/api/me", json={"confirm": True}).status_code == 200
-    archived = [a for a in store.archive if a["kind"] == "prospection_terms"]
-    assert archived and archived[0]["terms_accepted_at"]
-    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
+    async def recent_search(bbox, labels, kind=None, since=None):
+        seen["since"] = since
+        return await fake_search(bbox, labels, kind, since)
+    monkeypatch.setattr(accounts.prospection, "search", recent_search)
+    assert client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64&since=2026-04-09").status_code == 200
+    assert seen["since"] == "2026-04-09"
+    assert client.get("/api/prospection?bbox=3.05,50.63,3.07,50.64&since=avril").status_code == 422
 
     async def too_large(*a, **k):
         raise accounts.prospection.AreaTooLarge("Zone trop grande : zoomez sur un quartier.")
@@ -716,11 +707,9 @@ def test_owner_contact_page_flow(env):
     lead_limiter.calls.clear()
     link_req = {"dpe_number": "2659E0077758E", "address": "1 Rue des Brigittines 59800 Lille", "label": "F"}
 
-    # Pro + accepted terms + agency name required
+    # Pro + agency name required
     assert client.post("/api/prospection/links", json=link_req).status_code == 402
     store.profiles[ALICE.id]["subscription_status"] = "active"
-    assert client.post("/api/prospection/links", json=link_req).status_code == 403
-    client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION, "accept": True})
     assert client.post("/api/prospection/links", json=link_req).status_code == 409
     assert client.put("/api/agent-page", json={"agency_name": "Agence du Vieux-Lille", "phone": "abc"}).status_code == 422
     assert client.put("/api/agent-page", json={"agency_name": "Agence du Vieux-Lille", "agent_name": "Tarik",

@@ -15,13 +15,13 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 try:
-    from api.accounts import is_pro, prospection_terms_accepted, store_dep
+    from api.accounts import is_pro, store_dep
     from api.auth import User, current_user
     from api.emailer import email_configured, send_email
     from api.prospection import dwelling_detail
     from api.store import SupabaseStore, get_store
 except ImportError:
-    from accounts import is_pro, prospection_terms_accepted, store_dep
+    from accounts import is_pro, store_dep
     from auth import User, current_user
     from emailer import email_configured, send_email
     from prospection import dwelling_detail
@@ -137,8 +137,6 @@ async def require_pro_map(store: SupabaseStore, user: User) -> None:
     profile = await store.ensure_profile(user.id, user.email)
     if not is_pro(profile):
         raise HTTPException(status_code=402, detail="Réservé aux abonnés Pro.")
-    if not await prospection_terms_accepted(store, user.id):
-        raise HTTPException(status_code=403, detail="Acceptez d'abord les conditions d'utilisation de la carte.")
 
 
 @router.get("/alerts")

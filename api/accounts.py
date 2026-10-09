@@ -21,7 +21,7 @@ from uuid import UUID
 
 import httpx
 import stripe
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field, field_validator
 
 try:
@@ -605,13 +605,15 @@ async def stripe_webhook(request: Request, store: SupabaseStore = Depends(store_
 # --- Prospection map (Pro) ---
 
 @router.get("/prospection", dependencies=[Depends(search_limiter)])
-async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = None, since: Optional[int] = None,
+async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = None,
+                          since: Optional[str] = Query(None, pattern=r"^\d{4}(-\d{2}-\d{2})?$"),
                           user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
-    """Poor DPE in the visible area. Full list for Pro subscribers; others get
-    counts on an approximate location, without addresses."""
+    """Poor DPE in the visible area, established since a year or a date. Full
+    list for Pro subscribers, whose use of the addresses is governed by the
+    CGV accepted at subscription (article 14); others get counts on an
+    approximate location, without addresses."""
     profile = await store.ensure_profile(user.id, user.email)
     pro = is_pro(profile)
-    accepted = pro and await prospection_terms_accepted(store, user.id)
     try:
         result = await prospection.search(bbox, labels.upper().split(","), kind, since)
     except prospection.AreaTooLarge as e:
@@ -620,13 +622,10 @@ async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = 
         raise HTTPException(status_code=400, detail=str(e))
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Les données de l'ADEME ne répondent pas, réessayez dans un instant.")
-    if accepted:
-        return {**result, "locked": False, "terms_required": False}
-    # Addresses only once the current terms of the map are accepted (Pro)
+    if pro:
+        return {**result, "locked": False}
     return {
-        "locked": not pro,
-        "terms_required": pro,
-        "terms_version": TERMS_VERSION,
+        "locked": True,
         "dwellings": result["dwellings"],
         "total": result["total"],
         "truncated": result["truncated"],
@@ -634,27 +633,3 @@ async def prospection_map(bbox: str, labels: str = "F,G", kind: Optional[str] = 
         "addresses": [{"lat": round(a["lat"], 3), "lon": round(a["lon"], 3), "worst": a["worst"], "count": len(a["dpe"])}
                       for a in result["addresses"]],
     }
-
-
-async def prospection_terms_accepted(store: SupabaseStore, user_id: str) -> bool:
-    latest = await store.latest_terms_acceptance(user_id, "prospection")
-    return bool(latest) and latest.get("terms_version") == TERMS_VERSION
-
-
-class ProspectionTerms(BaseModel):
-    # The version shown to the user must be the current one
-    terms_version: str = Field(..., max_length=30)
-    accept: bool = False
-
-
-@router.post("/prospection/terms")
-async def accept_prospection_terms(data: ProspectionTerms, user: User = Depends(current_user),
-                                   store: SupabaseStore = Depends(store_dep)):
-    """Records the acceptance of the prospection map terms (CGV article 14)."""
-    if not data.accept:
-        raise HTTPException(status_code=400, detail="Vous devez accepter les conditions d'utilisation de la carte.")
-    if data.terms_version != TERMS_VERSION:
-        raise HTTPException(status_code=409, detail="Les conditions ont changé : rechargez la page pour lire la nouvelle version.")
-    await store.ensure_profile(user.id, user.email)
-    row = await store.add_terms_acceptance(user.id, "prospection", TERMS_VERSION)
-    return {"accepted": True, "terms_version": TERMS_VERSION, "accepted_at": row.get("accepted_at")}

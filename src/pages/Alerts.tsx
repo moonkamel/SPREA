@@ -97,7 +97,6 @@ export default function AlertsPage() {
 
     const zoneName = (id: string) => zones.find(z => z.id === id)?.name || '';
     const locked = error?.includes('Pro') || (me && !me.is_pro);
-    const needsTerms = error?.includes('conditions');
 
     return (
         <div className="min-h-screen flex flex-col bg-canvas">
@@ -120,11 +119,6 @@ export default function AlertsPage() {
                     <Card className="p-5">
                         <p className="text-ink font-medium">Réservé aux abonnés</p>
                         <Button className="mt-4" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
-                    </Card>
-                ) : needsTerms ? (
-                    <Card className="p-5">
-                        <p className="text-ink font-medium">Acceptez d'abord les conditions d'utilisation de la carte</p>
-                        <Button className="mt-4" onClick={() => navigate('/prospection')}>Ouvrir la carte de prospection</Button>
                     </Card>
                 ) : loading ? (
                     <Loader2 className="animate-spin text-brass" />
