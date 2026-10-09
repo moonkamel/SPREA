@@ -477,6 +477,12 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
         from rge import nearby_or_empty
     content["rge"] = await nearby_or_empty(meta.get("latitude"), meta.get("longitude"), list(simulation.works),
                                            simulation.property.building_type)
+    # Building sheet of an apartment: copropriété registry, collective DPE, works to come
+    try:
+        from api.immeuble import sheet_or_none
+    except ImportError:
+        from immeuble import sheet_or_none
+    content["immeuble"] = await sheet_or_none(meta.get("ademe_dpe_number"), simulation.property.building_type, store)
     analysis = parse_stored(report.get("narrative"))
     if not analysis:
         analysis = await ai_service.write_analysis(facts_for_writer(content))

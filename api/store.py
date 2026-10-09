@@ -300,6 +300,17 @@ class SupabaseStore:
                 await self.update_link(link["code"], {"user_id": to_user})
         await self._request("PATCH", "leads", params={"user_id": f"eq.{from_user}"}, json={"user_id": to_user})
 
+    # --- Copropriétés: national registry (010_coproprietes.sql) ---
+
+    async def get_copro(self, immat: str) -> Optional[Dict[str, Any]]:
+        return await self._one("coproprietes", {"immat": f"eq.{immat}"})
+
+    async def copros_near(self, lat: float, lon: float, delta: float = 0.0006) -> List[Dict[str, Any]]:
+        """Registered copropriétés whose reference point is within about 60 m."""
+        return await self._request("GET", "coproprietes", params={
+            "and": f"(lat.gte.{lat - delta},lat.lte.{lat + delta},lon.gte.{lon - delta},lon.lte.{lon + delta})",
+            "select": "*", "limit": "20"})
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:
