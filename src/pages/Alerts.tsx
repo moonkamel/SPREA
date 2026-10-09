@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bell, Loader2, MapPin, QrCode, Trash2 } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
+import { useSeo } from '../seo';
 import { Button, Card, DpeBadge, Switch, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { SiteFooter, SiteHeader } from './site';
@@ -38,6 +39,7 @@ const day = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { weekday
 
 export default function AlertsPage() {
     const { session, me, config, openLogin, authedFetch } = useAccount();
+    useSeo({ title: 'Alertes · SPREA', noindex: true });
     const [zones, setZones] = useState<Zone[]>([]);
     const [hits, setHits] = useState<Hit[]>([]);
     const [emailEnabled, setEmailEnabled] = useState(false);

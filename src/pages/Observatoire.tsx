@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowDownUp, Search } from 'lucide-react';
-import { Link } from '../router';
+import { Link, navigate } from '../router';
+import { departmentSlug, useSeo } from '../seo';
+// Figures exported monthly with the green value (scripts/seo/export_observatoire.py)
+import OBSERVATOIRE from '../data/observatoire.json';
 import { Button, Card, DpeBadge, type DPEClass } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
@@ -81,23 +84,41 @@ function ClassChart({ series }: { series: Partial<Record<Kind, Series>> }) {
 
 type SortKey = 'name' | 'sales' | 'maisons' | 'appartements';
 
-export default function ObservatoirePage() {
-    const [data, setData] = useState<Data | null>(null);
-    const [error, setError] = useState(false);
-    const [dep, setDep] = useState('');
+export const departmentPath = (d: { name: string; code: string }) => `/observatoire/${departmentSlug(d.name, d.code)}`;
+
+// Plain-language summary of a department (same wording in the prerendered page)
+function summary(d: Department, national: Data['national']): string {
+    const parts: string[] = [];
+    const h = d.maisons, a = d.appartements;
+    if (h) {
+        const gap = h.premium.G - (national.maisons?.premium.G ?? h.premium.G);
+        parts.push(`Dans le département ${d.name === 'Paris' ? 'de Paris' : `${d.name} (${d.code})`}, une maison classée G se vend ${pct(h.premium.G).replace('−', '')} moins cher qu'une maison classée D comparable`
+            + (Math.abs(gap) >= 1 ? `, soit ${Math.abs(gap).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} points ${gap < 0 ? 'de plus' : 'de moins'} qu'en moyenne en France.` : ', comme en moyenne en France.'));
+    }
+    if (a) parts.push(`Pour un appartement, l'écart entre G et D atteint ${pct(a.premium.G).replace('−', '')}.`);
+    return parts.join(' ');
+}
+
+export default function ObservatoirePage({ slug }: { slug?: string }) {
+    const data = OBSERVATOIRE as unknown as Data;
+    const dep = data.departments.find(d => departmentSlug(d.name, d.code) === slug)?.code || '';
+    const setDep = (code: string) => {
+        const d = data.departments.find(x => x.code === code);
+        navigate(d ? departmentPath(d) : '/observatoire');
+    };
     const [query, setQuery] = useState('');
     const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: 'maisons', asc: true });
 
-    useEffect(() => {
-        document.title = 'Observatoire de la valeur verte · SPREA';
-        const meta = document.querySelector('meta[name="description"]') || Object.assign(document.createElement('meta'), { name: 'description' });
-        meta.setAttribute('content', "Combien vaut un logement selon son DPE ? Écarts de prix entre classes énergétiques mesurés sur plus d'un million de ventes réelles, par département.");
-        document.head.appendChild(meta);
-        fetch('/api/observatoire').then(r => r.json()).then(setData).catch(() => setError(true));
-        return () => { document.title = 'SPREA'; };
-    }, []);
-
-    const selected = data?.departments.find(d => d.code === dep);
+    const selected = data.departments.find(d => d.code === dep);
+    useSeo(selected ? {
+        title: `Valeur verte ${selected.name} (${selected.code}) : prix selon le DPE · SPREA`,
+        description: `${summary(selected, data.national)} Calculé sur ${int((selected.maisons?.sales || 0) + (selected.appartements?.sales || 0))} ventes réelles rapprochées de leur DPE.`,
+        path: departmentPath(selected),
+    } : {
+        title: 'Observatoire de la valeur verte : prix des logements selon le DPE · SPREA',
+        description: "Combien vaut un logement selon son DPE ? Écarts de prix entre classes énergétiques mesurés sur plus d'un million de ventes réelles, en France et par département.",
+        path: '/observatoire',
+    });
     const series = selected ? { maisons: selected.maisons, appartements: selected.appartements } : data?.national || {};
 
     const rows = useMemo(() => {
@@ -126,39 +147,44 @@ export default function ObservatoirePage() {
         </th>
     );
 
-    const houses = data?.national.maisons;
-    const flats = data?.national.appartements;
+    // Tiles: the selected department, or France
+    const houses = selected ? selected.maisons : data.national.maisons;
+    const flats = selected ? selected.appartements : data.national.appartements;
+    const where = selected ? ` · ${selected.name}` : '';
 
     return (
         <div className="min-h-screen flex flex-col bg-canvas">
             <SiteHeader />
             <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 space-y-8">
                 <section>
-                    <p className="text-sm text-brass">Observatoire de la valeur verte</p>
-                    <h1 className="mt-2 text-3xl sm:text-5xl text-ink leading-tight">Combien le DPE pèse-t-il sur le prix d'un logement ?</h1>
+                    <p className="text-sm text-brass">
+                        {selected ? <><Link to="/observatoire" className="hover:underline">Observatoire de la valeur verte</Link> · {selected.name}</> : 'Observatoire de la valeur verte'}
+                    </p>
+                    <h1 className="mt-2 text-3xl sm:text-5xl text-ink leading-tight">
+                        {selected ? `Valeur verte ${selected.name === 'Paris' ? 'à Paris' : `dans le département ${selected.name} (${selected.code})`}` : "Combien le DPE pèse-t-il sur le prix d'un logement ?"}
+                    </h1>
+                    {selected && <p className="mt-4 text-lg text-ink-soft max-w-3xl">{summary(selected, data.national)}</p>}
                     <p className="mt-4 text-muted max-w-3xl">
                         Écarts de prix entre classes énergétiques, mesurés sur {data ? int(data.total_sales) : '…'} ventes réelles rapprochées une à une du DPE
                         du logement vendu ({data ? period(data.period) : '…'}). Mis à jour chaque mois.
                     </p>
                 </section>
 
-                {error && <Card className="p-4 text-sm text-coral">Les données ne sont pas disponibles pour le moment.</Card>}
-
-                {data && houses && flats && (
+                {(houses || flats) && (
                     <section className="grid sm:grid-cols-3 gap-4">
                         <Card className="p-5">
-                            <p className="text-sm text-muted">Une maison classée G</p>
-                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(houses.premium.G)}</p>
+                            <p className="text-sm text-muted">Une maison classée G{where}</p>
+                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(houses?.premium.G)}</p>
                             <p className="text-sm text-muted">par rapport à une maison classée D</p>
                         </Card>
                         <Card className="p-5">
-                            <p className="text-sm text-muted">Un appartement classé G</p>
-                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(flats.premium.G)}</p>
+                            <p className="text-sm text-muted">Un appartement classé G{where}</p>
+                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(flats?.premium.G)}</p>
                             <p className="text-sm text-muted">par rapport à un appartement classé D</p>
                         </Card>
                         <Card className="p-5">
-                            <p className="text-sm text-muted">Une maison classée A</p>
-                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(houses.premium.A)}</p>
+                            <p className="text-sm text-muted">Une maison classée A{where}</p>
+                            <p className="mt-1 font-serif text-4xl text-ink tabular-nums">{pct(houses?.premium.A)}</p>
                             <p className="text-sm text-muted">par rapport à une maison classée D</p>
                         </Card>
                     </section>
@@ -206,8 +232,8 @@ export default function ObservatoirePage() {
                                 </thead>
                                 <tbody className="divide-y divide-line/70 tabular-nums">
                                     {rows.map(d => (
-                                        <tr key={d.code} className="hover:bg-raised/50 cursor-pointer" onClick={() => { setDep(d.code); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-                                            <td className="py-2 text-ink-soft"><span className="text-faint mr-2">{d.code}</span>{d.name}</td>
+                                        <tr key={d.code} className={`hover:bg-raised/50 ${d.code === dep ? 'bg-raised/60' : ''}`}>
+                                            <td className="py-2 text-ink-soft"><span className="text-faint mr-2">{d.code}</span><Link to={departmentPath(d)} className="hover:text-brass-light hover:underline">{d.name}</Link></td>
                                             <td className="text-right text-muted">{int((d.maisons?.sales || 0) + (d.appartements?.sales || 0))}</td>
                                             <td className="text-right text-ink">{pct(d.maisons?.premium.G)}</td>
                                             <td className="text-right text-ink-soft">{pct(d.maisons?.premium.F)}</td>
@@ -223,10 +249,10 @@ export default function ObservatoirePage() {
 
                 <Card className="p-5 sm:p-6 grid sm:grid-cols-[1fr_auto] gap-4 items-center">
                     <div>
-                        <h2 className="text-xl text-ink">Et votre logement ?</h2>
-                        <p className="mt-1 text-sm text-muted">Simulez gratuitement les travaux, les aides et la valeur de votre bien après rénovation.</p>
+                        <h2 className="text-xl text-ink">Vous êtes agent immobilier ?</h2>
+                        <p className="mt-1 text-sm text-muted">Avec SPREA, chiffrez en rendez-vous les travaux, les aides et la valeur d'un bien avant et après rénovation, et repérez les passoires de votre secteur.</p>
                     </div>
-                    <Link to="/"><Button>Simuler mon logement</Button></Link>
+                    <Link to="/demo"><Button>Voir la démo</Button></Link>
                 </Card>
 
                 <section className="text-sm text-muted space-y-2 max-w-4xl">

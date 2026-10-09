@@ -3,6 +3,7 @@ import { Button, Card } from '../ui';
 import { navigate, Link } from '../router';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { Screen } from '../pages/Screen';
+import { useSeo } from '../seo';
 
 // Public home: SPREA is for real estate professionals, and only for subscribers
 const PILLARS = [
@@ -33,6 +34,11 @@ const PROOFS = [
 ];
 
 export default function Home() {
+    useSeo({
+        title: "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte, avis de valeur",
+        description: "Repérez les passoires thermiques de votre secteur, recevez chaque matin les nouveaux DPE et remettez à vos vendeurs un avis de valeur avant / après travaux fondé sur les ventes DVF.",
+        path: '/',
+    });
     return (
         <div className="min-h-screen flex flex-col">
             <SiteHeader />

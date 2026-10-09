@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { Bell, Download, Loader2, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
+import { useSeo } from '../seo';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { SiteFooter, SiteHeader } from './site';
@@ -72,6 +73,7 @@ function toCsv(addresses: Address[]) {
 
 export default function ProspectionPage() {
     const { session, me, config, openLogin, authedFetch } = useAccount();
+    useSeo({ title: 'Carte de prospection · SPREA', noindex: true });
     const mapRef = useRef<L.Map | null>(null);
     const layerRef = useRef<L.LayerGroup | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);

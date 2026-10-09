@@ -50,18 +50,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy==2.3.4
+      - run: pip install numpy==2.3.4 fastapi==0.128.0
       - uses: actions/download-artifact@v4
         with:
           pattern: matched-*
           path: matched
           merge-multiple: true
       - run: python scripts/green_value/build.py fit --in matched --out api/data/green_value.json --summary summary.md
+      # Figures of the public observatory pages, prerendered at build time
+      - run: python scripts/seo/export_observatoire.py
       - name: Open a pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add api/data/green_value.json
+          git add api/data/green_value.json src/data/observatoire.json
           git diff --cached --quiet && { echo "No change"; exit 0; }
           month=$(date +%Y-%m)
           branch="green-value/$month"

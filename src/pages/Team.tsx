@@ -4,6 +4,7 @@ import { Button, Card } from '../ui';
 import { ROLE_NAMES, useAccount, type Team } from '../account';
 import { navigate } from '../router';
 import { PageShell } from './site';
+import { useSeo } from '../seo';
 
 interface Member { user_id: string; email: string | null; role: Team['role']; created_at: string }
 interface Invitation { id: string; email: string; role: 'admin' | 'agent'; expires_at: string }
@@ -24,6 +25,7 @@ const errorDetail = async (res: Response) => {
 };
 
 export default function TeamPage() {
+    useSeo({ title: 'Équipe · SPREA', noindex: true });
     const { session, config, openLogin, authedFetch, refreshMe } = useAccount();
     const [data, setData] = useState<TeamData | null>(null);
     const [agencies, setAgencies] = useState<Agency[] | null>(null);
