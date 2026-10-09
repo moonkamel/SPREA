@@ -1,6 +1,7 @@
 Dockerfile
 tests/
-scripts/
+scripts/*
+!scripts/seo/
 docs/
 supabase/
 __pycache__/
