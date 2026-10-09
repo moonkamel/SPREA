@@ -37,8 +37,8 @@ def address_key(address: Optional[str]) -> str:
     # "(Saint-Pol-sur-Mer)": former commune, written by some sources only
     plain = re.sub(r"\([^)]*\)", " ", plain)
     plain = re.sub(r"[^a-z0-9]+", " ", plain).strip()
-    # "18bis" and "18 bis"
-    plain = re.sub(r"^(\d+) (bis|ter|quater|[a-h])\b", r"\1\2", plain)
+    # "18bis", "18 bis" and "18b" (the BAN writes either)
+    plain = re.sub(r"^(\d+) ?(bis|ter|quater|[a-h])\b", lambda m: m.group(1) + {"bis": "b", "ter": "t", "quater": "q"}.get(m.group(2), m.group(2)), plain)
     # Up to the postcode: the commune is written in full or not
     m = re.match(r"(.*?\b\d{5})\b", plain)
     return m.group(1) if m else plain

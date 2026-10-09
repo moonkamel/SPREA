@@ -18,6 +18,7 @@ failed checks, and a summary (also in the GitHub job summary).
 import argparse
 import asyncio
 import io
+import itertools
 import json
 import os
 import random
@@ -126,7 +127,9 @@ async def audit_dwelling(number: str, store) -> None:
             # Best reachable: every work that applies to this kind of dwelling
             house = (prop.building_type or "").lower().startswith("maison")
             every = ["iti", "windows", "vmc", "ecs", "heating"] + (["roof", "floor_ceiling", "pac_air_eau"] if house else [])
-            best = simulate(SimulationInput(property=sp, works=every))["new_label"]
+            # Some works can raise the label (electric heating replacing gas): every combination
+            best = min((simulate(SimulationInput(property=sp, works=list(c)))["new_label"]
+                        for n in range(1, len(every) + 1) for c in itertools.combinations(every, n)), key=idx)
             if works:
                 case.check(idx(sim["new_label"]) < idx(label) or idx(best) >= idx(label),
                            f"travaux proposés sans gain de classe ({label} → {sim['new_label']}, possible : {best})")
@@ -180,6 +183,11 @@ async def audit_dwelling(number: str, store) -> None:
                     case.check(est["share_low"] <= est["share_high"], "quote-part basse > haute")
                     case.check(est["net_low"] <= est["share_low"], "quote-part après aides > avant aides")
                 copro = sheet.get("copro")
+                # Copropriété set aside because registered on another street: shown, to check
+                if store is not None and not copro and prop.latitude:
+                    near = immeuble.nearest_copro(await store.copros_near(prop.latitude, prop.longitude), (prop.latitude, prop.longitude))
+                    if near:
+                        case.note(f"copro écartée : {near.get('address')} ({near.get('lots_housing')} log.) pour {sheet.get('address')}")
                 if copro and copro.get("match") == "position" and copro.get("address"):
                     case.check(same_street(copro["address"], sheet.get("address")),
                                f"copropriété d'une autre rue : {copro['address']} pour {sheet.get('address')}")
