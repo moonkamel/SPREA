@@ -125,12 +125,12 @@ def metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 @router.get("/monopro/near", dependencies=[Depends(search_limiter)])
 async def monopro_near(lat: float = Query(..., ge=-90, le=90), lon: float = Query(..., ge=-180, le=180),
                        user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
-    """The whole building at the position of a building DPE, if it is held by a single owner."""
+    """The whole building at the position of a building DPE, if a private company holds it."""
     await require_pro(store, user)
     around = await store.monopro_in_bbox(lon - NEAR_DEG, lat - NEAR_DEG, lon + NEAR_DEG, lat + NEAR_DEG, False, 3, 20)
     close = sorted((metres(lat, lon, b["lat"], b["lon"]), b["id"]) for b in around)
     if not close or close[0][0] > NEAR_M:
-        raise HTTPException(status_code=404, detail="Aucun immeuble à propriétaire unique à cette adresse.")
+        raise HTTPException(status_code=404, detail="Aucun immeuble détenu par une société à cette adresse.")
     return {"id": close[0][1]}
 
 

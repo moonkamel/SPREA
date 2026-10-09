@@ -129,7 +129,6 @@ export default function ProspectionPage() {
     const [framed, setFramed] = useState(false);
     // 'immeubles': whole buildings held by a single owner (BDNB)
     const [mode, setMode] = useState<'dpe' | 'immeubles'>('dpe');
-    const [ownerFilter, setOwnerFilter] = useState<'all' | 'company'>('all');
     const [minLog, setMinLog] = useState('3');
     const [monoDpe, setMonoDpe] = useState<'all' | 'fg'>('all');
     const [mono, setMono] = useState<{ buildings: MonoBuilding[]; truncated: boolean } | null>(null);
@@ -280,7 +279,7 @@ export default function ProspectionPage() {
     useEffect(() => {
         if (mode !== 'immeubles' || !session || !ready || !zoomOk || !areaKey) return;
         const box = areaKey.split(',').map(Number);
-        const filters = [ownerFilter, minLog, monoDpe].join('|');
+        const filters = [minLog, monoDpe].join('|');
         const last = monoLoaded.current;
         if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
         const controller = new AbortController();
@@ -288,7 +287,7 @@ export default function ProspectionPage() {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({ bbox: areaKey, owner: ownerFilter, min_log: minLog, dpe: monoDpe });
+                const params = new URLSearchParams({ bbox: areaKey, owner: 'company', min_log: minLog, dpe: monoDpe });
                 const res = await authedFetch(`/api/monopro?${params}`, { signal: controller.signal });
                 if (!res.ok) {
                     const detail = await res.json().catch(() => ({}));
@@ -304,7 +303,7 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [mode, session, ready, zoomOk, areaKey, ownerFilter, minLog, monoDpe, authedFetch]);
+    }, [mode, session, ready, zoomOk, areaKey, minLog, monoDpe, authedFetch]);
 
     const showDetails = !!result && !result.locked;
 
@@ -446,9 +445,9 @@ export default function ProspectionPage() {
                     </div>
                     {mode === 'immeubles' && (
                         <p className="mt-3 text-sm text-muted max-w-3xl">
-                            Les immeubles de 3 logements ou plus détenus par un seul propriétaire, hors copropriété et hors logement social :
-                            à vendre en bloc à un investisseur, ou lot par lot après découpe. Quand le propriétaire est une société, sa fiche donne
-                            son siège, ses dirigeants et ses autres immeubles.
+                            Les immeubles de 3 logements ou plus détenus en entier par une SCI ou une autre société privée, hors copropriété,
+                            bailleurs sociaux et organismes publics : à vendre en bloc à un investisseur, ou lot par lot après découpe. La fiche
+                            donne le siège de la société, ses dirigeants et ses autres immeubles.
                         </p>
                     )}
                 </div>
@@ -466,11 +465,6 @@ export default function ProspectionPage() {
                     </form>
                     {mode === 'immeubles' ? (
                         <>
-                            <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value as 'all' | 'company')} aria-label="Propriétaire"
-                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
-                                <option value="all">Tous les propriétaires</option>
-                                <option value="company">Sociétés identifiées</option>
-                            </select>
                             <select value={minLog} onChange={e => setMinLog(e.target.value)} aria-label="Nombre de logements"
                                 className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
                                 <option value="3">3 logements ou plus</option>
@@ -527,7 +521,6 @@ export default function ProspectionPage() {
                         </div>
                         <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-3 rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-xs text-muted pointer-events-none">
                             {mode === 'immeubles' ? <>
-                                <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full ring-2 ring-brass-light bg-faint" />société</span>
                                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NO_DPE_COLOR }} />sans DPE</span>
                                 <span className="text-faint">· couleur : DPE</span>
                             </> : LABEL_OPTIONS.filter(l => labels.includes(l)).map(l => (
@@ -564,7 +557,7 @@ export default function ProspectionPage() {
                             <Card className="p-0 overflow-hidden">
                                 <div className="px-4 py-3 border-b border-line">
                                     <p className="text-sm text-ink font-medium">{mono.buildings.length.toLocaleString('fr-FR')} immeubles</p>
-                                    <p className="text-xs text-faint">Les plus grands d'abord · contour doré : société identifiée</p>
+                                    <p className="text-xs text-faint">Les plus grands d'abord</p>
                                 </div>
                                 <MonoproList buildings={mono.buildings}
                                     onFocus={b => mapRef.current?.setView([b.lat, b.lon], Math.max(mapRef.current.getZoom(), 17))}

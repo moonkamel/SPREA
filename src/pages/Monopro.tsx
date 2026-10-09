@@ -162,10 +162,10 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                         <p className="text-xs text-brass tracking-wide">Immeuble</p>
                         <h2 className="text-xl text-ink">{target.near.address}</h2>
                         <p className="text-sm text-muted">
-                            Cet immeuble n'appartient pas à un propriétaire unique : c'est le plus souvent une copropriété (immatriculée ou non),
-                            ou un immeuble partagé entre plusieurs propriétaires. Ce n'est pas un immeuble de rapport à vendre en bloc.
+                            Cet immeuble n'est pas détenu en entier par une société privée : c'est une copropriété (immatriculée ou non), un
+                            immeuble de bailleur social ou d'organisme public, ou il appartient à des particuliers, dont l'identité n'est pas publique.
                         </p>
-                        <p className="text-sm text-muted">Pour les immeubles à propriétaire unique, utilisez l'onglet « Immeubles entiers » de la carte.</p>
+                        <p className="text-sm text-muted">Les immeubles détenus par une SCI ou une autre société sont dans l'onglet « Immeubles entiers » de la carte.</p>
                     </div>
                 ) : error ? <p className="text-sm text-coral">{error}</p> : !sheet ? <Loader2 className="animate-spin text-brass" /> : (
                     <div className="space-y-5">

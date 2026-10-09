@@ -100,7 +100,11 @@ spec = importlib.util.spec_from_file_location("import_bdnb", Path(__file__).pare
 bdnb = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bdnb)
 
-OWNERS_BY_ID = {"P1": {"siren": "444315543"}, "P2": {"siren": "753808765"}, "PUB": {"siren": "225900018"}}
+OWNERS_BY_ID = {"P1": {"siren": "444315543", "legal_form": "SCI", "name": "DU BRUNIOL"},
+                "P2": {"siren": "753808765", "legal_form": "SARL", "name": "HISI"},
+                "PUB": {"siren": "225900018", "legal_form": "", "name": "DEPARTEMENT DU NORD"},
+                "HLM": {"siren": "413782509", "legal_form": "SA", "name": "VILOGIA SOCIETE ANONYME D'HLM"},
+                "OPH": {"siren": "783713498", "legal_form": "EPIC", "name": "LILLE METROPOLE HABITAT OPH"}}
 
 
 def test_owner_selection():
@@ -110,8 +114,19 @@ def test_owner_selection():
     assert bdnb.select_owner([("P1", 1), ("P2", 9)], 10, OWNERS_BY_ID) == ("company", "753808765", 0.9)
     # Several owners sharing the building: most likely an unregistered copropriété
     assert bdnb.select_owner([("P1", 3), ("P2", 3)], 6, OWNERS_BY_ID)[0] == "skip"
-    # Public body (SIREN starting with 1 or 2): not a prospect
+    # Public body (SIREN starting with 1 or 2), social landlords: not prospects
     assert bdnb.select_owner([("PUB", 9)], 9, OWNERS_BY_ID)[0] == "skip"
+    assert bdnb.select_owner([("HLM", 9)], 9, OWNERS_BY_ID)[0] == "skip"
+    assert bdnb.select_owner([("OPH", 9)], 9, OWNERS_BY_ID)[0] == "skip"
+
+
+def test_private_companies_only():
+    private = lambda form, name: bdnb.is_private_company({"siren": "444315543", "legal_form": form, "name": name})
+    assert private("SCI", "DU BRUNIOL") and private("SAS", "FONCIERE LILLOISE FAMILIALE") and private("SC", "CDEF")
+    for form, name in [("SA", "NOREVIE"), ("SA", "CPH ARCADE-VYV"), ("SA", "SIA HABITAT"), ("EPIC", "OFFICE PUBLIC DE L'HABITAT DU NORD"),
+                       ("ASS", "ASSOCIATION DIOCESAINE LILLE"), ("SEM", "ADOMA"), ("SCPI", "KYANEOS PIERRE"),
+                       ("SA", "LA FABRIQUE DES QUARTIERS SPLA"), ("SA", "SOCIETE NATIONALE SNCF")]:
+        assert not private(form, name), name
 
 
 def test_centroid_and_dates():
@@ -153,17 +168,16 @@ def test_build_from_bdnb_tables(tmp_path):
     with zipfile.ZipFile(path) as z:
         buildings, owners, stats = bdnb.build(z, "59", "2026-10-09")
     by_id = {b["id"]: b for b in buildings}
-    # C in the copropriété registry, D too small, E social housing, F public owner
-    assert sorted(by_id) == ["A", "B"]
-    a, b = by_id["A"], by_id["B"]
+    # B no company owner, C in the copropriété registry, D too small, E social housing, F public owner
+    assert sorted(by_id) == ["A"]
+    a = by_id["A"]
     assert a["owner_siren"] == "444315543" and a["owner_share"] == 1.0 and a["nb_log"] == 6
     assert a["dpe_label"] == "F" and a["dpe_fg"] == 3 and a["dpe_count"] == 4
     assert a["last_sale_date"] == "2023-10-16" and a["last_sale_price"] == 550000
     assert 50.5 < a["lat"] < 50.8 and 3.0 < a["lon"] < 3.2 and a["insee"] == "59350"
-    # Owner not identified, no DPE label
-    assert b["owner_siren"] is None and b["dpe_label"] is None
     assert list(owners) == ["444315543"] and owners["444315543"]["legal_form"] == "SCI"
     assert stats["in_copro_registry"] == 1 and stats["social_housing"] == 1 and stats["public_or_shared_owner"] == 1
+    assert stats["owner_unknown"] == 1
 
 
 def test_building_found_from_a_dpe_position(env):
