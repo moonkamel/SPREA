@@ -58,7 +58,7 @@ export default function Home() {
                             <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Dès 79 € HT / mois</Button>
                         </div>
                         <p className="mt-5 text-xs text-faint flex items-center justify-center gap-2">
-                            <ShieldCheck size={14} className="text-sage" /> Satisfait ou remboursé pendant 14 jours · sans engagement
+                            <ShieldCheck size={14} className="text-sage" /> Mensuel ou annuel · engagement 12 mois · facture avec TVA
                         </p>
                     </div>
                     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pb-16">

@@ -28,7 +28,7 @@ try:
     from api.ai_service import ai_service, parse_stored
     from api.auth import User, current_user
     from api.dvf import market_price
-    from api.billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
+    from api.billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, commitment_end, get_billing, subscription_period_end
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
     from api.ratelimit import ai_limiter, search_limiter
@@ -39,7 +39,7 @@ except ImportError:
     from ai_service import ai_service, parse_stored
     from auth import User, current_user
     from dvf import market_price
-    from billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, get_billing, subscription_period_end
+    from billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, commitment_end, get_billing, subscription_period_end
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
     from ratelimit import ai_limiter, search_limiter
@@ -53,7 +53,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-09.1"
+TERMS_VERSION = "2026-10-09.2"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -184,7 +184,7 @@ async def sync_subscription(store: SupabaseStore, billing: Billing, subscription
     """Copies the current state of a subscription (fetched from Stripe, so event
     ordering does not matter) to the owner's profile, or to the organization
     for an agency subscription (metadata org_id)."""
-    sub = await billing.get_subscription(subscription_id)
+    sub = await billing.keep_commitment(await billing.get_subscription(subscription_id))
     metadata = sub.get("metadata") or {}
     if metadata.get("org_id"):
         await sync_org_subscription(store, billing, sub)
@@ -205,6 +205,7 @@ async def sync_subscription(store: SupabaseStore, billing: Billing, subscription
         "subscription_id": subscription_id,
         "subscription_status": sub["status"],
         "subscription_current_period_end": iso_from_timestamp(subscription_period_end(sub)),
+        "subscription_commitment_end": iso_from_timestamp(commitment_end(sub)),
     })
 
 
@@ -221,6 +222,7 @@ async def sync_org_subscription(store: SupabaseStore, billing: Billing, sub: Dic
         "stripe_subscription_id": sub["id"],
         "subscription_status": sub["status"],
         "subscription_current_period_end": iso_from_timestamp(subscription_period_end(sub)),
+        "subscription_commitment_end": iso_from_timestamp(commitment_end(sub)),
     }
     if items and items[0].get("quantity"):
         fields["seats"] = items[0]["quantity"]
@@ -234,6 +236,22 @@ async def sync_org_subscription(store: SupabaseStore, billing: Billing, sub: Dic
             await billing.cancel_subscription(solo, prorate=True)
             await store.update_profile(owner_id, {"subscription_status": "canceled"})
             logger.info("Solo plan replaced by an agency subscription")
+
+
+def commitment_running(profile: Dict[str, Any]) -> Optional[str]:
+    """End of the commitment of the subscription the user pays (their own, or
+    their agency's for its owner), when not over yet."""
+    now = datetime.now(timezone.utc).isoformat()
+    org = profile.get("org") if profile.get("org_role") == "owner" else None
+    for holder in (profile, org or {}):
+        end = holder.get("subscription_commitment_end")
+        if end and end > now and holder.get("subscription_status") in PRO_ACTIVE_STATUSES:
+            return end
+    return None
+
+
+def date_fr(iso: str) -> str:
+    return f"{iso[8:10]}/{iso[5:7]}/{iso[:4]}"
 
 
 def report_summary(report: Dict[str, Any]) -> Dict[str, Any]:
@@ -350,6 +368,7 @@ async def me(user: User = Depends(current_user), store: SupabaseStore = Depends(
         "team": team_summary(profile),
         "subscription_status": profile.get("subscription_status"),
         "subscription_current_period_end": profile.get("subscription_current_period_end"),
+        "commitment_end": commitment_running(profile),
         "has_billing_account": bool(profile.get("stripe_customer_id")),
         "reports": [report_summary(r) for r in reports],
     }
@@ -387,6 +406,11 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
             owner = next((m["user_id"] for m in members if m["role"] == "owner"), None)
             if owner:
                 await store.transfer_contacts(user.id, owner)
+
+    commitment = commitment_running(profile)
+    if commitment:
+        raise HTTPException(status_code=400, detail=f"Votre abonnement comporte un engagement jusqu'au {date_fr(commitment)} : "
+                                                    "le compte pourra être supprimé à cette date.")
 
     # 1. Stop billing first: abort if Stripe cannot be reached
     subscription_id = profile.get("subscription_id")
@@ -570,7 +594,7 @@ async def billing_portal(user: User = Depends(current_user), store: SupabaseStor
     profile = await store.ensure_profile(user.id, user.email)
     if not profile.get("stripe_customer_id"):
         raise HTTPException(status_code=400, detail="Aucun compte de facturation.")
-    return {"url": await billing.portal_url(profile["stripe_customer_id"])}
+    return {"url": await billing.portal_url(profile["stripe_customer_id"], can_cancel=not commitment_running(profile))}
 
 
 @router.post("/stripe/webhook")

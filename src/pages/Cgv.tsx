@@ -58,15 +58,16 @@ export default function CgvPage() {
                     <p>Les services sont accessibles dès la confirmation du paiement. Les rapports et avis de valeur sont générés à la demande et restent téléchargeables depuis « Mon compte » tant que le compte existe.</p>
                 </Article>
 
-                <Article n={9} title="Satisfait ou remboursé">
-                    <p>Lors de sa première souscription, le Client peut demander le remboursement intégral de son premier paiement, sans avoir à se justifier, en écrivant à {LEGAL.email} dans les 14 jours qui suivent ce paiement. L'abonnement est alors résilié et l'accès aux services prend fin à la date du remboursement.</p>
-                    <p>Cette garantie commerciale s'applique une seule fois par Client (même société ou même utilisateur), et ne s'applique pas aux renouvellements ni aux contrats Réseau, qui suivent leurs conditions particulières.</p>
+                <Article n={9} title="Durée et engagement">
+                    <p>Les abonnements Solo et Agence souscrits sous la présente version des CGV comportent un <b>engagement d'une durée de 12 mois</b> à compter de la souscription. En paiement mensuel, le Client règle chaque mensualité pendant au moins 12 mois ; en paiement annuel, les 12 mois sont réglés d'avance. Les contrats Réseau sont conclus pour 12 mois, sauf conditions particulières.</p>
+                    <p>Le droit de rétractation prévu par le Code de la consommation ne s'applique pas à l'abonnement, souscrit à distance par un professionnel pour les besoins de son activité. Aucune somme versée n'est remboursée, sauf manquement du Vendeur à ses obligations.</p>
+                    <p>Pendant l'engagement, l'abonnement ne peut pas être résilié avant son terme : une demande de résiliation prend effet à la fin de la période d'engagement, les mensualités restant dues jusqu'à cette date. Le nombre d'utilisateurs d'une formule Agence peut être ajusté, au prorata, sans descendre sous le minimum de la formule.</p>
                 </Article>
 
-                <Article n={10} title="Durée et résiliation">
-                    <p>L'abonnement est conclu pour un mois ou un an selon la périodicité choisie, et renouvelé automatiquement pour la même durée. Les formules Solo et Agence sont sans engagement : le Client peut les résilier à tout moment depuis « Mon compte », rubrique « Factures et abonnement ». La résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée, sauf application de l'article 9. Les contrats Réseau sont conclus pour 12 mois.</p>
-                    <p>En cas d'échec du paiement, l'accès aux services est suspendu jusqu'à régularisation.</p>
-                    <p>La suppression du compte par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours.</p>
+                <Article n={10} title="Renouvellement et résiliation">
+                    <p>À l'issue de l'engagement, l'abonnement est renouvelé automatiquement par périodes successives d'un mois ou d'un an selon la périodicité choisie. Il est alors résiliable à tout moment depuis « Mon compte », rubrique « Factures et abonnement » ; la résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée.</p>
+                    <p>En cas d'échec du paiement, l'accès aux services est suspendu jusqu'à régularisation, les sommes restant dues.</p>
+                    <p>Le compte ne peut pas être supprimé pendant la période d'engagement. Après celle-ci, sa suppression par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours. Les abonnements souscrits sous une version antérieure des CGV restent sans engagement et résiliables à tout moment.</p>
                 </Article>
 
                 <Article n={11} title="Disponibilité et assistance">
