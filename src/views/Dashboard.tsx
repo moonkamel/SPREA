@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info, Scale } from 'lucide-react';
 import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, eurRange, num } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
+import { navigate } from '../router';
 import RgeCompanies from './RgeCompanies';
 import BuildingSheet from './BuildingSheet';
 import { INCOME_LEVELS, capitalize, formatDate, isHouse, type IncomeLevel, type PropertyData, type RetrofitAction, type Simulation } from '../model';
@@ -193,6 +194,15 @@ export default function Dashboard(props: Props) {
                     <p className="mt-1 text-xs text-faint">
                         {property.dpeDate ? `DPE du ${formatDate(property.dpeDate)}` : 'DPE'}{property.ademe_dpe_number ? ` · n° ${property.ademe_dpe_number}` : ''}
                     </p>
+                    {(property.buildingType || '').toLowerCase() === 'immeuble' && property.latitude != null && property.longitude != null && (
+                        <div className="mt-4 rounded-xl border border-brass/40 bg-brass/5 p-4 text-sm flex flex-wrap items-center justify-between gap-3">
+                            <span className="text-ink-soft">DPE d'un immeuble entier : la simulation ci-dessous le traite comme un seul logement.</span>
+                            <button type="button" className="text-brass-light hover:underline font-medium"
+                                onClick={() => navigate(`/prospection?immeuble=${property.latitude},${property.longitude}&adresse=${encodeURIComponent(property.address)}`)}>
+                                Voir le propriétaire de l'immeuble
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] items-start">

@@ -6,10 +6,11 @@ prospection map (supabase/migrations/011_monopro.sql).
   python scripts/monopro/import_bdnb.py --dep 59 --dry-run   # counts only
 
 A building is kept when it has at least MIN_LOG dwellings, is not registered
-as a copropriété, is not social housing (RPLS) and is not owned by a public
-body. Its owner is the company (personne morale) holding most of its units
-(owner_share = units held / dwellings); without one, the owner is unknown:
-most likely a private person, whose identity is not public.
+as a copropriété, is not social housing (RPLS) and is held by a private
+company: an SCI or another commercial or civil company (owner_share = units
+held / dwellings). Public bodies, social landlords (OPH, SA d'HLM, ESH...),
+associations, foundations, mutual and pension funds, SCPI and buildings
+without an identified company owner are left out.
 
 Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (except with --dry-run), and
 pyproj to convert the building outlines (Lambert 93 or overseas CRS) to GPS.
@@ -35,6 +36,16 @@ URL = ("https://open-data.s3.fr-par.scw.cloud/bdnb_millesime_{m}/millesime_{m}_d
 MIN_LOG = 3
 # A company is the single owner when it holds most units of the building
 MIN_SHARE = 0.8
+# Legal forms of private companies (BDNB "forme_juridique"): SCI and equivalents
+PRIVATE_FORMS = {"SCI", "SC", "SARL", "EURL", "SAS", "SASU", "SA", "SNC", "SCA", "SCS", "STE", "SELARL", "SELAS"}
+# Social landlords and public or non-profit bodies registered as companies (SA
+# d'HLM, ESH, SPL...): left out by name
+EXCLUDED_NAME = re.compile(
+    r"HABITAT|HABITATION|H\.?L\.?M|LOYER MODERE|LOGEMENT SOCIAL|OFFICE PUBLIC|\bOPH\b|\bESH\b|\bSPLA?\b|\bSEM\b|SAEM|"
+    r"VILOGIA|NOREVIE|ARCADE|MAISONS ET CITES|CLESENCE|AXENTIA|LOGIS METROPOLE|PARTENORD|PROMOCIL|TISSERIN|SIGH|"
+    r"IMMOBILIERE GRAND HAINAUT|COTTAGE SOCIAL|\bICF\b|CDC HABITAT|\b3F\b|IN'?LI\b|ACTION LOGEMENT|SEQENS|BATIGERE|"
+    r"ERILIA|ADOMA|SOLIHA|LOGEMENT INTERMEDIAIRE|FABRIQUE DES QUARTIERS|SNCF|DIOCESAIN|CONGREGATION|MUTUELLE|"
+    r"CAISSE|ETABLISSEMENT PUBLIC|FONCIER DE")
 BATCH = 1000
 LABELS = "ABCDEFG"
 
@@ -81,12 +92,18 @@ def centroid(wkt: str) -> Optional[Tuple[float, float]]:
     return sum(xs) / len(xs), sum(ys) / len(ys)
 
 
+def is_private_company(owner: Dict) -> bool:
+    """SCI or another private company, not a social landlord or a public body."""
+    return (not is_public(owner["siren"]) and (owner.get("legal_form") or "").upper() in PRIVATE_FORMS
+            and not EXCLUDED_NAME.search((owner.get("name") or "").upper()))
+
+
 def select_owner(holdings: List[Tuple[str, int]], nb_log: int, owners: Dict[str, Dict]) -> Tuple[str, Optional[str], Optional[float]]:
     """('company', siren, share) | ('unknown', None, None) | ('skip', None, None)."""
     known = [(owners[p], n) for p, n in holdings if p in owners]
     if not known:
         return "unknown", None, None
-    if any(is_public(o["siren"]) for o, _ in known):
+    if not all(is_private_company(o) for o, _ in known):
         return "skip", None, None
     owner, units = max(known, key=lambda t: t[1])
     share = units / nb_log if nb_log else 0
@@ -126,12 +143,13 @@ def build(z: zipfile.ZipFile, dep: str, today: str) -> Tuple[List[Dict], Dict[st
     used: Dict[str, Dict] = {}
     for bid in list(candidates):
         kind, siren, share = select_owner(holdings.get(bid, []), candidates[bid]["nb_log"], owners)
-        if kind == "skip":
+        if kind != "company":
+            # Only buildings held by a private company are kept
             del candidates[bid]
-            stats["public_or_shared_owner"] += 1
+            stats["public_or_shared_owner" if kind == "skip" else "owner_unknown"] += 1
             continue
         candidates[bid].update({"owner_siren": siren, "owner_share": share})
-        stats[f"owner_{kind}"] += 1
+        stats["owner_company"] += 1
         if siren:
             used[siren] = next(o for o in owners.values() if o["siren"] == siren)
 
@@ -242,10 +260,12 @@ def main():
     if not url or not key:
         sys.exit("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
     rest = Rest(url, key)
+    if not buildings:
+        sys.exit(f"No building found for {dep}: nothing changed")
+    # The department is replaced as a whole (the selection rules may have changed)
+    rest.call("DELETE", f"monopro_buildings?dep=eq.{dep}")
     rest.upsert("monopro_owners", list(owners.values()))
     rest.upsert("monopro_buildings", buildings)
-    if buildings:
-        rest.call("DELETE", f"monopro_buildings?dep=eq.{dep}&imported_on=lt.{today}")
     log(f"{len(buildings)} buildings and {len(owners)} owners loaded for {dep}")
 
 

@@ -16,6 +16,7 @@ subscriber uses them under article 14 of the CGV (origin of the data stated,
 objections honoured, no phone or email canvassing).
 """
 import logging
+import math
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -110,9 +111,32 @@ async def fetch_company(siren: str, transport: Optional[httpx.AsyncBaseTransport
     return details
 
 
+# Building found from the position of a DPE: within about 40 m
+NEAR_DEG = 0.0004
+NEAR_M = 40
+
+
+def metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    dy = (lat1 - lat2) * 111_320
+    dx = (lon1 - lon2) * 111_320 * math.cos(math.radians(lat1))
+    return math.hypot(dx, dy)
+
+
+@router.get("/monopro/near", dependencies=[Depends(search_limiter)])
+async def monopro_near(lat: float = Query(..., ge=-90, le=90), lon: float = Query(..., ge=-180, le=180),
+                       user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """The whole building at the position of a building DPE, if a private company holds it."""
+    await require_pro(store, user)
+    around = await store.monopro_in_bbox(lon - NEAR_DEG, lat - NEAR_DEG, lon + NEAR_DEG, lat + NEAR_DEG, False, 3, 20)
+    close = sorted((metres(lat, lon, b["lat"], b["lon"]), b["id"]) for b in around)
+    if not close or close[0][0] > NEAR_M:
+        raise HTTPException(status_code=404, detail="Aucun immeuble détenu par une société à cette adresse.")
+    return {"id": close[0][1]}
+
+
 @router.get("/monopro", dependencies=[Depends(search_limiter)])
 async def monopro_map(bbox: str, owner: str = Query("all", pattern="^(all|company)$"),
-                      min_log: int = Query(3, ge=3, le=200),
+                      min_log: int = Query(3, ge=3, le=200), dpe: str = Query("all", pattern="^(all|fg)$"),
                       user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     await require_pro(store, user)
     try:
@@ -120,7 +144,8 @@ async def monopro_map(bbox: str, owner: str = Query("all", pattern="^(all|compan
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     try:
-        buildings = await store.monopro_in_bbox(west, south, east, north, owner == "company", min_log, MAX_BUILDINGS + 1)
+        buildings = await store.monopro_in_bbox(west, south, east, north, owner == "company", min_log, MAX_BUILDINGS + 1,
+                                                poor_dpe=dpe == "fg")
         sirens = sorted({b["owner_siren"] for b in buildings if b.get("owner_siren")})
         owners = {o["siren"]: o for o in await store.monopro_owners(sirens)} if sirens else {}
     except httpx.HTTPError as e:
