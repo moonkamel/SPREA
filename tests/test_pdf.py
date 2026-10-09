@@ -74,3 +74,14 @@ def test_uppercase_ademe_address_is_prettified():
     assert display_address("12 AVENUE DE L'EGLISE", None, None)["full"] == "12 Avenue de l'Eglise"
     # Postcode already in the raw address
     assert display_address("3 rue X 59000 Lille", "59000", "Lille")["full"] == "3 rue X 59000 Lille"
+
+
+def test_rge_companies_section():
+    content = build_report(META, SimulationInput(property=PROP, works=["roof", "pac_air_eau"]))
+    company = {"name": "Isol'Nord <SAS>", "city": "Lille", "distance_km": 2.4, "phone": "03 20 00 00 00", "website": None}
+    content["rge"] = {"works": {"roof": [company], "pac_air_eau": []}, "global": [], "audit": [dict(company, name="Audit Plus")]}
+    text = pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+    assert "annuaire public" in text and "Isol'Nord <SAS>" in text and "2,4" in text and "Audit Plus" in text
+    # No companies found: no section
+    content["rge"] = None
+    assert "annuaire public" not in pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))

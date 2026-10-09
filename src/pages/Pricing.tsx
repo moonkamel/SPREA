@@ -16,6 +16,7 @@ const INCLUDED = [
     'Alertes quotidiennes sur les nouveaux DPE',
     'Courriers avec QR code et page propriétaire à vos couleurs',
     'Suivi des contacts reçus',
+    'Artisans RGE les plus proches pour chaque travail',
 ];
 
 const FAQ = [
