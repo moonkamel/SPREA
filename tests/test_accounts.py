@@ -779,3 +779,12 @@ def test_quote_request_is_stored(env, monkeypatch):
     assert client.post("/api/quote", json={**body, "offer": "solo"}).status_code == 422
     assert client.post("/api/quote", json={**body, "website": "spam"}).json() == {"received": True}
     assert len(store.quotes) == 1
+
+
+def test_shared_test_account_cannot_be_deleted(env):
+    client, store, _, state = env
+    state["user"] = User(id="33333333-3333-3333-3333-333333333333", email="test@sprea.invalid")
+    make_pro(store, state["user"])
+    res = delete_account(client)
+    assert res.status_code == 403
+    assert state["user"].id in store.profiles

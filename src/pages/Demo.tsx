@@ -42,8 +42,8 @@ export default function DemoPage() {
     const { me, startSubscription } = useAccount();
 
     useSeo({
-        title: "Démo SPREA : prospection DPE, alertes, avis de valeur avant / après travaux",
-        description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux : découvrez SPREA en images.",
+        title: "Démo SPREA : prospection DPE, alertes, avis de valeur, fiche copropriété",
+        description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux, fiche immeuble des copropriétés et artisans RGE : découvrez SPREA en images.",
         path: '/demo',
     });
     useEffect(() => {
@@ -120,6 +120,21 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
+                <Step id="immeuble" kicker="14 h 10 · Copropriété" title="La fiche immeuble : ce que la copropriété va coûter" reverse
+                    points={['Registre national des copropriétés : lots, syndic, période de construction', 'DPE collectif et étiquettes des autres appartements', 'Obligations : plan pluriannuel de travaux, DPE collectif', 'Travaux collectifs probables et quote-part de l\'appartement, avant et après aides']}
+                    media={<Screen src="/demo/immeuble.webp" alt="Fiche immeuble : copropriété de 20 lots, DPE collectif E, travaux de façade et de chaufferie, quote-part de l'appartement" width={1400} height={1493} />}>
+                    <p>Pour un appartement, la vraie question de l'acheteur, ce sont les charges à venir. SPREA croise le registre des copropriétés, le DPE de l'immeuble et la loi pour chiffrer les gros travaux et la part de ce lot.</p>
+                    <p>Un argument de négociation que vous apportez avant lui, plutôt que de le subir après la visite.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step kicker="14 h 20 · Artisans" title="Les artisans RGE les plus proches, travail par travail"
+                    points={['Annuaire officiel de l\'ADEME, mis à jour chaque jour', 'Entreprises qualifiées pour chaque travail retenu, les plus proches d\'abord', 'Rénovation globale et audit énergétique pour les projets d\'ampleur', 'Repris dans le rapport remis au client']}
+                    media={<Screen src="/demo/rge.webp" alt="Liste des artisans RGE les plus proches pour chaque travail, avec téléphone et site" width={1400} height={1343} />}>
+                    <p>Les aides ne sont versées que pour des travaux réalisés par une entreprise RGE. Le propriétaire repart avec des noms et des numéros de téléphone : son projet devient concret.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
                 <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux" reverse
                     points={['Ventes DVF comparables à moins de 500 m, 1 km, 2 km', 'Écart de prix par classe DPE mesuré sur 1,27 million de ventes', 'Ajustement du conseiller (état, étage, extérieur…)', 'PDF à votre nom, à remettre au client']}
                     media={
@@ -133,14 +148,15 @@ export default function DemoPage() {
 
                 <div className="border-t border-line/60" />
                 <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui"
-                    points={['Synthèse, analyse rédigée, plan de travaux et de financement', 'Valeur verte et calendrier de la loi Climat', 'Inclus sans limite dans l\'abonnement']}
+                    points={['Synthèse, analyse rédigée, plan de travaux et de financement', 'Valeur verte et calendrier de la loi Climat', 'Fiche immeuble pour les appartements en copropriété', 'Artisans RGE proches pour chaque travail', 'Inclus sans limite dans l\'abonnement']}
                     media={
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-3">
                             <Screen src="/demo/rapport_1.webp" alt="Rapport PDF, page 1 : synthèse et analyse" width={900} height={1273} chrome={false} />
-                            <Screen src="/demo/rapport_2.webp" alt="Rapport PDF, page 2" width={900} height={1273} chrome={false} />
+                            <Screen src="/demo/rapport_immeuble.webp" alt="Rapport PDF : l'immeuble et ses travaux à venir" width={900} height={1273} chrome={false} />
+                            <Screen src="/demo/rapport_rge.webp" alt="Rapport PDF : les artisans RGE près du logement" width={900} height={1273} chrome={false} />
                         </div>
                     }>
-                    <p>Un document de 5 pages, clair et sourcé, qui reste chez le propriétaire et qui porte votre travail : chaque chiffre est expliqué et sourcé.</p>
+                    <p>Un document clair et sourcé, qui reste chez le propriétaire et qui porte votre travail : chaque chiffre est expliqué, de la valeur du bien aux artisans à appeler.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
@@ -148,6 +164,13 @@ export default function DemoPage() {
                     points={['Mis à jour chaque mois', 'France entière et 90 départements', 'Des chiffres à citer en rendez-vous et sur vos réseaux']}
                     media={<Screen src="/demo/observatoire.webp" alt="Observatoire : écart de prix par classe DPE, maisons et appartements" width={1600} height={1000} />}>
                     <p>Une maison classée G se vend 18 % moins cher qu'une maison classée D, à emplacement et surface comparables. Montrez-le à vos vendeurs.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil"
+                    points={['Un abonnement, autant de places que d\'agents, une seule facture', 'Invitation par lien, rôles titulaire, responsable et agent', 'Contacts et alertes partagés : aucun propriétaire ne se perd', 'Console réseau pour suivre toutes les agences']}
+                    media={<Screen src="/demo/team.webp" alt="Page Équipe : membres de l'agence, rôles, invitations et nombre de places" width={1400} height={1281} />}>
+                    <p>Chaque agent prospecte son secteur, et le responsable voit qui rappelle qui. Quand un agent part, ses contacts restent à l'agence.</p>
                 </Step>
 
                 <section className="border-t border-line/60 bg-panel/40">
