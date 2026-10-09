@@ -11,18 +11,18 @@ Built from public data only:
 
 Every figure is an order of magnitude, stated as such in the dossier.
 """
-import re
-import unicodedata
 from datetime import date
 from statistics import median
 from typing import Any, Dict, List, Optional
 
 try:
+    from api.address import address_key, same_address  # noqa: F401 (address_key: used by the audit)
     from api.green_value import LABELS, department, kind_of, model
     from api.immeuble import (DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since,
                               _float, _int)
     from api.valuation import class_factor, round_value
 except ImportError:
+    from address import address_key, same_address  # noqa: F401
     from green_value import LABELS, department, kind_of, model
     from immeuble import DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since, _float, _int
     from valuation import class_factor, round_value
@@ -36,6 +36,8 @@ RENT_FREEZE = date(2022, 8, 24)
 AUDIT_SALE = {"G": date(2023, 4, 1), "F": date(2023, 4, 1), "E": date(2025, 1, 1), "D": date(2034, 1, 1)}
 # Average dwelling when no DPE gives the surfaces
 DEFAULT_UNIT_M2 = 50
+# Average dwelling surface beyond which the surface of a collective DPE is not believed
+MIN_UNIT_M2, MAX_UNIT_M2 = 12, 200
 # Whole-building energy renovation, € TTC per m² of living area, to reach C or D
 # (order of magnitude from building audits), when the DPE does not detail the envelope
 RENOVATION_M2 = {"G": (450, 750), "F": (350, 600), "E": (250, 450), "D": (120, 250)}
@@ -48,17 +50,10 @@ def _date_fr(d: date) -> str:
     return d.strftime("%d/%m/%Y")
 
 
-def address_key(address: Optional[str]) -> str:
-    """'121 Rue de Solférino 59800 Lille' -> '121 rue de solferino 59800 lille'."""
-    plain = unicodedata.normalize("NFKD", address or "").encode("ascii", "ignore").decode().lower()
-    return re.sub(r"[^a-z0-9]+", " ", plain).strip()
-
-
 def rows_at_address(rows: List[Dict], address: Optional[str]) -> List[Dict]:
     """DPE published at the address of the building: the search around its
     position also returns the DPE of the neighbouring buildings."""
-    key = address_key(address)
-    return [r for r in rows if key and address_key(r.get("adresse_ban")) == key]
+    return [r for r in rows if same_address(r.get("adresse_ban"), address)]
 
 
 def scale_to(counts: Dict[str, int], total: int) -> Dict[str, int]:
@@ -102,8 +97,10 @@ def arguments(units: Dict, works: Optional[Dict], value: Optional[Dict], holding
         if not n:
             continue
         ban = RENTAL_BAN[label]
-        when = "ne peuvent plus être reloués depuis le" if ban <= today else "ne pourront plus être reloués à partir du"
-        out.append(f"{n} logement{'s' if n > 1 else ''} classé{'s' if n > 1 else ''} {label} {when} {_date_fr(ban)}"
+        s = "s" if n > 1 else ""
+        when = (f"ne peu{'vent' if n > 1 else 't'} plus être reloué{s} depuis le" if ban <= today else
+                f"ne pourr{'ont' if n > 1 else 'a'} plus être reloué{s} à partir du")
+        out.append(f"{n} logement{s} classé{s} {label} {when} {_date_fr(ban)}"
                    + (" : chaque départ de locataire laisse un logement vide." if ban <= today else "."))
     if t["F"] + t["G"]:
         out.append(f"Loyers gelés : depuis le {_date_fr(RENT_FREEZE)}, le loyer d'un logement F ou G ne peut plus être "
@@ -135,11 +132,12 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
                   rows: List[Dict], market: Optional[Dict], agency: Dict, today: Optional[date] = None) -> Dict[str, Any]:
     today = today or date.today()
     nb_log = building["nb_log"]
+    # Only the DPE published at the address of the building: the search around
+    # its position also returns those of the neighbouring buildings
+    rows = rows_at_address(rows, building.get("address"))
     buildings_dpe = sorted((r for r in rows if is_building_dpe(r) and r.get("etiquette_dpe") in set(LABELS)),
                            key=lambda r: r.get("date_etablissement_dpe") or "", reverse=True)
     building_dpe = buildings_dpe[0] if buildings_dpe else None
-    # Only the DPE published at the address of the building
-    rows = rows_at_address(rows, building.get("address"))
     apartments = latest_per_apartment(rows)
     label = (building_dpe or {}).get("etiquette_dpe") or building.get("dpe_label")
     units = units_by_label(nb_log, apartments, label)
@@ -147,8 +145,11 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
     # Living area: collective DPE, else dwellings x median surface of their DPE
     surfaces = [s for s in (_float(a.get("surface_habitable_logement")) for a in apartments) if s]
     unit_m2 = median(surfaces) if surfaces else DEFAULT_UNIT_M2
-    shab = _float((building_dpe or {}).get("surface_habitable_immeuble")) or nb_log * unit_m2
-    shab_estimated = not (building_dpe and _float(building_dpe.get("surface_habitable_immeuble")))
+    measured = _float((building_dpe or {}).get("surface_habitable_immeuble"))
+    if measured and not MIN_UNIT_M2 <= measured / nb_log <= MAX_UNIT_M2:
+        measured = None  # DPE of part of the building only, or a typing error
+    shab = measured or nb_log * unit_m2
+    shab_estimated = not measured
     levels = building.get("levels") or _int((building_dpe or {}).get("nombre_niveau_immeuble")) or 3
 
     # Works: detailed from the DPE when it describes the envelope, else per m² for the class

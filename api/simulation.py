@@ -595,16 +595,34 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             perf = projected_performance(prop, works)
             return LABELS.index(get_labels(perf["new_cep"], perf["new_ges"], thresholds)["label"]), perf["new_cep"]
 
-        current = score([])
-        while current[0] > target:
-            options = [(score(preselected + [w]), w) for w in sorted(suggested) if w not in preselected]
-            if not options:
-                break
-            best, work = min(options)
-            if best >= current:
-                break
-            preselected.append(work)
-            current = best
+        def pick(candidates: set, current: Tuple[int, float]) -> Tuple[int, float]:
+            while current[0] > target:
+                options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected]
+                if not options:
+                    break
+                best, work = min(options)
+                if best >= current:
+                    break
+                preselected.append(work)
+                current = best
+            return current
+
+        current = pick(suggested, score([]))
+        if current[0] > target:
+            # The works the DPE points out are not enough: the other works that
+            # apply to this dwelling, so the default scenario reaches the target
+            # whenever it can be reached
+            others = {"iti", "windows", "vmc", "ecs"}
+            if house or shares["roof"] >= 0.35:
+                others.add("roof")
+            if house:
+                others.add("floor_ceiling")
+                if energy != "wood":
+                    others.add("pac_air_eau")
+            if energy == "electricity":
+                others.add("heating")
+            pick(others - suggested, current)
+            suggested.update(preselected)
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],

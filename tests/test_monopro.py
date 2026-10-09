@@ -302,3 +302,50 @@ def test_dossier_works_reach_class_c():
     assert names[0] == "Isolation des murs (par l'intérieur ou l'extérieur)" and names[-1] == "Autres postes pour atteindre la classe C"
     # Same rounding in the reasons as in the figures
     assert monopro_report.fmt_range(w["low"], w["high"]) in " ".join(d["arguments"])
+
+
+def test_address_key_variants():
+    k = monopro_report.address_key
+    assert k("18bis Rue Edmond Bricout 59540 Caudry") == k("18 Bis Rue Edmond Bricout 59540 CAUDRY")
+    assert k("193 Rue de la République (Saint-Pol-sur-Mer) 59430 Dunkerque") == k("193 Rue de la République 59430 Dunkerque")
+    assert k("13 Rue Vincent d’Indy 59650 Villeneuve-d'Ascq") == k("13 Rue Vincent d'Indy 59650 Villeneuve-d'Ascq")
+    assert k("18 Rue Edmond Bricout 59540 Caudry") != k("18bis Rue Edmond Bricout 59540 Caudry")
+
+
+def test_dossier_ignores_the_collective_dpe_of_a_neighbour():
+    """69 rue Boucher de Perthes (20 dwellings) took the 137 m² of the
+    collective DPE of number 75: 7 m² per dwelling."""
+    building = {**DOSSIER_BUILDING, "address": "69 Rue Boucher de Perthes 59800 Lille", "nb_log": 20}
+    neighbour = {"numero_dpe": "IMM75", "type_batiment": "immeuble", "etiquette_dpe": "F", "date_etablissement_dpe": "2025-05-01",
+                 "surface_habitable_immeuble": 137, "adresse_ban": "75 Rue Boucher de Perthes 59800 Lille"}
+    rows = [neighbour] + [flat(i, "E", 45, address=building["address"]) for i in range(2)]
+    d = monopro_report.build_dossier(building, None, None, 0, rows, None, {}, TODAY)
+    assert d["building_dpe"] is None and d["shab"] == 20 * 45 and d["shab_estimated"]
+    # A collective DPE at the address but of part of the building only
+    part = {**neighbour, "adresse_ban": building["address"]}
+    d = monopro_report.build_dossier(building, None, None, 0, [part, *rows[1:]], None, {}, TODAY)
+    assert d["shab"] == 20 * 45
+
+
+def test_dossier_singular_wording():
+    rows = [flat(1, "F"), flat(2, "E"), flat(3, "G")]
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 3}, None, None, 0, rows, None, {}, TODAY)
+    text = " ".join(d["arguments"])
+    assert "1 logement classé G ne peut plus être reloué depuis" in text
+    assert "1 logement classé F ne pourra plus être reloué à partir du" in text
+
+
+def test_dossier_pdf_fits_two_pages_with_every_section():
+    from api import monopro_pdf
+    collective = {"numero_dpe": "IMM", "type_batiment": "immeuble", "date_etablissement_dpe": "2026-03-10",
+                  "surface_habitable_immeuble": 300, "etiquette_dpe": "G", "qualite_isolation_murs": "insuffisante",
+                  "qualite_isolation_plancher_haut_comble_perdu": "insuffisante", "qualite_isolation_plancher_bas": "insuffisante",
+                  "type_installation_chauffage": "installation collective", "type_energie_principale_chauffage": "Gaz naturel",
+                  "type_ventilation": "Ventilation par ouverture des fenêtres", "adresse_ban": DOSSIER_BUILDING["address"]}
+    rows = [collective] + [flat(i, "GFE"[i % 3]) for i in range(4)]
+    company = {"name": "SCI LES GRANDS TERRAINS DU NORD ET DE L'ARTOIS", "address": "123 BOULEVARD DE LA LIBERTE BATIMENT B 59800 LILLE"}
+    agency = {"agency_name": "Agence immobilière du Vieux-Lille", "agent_name": "Jean Dupont", "phone": "03 20 00 00 00", "email": "j@agence.fr"}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 7, rows,
+                                     {"price_per_m2": 4100, "source": "prix médian des ventes DVF voisines"}, agency, TODAY)
+    assert len(d["works"]["items"]) >= 5 and len(d["arguments"]) == 8
+    assert monopro_pdf.pages(monopro_pdf.generate(d)) == 2

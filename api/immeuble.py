@@ -24,10 +24,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 try:
     from api.accounts import store_dep, subscriber_access
+    from api.address import same_address, same_street
     from api.prospection import ADEME_URL, dwelling_detail
     from api.ratelimit import search_limiter
 except ImportError:
     from accounts import store_dep, subscriber_access
+    from address import same_address, same_street
     from prospection import ADEME_URL, dwelling_detail
     from ratelimit import search_limiter
 
@@ -114,8 +116,10 @@ def metres(a: Tuple[float, float], b: Tuple[float, float]) -> float:
 
 
 def is_building_dpe(r: Dict) -> bool:
-    return (r.get("type_batiment") or "").lower() == "immeuble" or \
-        "immeuble" in (r.get("methode_application_dpe") or "").lower()
+    """DPE of the whole building. "dpe appartement généré à partir des données
+    DPE immeuble" is the DPE of one apartment, drawn from the building's."""
+    method = (r.get("methode_application_dpe") or "").lower()
+    return (r.get("type_batiment") or "").lower() == "immeuble" or ("immeuble" in method and "appartement" not in method)
 
 
 def last_year(period: Optional[str]) -> Optional[int]:
@@ -329,7 +333,18 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
     }
 
 
-def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: float = 40) -> Optional[Dict]:
+# A copropriété registered on another street is taken only this close (the
+# same corner building, entered under its other address)
+CORNER_M = 15
+
+
+def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: float = 40,
+                  address: Optional[str] = None) -> Optional[Dict]:
+    """The registered copropriété at this position: at the same address when
+    one is, never one registered on another street (the next building)."""
+    if address:
+        here = [c for c in candidates if same_address(c.get("address"), address)]
+        candidates = here or [c for c in candidates if not c.get("address") or same_street(c.get("address"), address)]
     best, best_d = None, max_m
     for c in candidates:
         if c.get("lat") is None or c.get("lon") is None:
@@ -338,6 +353,20 @@ def nearest_copro(candidates: List[Dict], point: Tuple[float, float], max_m: flo
         if d <= best_d:
             best, best_d = c, d
     return best
+
+
+def match_copro(candidates: List[Dict], point: Tuple[float, float], address: Optional[str]) -> Tuple[Optional[Dict], Optional[str]]:
+    """Copropriété of the building and how it was found: "position" (same
+    address or street), "corner" (another street, a few metres away: a corner
+    building registered under its other address, to check)."""
+    found = nearest_copro(candidates, point, address=address)
+    if found:
+        return found, "position"
+    if address:
+        corner = nearest_copro(candidates, point, max_m=CORNER_M)
+        if corner:
+            return corner, "corner"
+    return None, None
 
 
 async def ademe_rows(client: httpx.AsyncClient, params: Dict[str, str]) -> List[Dict]:
@@ -381,7 +410,7 @@ async def sheet(dpe_number: str, store, transport: Optional[httpx.AsyncBaseTrans
             if immat:
                 copro, match = await store.get_copro(str(immat).strip().upper()), "immat"
             if not copro and point:
-                copro, match = nearest_copro(await store.copros_near(*point), point), "position"
+                copro, match = match_copro(await store.copros_near(*point), point, apartment.get("adresse_ban"))
         except httpx.HTTPError as e:
             logger.warning(f"Copro registry lookup failed: {type(e).__name__}")
             copro = None

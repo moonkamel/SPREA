@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+from datetime import datetime, timezone
 import uuid
 
 import jwt
@@ -271,6 +272,8 @@ class FakeBilling:
         self.plans = []
         self.checkouts = []
         self.seat_updates = []
+        self.portals = []
+        self.kept = []
 
     async def create_customer(self, user_id, email):
         self.customers.append(user_id)
@@ -287,8 +290,17 @@ class FakeBilling:
         self.checkouts.append({"plan": plan, "quantity": quantity, "org_id": org_id})
         return "https://checkout.stripe.test/sub"
 
-    async def portal_url(self, customer_id):
+    async def portal_url(self, customer_id, can_cancel=True):
+        self.portals.append(can_cancel)
         return "https://billing.stripe.test/portal"
+
+    async def keep_commitment(self, subscription):
+        # Same rule as Billing.keep_commitment, without Stripe
+        from api.billing import commitment_end, committed
+        if committed(subscription) and subscription.get("cancel_at_period_end"):
+            subscription = {**subscription, "cancel_at_period_end": False, "cancel_at": commitment_end(subscription)}
+            self.kept.append(subscription["id"])
+        return subscription
 
     async def cancel_subscription(self, subscription_id, prorate=False):
         self.canceled.append(subscription_id)
@@ -787,3 +799,57 @@ def test_approximate_location_from_vercel_headers(env):
     # Abroad (no DPE) or no header: the map opens on its default place
     assert client.get("/api/geo", headers={**h, "x-vercel-ip-country": "BE"}).json()["lat"] is None
     assert client.get("/api/geo").json() == {"lat": None, "lon": None, "city": None}
+
+
+def test_twelve_month_commitment(env):
+    """New subscriptions: 12 months minimum. A cancellation asked before is
+    moved to the end of the commitment; no cancellation in the portal, no
+    account deletion until then."""
+    from api.billing import add_months, commitment_end
+    client, store, billing, _ = env
+    assert add_months(int(datetime(2026, 1, 31, tzinfo=timezone.utc).timestamp()), 1) == int(datetime(2026, 2, 28, tzinfo=timezone.utc).timestamp())
+    start = int(time.time()) - 40 * 86400
+    client.post("/api/billing/subscribe", json=SUBSCRIBE)
+    customer = store.profiles[ALICE.id]["stripe_customer_id"]
+    billing.subscriptions["sub_1"] = {"id": "sub_1", "customer": customer, "status": "active", "start_date": start,
+                                      "cancel_at_period_end": True, "metadata": {"commitment_months": "12"},
+                                      "items": {"data": [{"current_period_end": int(time.time()) + 20 * 86400}]}}
+    webhook(client, {"type": "customer.subscription.updated", "data": {"object": {"id": "sub_1"}}})
+    assert billing.kept == ["sub_1"]
+    me = client.get("/api/me").json()
+    assert me["is_pro"] and me["commitment_end"][:10] == datetime.fromtimestamp(add_months(start, 12), timezone.utc).date().isoformat()
+    assert store.profiles[ALICE.id]["subscription_commitment_end"] == me["commitment_end"]
+    client.post("/api/billing/portal")
+    assert billing.portals == [False]
+    res = delete_account(client)
+    assert res.status_code == 400 and "engagement" in res.json()["detail"] and not billing.canceled
+
+    # Subscriptions taken before: no commitment
+    billing.subscriptions["sub_1"] = {**billing.subscriptions["sub_1"], "metadata": {}}
+    assert commitment_end(billing.subscriptions["sub_1"]) is None
+    webhook(client, {"type": "customer.subscription.updated", "data": {"object": {"id": "sub_1"}}})
+    assert client.get("/api/me").json()["commitment_end"] is None
+    client.post("/api/billing/portal")
+    assert billing.portals == [False, True]
+
+
+def test_billing_moves_an_early_cancellation_to_the_end_of_the_commitment():
+    from api.billing import Billing, add_months
+    calls = []
+
+    class Subscriptions:
+        async def update_async(self, sid, params):
+            calls.append((sid, params))
+            return {"id": sid, **params}
+
+    billing = Billing.__new__(Billing)
+    billing.client = type("C", (), {"v1": type("V", (), {"subscriptions": Subscriptions()})()})()
+    start = int(time.time()) - 86400
+    sub = {"id": "sub_1", "status": "active", "start_date": start, "metadata": {"commitment_months": "12"}}
+    assert asyncio.run(billing.keep_commitment(sub)) is sub  # Nothing asked
+    asyncio.run(billing.keep_commitment({**sub, "cancel_at_period_end": True}))
+    assert calls == [("sub_1", {"cancel_at": add_months(start, 12), "proration_behavior": "none"})]
+    # Already at the end of the commitment, or commitment over: untouched
+    asyncio.run(billing.keep_commitment({**sub, "cancel_at": add_months(start, 12)}))
+    asyncio.run(billing.keep_commitment({**sub, "start_date": start - 400 * 86400, "cancel_at_period_end": True}))
+    assert len(calls) == 1

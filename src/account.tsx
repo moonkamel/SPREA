@@ -45,6 +45,7 @@ interface Me {
     is_pro: boolean;
     subscription_status: string | null;
     subscription_current_period_end: string | null;
+    commitment_end: string | null;
     has_billing_account: boolean;
     reports: ReportSummary[];
     team: Team | null;
@@ -639,6 +640,7 @@ function AccountModal({ me, onClose, onPassword, onDownload, onSubscribe, onPort
                                 <p className="text-sm text-muted mt-1">
                                     {ROLE_NAMES[me.team.role]}{me.team.network ? ` · réseau ${me.team.network}` : ''} · {me.team.active ? 'abonnement actif' : 'abonnement inactif'}
                                 </p>
+                                {me.commitment_end && <p className="text-xs text-faint mt-1">Engagement jusqu'au {new Date(me.commitment_end).toLocaleDateString('fr-FR')}, puis résiliable à tout moment.</p>}
                                 <Button variant="secondary" onClick={() => { onClose(); navigate('/equipe'); }} className="mt-3 w-full h-10">
                                     {me.team.role === 'agent' ? 'Mon équipe' : "Gérer l'équipe"}
                                 </Button>
@@ -647,12 +649,13 @@ function AccountModal({ me, onClose, onPassword, onDownload, onSubscribe, onPort
                             <>
                                 <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement actif</p>
                                 <p className="text-sm text-muted mt-1">Tous les outils inclus{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
+                                {me.commitment_end && <p className="text-xs text-faint mt-1">Engagement jusqu'au {new Date(me.commitment_end).toLocaleDateString('fr-FR')}, puis résiliable à tout moment.</p>}
                             </>
                         ) : (
                             <>
                                 <p className="text-ink font-medium">Aucun abonnement actif</p>
                                 <p className="text-sm text-muted mt-1">
-                                    Simulateur, carte de prospection, alertes, avis de valeur et rapports sont réservés aux abonnés. Satisfait ou remboursé pendant 14 jours.
+                                    Simulateur, carte de prospection, alertes, avis de valeur et rapports sont réservés aux abonnés.
                                 </p>
                                 <Button onClick={run('subscribe', onSubscribe)} className="mt-4 w-full">
                                     Choisir ma formule
@@ -743,12 +746,12 @@ function PurchaseModal({ plan, order, price, onClose, onConfirm }: {
                 <p className="text-sm text-muted mt-2">
                     {order
                         ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajustez le nombre d'agents à tout moment."
-                        : 'Tous les outils SPREA, sans limite.'} Sans engagement, résiliable à tout moment depuis votre compte.
-                    Satisfait ou remboursé pendant 14 jours. Facture avec TVA.
+                        : 'Tous les outils SPREA, sans limite.'} <b className="text-ink-soft">Engagement de 12 mois</b>, puis résiliable à tout moment
+                    depuis votre compte. Facture avec TVA.
                 </p>
             </div>
             <Checkbox checked={accepted} onChange={setAccepted}>
-                J'accepte les {cgv} et je souscris pour les besoins de mon activité professionnelle.
+                J'accepte les {cgv}, dont l'engagement de 12 mois, et je souscris pour les besoins de mon activité professionnelle.
             </Checkbox>
             <Button disabled={!accepted || busy} onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }} className="mt-6 w-full">
                 {busy && <Loader2 className="animate-spin" size={16} />}
@@ -767,6 +770,19 @@ function DeleteAccountModal({ me, onClose, onConfirm }: {
     const [understood, setUnderstood] = useState(false);
     const [busy, setBusy] = useState(false);
     const reportCount = me?.reports.length || 0;
+    const commitment = me?.commitment_end ? new Date(me.commitment_end).toLocaleDateString('fr-FR') : null;
+
+    if (commitment) {
+        return (
+            <Modal title="Supprimer mon compte" onClose={onClose}>
+                <p className="text-sm text-ink-soft leading-relaxed">
+                    Votre abonnement comporte un engagement de 12 mois, jusqu'au <b className="text-ink">{commitment}</b> :
+                    le compte pourra être supprimé à partir de cette date.
+                </p>
+                <button onClick={onClose} className="mt-6 w-full text-sm text-muted hover:text-ink">Fermer</button>
+            </Modal>
+        );
+    }
 
     return (
         <Modal title="Supprimer mon compte" onClose={onClose}>

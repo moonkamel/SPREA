@@ -30,8 +30,19 @@ def _units_table(d: Dict[str, Any]) -> Table:
     return t
 
 
+def pages(pdf: bytes) -> int:
+    return pdf.count(b"/Type /Page") - pdf.count(b"/Type /Pages")
+
+
 def generate(d: Dict[str, Any]) -> bytes:
+    """Two pages: a long dossier (many works, every argument) is set tighter."""
+    pdf = _render(d, compact=False)
+    return pdf if pages(pdf) <= 2 else _render(d, compact=True)
+
+
+def _render(d: Dict[str, Any], compact: bool) -> bytes:
     buffer = BytesIO()
+    gap = 6 if compact else 12
     b, agency = d["building"], d["agency"]
     address = b.get("address") or "Immeuble"
     brand = agency.get("agency_name") or "SPREA"
@@ -62,7 +73,7 @@ def generate(d: Dict[str, Any]) -> bytes:
     ]
     if owner_name:
         story.append(Paragraph(f"Propriétaire : {text(owner_name)}" + (f" · siège : {text(company['address'])}" if company.get("address") else ""), S['meta']))
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, gap + 2))
 
     # Key figures
     v, w = d.get("value"), d.get("works")
@@ -81,7 +92,7 @@ def generate(d: Dict[str, Any]) -> bytes:
         k = Table([cells], colWidths=[(CONTENT_W - 12) / len(cells)] * len(cells))
         k.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 8),
                                ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8)]))
-        story += [boxed([k], padding=6), Spacer(1, 14)]
+        story += [boxed([k], padding=6), Spacer(1, gap + 2)]
 
     # 1. Why sell now
     if d["arguments"]:
@@ -98,7 +109,7 @@ def generate(d: Dict[str, Any]) -> bytes:
     if units["unknown"]:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
-             Paragraph(text(" · ".join(source) or "Aucun DPE publié pour cet immeuble."), S['small']), Spacer(1, 8)]
+             Paragraph(text(" · ".join(source) or "Aucun DPE publié pour cet immeuble."), S['small']), Spacer(1, gap - 4)]
     ban_rows = [[head("Classe"), head("Interdiction de louer"), head("Logements concernés", 2)]]
     for r in d["rental_ban"]:
         ban_rows.append([Paragraph(r["label"], S['body']),
@@ -107,7 +118,7 @@ def generate(d: Dict[str, Any]) -> bytes:
     block += [grid(ban_rows, [CONTENT_W * 0.2, CONTENT_W * 0.5, CONTENT_W * 0.3]), Spacer(1, 4),
               Paragraph("Loi Climat et Résilience : un logement interdit ne peut plus faire l'objet d'un nouveau bail ni d'un renouvellement. "
                         "Les loyers des logements F et G sont gelés depuis le 24 août 2022.", S['small'])]
-    story += [CondPageBreak(8 * cm), Spacer(1, 12), KeepTogether(block)]
+    story += [CondPageBreak(8 * cm), Spacer(1, gap), KeepTogether(block)]
 
     # 3. Works
     if w:
@@ -116,7 +127,7 @@ def generate(d: Dict[str, Any]) -> bytes:
             rows.append([Paragraph(text(it["name"]), S['body']), Paragraph(text(it["reason"]), S['muted']),
                          Paragraph(eur_range(it['low'], it['high']), S['right'])])
         rows.append([Paragraph("<b>Total</b>", S['body']), Paragraph("", S['muted']), Paragraph(eur_range(w['low'], w['high']), S['right_b'])])
-        story += [CondPageBreak(7 * cm), Spacer(1, 12), KeepTogether([
+        story += [CondPageBreak(7 * cm), Spacer(1, gap), KeepTogether([
             next_section("Les travaux à prévoir"), Spacer(1, 6),
             grid(rows, [CONTENT_W * 0.42, CONTENT_W * 0.3, CONTENT_W * 0.28], bold_last=True), Spacer(1, 4),
             Paragraph(("Travaux déduits du DPE (isolation et équipements constatés), complétés pour atteindre la classe C. " if w["detailed"] else
@@ -132,7 +143,7 @@ def generate(d: Dict[str, Any]) -> bytes:
                 kv(f"Valeur lot par lot après rénovation (classe C)", eur(v['after_works']))]
         if v.get("dpe_discount"):
             rows.append(kv("Décote liée au DPE (par rapport à la classe D)", f"<font color='#C4553A'>−{NBSP}{eur(v['dpe_discount'])}</font>"))
-        story += [CondPageBreak(7 * cm), Spacer(1, 12), KeepTogether([
+        story += [CondPageBreak(7 * cm), Spacer(1, gap), KeepTogether([
             next_section("Ce que vaut l'immeuble"), Spacer(1, 6), rows_table(rows, [CONTENT_W * 0.62, CONTENT_W * 0.38]), Spacer(1, 4),
             Paragraph(text(f"Prix : {v['source'] or 'ventes DVF voisines'}. Correction selon la classe DPE de chaque logement"
                            + (" (écarts mesurés sur les ventes du département)." if v['measured'] else " (moyenne nationale).")
@@ -156,11 +167,11 @@ def generate(d: Dict[str, Any]) -> bytes:
     sources = Paragraph("Sources publiques : base nationale des bâtiments (CSTB), propriétaires personnes morales (DGFiP), DPE (ADEME), "
                         "ventes DVF (DGFiP), Annuaire des entreprises. Document indicatif, qui ne constitue ni une expertise, "
                         "ni un audit énergétique, ni un conseil juridique.", S['small'])
-    tail += [Spacer(1, 10), boxed([Paragraph(f"<b>{text(brand)}</b>", S['body']),
+    tail += [Spacer(1, gap - 2), boxed([Paragraph(f"<b>{text(brand)}</b>", S['body']),
                                    Paragraph(text("Estimation de l'immeuble, vente en bloc ou lot par lot, mise en relation avec des investisseurs."), S['muted'])]
                                   + ([Paragraph(text(contact), S['muted'])] if contact else []) + [Spacer(1, 6), sources],
-                                  rule=BRASS_LIGHT, padding=10)]
-    story += [CondPageBreak(6 * cm), Spacer(1, 12), *tail]
+                                  rule=BRASS_LIGHT, padding=6 if compact else 10)]
+    story += [CondPageBreak(6 * cm), Spacer(1, gap), *tail]
 
     doc.build(story, onFirstPage=_paper, onLaterPages=_paper,
               canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address, brand=brand, subtitle="Dossier immeuble", **k))

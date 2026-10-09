@@ -217,7 +217,7 @@ export default function DemoPage() {
                             <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-60">Formules Agence et Réseau</Button>
                         </div>
                         <p className="mt-5 text-sm text-muted flex items-center justify-center gap-2">
-                            <ShieldCheck size={16} className="text-sage" /> Satisfait ou remboursé pendant 14 jours · sans engagement
+                            <ShieldCheck size={16} className="text-sage" /> Mensuel ou annuel · engagement 12 mois · facture avec TVA
                         </p>
                         <p className="mt-8 text-xs text-faint">Captures réalisées avec des données d'exemple, sauf la carte (DPE publics, adresses masquées).</p>
                     </div>

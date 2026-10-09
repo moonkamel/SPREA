@@ -23,12 +23,12 @@ const INCLUDED = [
 
 const FAQ = [
     {
-        q: 'Puis-je essayer sans risque ?',
-        a: "Oui : satisfait ou remboursé pendant 14 jours. Si SPREA ne vous convient pas, écrivez-nous dans les 14 jours suivant votre premier paiement : nous vous remboursons intégralement, sans justification.",
+        q: 'Puis-je voir SPREA avant de m\'abonner ?',
+        a: "Oui : la page Démo présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, fiches immeubles et dossiers de cession). Pour une présentation en direct, écrivez-nous.",
     },
     {
         q: "Y a-t-il un engagement ?",
-        a: "Non pour les formules Solo et Agence : l'abonnement est résiliable à tout moment depuis « Mon compte » et reste actif jusqu'à la fin de la période payée. Les contrats Réseau sont conclus pour 12 mois.",
+        a: "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte » et reste actif jusqu'à la fin de la période payée.",
     },
     {
         q: 'Les prix sont-ils HT ?',
@@ -47,7 +47,7 @@ const FAQ = [
 export default function PricingPage() {
     useSeo({
         title: 'Tarifs SPREA : dès 79 € HT par mois pour les agents immobiliers',
-        description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, alertes, avis de valeur, rapports. Satisfait ou remboursé 14 jours.",
+        description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
         path: '/tarifs',
     });
     const { config, me, startSubscription } = useAccount();
@@ -65,7 +65,7 @@ export default function PricingPage() {
             tagline: 'Pour un agent ou un mandataire indépendant.',
             price: soloPrice,
             unit: `${per} · HT`,
-            note: billing === 'yearly' ? 'soit 2 mois offerts' : 'sans engagement',
+            note: billing === 'yearly' ? 'soit 2 mois offerts' : 'engagement 12 mois',
             cta: me?.is_pro
                 ? <Button disabled className="mt-8 w-full">Abonnement actif</Button>
                 : <Button onClick={() => startSubscription(plan)} className="mt-8 w-full">Démarrer maintenant</Button>,
@@ -77,7 +77,7 @@ export default function PricingPage() {
             tagline: 'Pour équiper une équipe de 2 à 15 agents.',
             price: billing === 'monthly' ? '59 €' : '590 €',
             unit: `par agent, ${per} · HT`,
-            note: '2 agents minimum · gestion de l\'équipe',
+            note: '2 agents minimum · engagement 12 mois',
             cta: me?.is_pro
                 ? <Button variant="secondary" disabled className="mt-8 w-full">Abonnement actif</Button>
                 : <Button variant="secondary" onClick={() => setAgencyOpen(true)} className="mt-8 w-full">Équiper mon agence</Button>,
@@ -136,7 +136,7 @@ export default function PricingPage() {
             </section>
 
             <p className="mt-6 text-center text-sm text-muted flex items-center justify-center gap-2">
-                <ShieldCheck size={16} className="text-sage" /> Satisfait ou remboursé pendant 14 jours · Paiement sécurisé par Stripe
+                <ShieldCheck size={16} className="text-sage" /> Engagement 12 mois · Paiement sécurisé par Stripe · Facture avec TVA
             </p>
 
             <section className="mt-14 rounded-2xl border border-line bg-panel p-7 sm:p-9">

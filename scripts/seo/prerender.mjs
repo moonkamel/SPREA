@@ -108,7 +108,7 @@ ${ul([
         '<strong>Contacter</strong> : un courrier prêt à imprimer avec un QR code vers la rénovation du logement, à vos couleurs.',
         '<strong>Convaincre</strong> : travaux, aides, reste à charge et valeur du bien avant et après travaux, appuyée sur les ventes DVF voisines.',
     ])}
-<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € HT par mois, satisfait ou remboursé pendant 14 jours.</p>
+<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € HT par mois.</p>
 <p><a href="/demo">Voir la démo</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
 }));
 
@@ -148,8 +148,8 @@ pages.push(page({
 }));
 
 const FAQ = [
-    ['Puis-je essayer sans risque ?', "Oui : satisfait ou remboursé pendant 14 jours. Si SPREA ne vous convient pas, écrivez-nous dans les 14 jours suivant votre premier paiement : nous vous remboursons intégralement, sans justification."],
-    ["Y a-t-il un engagement ?", "Non pour les formules Solo et Agence : l'abonnement est résiliable à tout moment depuis « Mon compte ». Les contrats Réseau sont conclus pour 12 mois."],
+    ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la page Démo présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, fiches immeubles et dossiers de cession). Pour une présentation en direct, écrivez-nous."],
+    ["Y a-t-il un engagement ?", "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte »."],
     ['Les prix sont-ils HT ?', "Oui, tous les prix affichés sont hors taxes. La TVA à 20 % s'ajoute sur la facture, qui mentionne votre raison sociale et votre numéro de TVA."],
     ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Le nombre d'agents s'ajuste à tout moment, au prorata."],
     ["D'où viennent les données ?", "Des bases publiques officielles : DPE de l'ADEME, ventes immobilières DVF de la DGFiP, Base Adresse Nationale."],
@@ -157,7 +157,7 @@ const FAQ = [
 pages.push(page({
     path: '/tarifs',
     title: 'Tarifs SPREA : dès 79 € HT par mois pour les agents immobiliers',
-    description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, alertes, avis de valeur, rapports. Satisfait ou remboursé 14 jours.",
+    description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
     jsonld: [SOFTWARE, {
         '@context': 'https://schema.org', '@type': 'FAQPage',
         mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
@@ -169,7 +169,7 @@ ${ul([
         "<strong>Agence</strong> : 59 € HT par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
         '<strong>Réseau</strong> : sur devis, à partir de 39 € HT par agent et par mois, console du siège.',
     ])}
-<p>Tous les outils inclus dans chaque formule. Satisfait ou remboursé pendant 14 jours.</p>
+<p>Tous les outils inclus dans chaque formule. Engagement de 12 mois, paiement mensuel ou annuel.</p>
 <h2>Questions fréquentes</h2>
 ${FAQ.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}`,
 }));

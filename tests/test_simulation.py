@@ -181,3 +181,13 @@ def test_official_label_wins_for_recent_small_dwellings():
     thresholds, official = calibrated_thresholds(35, 425, 20, "G", "2023-05-01")
     assert official is None and get_labels(425, 20, thresholds)["label"] == "F"
     assert small_surface_factor(40) == 1 and 1.01 < small_surface_factor(35) < 1.03
+
+
+def test_preselection_goes_beyond_the_works_the_dpe_points_out():
+    """Audit on real DPE: small G flats stayed E or F with the default
+    selection, while ventilation brought them to D."""
+    prop = {"building_type": "Appartement", "surface": 9, "initial_cep": 600, "heating_energy": "Gaz naturel",
+            "construction_year": 1970, "official_label": "G"}
+    res = suggest(label="G", **prop)
+    assert "vmc" in res["preselected"] and "vmc" in res["suggested"]
+    assert run(works=res["preselected"], property=prop)["new_label"] == "D"

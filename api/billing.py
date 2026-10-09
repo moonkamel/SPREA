@@ -6,8 +6,11 @@ by their lookup key (solo_monthly, solo_yearly), prices excluding VAT; the
 former STRIPE_PRICE_PRO is the fallback. STRIPE_PRICE_REPORT (one-time) is
 kept for the reports bought before the subscription-only offer.
 """
+import calendar
 import logging
 import os
+import time
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import stripe
@@ -22,9 +25,13 @@ REPORT_CHECKOUT_MESSAGE = (
     "vous renoncez à votre droit de rétractation dès sa mise à disposition."
 )
 PRO_CHECKOUT_MESSAGE = (
-    "En payant, vous confirmez avoir accepté les CGV. Abonnement sans engagement, résiliable à tout moment "
-    "depuis votre compte. Satisfait ou remboursé pendant 14 jours."
+    "En payant, vous confirmez avoir accepté les CGV. Abonnement avec un engagement de 12 mois, "
+    "puis résiliable à tout moment depuis votre compte."
 )
+
+# Minimum duration of the subscriptions taken from now on (stored in their
+# metadata: the subscriptions taken before stay without commitment)
+COMMITMENT_MONTHS = 12
 
 # Subscription plans: Stripe lookup keys
 PLANS = ("solo_monthly", "solo_yearly", "agence_monthly", "agence_yearly")
@@ -53,6 +60,30 @@ def subscription_period_end(subscription: Dict[str, Any]) -> Optional[int]:
     return items[0].get("current_period_end") if items else None
 
 
+def add_months(timestamp: int, months: int) -> int:
+    """Same day and time, `months` later (the last day of a shorter month)."""
+    d = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    month = d.month - 1 + months
+    year, month = d.year + month // 12, month % 12 + 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return int(d.replace(year=year, month=month, day=day).timestamp())
+
+
+def commitment_end(subscription: Dict[str, Any]) -> Optional[int]:
+    """End of the minimum duration of a subscription, None without commitment."""
+    try:
+        months = int((subscription.get("metadata") or {}).get("commitment_months") or 0)
+    except ValueError:
+        return None
+    start = subscription.get("start_date")
+    return add_months(start, months) if months and start else None
+
+
+def committed(subscription: Dict[str, Any], now: Optional[float] = None) -> bool:
+    end = commitment_end(subscription)
+    return bool(end) and end > (now or time.time())
+
+
 class Billing:
     def __init__(self, secret_key: str, webhook_secret: str, price_report: str, price_pro: str, app_url: str,
                  automatic_tax: bool = False):
@@ -65,6 +96,7 @@ class Billing:
         self._price_labels: Dict[str, str] = {}
         self._plan_prices: Dict[str, str] = {}
         self._vat_rate: Optional[str] = None
+        self._committed_portal: Optional[str] = None
 
     async def price_label(self, price_id: str) -> Optional[str]:
         if price_id not in self._price_labels:
@@ -161,7 +193,8 @@ class Billing:
             rate = await self.vat_rate()
             if rate:
                 line["tax_rates"] = [rate]
-        metadata = {"kind": "subscription", "user_id": user_id, "plan": plan, **({"org_id": org_id} if org_id else {})}
+        metadata = {"kind": "subscription", "user_id": user_id, "plan": plan, "commitment_months": str(COMMITMENT_MONTHS),
+                    **({"org_id": org_id} if org_id else {})}
         session = await self.client.v1.checkout.sessions.create_async(params={
             "mode": "subscription",
             "customer": customer_id,
@@ -181,12 +214,55 @@ class Billing:
         })
         return session["url"]
 
-    async def portal_url(self, customer_id: str) -> str:
-        session = await self.client.v1.billing_portal.sessions.create_async(params={
-            "customer": customer_id,
-            "return_url": self.app_url,
-        })
+    async def portal_url(self, customer_id: str, can_cancel: bool = True) -> str:
+        """Customer Portal: invoices, card, billing details; cancellation only
+        once the commitment is over."""
+        params: Dict[str, Any] = {"customer": customer_id, "return_url": self.app_url}
+        if not can_cancel:
+            configuration = await self.committed_portal()
+            if configuration:
+                params["configuration"] = configuration
+        session = await self.client.v1.billing_portal.sessions.create_async(params=params)
         return session["url"]
+
+    async def committed_portal(self) -> Optional[str]:
+        """Portal configuration without cancellation (found or created once,
+        tagged with metadata sprea=engagement)."""
+        if self._committed_portal is None:
+            try:
+                configs = as_dict(await self.client.v1.billing_portal.configurations.list_async(params={"active": True, "limit": 100}))
+                found = next((c for c in configs.get("data") or [] if (c.get("metadata") or {}).get("sprea") == "engagement"), None)
+                if found is None:
+                    found = as_dict(await self.client.v1.billing_portal.configurations.create_async(params={
+                        "business_profile": {"headline": "Abonnement SPREA (engagement de 12 mois)",
+                                             "privacy_policy_url": f"{self.app_url}/confidentialite",
+                                             "terms_of_service_url": f"{self.app_url}/cgv"},
+                        "features": {
+                            "invoice_history": {"enabled": True},
+                            "payment_method_update": {"enabled": True},
+                            "customer_update": {"enabled": True, "allowed_updates": ["name", "email", "address", "tax_id"]},
+                            "subscription_cancel": {"enabled": False},
+                        },
+                        "metadata": {"sprea": "engagement"},
+                    }))
+                self._committed_portal = found["id"]
+            except Exception as e:
+                logger.error(f"Cannot load the portal configuration: {e}")
+                return None
+        return self._committed_portal
+
+    async def keep_commitment(self, subscription: Dict[str, Any]) -> Dict[str, Any]:
+        """A cancellation asked before the end of the commitment (portal, Stripe
+        dashboard) takes effect at the end of the commitment, not before."""
+        end = commitment_end(subscription)
+        if not committed(subscription) or subscription.get("status") not in PRO_ACTIVE_STATUSES:
+            return subscription
+        cancel_at = subscription.get("cancel_at")
+        if not (subscription.get("cancel_at_period_end") or (cancel_at and cancel_at < end)):
+            return subscription
+        logger.info("Cancellation moved to the end of the commitment")
+        return as_dict(await self.client.v1.subscriptions.update_async(subscription["id"], params={
+            "cancel_at": end, "proration_behavior": "none"}))
 
     async def update_seats(self, subscription_id: str, seats: int) -> None:
         """Changes the number of agents of an agency subscription, prorated."""
