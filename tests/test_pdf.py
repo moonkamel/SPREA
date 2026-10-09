@@ -97,3 +97,12 @@ def test_building_sheet_section():
     assert "Quote-part" in out and "plan pluriannuel" in out
     content["immeuble"] = None
     assert "Quote-part" not in pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+
+
+def test_building_sheet_without_works():
+    from api.immeuble import build_sheet
+    from tests.test_immeuble import APT, BUILDING, TODAY
+    content = build_report(META, SimulationInput(property=PROP, works=["roof"]))
+    content["immeuble"] = build_sheet({**APT, "etiquette_dpe": "C"}, [{**BUILDING, "etiquette_dpe": "C"}], None, None, TODAY)
+    out = pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+    assert "pas de gros travaux" in out and "Quote-part" not in out
