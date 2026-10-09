@@ -11,6 +11,8 @@ Built from public data only:
 
 Every figure is an order of magnitude, stated as such in the dossier.
 """
+import re
+import unicodedata
 from datetime import date
 from statistics import median
 from typing import Any, Dict, List, Optional
@@ -46,13 +48,41 @@ def _date_fr(d: date) -> str:
     return d.strftime("%d/%m/%Y")
 
 
+def address_key(address: Optional[str]) -> str:
+    """'121 Rue de Solférino 59800 Lille' -> '121 rue de solferino 59800 lille'."""
+    plain = unicodedata.normalize("NFKD", address or "").encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", " ", plain).strip()
+
+
+def rows_at_address(rows: List[Dict], address: Optional[str]) -> List[Dict]:
+    """DPE published at the address of the building: the search around its
+    position also returns the DPE of the neighbouring buildings."""
+    key = address_key(address)
+    return [r for r in rows if key and address_key(r.get("adresse_ban")) == key]
+
+
+def scale_to(counts: Dict[str, int], total: int) -> Dict[str, int]:
+    """Counts brought down to `total`, keeping their proportions (largest remainders)."""
+    n = sum(counts.values())
+    if n <= total:
+        return dict(counts)
+    exact = {l: c * total / n for l, c in counts.items()}
+    out = {l: int(v) for l, v in exact.items()}
+    for l in sorted(exact, key=lambda l: exact[l] - out[l], reverse=True)[:total - sum(out.values())]:
+        out[l] += 1
+    return out
+
+
 def units_by_label(nb_log: int, apartments: List[Dict], building_label: Optional[str]) -> Dict[str, Any]:
     """Dwellings per DPE class: the published DPE of the dwellings, the others
-    estimated at the class of the building."""
+    estimated at the class of the building. Never more than the dwellings of
+    the building: more DPE than dwellings (old and new DPE of the same flat
+    not told apart) only give the proportions."""
     known = {l: 0 for l in LABELS}
     for a in apartments:
         known[a["etiquette_dpe"]] += 1
-    n_known = min(sum(known.values()), nb_log)
+    known = scale_to(known, nb_log)
+    n_known = sum(known.values())
     estimated = {l: 0 for l in LABELS}
     rest = nb_log - n_known
     if rest > 0 and building_label in LABELS:
@@ -102,6 +132,8 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
     buildings_dpe = sorted((r for r in rows if is_building_dpe(r) and r.get("etiquette_dpe") in set(LABELS)),
                            key=lambda r: r.get("date_etablissement_dpe") or "", reverse=True)
     building_dpe = buildings_dpe[0] if buildings_dpe else None
+    # Only the DPE published at the address of the building
+    rows = rows_at_address(rows, building.get("address"))
     apartments = latest_per_apartment(rows)
     label = (building_dpe or {}).get("etiquette_dpe") or building.get("dpe_label")
     units = units_by_label(nb_log, apartments, label)
