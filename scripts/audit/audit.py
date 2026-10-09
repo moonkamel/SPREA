@@ -184,8 +184,11 @@ async def audit_dwelling(number: str, store) -> None:
                     case.check(est["net_low"] <= est["share_low"], "quote-part après aides > avant aides")
                 copro = sheet.get("copro")
                 # Copropriété set aside because registered on another street: shown, to check
-                if store is not None and not copro and prop.latitude:
-                    near = immeuble.nearest_copro(await store.copros_near(prop.latitude, prop.longitude), (prop.latitude, prop.longitude))
+                if store is not None and not copro:
+                    async with httpx.AsyncClient(timeout=15) as client:
+                        found = await immeuble.ademe_rows(client, {"qs": f'numero_dpe:"{number}"', "size": "1"})
+                    point = immeuble._point((found[0] if found else {}).get("_geopoint"))
+                    near = immeuble.nearest_copro(await store.copros_near(*point), point) if point else None
                     if near:
                         case.note(f"copro écartée : {near.get('address')} ({near.get('lots_housing')} log.) pour {sheet.get('address')}")
                 if copro and copro.get("match") == "position" and copro.get("address"):
