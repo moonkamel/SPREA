@@ -788,3 +788,13 @@ def test_shared_test_account_cannot_be_deleted(env):
     res = delete_account(client)
     assert res.status_code == 403
     assert state["user"].id in store.profiles
+
+
+def test_approximate_location_from_vercel_headers(env):
+    client = env[0]
+    h = {"x-vercel-ip-latitude": "50.6292", "x-vercel-ip-longitude": "3.0573", "x-vercel-ip-country": "FR",
+         "x-vercel-ip-city": "Villeneuve-d%27Ascq"}
+    assert client.get("/api/geo", headers=h).json() == {"lat": 50.6292, "lon": 3.0573, "city": "Villeneuve-d'Ascq"}
+    # Abroad (no DPE) or no header: the map opens on its default place
+    assert client.get("/api/geo", headers={**h, "x-vercel-ip-country": "BE"}).json()["lat"] is None
+    assert client.get("/api/geo").json() == {"lat": None, "lon": None, "city": None}
