@@ -314,11 +314,14 @@ class SupabaseStore:
     # --- Monopropriétés: whole buildings with a single owner (011_monopro.sql) ---
 
     async def monopro_in_bbox(self, west: float, south: float, east: float, north: float,
-                              company_only: bool, min_log: int, limit: int) -> List[Dict[str, Any]]:
+                              company_only: bool, min_log: int, limit: int, poor_dpe: bool = False) -> List[Dict[str, Any]]:
         params = {"and": f"(lat.gte.{south},lat.lte.{north},lon.gte.{west},lon.lte.{east})",
                   "nb_log": f"gte.{min_log}", "select": "*", "order": "nb_log.desc", "limit": str(limit)}
         if company_only:
             params["owner_siren"] = "not.is.null"
+        if poor_dpe:
+            # Representative DPE in F or G, or at least one dwelling in F or G
+            params["or"] = "(dpe_label.in.(F,G),dpe_fg.gt.0)"
         return await self._request("GET", "monopro_buildings", params=params)
 
     async def get_monopro(self, building_id: str) -> Optional[Dict[str, Any]]:

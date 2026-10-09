@@ -19,9 +19,10 @@ OWNERS = [{"siren": "444315543", "name": "DU BRUNIOL", "legal_form": "SCI", "pos
 
 
 def add_monopro(store):
-    async def in_bbox(w, s, e, n, company_only, min_log, limit):
+    async def in_bbox(w, s, e, n, company_only, min_log, limit, poor_dpe=False):
         out = [b for b in BUILDINGS if s <= b["lat"] <= n and w <= b["lon"] <= e and b["nb_log"] >= min_log
-               and (b["owner_siren"] or not company_only)]
+               and (b["owner_siren"] or not company_only)
+               and (not poor_dpe or b.get("dpe_label") in ("F", "G") or (b.get("dpe_fg") or 0) > 0)]
         return sorted(out, key=lambda b: -b["nb_log"])[:limit]
 
     async def get(building_id):
@@ -48,6 +49,8 @@ def test_map_is_pro_only_and_lists_buildings(env):
     assert res["buildings"][0]["owner"] is None
     company = client.get(url + "&owner=company").json()["buildings"]
     assert [b["id"] for b in company] == ["bdnb-bg-AAAA"]
+    # Poor DPE only (F or G)
+    assert [b["id"] for b in client.get(url + "&dpe=fg").json()["buildings"]] == ["bdnb-bg-BBBB", "bdnb-bg-AAAA"]
     assert client.get("/api/monopro?bbox=1,2,3,4").status_code == 400
     main.search_limiter.calls.clear()
 
@@ -161,3 +164,15 @@ def test_build_from_bdnb_tables(tmp_path):
     assert b["owner_siren"] is None and b["dpe_label"] is None
     assert list(owners) == ["444315543"] and owners["444315543"]["legal_form"] == "SCI"
     assert stats["in_copro_registry"] == 1 and stats["social_housing"] == 1 and stats["public_or_shared_owner"] == 1
+
+
+def test_building_found_from_a_dpe_position(env):
+    client, store, _, _ = env
+    add_monopro(store)
+    assert client.get("/api/monopro/near?lat=50.6301&lon=3.0702").status_code == 402
+    make_pro(store)
+    # 10 m away from 38 Rue de Bourgogne
+    assert client.get("/api/monopro/near?lat=50.63019&lon=3.07025").json() == {"id": "bdnb-bg-AAAA"}
+    # Nothing within 40 m: copropriété or several owners
+    assert client.get("/api/monopro/near?lat=50.6500&lon=3.0900").status_code == 404
+    main.search_limiter.calls.clear()

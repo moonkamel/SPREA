@@ -102,10 +102,14 @@ Nous vous écrivons à partir de données publiques : base nationale des bâtime
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
-export function MonoproSheet({ id, onClose, onFocus }: { id: string; onClose: () => void; onFocus: (lat: number, lon: number) => void }) {
+// A building of the map, or the building at the position of a building DPE
+export type SheetTarget = { id: string } | { near: { lat: number; lon: number; address: string } };
+
+export function MonoproSheet({ target, onClose, onFocus }: { target: SheetTarget; onClose: () => void; onFocus: (lat: number, lon: number) => void }) {
     const { authedFetch } = useAccount();
     const [sheet, setSheet] = useState<Sheet | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [notFound, setNotFound] = useState(false);
     const [agency, setAgency] = useState<AgentPageData | null>(null);
     const [writing, setWriting] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -113,11 +117,21 @@ export function MonoproSheet({ id, onClose, onFocus }: { id: string; onClose: ()
     useEffect(() => {
         setSheet(null);
         setError(null);
-        authedFetch(`/api/monopro/${encodeURIComponent(id)}`)
-            .then(async res => { if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Fiche indisponible.'); return res.json(); })
-            .then(setSheet)
-            .catch(e => setError((e as Error).message));
-    }, [id, authedFetch]);
+        setNotFound(false);
+        const fail = async (res: Response) => { throw new Error((await res.json().catch(() => ({}))).detail || 'Fiche indisponible.'); };
+        (async () => {
+            let id = 'id' in target ? target.id : null;
+            if (!id && 'near' in target) {
+                const res = await authedFetch(`/api/monopro/near?lat=${target.near.lat}&lon=${target.near.lon}`);
+                if (res.status === 404) { setNotFound(true); return; }
+                if (!res.ok) await fail(res);
+                id = (await res.json()).id;
+            }
+            const res = await authedFetch(`/api/monopro/${encodeURIComponent(id!)}`);
+            if (!res.ok) await fail(res);
+            setSheet(await res.json());
+        })().catch(e => setError((e as Error).message));
+    }, [target, authedFetch]);
 
     useEffect(() => {
         if (writing && !agency) authedFetch('/api/agent-page').then(r => (r.ok ? r.json() : {})).then(setAgency).catch(() => setAgency({}));
@@ -143,7 +157,17 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
         <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
             <Card className="w-full max-w-2xl p-5 sm:p-6 relative">
                 <button type="button" onClick={onClose} className="absolute top-4 right-4 text-faint hover:text-ink" aria-label="Fermer"><X size={18} /></button>
-                {error ? <p className="text-sm text-coral">{error}</p> : !sheet ? <Loader2 className="animate-spin text-brass" /> : (
+                {notFound && 'near' in target ? (
+                    <div className="pr-8 space-y-3">
+                        <p className="text-xs text-brass tracking-wide">Immeuble</p>
+                        <h2 className="text-xl text-ink">{target.near.address}</h2>
+                        <p className="text-sm text-muted">
+                            Cet immeuble n'appartient pas à un propriétaire unique : c'est le plus souvent une copropriété (immatriculée ou non),
+                            ou un immeuble partagé entre plusieurs propriétaires. Ce n'est pas un immeuble de rapport à vendre en bloc.
+                        </p>
+                        <p className="text-sm text-muted">Pour les immeubles à propriétaire unique, utilisez l'onglet « Immeubles entiers » de la carte.</p>
+                    </div>
+                ) : error ? <p className="text-sm text-coral">{error}</p> : !sheet ? <Loader2 className="animate-spin text-brass" /> : (
                     <div className="space-y-5">
                         <div className="pr-8">
                             <p className="text-xs text-brass tracking-wide">Immeuble entier · {sheet.nb_log} logements</p>

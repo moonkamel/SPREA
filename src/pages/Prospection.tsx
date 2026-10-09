@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search } from 'lucide-react';
+import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
-import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding } from './Monopro';
+import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
 
 interface Dpe {
@@ -68,7 +68,6 @@ const KINDS = [
     { value: '', label: 'Tous les biens' },
     { value: 'maison', label: 'Maisons' },
     { value: 'appartement', label: 'Appartements' },
-    { value: 'immeuble', label: 'Immeubles entiers' },
 ];
 // Recent DPE only: a new DPE usually announces a sale or a letting.
 // DPE reach the ADEME within a few days: the last week may still fill up.
@@ -89,6 +88,8 @@ const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 // Date of the most recent DPE at an address
 const latestDate = (a: Address) => (a.dpe || []).reduce((m, d) => (d.date && d.date > m ? d.date : m), '');
+// DPE of a whole building: it leads to the building sheet, not to the simulator of a dwelling
+const isBuilding = (d: Dpe) => (d.kind || '').toLowerCase() === 'immeuble';
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
 
 function toCsv(addresses: Address[]) {
@@ -130,8 +131,9 @@ export default function ProspectionPage() {
     const [mode, setMode] = useState<'dpe' | 'immeubles'>('dpe');
     const [ownerFilter, setOwnerFilter] = useState<'all' | 'company'>('all');
     const [minLog, setMinLog] = useState('3');
+    const [monoDpe, setMonoDpe] = useState<'all' | 'fg'>('all');
     const [mono, setMono] = useState<{ buildings: MonoBuilding[]; truncated: boolean } | null>(null);
-    const [sheetId, setSheetId] = useState<string | null>(null);
+    const [sheet, setSheet] = useState<SheetTarget | null>(null);
 
     // Centers the map on a place, with the starting circle around it
     const goHome = useCallback((lat: number, lon: number) => {
@@ -171,13 +173,27 @@ export default function ProspectionPage() {
                     ev.preventDefault();
                     const dpe = el.dataset.dpe || '';
                     if (el.dataset.action === 'simulate') navigate(`/?dpe=${encodeURIComponent(dpe)}`);
+                    else if (el.dataset.action === 'building') setSheet({ near: { lat: Number(el.dataset.lat), lon: Number(el.dataset.lon), address: el.dataset.address || '' } });
                     else setLetterFor({ address: el.dataset.address || '', label: el.dataset.label as DPEClass, dpeNumber: dpe });
                 };
             });
         });
         mapRef.current = map;
         update();
-        if (saved) {
+        // From the simulator of a building DPE: that building and its sheet
+        const params = new URLSearchParams(window.location.search);
+        const [plat, plon] = (params.get('immeuble') || '').split(',').map(Number);
+        if (Number.isFinite(plat) && Number.isFinite(plon) && params.get('immeuble')) {
+            // Next tick, once mounted for good (React may mount the map twice in development)
+            Promise.resolve().then(() => {
+                if (mapRef.current !== map) return;
+                started = true;
+                goHome(plat, plon);
+                setReady(true);
+                setMode('immeubles');
+                setSheet({ near: { lat: plat, lon: plon, address: params.get('adresse') || '' } });
+            });
+        } else if (saved) {
             // Back from a simulation: same place as before
             setReady(true);
         } else {
@@ -264,7 +280,7 @@ export default function ProspectionPage() {
     useEffect(() => {
         if (mode !== 'immeubles' || !session || !ready || !zoomOk || !areaKey) return;
         const box = areaKey.split(',').map(Number);
-        const filters = [ownerFilter, minLog].join('|');
+        const filters = [ownerFilter, minLog, monoDpe].join('|');
         const last = monoLoaded.current;
         if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
         const controller = new AbortController();
@@ -272,7 +288,7 @@ export default function ProspectionPage() {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({ bbox: areaKey, owner: ownerFilter, min_log: minLog });
+                const params = new URLSearchParams({ bbox: areaKey, owner: ownerFilter, min_log: minLog, dpe: monoDpe });
                 const res = await authedFetch(`/api/monopro?${params}`, { signal: controller.signal });
                 if (!res.ok) {
                     const detail = await res.json().catch(() => ({}));
@@ -288,7 +304,7 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [mode, session, ready, zoomOk, areaKey, ownerFilter, minLog, authedFetch]);
+    }, [mode, session, ready, zoomOk, areaKey, ownerFilter, minLog, monoDpe, authedFetch]);
 
     const showDetails = !!result && !result.locked;
 
@@ -308,7 +324,7 @@ export default function ProspectionPage() {
                     fillColor: monoColor(b), fillOpacity: 0.95,
                 });
                 marker.bindTooltip(`${escapeHtml(b.address || '')}<br>${b.nb_log} logements · ${escapeHtml(b.owner ? `${b.owner.legal_form || ''} ${b.owner.name || ''}` : 'propriétaire non identifié')}`);
-                marker.on('click', () => setSheetId(b.id));
+                marker.on('click', () => setSheet({ id: b.id }));
                 marker.addTo(layer);
             }
             return;
@@ -328,7 +344,8 @@ export default function ProspectionPage() {
                     `<li style="margin:3px 0"><b style="color:${DPE_COLORS[d.label].bg}">${d.label}</b> · ${escapeHtml(d.kind || 'Logement')}`
                     + `${d.surface ? ` · ${Math.round(d.surface)} m²` : ''}${d.detail ? ` · ${escapeHtml(String(d.detail))}` : ''}`
                     + ` <span style="color:#97A1B3">(${formatDate(d.date)})</span>`
-                    + (d.number ? ` · <a href="#" data-action="simulate" data-dpe="${escapeHtml(d.number)}" style="${link}">Simuler</a>` : '')
+                    + (isBuilding(d) ? ` · <a href="#" data-action="building" data-lat="${a.lat}" data-lon="${a.lon}" data-address="${escapeHtml(a.address || '')}" style="${link}">Fiche immeuble</a>`
+                        : d.number ? ` · <a href="#" data-action="simulate" data-dpe="${escapeHtml(d.number)}" style="${link}">Simuler</a>` : '')
                     + '</li>').join('');
                 const first = a.dpe[0];
                 marker.bindPopup(`<b>${escapeHtml(a.address || '')}</b><ul style="margin:6px 0 0;padding-left:16px">${lines}</ul>`
@@ -460,6 +477,11 @@ export default function ProspectionPage() {
                                 <option value="5">5 logements ou plus</option>
                                 <option value="10">10 logements ou plus</option>
                             </select>
+                            <select value={monoDpe} onChange={e => setMonoDpe(e.target.value as 'all' | 'fg')} aria-label="DPE"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                <option value="all">Tous les DPE</option>
+                                <option value="fg">DPE F ou G (location interdite)</option>
+                            </select>
                         </>
                     ) : <>
                     <div className="flex gap-2" role="group" aria-label="Classes DPE">
@@ -546,7 +568,7 @@ export default function ProspectionPage() {
                                 </div>
                                 <MonoproList buildings={mono.buildings}
                                     onFocus={b => mapRef.current?.setView([b.lat, b.lon], Math.max(mapRef.current.getZoom(), 17))}
-                                    onOpen={b => setSheetId(b.id)} />
+                                    onOpen={b => setSheet({ id: b.id })} />
                             </Card>
                         )}
 
@@ -584,9 +606,16 @@ export default function ProspectionPage() {
                                                 </span>
                                             </button>
                                             <div className="mt-2 ml-10 flex flex-wrap gap-3 text-xs">
-                                                <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1" onClick={() => open(a.dpe![0])}>
-                                                    <MapPin size={12} />Simuler la rénovation
-                                                </button>
+                                                {isBuilding(a.dpe![0]) ? (
+                                                    <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1"
+                                                        onClick={() => setSheet({ near: { lat: a.lat, lon: a.lon, address: a.address || '' } })}>
+                                                        <Building2 size={12} />Fiche immeuble et propriétaire
+                                                    </button>
+                                                ) : (
+                                                    <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1" onClick={() => open(a.dpe![0])}>
+                                                        <MapPin size={12} />Simuler la rénovation
+                                                    </button>
+                                                )}
                                                 <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
                                                     onClick={() => setLetterFor({ address: a.address || '', label: a.worst, dpeNumber: a.dpe![0].number })}>
                                                     <QrCode size={12} />Courrier avec QR code
@@ -615,7 +644,7 @@ export default function ProspectionPage() {
             </main>
             <SiteFooter />
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
-            {sheetId && <MonoproSheet id={sheetId} onClose={() => setSheetId(null)}
+            {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
         </div>
     );
