@@ -114,8 +114,8 @@ ${ul([
 
 pages.push(page({
     path: '/demo',
-    title: 'Démo SPREA : prospection DPE, alertes, avis de valeur, fiche copropriété',
-    description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux, fiche immeuble des copropriétés et artisans RGE : découvrez SPREA en images.",
+    title: 'Démo SPREA : prospection DPE, immeubles de rapport, avis de valeur',
+    description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et dossier de cession, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux : découvrez SPREA en images.",
     jsonld: [SOFTWARE, BREADCRUMB([['SPREA', '/'], ['Démo', '/demo']])],
     body: `${nav}
 <h1>Une matinée avec SPREA</h1>
@@ -128,6 +128,10 @@ pages.push(page({
 <p>Un courrier prêt à imprimer et un QR code unique : le propriétaire découvre ce qu'une rénovation changerait pour son logement, au nom de votre agence, et vous laisse ses coordonnées.</p>
 <h2>Les propriétaires intéressés arrivent chez vous</h2>
 <p>Nom, téléphone, email et message, avec l'adresse et le DPE du logement, et le consentement horodaté.</p>
+<h2>11 h · Les immeubles entiers détenus par une SCI</h2>
+<p>Tous les immeubles de 3 logements ou plus détenus en entier par une SCI ou une société privée, hors copropriétés et bailleurs sociaux, avec leur DPE, leur dernière vente, le siège et les gérants de la société propriétaire.</p>
+<h2>11 h 15 · Le dossier de cession</h2>
+<p>Logements interdits à la location, gel des loyers, travaux à prévoir, valeur lot par lot et en bloc, audit obligatoire à la vente : un dossier PDF à vos couleurs pour convaincre le propriétaire de vendre.</p>
 <h2>14 h · Le simulateur : travaux, aides, reste à charge</h2>
 <p>Travaux recommandés selon le DPE, nouvelle étiquette, MaPrimeRénov', CEE et éco-PTZ selon les barèmes en vigueur, deux scénarios à comparer.</p>
 <h2>14 h 10 · La fiche immeuble des copropriétés</h2>

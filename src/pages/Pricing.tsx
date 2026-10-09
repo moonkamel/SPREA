@@ -18,6 +18,7 @@ const INCLUDED = [
     'Suivi des contacts reçus',
     'Artisans RGE les plus proches pour chaque travail',
     'Fiche immeuble des copropriétés : registre, DPE collectif, travaux à venir',
+    'Immeubles entiers détenus par des SCI, avec leur propriétaire et un dossier de cession',
 ];
 
 const FAQ = [

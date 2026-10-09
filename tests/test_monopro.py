@@ -205,9 +205,9 @@ DOSSIER_BUILDING = {"id": "bdnb-bg-AAAA", "address": "38 Rue de Bourgogne 59800 
                     "last_sale_date": "2016-03-02", "last_sale_price": 410000}
 
 
-def flat(n, label, surface=40, date_="2025-01-01"):
+def flat(n, label, surface=40, date_="2025-01-01", address="38 Rue de Bourgogne 59800 Lille"):
     return {"numero_dpe": f"N{n}", "type_batiment": "appartement", "etiquette_dpe": label, "surface_habitable_logement": surface,
-            "numero_etage_appartement": n, "date_etablissement_dpe": date_}
+            "numero_etage_appartement": n, "date_etablissement_dpe": date_, "adresse_ban": address}
 
 
 def test_dossier_units_bans_and_arguments():
@@ -260,3 +260,26 @@ def test_dossier_pdf_route(env, monkeypatch):
     assert "Dossier_immeuble_38_Rue_de_Bourgogne" in res.headers["content-disposition"]
     assert client.get("/api/monopro/bdnb-bg-ZZZZ/dossier").status_code == 404
     main.ai_limiter.calls.clear()
+
+
+def test_dossier_counts_only_the_dwellings_of_the_building():
+    """121 rue de Solférino: 3 dwellings, but the search around the building
+    also returned the DPE of the neighbours (12 DPE): value 15 times too high."""
+    building = {**DOSSIER_BUILDING, "address": "121 Rue de Solférino 59800 Lille", "nb_log": 3}
+    here = "121 Rue de Solferino 59800 LILLE"  # Same address, written differently
+    rows = ([flat(i, "E", address="119 Rue de Solférino 59800 Lille") for i in range(6)]
+            + [flat(10 + i, "F", address="123 Rue de Solférino 59800 Lille") for i in range(3)]
+            + [flat(20, "G", address=here), flat(21, "G", address=here)])
+    market = {"price_per_m2": 3000, "source": "DVF"}
+    d = monopro_report.build_dossier(building, None, None, 0, rows, market, {}, TODAY)
+    assert d["units"]["known"]["G"] == 2 and sum(d["units"]["total"].values()) == 3
+    assert d["value"]["lots_now"] < 3 * 40 * 3000 * 1.2
+    # More DPE than dwellings at the address: proportions only
+    d = monopro_report.build_dossier(building, None, None, 0, [flat(i, "G" if i < 4 else "F", address=here) for i in range(6)],
+                                     market, {}, TODAY)
+    assert d["units"]["total"]["G"] == 2 and d["units"]["total"]["F"] == 1
+
+
+def test_scale_to_keeps_proportions():
+    assert monopro_report.scale_to({"E": 6, "F": 3, "G": 3}, 3) == {"E": 1, "F": 1, "G": 1}
+    assert monopro_report.scale_to({"F": 1, "G": 1}, 5) == {"F": 1, "G": 1}

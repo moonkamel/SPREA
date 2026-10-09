@@ -42,8 +42,8 @@ export default function DemoPage() {
     const { me, startSubscription } = useAccount();
 
     useSeo({
-        title: "Démo SPREA : prospection DPE, alertes, avis de valeur, fiche copropriété",
-        description: "Prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux, fiche immeuble des copropriétés et artisans RGE : découvrez SPREA en images.",
+        title: "Démo SPREA : prospection DPE, immeubles de rapport, avis de valeur",
+        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et dossier de cession, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux : découvrez SPREA en images.",
         path: '/demo',
     });
     useEffect(() => {
@@ -66,8 +66,8 @@ export default function DemoPage() {
                         <p className="mt-6 text-lg text-muted">
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
-                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
-                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['14 h', 'Le rendez-vous', 'convaincre']].map(([h, t, a]) => (
+                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3 text-left">
+                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['14 h', 'Le rendez-vous', 'convaincre']].map(([h, t, a]) => (
                                 <li key={a}>
                                     <a href={`#${a}`} className="block rounded-xl border border-line bg-panel px-4 py-3 hover:border-brass/50 transition-colors">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
@@ -110,6 +110,36 @@ export default function DemoPage() {
                     points={['Nom, téléphone, email et message', 'Statut « à rappeler » ou « contacté »', 'Consentement horodaté (RGPD)']}
                     media={<Screen src="/demo/contacts.webp" alt="Page Contacts : trois demandes de rappel de propriétaires" width={1600} height={1000} />}>
                     <p>Chaque demande arrive avec l'adresse du logement et le DPE concerné : vous rappelez un propriétaire qui sait déjà ce que vaut son bien et ce que coûteraient les travaux.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step id="immeubles-rapport" kicker="11 h · Immeubles de rapport" title="Les immeubles entiers détenus par une SCI, avec leur propriétaire"
+                    points={['Immeubles de 3 logements ou plus détenus en entier par une SCI ou une société privée', 'Hors copropriétés, bailleurs sociaux et organismes publics', 'Filtre « DPE F ou G » : les propriétaires qui ont une raison de vendre', 'Siège, gérants et autres immeubles de la société']}
+                    media={
+                        <div className="grid gap-4 sm:grid-cols-5 items-start">
+                            <div className="sm:col-span-3"><Screen src="/demo/immeubles_carte.webp" alt="Carte des immeubles entiers détenus par des sociétés, colorés selon leur DPE, dans le centre de Lille" width={1600} height={1013} /></div>
+                            <div className="sm:col-span-2"><Screen src="/demo/immeubles_liste.webp" alt="Liste des immeubles : adresse, nombre de logements, SCI propriétaire, DPE" width={760} height={824} /></div>
+                        </div>
+                    }>
+                    <p>Le meilleur mandat, c'est un immeuble entier : vendu en bloc à un investisseur, ou découpé et revendu lot par lot. SPREA repère dans votre secteur tous les immeubles détenus par une seule société, avec leur DPE et leur dernière vente.</p>
+                    <p>Pour chaque immeuble, vous savez à qui écrire : la SCI propriétaire, son siège, ses gérants et ses autres immeubles du secteur.</p>
+                    <p className="text-xs text-faint">Captures réalisées avec des données d'exemple : noms de sociétés et de dirigeants fictifs.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step kicker="11 h 15 · Dossier de cession" title="Un dossier qui donne une raison de vendre maintenant" reverse
+                    points={['Logements interdits à la location, avec le calendrier', 'Gel des loyers des logements F et G', 'Travaux à prévoir, à la charge du seul propriétaire', 'Valeur lot par lot, en bloc, et décote liée au DPE', 'Audit énergétique obligatoire pour vendre', 'Courrier à la gérance prêt à imprimer']}
+                    media={
+                        <div className="grid gap-4 sm:grid-cols-5 items-start">
+                            <div className="sm:col-span-2"><Screen src="/demo/immeubles_fiche.webp" alt="Fiche d'un immeuble : SCI propriétaire, siège, gérants, autres immeubles, dossier de cession" width={1100} height={1352} /></div>
+                            <div className="sm:col-span-3 grid grid-cols-2 gap-3">
+                                <Screen src="/demo/immeubles_dossier_1.webp" alt="Dossier de cession, page 1 : pourquoi vendre maintenant et DPE des logements" width={900} height={1273} chrome={false} />
+                                <Screen src="/demo/immeubles_dossier_2.webp" alt="Dossier de cession, page 2 : travaux, valeur de l'immeuble, obligations" width={900} height={1273} chrome={false} />
+                            </div>
+                        </div>
+                    }>
+                    <p>Un immeuble de logements classés G ne peut plus être reloué, ses loyers sont gelés, et il faut un audit énergétique pour le vendre. SPREA rassemble ces faits, chiffre les travaux et la valeur de l'immeuble, et en fait un dossier à vos couleurs.</p>
+                    <p>Vous arrivez chez le gérant de la SCI avec des chiffres, pas avec une simple demande de mandat.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
