@@ -6,7 +6,7 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from api import accounts, alerts, main
+from api import alerts, main
 from tests.test_accounts import ALICE, BOB, FakeBilling, FakeStore  # noqa: F401
 from tests.test_accounts import env  # noqa: F401  (fixture)
 
@@ -77,8 +77,6 @@ def test_zone_endpoints_and_cron_auth(env, monkeypatch):
     body = {"name": "Vieux-Lille", "lat": 50.64, "lon": 3.06, "radius_m": 800, "labels": ["f", "g", "Z"]}
     assert client.post("/api/alerts/zones", json=body).status_code == 402
     store.profiles[ALICE.id]["subscription_status"] = "active"
-    assert client.post("/api/alerts/zones", json=body).status_code == 403
-    client.post("/api/prospection/terms", json={"terms_version": accounts.TERMS_VERSION, "accept": True})
 
     async def fake_check(store_, zone_, today, transport=None):
         return [{"dpe_number": "x"}]

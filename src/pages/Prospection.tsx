@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, ShieldCheck } from 'lucide-react';
+import { Bell, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
@@ -30,9 +30,6 @@ interface Address {
 
 interface Result {
     locked: boolean;
-    // Pro, but the current terms of the map (CGV article 14) are not accepted yet
-    terms_required?: boolean;
-    terms_version?: string;
     addresses: Address[];
     dwellings: number;
     total: number;
@@ -72,17 +69,25 @@ const KINDS = [
     { value: 'appartement', label: 'Appartements' },
     { value: 'immeuble', label: 'Immeubles entiers' },
 ];
+// Recent DPE only: a new DPE usually announces a sale or a letting.
+// DPE reach the ADEME within a few days: the last week may still fill up.
 const SINCE = [
-    { value: '', label: 'Tous les DPE' },
-    { value: '2024', label: 'DPE depuis 2024' },
-    { value: '2025', label: 'DPE depuis 2025' },
+    { value: '7', label: 'DPE des 7 derniers jours' },
+    { value: '31', label: 'DPE du dernier mois' },
+    { value: '92', label: 'DPE des 3 derniers mois' },
+    { value: '183', label: 'DPE des 6 derniers mois' },
+    { value: '365', label: 'DPE des 12 derniers mois' },
 ];
+const DEFAULT_SINCE = '183';
+const daysAgo = (days: string) => new Date(Date.now() - Number(days) * 86400000).toISOString().slice(0, 10);
 
 // IGN Plan v2 (Géoplateforme), free and up to date for France
 const TILES = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2'
     + '&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+// Date of the most recent DPE at an address
+const latestDate = (a: Address) => (a.dpe || []).reduce((m, d) => (d.date && d.date > m ? d.date : m), '');
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
 
 function toCsv(addresses: Address[]) {
@@ -107,14 +112,12 @@ export default function ProspectionPage() {
     const areaRef = useRef<L.Rectangle | null>(null);
     const [labels, setLabels] = useState<DPEClass[]>(['G', 'F']);
     const [kind, setKind] = useState('');
-    const [since, setSince] = useState('');
+    const [since, setSince] = useState(DEFAULT_SINCE);
     const [zoom, setZoom] = useState(13);
     const [result, setResult] = useState<Result | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [query, setQuery] = useState('');
-    const [reload, setReload] = useState(0);
-    const [accepting, setAccepting] = useState(false);
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
     const [area, setArea] = useState<Area | null>(null);
@@ -131,7 +134,8 @@ export default function ProspectionPage() {
         homeRef.current = L.circle([lat, lon], {
             radius: START_RADIUS, color: BRASS, weight: 2, opacity: 0.9, dashArray: '6 6', fillColor: BRASS, fillOpacity: 0.05, interactive: false,
         }).addTo(map);
-        map.fitBounds(L.latLng(lat, lon).toBounds(START_RADIUS * 2), { animate: false });
+        // Zoomed on the circle itself
+        map.fitBounds(L.latLng(lat, lon).toBounds(START_RADIUS * 2), { animate: false, padding: [12, 12] });
     }, []);
 
     // Map
@@ -139,7 +143,7 @@ export default function ProspectionPage() {
         if (!containerRef.current || mapRef.current) return;
         const saved = savedView();
         let started = !!saved;
-        const map = L.map(containerRef.current, { zoomControl: false, preferCanvas: true })
+        const map = L.map(containerRef.current, { zoomControl: false, preferCanvas: true, zoomSnap: 0.25 })
             .setView(saved ? [saved.lat, saved.lon] : DEFAULT_CENTER, saved?.zoom ?? 14);
         L.control.zoom({ position: 'topright' }).addTo(map);
         L.tileLayer(TILES, { maxZoom: 19, minZoom: 6, attribution: '© IGN, données DPE ADEME', className: 'sprea-tiles' }).addTo(map);
@@ -219,7 +223,7 @@ export default function ProspectionPage() {
     useEffect(() => {
         if (!session || !ready || !zoomOk || !areaKey || !labels.length) return;
         const box = areaKey.split(',').map(Number);
-        const filters = [labels.join(','), kind, since, reload, me?.is_pro].join('|');
+        const filters = [labels.join(','), kind, since, me?.is_pro].join('|');
         const last = loaded.current;
         if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
         const controller = new AbortController();
@@ -229,7 +233,7 @@ export default function ProspectionPage() {
             try {
                 const params = new URLSearchParams({ bbox: areaKey, labels: labels.join(',') });
                 if (kind) params.set('kind', kind);
-                if (since) params.set('since', since);
+                params.set('since', daysAgo(since));
                 const res = await authedFetch(`/api/prospection?${params}`, { signal: controller.signal });
                 if (!res.ok) {
                     const detail = await res.json().catch(() => ({}));
@@ -246,9 +250,9 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [session, ready, zoomOk, areaKey, labels, kind, since, authedFetch, reload, me?.is_pro]);
+    }, [session, ready, zoomOk, areaKey, labels, kind, since, authedFetch, me?.is_pro]);
 
-    const showDetails = !!result && !result.locked && !result.terms_required;
+    const showDetails = !!result && !result.locked;
 
     // Markers
     useEffect(() => {
@@ -345,30 +349,11 @@ export default function ProspectionPage() {
         URL.revokeObjectURL(url);
     };
 
-    // The acceptance is recorded on the server (proof of the accepted version)
-    const accept = async () => {
-        if (!result?.terms_version) return;
-        setAccepting(true);
-        setError(null);
-        try {
-            const res = await authedFetch('/api/prospection/terms', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ terms_version: result.terms_version, accept: true }),
-            });
-            if (!res.ok) {
-                const detail = await res.json().catch(() => ({}));
-                throw new Error(detail.detail || "L'acceptation n'a pas pu être enregistrée.");
-            }
-            setReload(r => r + 1);
-        } catch (e) {
-            setError((e as Error).message);
-        } finally {
-            setAccepting(false);
-        }
-    };
-
-    const visible = useMemo(() => (showDetails ? result!.addresses : []), [result, showDetails]);
+    // Newest DPE first: the hottest prospects at the top of the list
+    const visible = useMemo(() => {
+        if (!showDetails) return [];
+        return [...result!.addresses].sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
+    }, [result, showDetails]);
     const open = useCallback((d: Dpe) => navigate(`/?dpe=${encodeURIComponent(d.number)}`), []);
 
     return (
@@ -378,8 +363,8 @@ export default function ProspectionPage() {
                 <div className="mb-6">
                     <h1 className="text-3xl sm:text-4xl text-ink">Carte de prospection</h1>
                     <p className="mt-2 text-muted max-w-3xl">
-                        Les logements classés G, F ou E de votre secteur, d'après les DPE publiés par l'ADEME. Repérez les propriétaires
-                        concernés par la loi Climat, proposez-leur une estimation et un plan de rénovation chiffré.
+                        Les logements classés G, F ou E dont le DPE vient d'être réalisé : un DPE récent annonce souvent une vente ou une
+                        location. Contactez ces propriétaires les premiers, avec une estimation et un plan de rénovation chiffré.
                     </p>
                 </div>
 
@@ -457,23 +442,6 @@ export default function ProspectionPage() {
                                 </p>
                                 <Button className="mt-4 w-full" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
                             </Card>
-                        ) : result?.terms_required ? (
-                            <Card className="p-5 text-sm">
-                                <p className="text-ink font-medium flex items-center gap-2"><ShieldCheck size={16} className="text-brass" />Avant d'utiliser ces adresses</p>
-                                <ul className="mt-3 space-y-2 text-muted list-disc pl-5">
-                                    <li>Ce sont des données publiques de l'ADEME (Licence Ouverte) : elles indiquent une adresse et un DPE, jamais le nom du propriétaire. Ne les croisez pas avec d'autres fichiers pour identifier les personnes.</li>
-                                    <li>Un courrier adressé au logement est une prospection : indiquez l'origine des données (DPE publics de l'ADEME) et un moyen simple de ne plus être contacté, puis respectez ces demandes.</li>
-                                    <li>Ne conservez les adresses que le temps de votre campagne. Pas de démarchage téléphonique à partir de ces données.</li>
-                                    <li>Ces règles résument les principes du RGPD ; faites valider votre campagne par votre conseil ou consultez cnil.fr.</li>
-                                </ul>
-                                <p className="mt-3 text-muted">
-                                    En affichant les adresses, vous acceptez les conditions d'utilisation de la carte prévues à l'
-                                    <Link to="/cgv" className="underline text-brass hover:text-brass-light">article 14 des CGV</Link>.
-                                </p>
-                                <Button className="mt-4 w-full" onClick={accept} disabled={accepting}>
-                                    {accepting && <Loader2 size={14} className="animate-spin" />}J'accepte, afficher les adresses
-                                </Button>
-                            </Card>
                         ) : null}
 
                         {showDetails && (
@@ -505,7 +473,7 @@ export default function ProspectionPage() {
                                                     <span className="block text-sm text-ink truncate">{a.address}</span>
                                                     <span className="block text-xs text-faint">
                                                         {a.dpe!.length} logement{a.dpe!.length > 1 ? 's' : ''} · {a.dpe![0].kind || 'Logement'}
-                                                        {a.dpe![0].surface ? ` · ${Math.round(a.dpe![0].surface)} m²` : ''} · DPE du {formatDate(a.dpe![0].date)}
+                                                        {a.dpe![0].surface ? ` · ${Math.round(a.dpe![0].surface)} m²` : ''} · DPE du {formatDate(latestDate(a))}
                                                     </span>
                                                 </span>
                                             </button>
@@ -534,6 +502,8 @@ export default function ProspectionPage() {
                 <p className="mt-6 text-xs text-faint max-w-4xl">
                     Source : DPE des logements existants, ADEME (Licence Ouverte 2.0), géolocalisés par la Base Adresse Nationale. Le DPE affiché est le plus
                     récent parmi les DPE E, F ou G du logement : un DPE plus favorable établi depuis, après travaux, n'est pas vérifié. Fond de carte © IGN.
+                    Les adresses s'utilisent dans le cadre de l'<Link to="/cgv" className="underline hover:text-ink">article 14 des CGV</Link> : origine des données
+                    indiquée dans chaque courrier, oppositions respectées, pas de démarchage téléphonique.
                 </p>
             </main>
             <SiteFooter />
