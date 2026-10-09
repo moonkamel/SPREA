@@ -112,13 +112,19 @@ def arguments(units: Dict, works: Optional[Dict], value: Optional[Dict], holding
         out.append(f"Décote liée au DPE : environ {fmt_eur(value['dpe_discount'])} de moins qu'un immeuble équivalent classé D, "
                    "d'après les ventes réelles du département.")
     if works:
-        out.append(f"Travaux à prévoir pour sortir de ces classes : {fmt_eur(works['low'])} à {fmt_eur(works['high'])}, "
+        out.append(f"Travaux à prévoir pour sortir de ces classes : {fmt_range(works['low'], works['high'])}, "
                    "à financer par le propriétaire seul (pas de copropriété pour les partager).")
     if audit and audit["required"]:
         out.append(audit["text"])
     if holding:
         out.append(holding)
     return out
+
+
+def fmt_range(low: float, high: float) -> str:
+    """Same rounding as the figures of the dossier (to 100 €)."""
+    r = lambda v: f"{int(round(v / 100) * 100):,}".replace(",", "\u202f") + "\u00a0€"
+    return f"{r(low)} à {r(high)}"
 
 
 def fmt_eur(v: float) -> str:
@@ -149,14 +155,30 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
     source = building_dpe or (max(apartments, key=lambda a: LABELS.index(a["etiquette_dpe"])) if apartments else None)
     items = collective_works(source, shab, levels, nb_log, building.get("year_built")) if source else []
     worst = max((l for l in LABELS if units["total"][l]), key=LABELS.index, default=label)
+    old_building = building.get("year_built") is not None and building["year_built"] < 1948
+    if old_building:
+        # Old façades (often protected): insulation from the inside, at about the same cost
+        for it in items:
+            if it.get("id") == "facade":
+                it["name"] = "Isolation des murs (par l'intérieur ou l'extérieur)"
     works = None
+    floor = RENOVATION_M2.get(worst)
     if items:
         works = {"items": items, "low": sum(w["low"] for w in items), "high": sum(w["high"] for w in items), "detailed": True}
-    elif worst in RENOVATION_M2:
-        low, high = RENOVATION_M2[worst]
-        works = {"items": [{"name": f"Rénovation énergétique globale (immeuble classé {worst})",
-                            "reason": "ordre de grandeur par m² habitable", "low": round(shab * low, -2), "high": round(shab * high, -2)}],
-                 "low": round(shab * low, -2), "high": round(shab * high, -2), "detailed": False}
+    if floor:
+        # Reaching class C from E, F or G takes more than the envelope works the
+        # DPE points out (windows, heating, ventilation): the whole renovation
+        # costs at least the usual amount per m² for the class
+        low, high = round(shab * floor[0], -2), round(shab * floor[1], -2)
+        if not works:
+            works = {"items": [{"name": f"Rénovation énergétique globale (immeuble classé {worst})",
+                                "reason": "ordre de grandeur par m² habitable", "low": low, "high": high}],
+                     "low": low, "high": high, "detailed": False}
+        elif works["low"] < low:
+            rest_low, rest_high = low - works["low"], max(high - works["high"], low - works["low"])
+            works["items"].append({"name": "Autres postes pour atteindre la classe C", "reason": "fenêtres, chauffage, ventilation, eau chaude",
+                                   "low": round(rest_low, -2), "high": round(rest_high, -2)})
+            works["low"], works["high"] = sum(w["low"] for w in works["items"]), sum(w["high"] for w in works["items"])
 
     # Value: local apartment prices, corrected for the DPE class of each dwelling
     value = None

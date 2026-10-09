@@ -107,7 +107,7 @@ def generate(d: Dict[str, Any]) -> bytes:
     block += [grid(ban_rows, [CONTENT_W * 0.2, CONTENT_W * 0.5, CONTENT_W * 0.3]), Spacer(1, 4),
               Paragraph("Loi Climat et Résilience : un logement interdit ne peut plus faire l'objet d'un nouveau bail ni d'un renouvellement. "
                         "Les loyers des logements F et G sont gelés depuis le 24 août 2022.", S['small'])]
-    story += [CondPageBreak(8 * cm), Spacer(1, 16), KeepTogether(block)]
+    story += [CondPageBreak(8 * cm), Spacer(1, 12), KeepTogether(block)]
 
     # 3. Works
     if w:
@@ -116,10 +116,10 @@ def generate(d: Dict[str, Any]) -> bytes:
             rows.append([Paragraph(text(it["name"]), S['body']), Paragraph(text(it["reason"]), S['muted']),
                          Paragraph(eur_range(it['low'], it['high']), S['right'])])
         rows.append([Paragraph("<b>Total</b>", S['body']), Paragraph("", S['muted']), Paragraph(eur_range(w['low'], w['high']), S['right_b'])])
-        story += [CondPageBreak(7 * cm), Spacer(1, 16), KeepTogether([
+        story += [CondPageBreak(7 * cm), Spacer(1, 12), KeepTogether([
             next_section("Les travaux à prévoir"), Spacer(1, 6),
             grid(rows, [CONTENT_W * 0.42, CONTENT_W * 0.3, CONTENT_W * 0.28], bold_last=True), Spacer(1, 4),
-            Paragraph(("Travaux déduits du DPE (isolation et équipements constatés). " if w["detailed"] else
+            Paragraph(("Travaux déduits du DPE (isolation et équipements constatés), complétés pour atteindre la classe C. " if w["detailed"] else
                        "Ordre de grandeur d'une rénovation énergétique globale pour cette classe. ")
                       + "Coûts moyens de marché ; seuls un audit énergétique et des devis fixent le montant réel. "
                         "En monopropriété, le propriétaire finance seul l'ensemble des travaux.", S['small'])])]
@@ -132,39 +132,34 @@ def generate(d: Dict[str, Any]) -> bytes:
                 kv(f"Valeur lot par lot après rénovation (classe C)", eur(v['after_works']))]
         if v.get("dpe_discount"):
             rows.append(kv("Décote liée au DPE (par rapport à la classe D)", f"<font color='#C4553A'>−{NBSP}{eur(v['dpe_discount'])}</font>"))
-        story += [CondPageBreak(7 * cm), Spacer(1, 16), KeepTogether([
+        story += [CondPageBreak(7 * cm), Spacer(1, 12), KeepTogether([
             next_section("Ce que vaut l'immeuble"), Spacer(1, 6), rows_table(rows, [CONTENT_W * 0.62, CONTENT_W * 0.38]), Spacer(1, 4),
             Paragraph(text(f"Prix : {v['source'] or 'ventes DVF voisines'}. Correction selon la classe DPE de chaque logement"
                            + (" (écarts mesurés sur les ventes du département)." if v['measured'] else " (moyenne nationale).")
                            + " Estimation indicative, qui ne remplace pas une expertise."), S['small'])])]
 
-    # 5. Obligations
+    # 5. Owner, obligations and contact
     # The audit already stands among the reasons to sell when it is required now
     obligations = [x for x in (None if d["audit"].get("required") else d["audit"].get("text"),
                                (d.get("collective_dpe") or {}).get("text")) if x]
-    if obligations:
-        story += [CondPageBreak(5 * cm), Spacer(1, 16), KeepTogether([next_section("Obligations du propriétaire"), Spacer(1, 6),
-                                                                          *bullet_list(obligations, 'muted')])]
-
-    # 6. Owner and contact
-    tail: List[Any] = [next_section("Le propriétaire"), Spacer(1, 6)]
+    tail: List[Any] = [next_section("Le propriétaire et ses obligations"), Spacer(1, 6)]
     if owner_name:
         lines = [owner_name, f"SIREN {owner.get('siren')}"]
         if company.get("address"):
             lines.append(f"Siège : {company['address']}")
         if d.get("portfolio_count"):
             lines.append(f"Autres immeubles détenus dans la base : {d['portfolio_count']}")
-        if d.get("holding"):
-            lines.append(d["holding"])
-        tail += bullet_list(lines, 'muted')
+        tail += bullet_list(lines + obligations, 'muted')
+    elif obligations:
+        tail += bullet_list(obligations, 'muted')
     contact = " · ".join(x for x in [agency.get("agent_name"), agency.get("phone"), agency.get("email")] if x)
-    tail += [Spacer(1, 12), boxed([Paragraph(f"<b>{text(brand)}</b>", S['body']),
+    sources = Paragraph("Sources publiques : base nationale des bâtiments (CSTB), propriétaires personnes morales (DGFiP), DPE (ADEME), "
+                        "ventes DVF (DGFiP), Annuaire des entreprises. Document indicatif, qui ne constitue ni une expertise, "
+                        "ni un audit énergétique, ni un conseil juridique.", S['small'])
+    tail += [Spacer(1, 10), boxed([Paragraph(f"<b>{text(brand)}</b>", S['body']),
                                    Paragraph(text("Estimation de l'immeuble, vente en bloc ou lot par lot, mise en relation avec des investisseurs."), S['muted'])]
-                                  + ([Paragraph(text(contact), S['muted'])] if contact else []), rule=BRASS_LIGHT, padding=10),
-             Spacer(1, 6),
-             Paragraph("Sources publiques : base nationale des bâtiments (CSTB), propriétaires personnes morales (DGFiP), DPE (ADEME), "
-                       "ventes DVF (DGFiP), Annuaire des entreprises. Document indicatif, qui ne constitue ni une expertise, "
-                       "ni un audit énergétique, ni un conseil juridique.", S['small'])]
+                                  + ([Paragraph(text(contact), S['muted'])] if contact else []) + [Spacer(1, 6), sources],
+                                  rule=BRASS_LIGHT, padding=10)]
     story += [CondPageBreak(6 * cm), Spacer(1, 12), *tail]
 
     doc.build(story, onFirstPage=_paper, onLaterPages=_paper,

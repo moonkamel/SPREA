@@ -283,3 +283,22 @@ def test_dossier_counts_only_the_dwellings_of_the_building():
 def test_scale_to_keeps_proportions():
     assert monopro_report.scale_to({"E": 6, "F": 3, "G": 3}, 3) == {"E": 1, "F": 1, "G": 1}
     assert monopro_report.scale_to({"F": 1, "G": 1}, 5) == {"F": 1, "G": 1}
+
+
+def test_dossier_works_reach_class_c():
+    """39 rue du Sec Arembault: G building of 1840, 279 m²: the envelope works
+    of the DPE alone (29 000 € to 50 000 €) understated the renovation."""
+    building = {**DOSSIER_BUILDING, "address": "39 Rue du Sec Arembault 59800 Lille", "nb_log": 5, "year_built": 1840}
+    collective = {"numero_dpe": "IMM", "type_batiment": "immeuble", "methode_application_dpe": "dpe immeuble collectif",
+                  "etiquette_dpe": "G", "date_etablissement_dpe": "2026-03-10", "surface_habitable_immeuble": 279,
+                  "qualite_isolation_murs": "insuffisante", "qualite_isolation_plancher_haut_comble_perdu": "insuffisante",
+                  "qualite_isolation_plancher_bas": "insuffisante", "adresse_ban": building["address"]}
+    rows = [collective] + [flat(i, "G" if i < 3 else "F", 55, address=building["address"]) for i in range(4)]
+    d = monopro_report.build_dossier(building, None, None, 0, rows, {"price_per_m2": 4216, "source": "DVF"}, {}, TODAY)
+    w = d["works"]
+    # At least the usual cost per m² of a G building (amounts rounded to 100 €)
+    assert w["low"] >= 279 * 450 - 100 and w["high"] >= 279 * 750 - 100
+    names = [i["name"] for i in w["items"]]
+    assert names[0] == "Isolation des murs (par l'intérieur ou l'extérieur)" and names[-1] == "Autres postes pour atteindre la classe C"
+    # Same rounding in the reasons as in the figures
+    assert monopro_report.fmt_range(w["low"], w["high"]) in " ".join(d["arguments"])
