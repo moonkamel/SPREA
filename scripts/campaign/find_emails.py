@@ -161,7 +161,7 @@ def brave(query: str) -> List[str]:
     return [h for h in re.findall(r'<a[^>]+href="(https?://[^"]+)"[^>]*class="[^"]*(?:heading-serpresult|result-header|l1)', res.text)]
 
 
-def brave_api(query: str) -> List[str]:
+def brave_api(query: str, attempt: int = 0) -> List[str]:
     """Brave Search API (BRAVE_API_KEY; free plan: 2 000 searches a month).
     The search engines' own pages answer bots from data centres with
     unrelated results, so this is the reliable path."""
@@ -169,9 +169,12 @@ def brave_api(query: str) -> List[str]:
         res = session.get("https://api.search.brave.com/res/v1/web/search", timeout=15,
                           params={"q": query, "country": "fr", "search_lang": "fr", "count": 10},
                           headers={"X-Subscription-Token": os.environ["BRAVE_API_KEY"], "Accept": "application/json"})
-        if res.status_code == 429:
-            time.sleep(2)
-            return brave_api(query)
+        if res.status_code == 429 and attempt < 3:
+            # 1 request a second on the free plan; a monthly quota reached stays 429
+            time.sleep(2 * (attempt + 1))
+            return brave_api(query, attempt + 1)
+        if res.status_code != 200:
+            print(f"Brave Search : erreur {res.status_code}", file=sys.stderr, flush=True)
         return [r["url"] for r in (res.json().get("web") or {}).get("results") or []] if res.status_code == 200 else []
     except (requests.RequestException, ValueError, KeyError):
         return []
@@ -182,6 +185,8 @@ ENGINES = ([("brave_api", brave_api)] if os.getenv("BRAVE_API_KEY") else
 
 
 def search(query: str) -> List[str]:
+    if ENGINES[0][0] == "brave_api":
+        time.sleep(1.1)  # Free plan: 1 request a second
     for name, engine in ENGINES:
         urls = [u for u in engine(query) if u.startswith("http")]
         if urls:
