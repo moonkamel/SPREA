@@ -79,7 +79,8 @@ def marginal_checks(case, sp, works: List[str], sim: Dict[str, Any]) -> None:
         if share >= 0.06 or poor:
             continue
         without = simulate(SimulationInput(property=sp, works=[x for x in works if x != w]))
-        case.check(idx(without["new_label"]) > idx(sim["new_label"]),
+        # Kept for a better label, or because it lowers what is left to pay (aid)
+        case.check(idx(without["new_label"]) > idx(sim["new_label"]) or without["rest_to_pay"] > sim["rest_to_pay"] + 1,
                    f"travail marginal coché par défaut : {w} ({share:.0%} des pertes, isolation non jugée insuffisante, sans effet sur la classe)")
 
 

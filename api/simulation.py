@@ -146,7 +146,8 @@ INCOME_LEVELS = {
 
 class SimulationProperty(BaseModel):
     """Dwelling as described by its DPE."""
-    surface: float = Field(..., gt=0, le=10000)
+    # Up to large whole-building DPE (some exceed 20 000 m²)
+    surface: float = Field(..., gt=0, le=200000)
     initial_cep: float = Field(..., ge=0)
     ges_value: Optional[float] = None
     # Label and date of the official DPE, when known
@@ -884,11 +885,13 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         # Greedy choice short of the target: every combination of the works that
         # apply here, when one reaches a better label (cheapest of those)
         if current[0] > target:
-            pool = sorted(w for w in avail["works"] if w != "ite")
+            # Exterior wall insulation counts here (it can be the only way to the
+            # target), except on pre-1948 facades, often refused in protected areas
+            pool = sorted(w for w in avail["works"] if not (w == "ite" and env.period == 0))
             best_combo, best_key = None, (current[0], 0.0)
             for n in range(1, len(pool) + 1):
                 for combo in itertools.combinations(pool, n):
-                    if sum(1 for w in combo if w in HEATING_SYSTEMS) > 1:
+                    if sum(1 for w in combo if w in HEATING_SYSTEMS) > 1 or {"iti", "ite"} <= set(combo):
                         continue
                     label_idx = score(list(combo))[0]
                     if label_idx < best_key[0] or (best_combo and label_idx == best_key[0]):

@@ -175,7 +175,7 @@ async def audit_dwelling(number: str, store) -> None:
         case.check(sim["current_label"] == label, f"classe recalculée {sim['current_label']} ≠ classe officielle {label}")
         case.check(idx(sim["new_label"]) <= idx(sim["current_label"]), f"classe après travaux {sim['new_label']} pire que {sim['current_label']}")
         if label in ("E", "F", "G"):
-            case.check(bool(works), "aucun travaux proposé pour une passoire")
+            case.check(bool(works) or not available_works(sp)["works"], "aucun travaux proposé pour une passoire")
             # Best reachable: every work that applies to this kind of dwelling
             every = sorted(available_works(sp)["works"]) or ["__none__"]
             # Some works can raise the label (electric heating replacing gas): every combination
