@@ -183,3 +183,18 @@ def test_terraced_town_house_uses_the_dpe_areas_roof_kind_and_ventilation():
     assert "rampants" in tech_spec("roof", {"roof_kind": "combles aménagés"})
     # Old walls: breathable materials, no polystyrene, protected areas
     assert "fibre de bois" in tech_spec("ite", {"pre_1948": True}) and "polystyrène sur un mur" in tech_spec("ite", {"pre_1948": True})
+
+
+def test_old_facade_alternative_and_method_follow_the_dpe():
+    """Second Lille report: the exterior alternative ignored protected areas,
+    the method still spoke of a typical split while the DPE gives each usage."""
+    from api.report_content import assumptions, wall_alternative_with_caution
+    old = prop(HOUSE, construction_year=None, construction_period="avant 1948")
+    data = SimulationInput(property=old, works=["iti"])
+    sim = simulate(data)
+    alt = wall_alternative_with_caution(data, sim, {"pre_1948": True})
+    assert alt["work"] == "ite" and "Bâtiments de France" in alt["caution"]
+    assert wall_alternative_with_caution(data, sim, {"pre_1948": False})["caution"] is None
+    per_usage = prop(HOUSE, usage_consumption={"heating": 9000, "hot_water": 1300, "other": 100})
+    assert "comme le DPE les détaille" in assumptions(simulate(SimulationInput(property=per_usage)), SimulationInput(property=per_usage), 3000, False)[0]
+    assert "selon l'époque" in assumptions(sim, data, 3000, False)[0]
