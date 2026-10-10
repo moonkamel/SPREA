@@ -31,6 +31,8 @@ def test_nearby_widens_radius_and_adds_global_and_audit():
 
     def handler(request):
         params = dict(request.url.params)
+        if request.url.host == "geo.api.gouv.fr":
+            return httpx.Response(200, json=[{"nom": "Lille", "centre": {"type": "Point", "coordinates": [3.06, 50.63]}}])
         calls.append(params)
         radius = int(params["geo_distance"].split(",")[2])
         qs = params["qs"]
@@ -54,3 +56,23 @@ def test_nearby_widens_radius_and_adds_global_and_audit():
     # PAC: 10 km first (1 company), then 25 km; lon,lat order
     pac = [c for c in calls if "Pompe" in c["qs"]]
     assert [c["geo_distance"] for c in pac] == ["3.06,50.63,10000", "3.06,50.63,25000"]
+
+
+def test_company_with_a_far_town_is_dropped():
+    """Live case: ECOPLAF, Wormhout (60 km), placed 0,4 km from a Lille dwelling."""
+    rge._cache.clear()
+    rge._towns.clear()
+
+    def handler(request):
+        if request.url.host == "geo.api.gouv.fr":
+            towns = {"59470": [{"nom": "Wormhout", "centre": {"type": "Point", "coordinates": [2.47, 50.88]}}],
+                     "59000": [{"nom": "Lille", "centre": {"type": "Point", "coordinates": [3.06, 50.63]}}]}
+            return httpx.Response(200, json=towns.get(request.url.params["codePostal"], []))
+        results = [line("w", "ECOPLAF", 400, "Isolation des planchers bas", commune="WORMHOUT", code_postal="59470"),
+                   line("u", "Sans commune connue", 600, "Isolation des planchers bas", commune="X", code_postal="99999")] + \
+                  [line(f"l{i}", f"Lille {i}", 1000 * i, "Isolation des planchers bas") for i in range(1, 3)]
+        return httpx.Response(200, json={"total": len(results), "results": results})
+
+    res = asyncio.run(nearby(50.63, 3.06, ["floor_ceiling"], transport=httpx.MockTransport(handler), today=date(2026, 10, 9)))
+    # The far town goes; a town the geo API does not know stays
+    assert [c["name"] for c in res["works"]["floor_ceiling"]] == ["Sans commune connue", "Lille 1", "Lille 2"]

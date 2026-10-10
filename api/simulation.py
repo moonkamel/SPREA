@@ -816,7 +816,10 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         suggested.add("vmc")
     if poor_label:
         suggested.update(systems)
-        if water_heater and (energy == "electricity" or (eq["hot_water_energy"] or energy) == "electricity"):
+        # No hot water consumption in the DPE: nothing to save on a water heater
+        u = prop.usage_consumption or {}
+        no_hot_water = (u.get("heating") or 0) > 0 and not u.get("hot_water")
+        if water_heater and not no_hot_water and (energy == "electricity" or (eq["hot_water_energy"] or energy) == "electricity"):
             suggested.add("ecs")
 
     # Default selection: the works that bring the label down the most (both
@@ -852,7 +855,13 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             # The works the DPE points out are not enough: the other works that
             # apply to this dwelling, so the default scenario reaches the target
             # whenever it can be reached
-            pick(set(avail["works"]) - suggested, current)
+            before = list(preselected)
+            reached = pick(set(avail["works"]) - suggested, current)
+            # Kept only for a better label: a work the DPE does not point out,
+            # which only trims the consumption, is not pushed by default
+            for w in reversed([w for w in preselected if w not in before]):
+                if score([p for p in preselected if p != w])[0] <= reached[0]:
+                    preselected.remove(w)
             suggested.update(preselected)
 
         # Insulating a dwelling aired only through its windows without a

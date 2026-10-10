@@ -198,3 +198,23 @@ def test_old_facade_alternative_and_method_follow_the_dpe():
     per_usage = prop(HOUSE, usage_consumption={"heating": 9000, "hot_water": 1300, "other": 100})
     assert "comme le DPE les détaille" in assumptions(simulate(SimulationInput(property=per_usage)), SimulationInput(property=per_usage), 3000, False)[0]
     assert "selon l'époque" in assumptions(sim, data, 3000, False)[0]
+
+
+def test_small_old_house_gets_no_marginal_work_by_default():
+    """Live case (Façade de l'Esplanade, Lille): 34 m², roof 5 % and floor 4 %
+    of the losses, pushed by default although the label stayed D; hot water
+    missing from the DPE shown as 0 €; NF** stars removed from the text."""
+    from api.ai_service import _clean
+    from api.report_content import work_reason
+    losses = {k: v * 1.2 for k, v in {"walls": 39, "air": 21, "bridges": 18, "windows": 13, "roof": 5, "floor": 4}.items()}
+    p = prop(HOUSE, surface=34, initial_cep=399, ges_value=16, official_label="F", construction_year=None,
+             construction_period="avant 1948", heating_energy="Électricité", postcode="59800",
+             heating_generator="Radiateur électrique NFC, NF** et NF***", ventilation="VMC SF Auto réglable avant 1982",
+             insulation_quality={"walls": "insuffisante", "floor": "insuffisante", "windows": "insuffisante"},
+             dpe_losses=losses, usage_consumption={"heating": 6500, "hot_water": 0, "other": 650})
+    s = suggest_works(p, "F")
+    assert not {"roof", "floor_ceiling"} & set(s["preselected"]) and "ecs" not in s["suggested"]
+    assert simulate(SimulationInput(property=p, works=s["preselected"]))["new_label"] == "D"
+    assert _clean("radiateurs NFC, NF** et NF***, **gras**", 100) == "radiateurs NFC, NF** et NF***, gras"
+    ctx = {"loss_shares": {}, "qualities": {}, "energy": "electricity", "heating_generator": p.heating_generator}
+    assert "radiateurs électriques directs" in work_reason("heating", ctx)
