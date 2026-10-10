@@ -16,6 +16,8 @@ never taken from the listing portals.
   python scripts/campaign/find_emails.py --sirens 849703541 789459500 --out emails.csv
 """
 import argparse
+import base64
+import os
 import csv
 import html
 import re
@@ -69,6 +71,7 @@ EMAIL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]+\.[A-Za-z]{
 
 session = requests.Session()
 session.headers.update({"User-Agent": UA, "Accept-Language": "fr-FR,fr;q=0.9"})
+DEBUG = bool(os.getenv("DEBUG"))
 STATS = {"ddg": 0, "bing": 0, "brave": 0, "search_fail": 0}
 
 
@@ -125,11 +128,30 @@ def ddg(query: str) -> List[str]:
     return out
 
 
+def unbing(href: str) -> str:
+    """Bing wraps the result links: /ck/a?...&u=a1<base64 of the URL>."""
+    href = html.unescape(href)
+    if "bing.com/ck/" not in href:
+        return href
+    u = urllib.parse.parse_qs(urllib.parse.urlparse(href).query).get("u", [""])[0]
+    if u.startswith("a1"):
+        try:
+            return base64.urlsafe_b64decode(u[2:] + "=" * (-len(u[2:]) % 4)).decode()
+        except (ValueError, UnicodeDecodeError):
+            pass
+    return ""
+
+
 def bing(query: str) -> List[str]:
     res = get("https://www.bing.com/search?" + urllib.parse.urlencode({"q": query, "setlang": "fr", "cc": "FR"}))
     if not res:
         return []
-    return [html.unescape(h) for h in re.findall(r'<li class="b_algo"[^>]*>.*?<a[^>]+href="(https?://[^"]+)"', res.text, re.S)]
+    out = []
+    for block in res.text.split('<li class="b_algo"')[1:]:
+        m = re.search(r'<h2[^>]*>\s*<a[^>]+href="([^"]+)"', block)
+        if m:
+            out.append(unbing(m.group(1)))
+    return [u for u in out if u]
 
 
 def brave(query: str) -> List[str]:
@@ -321,6 +343,8 @@ def find(agency: Dict) -> Dict:
                 continue
             tried.add(key)
             hit = scan_site(agency, url)
+            if DEBUG:
+                print(f"  {url} -> {hit}", file=sys.stderr, flush=True)
             if hit:
                 return hit
         time.sleep(1.5)
