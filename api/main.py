@@ -212,6 +212,7 @@ def simulation_property(prop: PropertySchema) -> SimulationProperty:
         hot_water_installation=(prop.details or {}).get("hot_water_installation"),
         ventilation=(prop.details or {}).get("ventilation"),
         hot_water_energy=(prop.details or {}).get("hot_water_energy"),
+        roof_kind=(prop.details or {}).get("roof_kind"),
         usage_consumption=prop.usage_consumption,
     )
 

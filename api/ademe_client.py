@@ -279,6 +279,10 @@ class AdemeConnector:
             "heating_installation": label("type_installation_chauffage"),
             "hot_water_system": label("type_generateur_n1_ecs_n1", "type_generateur_ecs_principal"),
             "hot_water_installation": label("type_installation_ecs_n1", "type_installation_ecs"),
+            # Which roof the DPE describes: unconverted loft, converted attic, flat roof
+            "roof_kind": ("combles perdus" if raw.get("qualite_isolation_plancher_haut_comble_perdu")
+                          else "combles aménagés" if raw.get("qualite_isolation_plancher_haut_comble_amenage")
+                          else "toit terrasse" if raw.get("qualite_isolation_plancher_haut_toit_terrase") else None),
             "hot_water_energy": label("type_energie_principale_ecs", "type_energie_generateur_n1_ecs_n1"),
             "ventilation": label("type_ventilation"),
             "dpe_annual_cost": f"{round(cost)}" if cost else None,
