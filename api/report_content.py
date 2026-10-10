@@ -456,7 +456,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "window_count": env.window_count,
         "hot_water_share": hot_water_share(prop, env, energy),
         "house": house,
-        "pre_1948": env.period == 0,
+        "pre_1948": env.period == 0 or "avant 1948" in (prop.construction_period or "").lower(),
         "roof_kind": prop.roof_kind,
         "heating_generator": prop.heating_generator,
         # A 12-13 cm lining along the insulated walls

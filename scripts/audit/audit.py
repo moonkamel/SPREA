@@ -177,9 +177,9 @@ async def audit_dwelling(number: str, store) -> None:
         if label in ("E", "F", "G"):
             case.check(bool(works), "aucun travaux proposé pour une passoire")
             # Best reachable: every work that applies to this kind of dwelling
-            every = sorted(available_works(sp)["works"])
+            every = sorted(available_works(sp)["works"]) or ["__none__"]
             # Some works can raise the label (electric heating replacing gas): every combination
-            best = min((simulate(SimulationInput(property=sp, works=list(c)))["new_label"]
+            best = min((simulate(SimulationInput(property=sp, works=[w for w in c if w != "__none__"]))["new_label"]
                         for n in range(1, len(every) + 1) for c in itertools.combinations(every, n)), key=idx)
             if works:
                 case.check(idx(sim["new_label"]) < idx(label) or idx(best) >= idx(label),

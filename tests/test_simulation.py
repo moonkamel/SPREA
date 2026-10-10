@@ -125,8 +125,10 @@ def test_heat_pump_gets_maprimerenov_forfait():
 
 def test_rental_ban_dates():
     assert rental_ban_date("G", 400, "59000").year == 2025
-    # 450 kWh final energy rule
-    assert rental_ban_date("F", 460, "59000").year == 2023
+    # 450 kWh final energy rule: always a G (an F "above 450" is a total read
+    # as a consumption per m², as on building DPE without their surface)
+    assert rental_ban_date("G", 460, "59000").year == 2023
+    assert rental_ban_date("F", 460, "59000").year == 2028
     assert rental_ban_date("F", 400, "97400").year == 2031
     assert rental_ban_date("C", 150, "59000") is None
 

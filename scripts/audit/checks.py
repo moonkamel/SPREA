@@ -165,7 +165,7 @@ def report_checks(case, sp, content: Dict[str, Any], market_value: Optional[floa
             case.note(f"facture {ratio:.1f} × coût DPE")
 
 
-AMOUNT_NO_SPACE = re.compile(r"(?<![\d,.])\d{4,}\s?(?:€|kWh)")
+AMOUNT_NO_SPACE = re.compile(r"(?<![\d,.])\d{4,}[ \u00a0]?(?:€|kWh)")
 LEFTOVERS = re.compile(r"\b(None|nan|NaN|undefined|null)\b|\{|\}")
 
 

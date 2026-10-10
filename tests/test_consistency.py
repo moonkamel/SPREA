@@ -218,3 +218,18 @@ def test_small_old_house_gets_no_marginal_work_by_default():
     assert _clean("radiateurs NFC, NF** et NF***, **gras**", 100) == "radiateurs NFC, NF** et NF***, gras"
     ctx = {"loss_shares": {}, "qualities": {}, "energy": "electricity", "heating_generator": p.heating_generator}
     assert "radiateurs électriques directs" in work_reason("heating", ctx)
+
+
+def test_audit_findings_of_the_1000_dpe_run():
+    """Large audit (1 000 real DPE): electric underfloor heating has no water
+    circuit; windows at 4 % of the losses, not called poor, are not pushed;
+    a work that opens the rénovation d'ampleur is kept."""
+    under = prop(HOUSE, heating_energy="Électricité", heating_generator="Plancher ou plafond rayonnant électrique avec régulation terminale")
+    assert "pac_air_eau" not in works_of(under)
+    losses = {"walls": 60, "roof": 40, "floor": 15, "windows": 5, "air": 30, "bridges": 10}
+    p = prop(FLAT, dpe_losses=losses, insulation_quality={"walls": "insuffisante", "windows": "moyenne"})
+    sel = suggest_works(p, "F")["preselected"]
+    if "windows" in sel:
+        base = simulate(SimulationInput(property=p, works=[w for w in sel if w != "windows"]))
+        full = simulate(SimulationInput(property=p, works=sel))
+        assert full["new_label"] < base["new_label"] or full["rest_to_pay"] < base["rest_to_pay"]
