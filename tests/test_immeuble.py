@@ -79,6 +79,12 @@ def test_build_sheet_without_building_dpe_uses_apartment():
     assert s["dimensions"]["levels"] == 6 and s["dimensions"]["dwellings"] == 3
 
 
+def test_build_sheet_dwellings_unknown_rather_than_one():
+    s = build_sheet(APT, [], None, None, TODAY)
+    assert s["dimensions"]["dwellings"] is None and s["works"] == [] and s["estimate"] is None
+    assert "Nombre de logements inconnu" in s["works_note"]
+
+
 def test_volunteer_syndic_not_named():
     s = build_sheet(APT, [], {**COPRO, "syndic_type": "BENEVOLE", "syndic_name": "Jean Dupont"}, "position", TODAY)
     assert s["copro"]["syndic_name"] is None

@@ -12,7 +12,8 @@ PROP = {"surface": 95, "initial_cep": 420, "ges_value": 70, "building_type": "Ma
 MARKET = {"price_per_m2": 2900, "q25": 2450, "q75": 3350, "sales": 64, "scope": "à moins de 1 km", "period": "2024-2025",
           "source": "prix médian DVF de 64 ventes", "comparables": [
               {"date": "2025-11-14", "street": "Rue Des Postes", "surface": 92, "rooms": "4", "price": 265000,
-               "price_m2": 2880, "adjusted_m2": 2900, "distance": 180}]}
+               "price_m2": 2880, "adjusted_m2": 2900, "distance": 180}],
+          "surface_matched": False, "adjusted": True}
 REQUEST = {"meta": {"address": "12 RUE DES POSTES", "city": "Lille", "postcode": "59000", "insee_code": "59350",
                     "latitude": 50.63, "longitude": 3.05},
            "simulation": {"property": PROP, "works": ["roof", "iti", "pac_air_eau", "windows"]},
@@ -54,8 +55,10 @@ def test_valuation_endpoints(env, monkeypatch):
         text = "\n".join(p.extract_text() or "" for p in doc.pages)
     for part in ("Agence du Vieux-Lille", "Avis de valeur", "12 Rue des Postes", "59000 Lille", "Établi pour M. Martin",
                  "Valeur actuelle", "Après rénovation", "Ventes comparables", "Rue Des Postes", "Ajustement du conseiller : -5",
-                 "ne constitue pas une expertise"):
+                 "ne constitue pas une expertise", "actualisé"):
         assert part in text, part
+    # Sales of any surface: not claimed comparable
+    assert "surface comparable" not in text
 
     async def no_market(*a, **k):
         return None

@@ -13,18 +13,17 @@ Every figure is an order of magnitude, stated as such in the dossier.
 """
 from datetime import date
 from statistics import median
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from api.address import address_key, same_address  # noqa: F401 (address_key: used by the audit)
-    from api.green_value import LABELS, department, kind_of, model
-    from api.immeuble import (DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since,
-                              _float, _int)
+    from api.green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from api.immeuble import collective_works, is_building_dpe, latest_per_apartment, _float, _int
     from api.valuation import class_factor, round_value
 except ImportError:
     from address import address_key, same_address  # noqa: F401
-    from green_value import LABELS, department, kind_of, model
-    from immeuble import DPE_SINCE, collective_works, is_building_dpe, latest_per_apartment, since, _float, _int
+    from green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from immeuble import collective_works, is_building_dpe, latest_per_apartment, _float, _int
     from valuation import class_factor, round_value
 
 # Loi Climat et Résilience: dwellings of these classes can no longer be let (new
@@ -34,6 +33,12 @@ RENTAL_BAN = {"G": date(2025, 1, 1), "F": date(2028, 1, 1), "E": date(2034, 1, 1
 RENT_FREEZE = date(2022, 8, 24)
 # Energy audit required before selling a building held by a single owner
 AUDIT_SALE = {"G": date(2023, 4, 1), "F": date(2023, 4, 1), "E": date(2025, 1, 1), "D": date(2034, 1, 1)}
+# Collective DPE of a building held by a single owner (permit before 2013):
+# required since 1 January 2024 whatever its size
+DPE_MONOPRO_SINCE = date(2024, 1, 1)
+# Share of the dwellings sold together beyond which the last sale is the
+# purchase of the building
+WHOLE_SALE_SHARE = 0.8
 # Average dwelling when no DPE gives the surfaces
 DEFAULT_UNIT_M2 = 50
 # Average dwelling surface beyond which the surface of a collective DPE is not believed
@@ -87,8 +92,54 @@ def units_by_label(nb_log: int, apartments: List[Dict], building_label: Optional
     return {"known": known, "estimated": estimated, "total": total, "unknown": rest, "n_known": n_known}
 
 
+def holding_text(building: Dict, today: date) -> str:
+    """Last sale of the building: its purchase only when it covered (nearly) all
+    the dwellings, else a sale of some lots."""
+    sale = building.get("last_sale_date")
+    if not sale:
+        return ("Aucune mutation enregistrée dans DVF depuis 2014 "
+                "(une cession de parts de SCI n'y figure pas).")
+    year = int(sale[:4])
+    years = today.year - year
+    units, nb_log = building.get("last_sale_units"), building.get("nb_log")
+    if units and nb_log and units >= WHOLE_SALE_SHARE * nb_log:
+        if years < 1:
+            return f"Immeuble acquis en {year} (dernière vente connue)."
+        return f"Immeuble acquis en {year} (dernière vente connue) : détenu depuis environ {years} an{'s' if years > 1 else ''}."
+    lots = f" portant sur {units} lot{'s' if units > 1 else ''}" if units else ""
+    return f"Dernière mutation connue{lots} ({year})."
+
+
+def building_dpes(rows: List[Dict]) -> List[Dict]:
+    """Collective DPE among the rows, newest first."""
+    return sorted((r for r in rows if is_building_dpe(r) and r.get("etiquette_dpe") in set(LABELS)),
+                  key=lambda r: r.get("date_etablissement_dpe") or "", reverse=True)
+
+
+def living_area(nb_log: int, building_dpe: Optional[Dict], apartments: List[Dict]) -> Tuple[float, bool]:
+    """Living area of the building and whether it is estimated: collective DPE,
+    else dwellings x median surface of their DPE (DEFAULT_UNIT_M2 without any)."""
+    surfaces = [s for s in (_float(a.get("surface_habitable_logement")) for a in apartments) if s]
+    unit_m2 = median(surfaces) if surfaces else DEFAULT_UNIT_M2
+    measured = _float((building_dpe or {}).get("surface_habitable_immeuble"))
+    if measured and not MIN_UNIT_M2 <= measured / nb_log <= MAX_UNIT_M2:
+        measured = None  # DPE of part of the building only, or a typing error
+    return (measured or nb_log * unit_m2), not measured
+
+
+def unit_surface(building: Dict, rows: List[Dict]) -> float:
+    """Average dwelling surface of the building, for the local price."""
+    nb_log = building.get("nb_log")
+    if not nb_log:
+        return DEFAULT_UNIT_M2
+    rows = rows_at_address(rows, building.get("address"))
+    dpes = building_dpes(rows)
+    shab, _ = living_area(nb_log, dpes[0] if dpes else None, latest_per_apartment(rows))
+    return shab / nb_log
+
+
 def arguments(units: Dict, works: Optional[Dict], value: Optional[Dict], holding: Optional[str],
-              audit: Optional[Dict], today: date) -> List[str]:
+              audit: Optional[Dict], today: date, worst: Optional[str] = None) -> List[str]:
     """Why selling now: the facts that weigh, strongest first."""
     out = []
     t = units["total"]
@@ -106,10 +157,13 @@ def arguments(units: Dict, works: Optional[Dict], value: Optional[Dict], holding
         out.append(f"Loyers gelés : depuis le {_date_fr(RENT_FREEZE)}, le loyer d'un logement F ou G ne peut plus être "
                    "révisé ni augmenté, même à la relocation.")
     if value and value.get("dpe_discount"):
+        source = "du département" if value.get("scope") == "department" else "nationales"
         out.append(f"Décote liée au DPE : environ {fmt_eur(value['dpe_discount'])} de moins qu'un immeuble équivalent classé D, "
-                   "d'après les ventes réelles du département.")
+                   f"d'après les ventes réelles {source}.")
     if works:
-        out.append(f"Travaux à prévoir pour sortir de ces classes : {fmt_range(works['low'], works['high'])}, "
+        goal = ("pour sortir de ces classes" if worst in ("E", "F", "G")
+                else f"pour atteindre la classe {TARGET}")
+        out.append(f"Travaux à prévoir {goal} : {fmt_range(works['low'], works['high'])}, "
                    "à financer par le propriétaire seul (pas de copropriété pour les partager).")
     if audit and audit["required"]:
         out.append(audit["text"])
@@ -135,21 +189,13 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
     # Only the DPE published at the address of the building: the search around
     # its position also returns those of the neighbouring buildings
     rows = rows_at_address(rows, building.get("address"))
-    buildings_dpe = sorted((r for r in rows if is_building_dpe(r) and r.get("etiquette_dpe") in set(LABELS)),
-                           key=lambda r: r.get("date_etablissement_dpe") or "", reverse=True)
+    buildings_dpe = building_dpes(rows)
     building_dpe = buildings_dpe[0] if buildings_dpe else None
     apartments = latest_per_apartment(rows)
     label = (building_dpe or {}).get("etiquette_dpe") or building.get("dpe_label")
     units = units_by_label(nb_log, apartments, label)
 
-    # Living area: collective DPE, else dwellings x median surface of their DPE
-    surfaces = [s for s in (_float(a.get("surface_habitable_logement")) for a in apartments) if s]
-    unit_m2 = median(surfaces) if surfaces else DEFAULT_UNIT_M2
-    measured = _float((building_dpe or {}).get("surface_habitable_immeuble"))
-    if measured and not MIN_UNIT_M2 <= measured / nb_log <= MAX_UNIT_M2:
-        measured = None  # DPE of part of the building only, or a typing error
-    shab = measured or nb_log * unit_m2
-    shab_estimated = not measured
+    shab, shab_estimated = living_area(nb_log, building_dpe, apartments)
     levels = building.get("levels") or _int((building_dpe or {}).get("nombre_niveau_immeuble")) or 3
 
     # Works: detailed from the DPE when it describes the envelope, else per m² for the class
@@ -193,47 +239,46 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
         factor_d = class_factor(m, "D")
         factor_target = class_factor(m, TARGET)
         lots_now = shab * price * factor_now
+        # Same share of the class gap as the valuation (api/valuation.py): the
+        # rest of the gap comes from the general state of the dwellings
+        after_full = shab * price * factor_target
+        after_works = max(lots_now, lots_now + WORKS_SHARE * (after_full - lots_now))
         value = {
             "price_m2": price, "source": market.get("source"), "per_unit_m2": round(per_unit),
             "lots_now": round_value(lots_now),
             "block_low": round_value(lots_now * (1 - BLOCK_DISCOUNT[1])),
             "block_high": round_value(lots_now * (1 - BLOCK_DISCOUNT[0])),
-            "after_works": round_value(shab * price * max(factor_target, factor_now)),
+            "after_works": round_value(after_works),
             "dpe_discount": round_value(max(0.0, shab * price * (factor_d - factor_now))) or None,
-            "measured": bool(m),
+            "scope": (m or {}).get("scope"),
         }
 
-    # Energy audit before the sale (building held by a single owner)
+    # Energy audit before the sale (building held by a single owner): due on
+    # the class of the building, not on that of its worst dwelling
     audit = {"required": False, "text": None}
-    if worst in AUDIT_SALE:
-        start = AUDIT_SALE[worst]
+    if label in AUDIT_SALE:
+        start = AUDIT_SALE[label]
         if start <= today:
-            audit = {"required": True, "text": f"Audit énergétique obligatoire pour vendre l'immeuble (classe {worst}, depuis le "
+            audit = {"required": True, "text": f"Audit énergétique obligatoire pour vendre l'immeuble (classe {label}, depuis le "
                                                f"{_date_fr(start)}) : il chiffre les travaux et les rend visibles à tout acheteur."}
         else:
-            audit = {"required": False, "text": f"Audit énergétique obligatoire à la vente à partir du {_date_fr(start)} (classe {worst})."}
+            audit = {"required": False, "text": f"Audit énergétique obligatoire à la vente à partir du {_date_fr(start)} (classe {label})."}
 
     # Collective DPE of the building (permit before 2013)
-    dpe_due = since(nb_log, DPE_SINCE)
+    dpe_due = DPE_MONOPRO_SINCE
     year = building.get("year_built")
     collective_dpe = None
-    if (year is None or year < 2013) and dpe_due:
+    if year is None or year < 2013:
         collective_dpe = ({"done": True, "text": f"DPE collectif publié le {building_dpe['date_etablissement_dpe'][8:10]}/"
                                                  f"{building_dpe['date_etablissement_dpe'][5:7]}/{building_dpe['date_etablissement_dpe'][:4]} "
                                                  f"(classe {building_dpe['etiquette_dpe']})."}
                           if building_dpe else
-                          {"done": False, "text": f"DPE collectif obligatoire depuis le {_date_fr(dpe_due)} pour un immeuble de "
-                                                  f"{nb_log} logements ; aucun n'est publié à cette adresse."
+                          {"done": False, "text": f"DPE collectif obligatoire depuis le {_date_fr(dpe_due)} pour un immeuble "
+                                                  "en monopropriété, quelle que soit sa taille ; aucun n'est publié à cette adresse."
                                                   if dpe_due <= today else
                                                   f"DPE collectif obligatoire à partir du {_date_fr(dpe_due)}."})
 
-    holding = None
-    if building.get("last_sale_date"):
-        years = today.year - int(building["last_sale_date"][:4])
-        if years >= 1:
-            holding = f"Immeuble acquis en {building['last_sale_date'][:4]} (dernière vente connue) : détenu depuis environ {years} ans."
-    else:
-        holding = "Aucune vente de l'immeuble depuis 2014 (base DVF) : détenu depuis plus de dix ans."
+    holding = holding_text(building, today)
 
     return {
         "building": building, "owner": owner, "company": company, "portfolio_count": portfolio_count,
@@ -242,5 +287,5 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
         "units": units, "shab": round(shab), "shab_estimated": shab_estimated, "levels": levels,
         "works": works, "value": value, "audit": audit, "collective_dpe": collective_dpe, "holding": holding,
         "rental_ban": [{"label": l, "date": _date_fr(d), "passed": d <= today, "units": units["total"][l]} for l, d in RENTAL_BAN.items()],
-        "arguments": arguments(units, works, value, holding, audit, today),
+        "arguments": arguments(units, works, value, holding, audit, today, worst),
     }

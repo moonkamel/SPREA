@@ -18,7 +18,7 @@ interface Sheet {
     copro: Copro | null;
     building_dpe: { label: DPEClass; date_fr: string; number: string } | null;
     apartments: { count: number; distribution: Record<DPEClass, number> };
-    dimensions: { surface: number | null; levels: number; dwellings: number };
+    dimensions: { surface: number | null; levels: number; dwellings: number | null };
     period: string | null;
     obligations: Obligation[];
     works: Work[]; total: [number, number] | null;
@@ -189,7 +189,11 @@ export default function BuildingSheet({ property, n }: { property: PropertyData;
                             )}
                             <p className="mt-3 text-xs text-faint">
                                 Ordres de grandeur déduits du DPE {sheet.works_source === 'immeuble' ? "de l'immeuble" : "de l'appartement"}
-                                {sheet.dimensions.surface ? ` (${num(sheet.dimensions.surface)} m² habitables, ${sheet.dimensions.levels} niveaux, ${sheet.dimensions.dwellings} logements)` : ''}.
+                                {sheet.dimensions.surface ? ` (${[
+                                    `${num(sheet.dimensions.surface)} m² habitables`,
+                                    `${sheet.dimensions.levels} niveau${sheet.dimensions.levels > 1 ? 'x' : ''}`,
+                                    sheet.dimensions.dwellings ? `${sheet.dimensions.dwellings} logement${sheet.dimensions.dwellings > 1 ? 's' : ''}` : null,
+                                ].filter(Boolean).join(', ')})` : ''}.
                                 Le montant réel dépend du plan pluriannuel de travaux voté en assemblée générale ; la répartition suit les tantièmes du règlement de copropriété.
                                 Ces éléments figurent aussi dans le rapport PDF.
                             </p>

@@ -8,10 +8,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 
 try:
+    from api.green_value import WORKS_SHARE
     from api.pdf_service import (BRASS, BRASS_LIGHT, CONTENT_W, HEADER_H, MARGIN, NBSP, S, NumberedCanvas,
                                  _paper, boxed, bullet_list, dpe_badge, eur, eur_range, grid, head, kpi_cell, kv, num, rows_table,
                                  section, style, text)
 except ImportError:
+    from green_value import WORKS_SHARE
     from pdf_service import (BRASS, BRASS_LIGHT, CONTENT_W, HEADER_H, MARGIN, NBSP, S, NumberedCanvas,
                              _paper, boxed, bullet_list, dpe_badge, eur, eur_range, grid, head, kpi_cell, kv, num, rows_table,
                              section, style, text)
@@ -63,7 +65,8 @@ def _render(d: Dict[str, Any], compact: bool) -> bytes:
     # "SCI DU BRUNIOL" already carries its legal form
     owner_name = name if not form or name.upper().startswith(form.upper() + " ") else f"{form} {name}".strip()
     facts = " · ".join(x for x in [
-        f"{b['nb_log']} logements", f"{d['levels']} niveaux" if d.get("levels") else None,
+        f"{b['nb_log']} logement{'s' if b['nb_log'] > 1 else ''}",
+        f"{d['levels']} niveau{'x' if d['levels'] > 1 else ''}" if d.get("levels") else None,
         f"construit en {b['year_built']}" if b.get("year_built") else None,
         f"{num(d['shab'])}{NBSP}m² habitables{' (estimés)' if d['shab_estimated'] else ''}",
     ] if x)
@@ -78,8 +81,8 @@ def _render(d: Dict[str, Any], compact: bool) -> bytes:
     # Key figures
     v, w = d.get("value"), d.get("works")
     cells = []
-    if d.get("worst"):
-        g = d["units"]["total"]["G"] + d["units"]["total"]["F"]
+    g = d["units"]["total"]["G"] + d["units"]["total"]["F"]
+    if g:
         cells.append([*kpi_cell("Logements F ou G", f"<font color='#C4553A'>{g}</font> / {b['nb_log']}", big=True),
                       Paragraph("interdits ou bientôt interdits à la location", style('k1', fontSize=7.5, leading=10, textColor=S['muted'].textColor))])
     if w:
@@ -146,7 +149,9 @@ def _render(d: Dict[str, Any], compact: bool) -> bytes:
         story += [CondPageBreak(7 * cm), Spacer(1, gap), KeepTogether([
             next_section("Ce que vaut l'immeuble"), Spacer(1, 6), rows_table(rows, [CONTENT_W * 0.62, CONTENT_W * 0.38]), Spacer(1, 4),
             Paragraph(text(f"Prix : {v['source'] or 'ventes DVF voisines'}. Correction selon la classe DPE de chaque logement"
-                           + (" (écarts mesurés sur les ventes du département)." if v['measured'] else " (moyenne nationale).")
+                           + (" (écarts mesurés sur les ventes du département)." if v.get('scope') == "department" else
+                              " (écarts mesurés sur les ventes nationales)." if v.get('scope') == "national" else " (aucun écart mesuré : pas de correction).")
+                           + f" Après rénovation : {round(WORKS_SHARE * 100)}{NBSP}% de l'écart retenus, le reste tient à l'état général des logements."
                            + " Estimation indicative, qui ne remplace pas une expertise."), S['small'])])]
 
     # 5. Owner, obligations and contact

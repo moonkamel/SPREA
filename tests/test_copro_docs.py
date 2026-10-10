@@ -177,6 +177,16 @@ def test_schema_is_strict_and_pdf_renders_sparse_results():
     assert copro_docs_pdf.generate(sparse, {}, date(2026, 10, 10))[:4] == b"%PDF"
 
 
+def test_pdf_dated_from_the_analysis_and_unknown_role_omitted():
+    from tests.test_pdf import pdf_text
+    result = {**RESULT, "procedures": [{**RESULT["procedures"][0], "role_syndicat": "inconnu"}]}
+    row = {"result": result, "created_at": "2026-09-01T08:00:00+00:00", "updated_at": "2026-09-02T08:05:00.123+00:00"}
+    text = pdf_text(copro_docs_pdf.generate(row, {}, date(2026, 10, 10))).replace("\n", " ")
+    assert "le 02/09/2026" in text and "10/10/2026" not in text.split("Synthèse établie")[1]
+    assert "syndicat inconnu" not in text and "Recouvrement de charges" in text
+    assert copro_docs_pdf.analysed_on({}, date(2026, 10, 10)) == date(2026, 10, 10)
+
+
 def test_storage_calls():
     """Live check: Storage answered 400 to an empty JSON body (signed upload URL)."""
     import httpx
