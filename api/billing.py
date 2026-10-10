@@ -70,6 +70,13 @@ def add_months(timestamp: int, months: int) -> int:
     return int(d.replace(year=year, month=month, day=day).timestamp())
 
 
+class SeatsLocked(Exception):
+    """Fewer agents asked during the commitment."""
+    def __init__(self, end: Optional[int]):
+        super().__init__("seats locked")
+        self.end = end
+
+
 def commitment_end(subscription: Dict[str, Any]) -> Optional[int]:
     """End of the minimum duration of a subscription, None without commitment."""
     try:
@@ -266,9 +273,12 @@ class Billing:
             "cancel_at": end, "proration_behavior": "none"}))
 
     async def update_seats(self, subscription_id: str, seats: int) -> None:
-        """Changes the number of agents of an agency subscription, prorated."""
+        """Changes the number of agents of an agency subscription, prorated. Fewer
+        agents only once the commitment is over (CGV art. 9)."""
         sub = as_dict(await self.client.v1.subscriptions.retrieve_async(subscription_id))
         item = sub["items"]["data"][0]
+        if seats < (item.get("quantity") or 0) and committed(sub):
+            raise SeatsLocked(commitment_end(sub))
         await self.client.v1.subscriptions.update_async(subscription_id, params={
             "items": [{"id": item["id"], "quantity": seats}],
             "proration_behavior": "create_prorations",

@@ -131,7 +131,7 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                             {error && <p role="alert" className="mt-4 text-sm text-coral">{error}</p>}
                             <p className="mt-4 text-xs text-faint flex items-center gap-2">
                                 <ShieldCheck size={14} className="text-sage shrink-0" />
-                                Données officielles : DPE de l'ADEME, ventes DVF de la DGFiP.
+                                Données publiques : DPE de l'ADEME, ventes DVF de la DGFiP.
                             </p>
                         </Card>
                     </div>

@@ -197,7 +197,7 @@ export default function TeamPage() {
                 {data.can_bill && (
                     <Card className="p-6">
                         <h2 className="text-xl text-ink">Nombre de places</h2>
-                        <p className="mt-1 text-sm text-muted">Facturé au prorata sur votre prochaine facture. Vous ne pouvez pas descendre sous le nombre de places utilisées.</p>
+                        <p className="mt-1 text-sm text-muted">Une place ajoutée est facturée au prorata sur votre prochaine facture. Le nombre de places peut être réduit à la fin de l'engagement de 12 mois, sans descendre sous le nombre de places utilisées.</p>
                         <form className="mt-4 flex items-center gap-3" onSubmit={e => { e.preventDefault(); run('seats', () => authedFetch('/api/team/seats', json('PUT', { seats }))); }}>
                             <input type="number" min={2} max={50} value={seats} onChange={e => setSeats(Number(e.target.value) || 0)} className={`${FIELD} w-24`} aria-label="Nombre de places" />
                             <Button type="submit" variant="secondary" disabled={seats === team.seats || busy === 'seats'} className="h-11">

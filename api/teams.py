@@ -21,7 +21,7 @@ try:
     from api.accounts import (MAX_AGENCY_SEATS, MIN_AGENCY_SEATS, billing_dep, optional_billing_dep,
                               org_active, store_dep, team_summary)
     from api.auth import User, current_user
-    from api.billing import PRO_ACTIVE_STATUSES, Billing
+    from api.billing import PRO_ACTIVE_STATUSES, Billing, SeatsLocked
     from api.contacts import valid_email
     from api.emailer import send_email
     from api.store import SupabaseStore
@@ -29,7 +29,7 @@ except ImportError:
     from accounts import (MAX_AGENCY_SEATS, MIN_AGENCY_SEATS, billing_dep, optional_billing_dep,
                           org_active, store_dep, team_summary)
     from auth import User, current_user
-    from billing import PRO_ACTIVE_STATUSES, Billing
+    from billing import PRO_ACTIVE_STATUSES, Billing, SeatsLocked
     from contacts import valid_email
     from emailer import send_email
     from store import SupabaseStore
@@ -253,7 +253,11 @@ async def change_seats(data: SeatsRequest, user: User = Depends(current_user), s
     used = len(await store.list_members(org["id"])) + len(await pending_invitations(store, org["id"]))
     if data.seats < used:
         raise HTTPException(status_code=400, detail=f"{used} places sont utilisées ou réservées par une invitation : retirez d'abord un membre.")
-    await billing.update_seats(org["stripe_subscription_id"], data.seats)
+    try:
+        await billing.update_seats(org["stripe_subscription_id"], data.seats)
+    except SeatsLocked as e:
+        end = datetime.fromtimestamp(e.end, timezone.utc).strftime("%d/%m/%Y") if e.end else "la fin de l'engagement"
+        raise HTTPException(status_code=400, detail=f"Le nombre de places pourra être réduit à partir du {end}, fin de l'engagement de 12 mois.")
     await store.update_org(org["id"], {"seats": data.seats})
     return {"seats": data.seats}
 

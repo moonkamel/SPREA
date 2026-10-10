@@ -10,7 +10,7 @@ type Billing = 'monthly' | 'yearly';
 
 const INCLUDED = [
     'Simulateur : travaux, nouvelle étiquette, aides, reste à charge',
-    'Rapports PDF illimités, rédigés pour vos clients',
+    'Rapports PDF sans limite, rédigés pour vos clients',
     'Avis de valeur avant / après travaux (ventes DVF)',
     'Carte de prospection des passoires E, F, G',
     'Alertes quotidiennes sur les nouveaux DPE',
@@ -38,7 +38,7 @@ const FAQ = [
     },
     {
         q: 'Comment équiper toute mon agence ?',
-        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Après le paiement, invitez vos agents par email depuis la page Équipe : chacun a son propre accès. Vous ajustez le nombre d'agents à tout moment, facturé au prorata.",
+        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Après le paiement, invitez vos agents par email depuis la page Équipe : chacun a son propre accès. Vous ajoutez des agents à tout moment, au prorata ; le nombre d'agents peut être réduit à la fin de l'engagement.",
     },
     {
         q: "D'où viennent les données ?",
@@ -76,7 +76,7 @@ export default function PricingPage() {
         {
             id: 'agence',
             name: 'Agence',
-            tagline: 'Pour équiper une équipe de 2 à 15 agents.',
+            tagline: 'Pour équiper une équipe de 2 à 50 agents.',
             price: billing === 'monthly' ? '59 €' : '590 €',
             unit: `par agent, ${per} · TTC`,
             note: '2 agents minimum · engagement 12 mois',
@@ -97,7 +97,7 @@ export default function PricingPage() {
         },
     ];
     const extras: Record<string, string[]> = {
-        solo: ['Tout SPREA, sans limite'],
+        solo: ['Tout SPREA ; analyse des PV d\'AG dans la limite mensuelle indiquée'],
         agence: ['Tout SPREA pour chaque agent', 'Contacts et alertes partagés dans l\'agence', 'Une facture unique'],
         reseau: ['Console du siège : toutes les agences', 'Courriers et rapports aux couleurs du réseau', 'Accompagnement au démarrage'],
     };

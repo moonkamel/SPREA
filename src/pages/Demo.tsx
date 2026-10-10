@@ -79,17 +79,17 @@ export default function DemoPage() {
                     </div>
                 </section>
 
-                <Step id="alertes" kicker="8 h 00 · Alertes" title="Les DPE publiés la veille dans vos secteurs"
+                <Step id="alertes" kicker="8 h 00 · Alertes" title="Les nouveaux DPE de vos secteurs"
                     points={['Jusqu\'à 10 zones, de 200 m à 3 km de rayon', 'Filtres par étiquette (E, F, G) et type de bien', 'Récapitulatif par email chaque matin']}
                     media={<Screen src="/demo/alerts.webp" alt="Page Alertes : trois zones suivies et les nouveaux DPE du jour, avec leur étiquette" width={1600} height={1000} />}>
-                    <p>Un DPE est obligatoire avant de vendre ou de louer. Quand un propriétaire en fait réaliser un, il prépare presque toujours un projet : vous le savez le lendemain, avant que le bien n'arrive sur les portails.</p>
+                    <p>Un DPE est obligatoire avant de vendre ou de louer. Quand un propriétaire en fait réaliser un, il prépare souvent un projet : vous le savez dès sa publication par l'ADEME, quelques jours plus tard, souvent avant que le bien n'arrive sur les portails.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
                 <Step id="prospecter" kicker="8 h 15 · Prospection" title="Toutes les passoires de votre secteur sur une carte" reverse
                     points={['Toutes les adresses classées E, F ou G, logement par logement', 'Filtres par type de bien et ancienneté du DPE', 'Export CSV pour votre CRM']}
                     media={<Screen src="/demo/map.webp" alt="Carte de prospection : 105 logements classés F ou G dans le centre de Lille" width={1560} height={628} />}>
-                    <p>Les propriétaires de logements classés F et G doivent rénover ou vendre : la location leur est progressivement interdite et leur bien perd de la valeur. Ce sont vos futurs vendeurs.</p>
+                    <p>Les propriétaires bailleurs de logements classés F et G doivent rénover pour continuer à louer, et ces biens se vendent moins cher : ce sont vos futurs vendeurs.</p>
                     <p className="text-xs text-faint">Capture réelle (Lille, DPE publics de l'ADEME), adresses masquées.</p>
                 </Step>
 
@@ -102,7 +102,7 @@ export default function DemoPage() {
                             <Screen src="/demo/owner.webp" alt="Page vue par le propriétaire après avoir scanné le QR code" width={1600} height={1000} />
                         </div>
                     }>
-                    <p>En deux clics, un courrier sobre et conforme : le propriétaire scanne le QR code et découvre ce qu'une rénovation changerait pour son logement, au nom de votre agence. S'il le souhaite, il vous laisse ses coordonnées.</p>
+                    <p>En deux clics, un courrier sobre, qui indique l'origine des données et le moyen de s'opposer à tout nouvel envoi : le propriétaire scanne le QR code et découvre ce qu'une rénovation changerait pour son logement, au nom de votre agence. S'il le souhaite, il vous laisse ses coordonnées.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
@@ -146,7 +146,7 @@ export default function DemoPage() {
                 <Step kicker="11 h 30 · Signaux de vente" title="Les SCI qui vont vendre, repérées au BODACC"
                     points={['Dissolution, liquidation, procédure collective, radiation, changement de dirigeant', 'Annonces légales vérifiées chaque semaine pour chaque société propriétaire', 'Contour rouge sur la carte et filtre « signal de vente fort »', 'Lecture par l\'IA : ce que ça implique, qui contacter, à quel horizon']}
                     media={<Screen src="/demo/sig_sheet.webp" alt="Fiche d'un immeuble dont la SCI est en liquidation judiciaire : annonces du BODACC et lecture par l'IA" width={1100} height={1879} />}>
-                    <p>Une SCI en liquidation judiciaire vend ses immeubles, une SCI dissoute aussi, et un changement de gérant annonce souvent une succession ou un arbitrage. Ces annonces sont publiques mais personne ne les lit : SPREA les croise chaque semaine avec les immeubles de votre secteur.</p>
+                    <p>Une SCI en liquidation judiciaire vend ses immeubles, une SCI dissoute aussi, et un changement de gérant peut annoncer une réorganisation ou un arbitrage. Ces annonces sont publiques mais personne ne les lit : SPREA les croise chaque semaine avec les immeubles de votre secteur.</p>
                     <p>L'IA vous dit ce que la situation implique et à qui s'adresser : le liquidateur plutôt que le gérant, le notaire chargé d'une succession… Vous arrivez au bon moment, avec le bon interlocuteur.</p>
                     <p className="text-xs text-faint">Capture réalisée avec des données d'exemple : société, dirigeants et annonces fictifs.</p>
                 </Step>
@@ -169,7 +169,7 @@ export default function DemoPage() {
                 <Step id="convaincre" kicker="14 h · Rendez-vous" title="Le simulateur : travaux, aides, reste à charge, en direct"
                     points={['Travaux recommandés selon le DPE du logement', 'Nouvelle étiquette, consommation et émissions', 'MaPrimeRénov\', CEE et éco-PTZ selon les barèmes en vigueur', 'Deux scénarios à comparer']}
                     media={<Screen src="/demo/works.webp" alt="Simulateur : choix des travaux et projet de passage de F à C" width={1600} height={1000} />}>
-                    <p>Tapez l'adresse : SPREA retrouve le DPE officiel et propose les travaux qui font vraiment gagner des classes. Cochez, décochez : tout se recalcule devant le propriétaire.</p>
+                    <p>Tapez l'adresse : SPREA retrouve le DPE publié par l'ADEME et propose les travaux qui font vraiment gagner des classes. Cochez, décochez : tout se recalcule devant le propriétaire.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
@@ -182,7 +182,7 @@ export default function DemoPage() {
 
                 <div className="border-t border-line/60" />
                 <Step kicker="14 h 20 · Artisans" title="Les artisans RGE les plus proches, travail par travail"
-                    points={['Annuaire officiel de l\'ADEME, mis à jour chaque jour', 'Entreprises qualifiées pour chaque travail retenu, les plus proches d\'abord', 'Rénovation globale et audit énergétique pour les projets d\'ampleur', 'Repris dans le rapport remis au client']}
+                    points={['Annuaire public de l\'ADEME, mis à jour chaque jour', 'Entreprises qualifiées pour chaque travail retenu, les plus proches d\'abord', 'Rénovation globale et audit énergétique pour les projets d\'ampleur', 'Repris dans le rapport remis au client']}
                     media={<Screen src="/demo/rge.webp" alt="Liste des artisans RGE les plus proches pour chaque travail, avec téléphone et site" width={1400} height={1343} />}>
                     <p>Les aides ne sont versées que pour des travaux réalisés par une entreprise RGE. Le propriétaire repart avec des noms et des numéros de téléphone : son projet devient concret.</p>
                 </Step>
@@ -216,7 +216,7 @@ export default function DemoPage() {
                 <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte" reverse
                     points={['Mis à jour chaque mois', 'France entière et 90 départements', 'Des chiffres à citer en rendez-vous et sur vos réseaux']}
                     media={<Screen src="/demo/observatoire.webp" alt="Observatoire : écart de prix par classe DPE, maisons et appartements" width={1600} height={1000} />}>
-                    <p>Une maison classée G se vend 18 % moins cher qu'une maison classée D, à emplacement et surface comparables. Montrez-le à vos vendeurs.</p>
+                    <p>En moyenne, d'après nos calculs sur les ventes DVF rapprochées de leur DPE (2022 à 2025), une maison classée G s'est vendue 18 % moins cher qu'une maison classée D comparable. Montrez-le à vos vendeurs.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />

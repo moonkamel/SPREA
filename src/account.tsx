@@ -745,8 +745,8 @@ function PurchaseModal({ plan, order, price, onClose, onConfirm }: {
                 {order && <p className="text-sm text-ink-soft mt-1">{order.agency_name} · {order.seats} agents × {price}</p>}
                 <p className="text-sm text-muted mt-2">
                     {order
-                        ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajustez le nombre d'agents à tout moment."
-                        : 'Tous les outils SPREA, sans limite.'} <b className="text-ink-soft">Engagement de 12 mois</b>, puis résiliable à tout moment
+                        ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajoutez des agents à tout moment (réduction possible à la fin de l'engagement)."
+                        : 'Tous les outils SPREA (analyse des PV d\'AG dans une limite mensuelle).'} <b className="text-ink-soft">Engagement de 12 mois</b>, puis résiliable à tout moment
                     depuis votre compte. Facture avec TVA.
                 </p>
             </div>

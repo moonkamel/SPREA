@@ -419,7 +419,7 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
     prices = ", ".join(f"{ENERGY_NAMES[e]} {fr_dec(p, 2)} €" for e, p in ENERGY_PRICES_EUR_KWH.items()
                        if e in (energy, "electricity"))
     out = [
-        "Point de départ : les consommations du DPE officiel (base ADEME), "
+        "Point de départ : les consommations du DPE publié par l'ADEME, "
         + ("par usage (chauffage, eau chaude, autres usages) comme le DPE les détaille."
            if (sim_input.property.usage_consumption or {}).get("heating")
            else "réparties entre chauffage, eau chaude et autres usages selon l'époque du logement."),
