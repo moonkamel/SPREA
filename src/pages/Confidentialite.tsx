@@ -2,7 +2,7 @@ import { LEGAL } from '../legal';
 import { LegalPage, LegalSection } from './site';
 
 // Last update of this policy: change it whenever the data processing changes
-const UPDATED = '9 octobre 2026';
+const UPDATED = '10 octobre 2026';
 
 const th = 'text-left font-semibold text-ink p-3 align-top';
 const td = 'p-3 align-top border-t border-line text-ink-soft';
@@ -25,7 +25,25 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Simulation (abonnés)</td>
                                 <td className={td}>Adresse ou numéro de DPE recherché, paramètres saisis (revenus du foyer par tranche, étages, loyer, prix d'achat…)</td>
                                 <td className={td}>Calculer la simulation. Ces données ne sont pas enregistrées par le site.</td>
-                                <td className={td}>Intérêt légitime (fournir le service demandé)</td>
+                                <td className={td}>Exécution du contrat</td>
+                            </tr>
+                            <tr>
+                                <td className={td}>Logements affichés (carte, alertes, rapports, courriers)</td>
+                                <td className={td}>Adresse, caractéristiques et étiquette du DPE, issues de la base publique des DPE de l'ADEME (Licence Ouverte), sans nom ni coordonnées des propriétaires ou occupants</td>
+                                <td className={td}>Permettre aux professionnels abonnés d'identifier les logements à rénover et de proposer leurs services</td>
+                                <td className={td}>Intérêt légitime. Vous pouvez demander le masquage d'une adresse en écrivant à {LEGAL.email}.</td>
+                            </tr>
+                            <tr>
+                                <td className={td}>Alertes sur les nouveaux DPE (abonnés)</td>
+                                <td className={td}>Zones suivies, filtres, adresses des nouveaux DPE signalés, email de l'abonné</td>
+                                <td className={td}>Envoyer chaque matin le récapitulatif des nouveaux DPE ; les signalements sont effacés après 6 mois</td>
+                                <td className={td}>Exécution du contrat</td>
+                            </tr>
+                            <tr>
+                                <td className={td}>Courriers et page d'agence (abonnés)</td>
+                                <td className={td}>Adresses des logements ciblés par un courrier ; nom, téléphone et email de l'agent, affichés publiquement sur la page reliée au courrier</td>
+                                <td className={td}>Générer le courrier et la page de contact au nom de l'agent</td>
+                                <td className={td}>Exécution du contrat</td>
                             </tr>
                             <tr>
                                 <td className={td}>Demande de rappel sur une page d'agence (lien ou QR code reçu par courrier)</td>
@@ -48,7 +66,7 @@ export default function ConfidentialitePage() {
                             <tr>
                                 <td className={td}>Compte</td>
                                 <td className={td}>Adresse email, identifiant de compte, dates de connexion</td>
-                                <td className={td}>Créer le compte et permettre la connexion par lien email</td>
+                                <td className={td}>Créer le compte et permettre la connexion (lien email ou mot de passe)</td>
                                 <td className={td}>Exécution du contrat</td>
                             </tr>
                             <tr>
@@ -62,12 +80,6 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Identifiant client Stripe, statut de l'abonnement, montants, date et version des CGV acceptées (y compris les conditions d'utilisation de la carte de prospection). Les données de carte bancaire sont saisies chez Stripe et ne sont jamais transmises au site.</td>
                                 <td className={td}>Encaisser, facturer, gérer l'abonnement, prouver l'acceptation des CGV</td>
                                 <td className={td}>Exécution du contrat, obligations légales (comptabilité)</td>
-                            </tr>
-                            <tr>
-                                <td className={td}>Analyse d'un PDF de DPE (compte requis)</td>
-                                <td className={td}>Contenu du document envoyé</td>
-                                <td className={td}>Extraire les informations du DPE. Le document n'est pas conservé.</td>
-                                <td className={td}>Exécution du contrat</td>
                             </tr>
                             <tr>
                                 <td className={td}>Documents de copropriété (abonnés)</td>
@@ -101,8 +113,8 @@ export default function ConfidentialitePage() {
                     <li><b>Stripe</b> (Irlande, États-Unis) : paiement, factures, gestion de l'abonnement.</li>
                     <li><b>Anthropic</b> (États-Unis) : rédaction de l'analyse du rapport par le modèle Claude, à partir des caractéristiques et chiffres du logement et de sa commune, sans votre email ni le numéro et la rue du bien ; lecture des documents de copropriété déposés par un abonné ; lecture des annonces légales d'une société propriétaire d'immeuble. Ces données ne servent pas à entraîner ses modèles.</li>
                     <li><b>Supabase</b> (hébergeur de la base de données, voir plus haut) : stockage temporaire des documents de copropriété le temps de leur analyse.</li>
-                    <li><b>OpenAI</b> : extraction des informations d'un PDF de DPE, uniquement si vous utilisez cette fonction.</li>
-                    <li><b>Services publics</b> : l'adresse recherchée est transmise à la Base Adresse Nationale (adresse.data.gouv.fr) pour la localiser, et à l'ADEME pour retrouver le DPE.</li>
+                    <li><b>Resend</b> (États-Unis) : envoi des emails d'alerte, d'invitation et de devis.</li>
+                    <li><b>Services publics</b> : l'adresse recherchée est transmise à la Base Adresse Nationale (adresse.data.gouv.fr) pour la localiser, et à l'ADEME pour retrouver le DPE ; les fonds de carte sont chargés depuis la Géoplateforme de l'IGN ; les informations des sociétés propriétaires sont lues sur l'API Recherche d'entreprises (DINUM) et le BODACC (DILA).</li>
                 </ul>
                 <p>Certains prestataires sont situés hors de l'Union européenne. Ces transferts sont encadrés par le cadre de protection des données UE–États-Unis (Data Privacy Framework) pour les entreprises certifiées, ou par les clauses contractuelles types de la Commission européenne.</p>
             </LegalSection>
@@ -111,7 +123,7 @@ export default function ConfidentialitePage() {
                 <ul className="list-disc pl-5 space-y-1">
                     <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Demandes de rappel laissées sur une page d'agence : jusqu'à leur suppression par l'agence, à la suppression de son compte ou au plus tard 3 ans après leur envoi. Pour exercer vos droits, adressez-vous à l'agence indiquée sur la page, ou à nous : nous transmettrons.</li>
-                    <li>Invitations non acceptées : 30 jours après leur expiration (7 jours après l'envoi).</li>
+                    <li>Invitations : elles expirent 7 jours après l'envoi et sont supprimées 30 jours après leur expiration.</li>
                     <li>Demandes de devis : 3 ans après la demande si elle n'aboutit pas à un contrat.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>
                     <li>Après suppression du compte, trace minimale des achats et des acceptations (date, montant, références de paiement, version des CGV ou des conditions de la carte de prospection acceptée), sans email, adresse ni simulation : 5 ans (prescription), comme preuve en cas de litige.</li>
@@ -130,7 +142,7 @@ export default function ConfidentialitePage() {
             </LegalSection>
 
             <LegalSection title="Dirigeants des sociétés propriétaires d'immeubles">
-                <p>La carte de prospection affiche, pour un immeuble détenu par une société, les dirigeants publiés par l'Annuaire des entreprises (INSEE, registre national des entreprises) : prénom, nom et qualité. Ces informations sont lues au moment de l'affichage, à des fins de prospection commerciale par courrier postal auprès de la société (intérêt légitime des abonnés), et ne sont pas conservées par SPREA. Les abonnés qui les utilisent sont responsables de leur traitement (article 14 des CGV). Un dirigeant peut s'opposer à leur affichage en écrivant à {LEGAL.email}.</p>
+                <p>La carte de prospection affiche, pour un immeuble détenu par une société, les dirigeants publiés par l'Annuaire des entreprises (données INSEE Sirene et registre national des entreprises de l'INPI, via l'API Recherche d'entreprises) : prénom, nom et qualité. Ces informations sont lues au moment de l'affichage et ne sont pas conservées par SPREA, qui les affiche sur le fondement de son intérêt légitime à fournir ce service à ses abonnés, pour une prospection par courrier postal adressé à la société. Les abonnés qui les utilisent sont responsables de leur traitement (article 14 des CGV). Un dirigeant peut s'opposer à leur affichage en écrivant à {LEGAL.email}.</p>
             </LegalSection>
 
             <LegalSection title="Signaux de vente des sociétés propriétaires">
@@ -138,12 +150,12 @@ export default function ConfidentialitePage() {
             </LegalSection>
 
             <LegalSection title="Vos droits">
-                <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données, ainsi que du droit de définir des directives sur leur sort après votre décès. Vous pouvez supprimer votre compte à tout moment depuis « Mon compte », rubrique « Supprimer mon compte ». Pour exercer vos autres droits, écrivez à {LEGAL.email} depuis l'adresse email de votre compte. Une réponse vous est apportée dans un délai d'un mois.</p>
+                <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données, ainsi que du droit de définir des directives sur leur sort après votre décès. Vous pouvez supprimer votre compte depuis « Mon compte », rubrique « Supprimer mon compte » ; pendant la période d'engagement de l'abonnement, la suppression n'est possible qu'à son terme, les données nécessaires à l'exécution du contrat étant conservées jusque-là, et le titulaire d'une formule Agence doit d'abord retirer ses membres. Pour exercer vos autres droits, écrivez à {LEGAL.email} depuis l'adresse email de votre compte. Une réponse vous est apportée dans un délai d'un mois.</p>
                 <p>Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).</p>
             </LegalSection>
 
             <LegalSection title="Sécurité">
-                <p>Les échanges sont chiffrés (HTTPS). L'accès aux comptes se fait par lien de connexion à usage unique, sans mot de passe stocké. La base de données n'est accessible qu'au serveur du site ; chaque rapport n'est visible que par son propriétaire.</p>
+                <p>Les échanges sont chiffrés (HTTPS). L'accès aux comptes se fait par lien de connexion à usage unique ou par mot de passe ; les mots de passe sont conservés par Supabase sous forme hachée, jamais en clair. La base de données n'est accessible qu'au serveur du site ; chaque rapport n'est visible que par son propriétaire.</p>
             </LegalSection>
         </LegalPage>
     );

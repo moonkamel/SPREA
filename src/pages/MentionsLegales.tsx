@@ -25,7 +25,7 @@ export default function MentionsLegalesPage() {
             </LegalSection>
 
             <LegalSection title="Données utilisées">
-                <p>Les informations sur les logements proviennent des données publiques des diagnostics de performance énergétique publiées par l'ADEME (data.ademe.fr) et de la Base Adresse Nationale (adresse.data.gouv.fr), sous Licence Ouverte. Les estimations produites par le site sont indicatives et n'engagent ni l'ADEME, ni l'État.</p>
+                <p>Le site réutilise, sous Licence Ouverte 2.0 (Etalab) : la base des diagnostics de performance énergétique et l'annuaire des entreprises RGE (ADEME), la Base Adresse Nationale, les demandes de valeurs foncières DVF (DGFiP, Etalab), la Base de données nationale des bâtiments (CSTB), les fichiers des locaux des personnes morales (DGFiP), le registre national des copropriétés (Anah), le BODACC (DILA) et les fonds de carte de l'IGN ; ainsi que l'Annuaire des entreprises (DINUM). Ces données sont lues à leur dernière mise à jour publiée ; la date des ventes et des DPE utilisés est indiquée dans les rapports. Les estimations produites par le site sont indicatives et n'engagent ni ces producteurs de données, ni l'État.</p>
             </LegalSection>
 
             <LegalSection title="Propriété intellectuelle">

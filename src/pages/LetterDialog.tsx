@@ -37,7 +37,7 @@ Si vous êtes locataire, merci de transmettre ce courrier à votre propriétaire
 
 ${signature}
 
-Ce courrier est adressé au logement : nous ne connaissons pas votre identité. L'adresse provient des données publiques de l'ADEME (DPE). Pour ne plus recevoir de courrier de notre part, indiquez-le-nous (${optOut}) : nous retirerons cette adresse de nos envois.`;
+Ce courrier est adressé au logement : nous ne connaissons pas votre identité. L'adresse provient des données publiques de l'ADEME (DPE). Responsable du traitement : ${agency.agency_name || agency.agent_name || "l'agence signataire"}, pour vous proposer ses services pour ce logement. Vous disposez d'un droit d'accès, d'opposition et d'effacement : pour ne plus recevoir de courrier de notre part, indiquez-le-nous (${optOut}), nous retirerons cette adresse de nos envois. Vous pouvez aussi saisir la CNIL (cnil.fr).`;
 }
 
 export default function LetterDialog({ target, onClose }: { target: LetterTarget; onClose: () => void }) {

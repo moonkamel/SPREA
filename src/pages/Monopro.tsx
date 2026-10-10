@@ -195,7 +195,7 @@ Je serais heureux de vous proposer une estimation gratuite et confidentielle, sa
 
 ${signature}
 
-Nous vous écrivons à partir de données publiques : base nationale des bâtiments (CSTB), fichiers des propriétaires personnes morales (DGFiP) et registre des entreprises. Pour ne plus recevoir de courrier de notre part, indiquez-le-nous (${optOut}) : nous en tiendrons compte.`;
+Nous vous écrivons à partir de données publiques : base nationale des bâtiments (CSTB), fichiers des propriétaires personnes morales (DGFiP) et Annuaire des entreprises (INSEE, registre national des entreprises tenu par l'INPI). Responsable du traitement : ${agency.agency_name || agency.agent_name || "l'agence signataire"}, pour vous proposer ses services pour cet immeuble. Vous disposez d'un droit d'accès, d'opposition et d'effacement : pour ne plus recevoir de courrier de notre part, indiquez-le-nous (${optOut}), nous ne vous écrirons plus. Vous pouvez aussi saisir la CNIL (cnil.fr).`;
 }
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
