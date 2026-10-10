@@ -41,7 +41,7 @@ from api.address import parts, same_address, same_street  # noqa: E402
 from api.monopro_report import RENOVATION_M2, build_dossier  # noqa: E402
 from api.pdf_service import pdf_service  # noqa: E402
 from api.report_content import build_report, facts_for_writer  # noqa: E402
-from api.simulation import SimulationInput, simulate  # noqa: E402
+from api.simulation import SimulationInput, available_works, simulate  # noqa: E402
 from api.valuation import compute  # noqa: E402
 
 ADEME = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
@@ -125,8 +125,7 @@ async def audit_dwelling(number: str, store) -> None:
         if label in ("E", "F", "G"):
             case.check(bool(works), "aucun travaux proposé pour une passoire")
             # Best reachable: every work that applies to this kind of dwelling
-            house = (prop.building_type or "").lower().startswith("maison")
-            every = ["iti", "windows", "vmc", "ecs", "heating"] + (["roof", "floor_ceiling", "pac_air_eau"] if house else [])
+            every = sorted(available_works(sp)["works"])
             # Some works can raise the label (electric heating replacing gas): every combination
             best = min((simulate(SimulationInput(property=sp, works=list(c)))["new_label"]
                         for n in range(1, len(every) + 1) for c in itertools.combinations(every, n)), key=idx)

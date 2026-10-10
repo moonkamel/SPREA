@@ -284,6 +284,14 @@ def dpe_scale(thresholds: List[Dict], current: str, target: str) -> List[Any]:
 
 
 
+def roi_label(roi: Optional[float]) -> str:
+    if roi is None:
+        return '–'
+    if roi <= 0:
+        return "immédiat (aucun reste à charge)"
+    return "moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}an{'s' if round(roi) > 1 else ''}"
+
+
 def eur_r(value: Optional[float], step: int = 100) -> str:
     """Estimates are shown rounded: 11 443 -> 11 400 €."""
     return eur(round((value or 0) / step) * step)
@@ -577,8 +585,7 @@ class PDFReportGenerator:
             ('LINEAFTER', (0, 0), (1, 0), 0.5, LINE),
         ]))
 
-        roi = sim['roi_years']
-        roi_text = '–' if roi is None else ("moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}ans")
+        roi_text = roi_label(sim['roi_years'])
         green = (f"+{NBSP}{eur_r(sim['latent_gain'], 500)} <font size='7.5' color='#8A93A3'>"
                  f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if sim['latent_gain'] else '–'
         after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
@@ -766,14 +773,14 @@ class PDFReportGenerator:
                 Paragraph('Financer le reste à charge', S['h3']), Spacer(1, 6),
                 rows_table(loan, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True),
                 Spacer(1, 3),
-                Paragraph("Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.", S['small']),
+                Paragraph("Sans intérêts ni frais de dossier, sous conditions de la banque. "
+                          + ("Il se cumule avec MaPrimeRénov'." if sim['subsidies'] > 0 else "Il se cumule avec les primes CEE." if sim['cee_est'] > 0 else ""), S['small']),
             ])]
         return out
 
     def _value(self, report: Dict[str, Any]) -> List[Any]:
         sim = report['sim']
-        roi = sim['roi_years']
-        rows = [kv('Retour sur investissement', '–' if roi is None else f"environ {round(roi)}{NBSP}ans")]
+        rows = [kv('Retour sur investissement', roi_label(sim['roi_years']))]
         if sim['latent_gain']:
             rows += [
                 kv('Prix de marché local', f"{eur(report['price_per_m2'])}/m²" + (" <font size='7.5' color='#8A93A3'>(par défaut)</font>" if report['price_is_default'] else '')),
@@ -806,7 +813,7 @@ class PDFReportGenerator:
                                      ('LINEAFTER', (0, 0), (2, 0), 0.5, LINE), ('LEFTPADDING', (1, 0), (-1, 0), 8)]))
             out += [Spacer(1, 12), inv, Spacer(1, 6), Paragraph(
                 f"Prix d'achat {eur(report['purchase_price'])}, loyer {eur(report['monthly_rent'])} par mois. Trésorerie : loyer moins la "
-                "mensualité d'un prêt finançant le reste à charge (7 ans, 4,5 %), hors charges et impôts. Économie d'impôt : "
+                "mensualité de l'éco-PTZ, et d'un prêt bancaire (7 ans, 4,5 %) pour la part qu'il ne couvre pas, hors charges et impôts. Économie d'impôt : "
                 "déduction des travaux des revenus fonciers au taux marginal saisi.", S['muted'])]
         return out
 

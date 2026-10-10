@@ -50,6 +50,8 @@ Règles de fond :
 - Si « variante_renovation_d_ampleur » est fournie, termine le paragraphe financement par cette variante : ajouter ce travail d'isolation ouvre la rénovation d'ampleur ; cite l'aide et le reste à charge de la variante, son accompagnement obligatoire et, s'il est fourni, ce qui est à vérifier sur place.
 - Si « valeur_verte_calculee_sur_prix_m2_par_defaut » vaut true, ne cite pas le montant de la valeur verte : il repose sur un prix au m² par défaut.
 - Les montants sont déjà arrondis : garde-les tels quels, sans recalculer de total.
+- Si « eco_ptz_eur » est absent ou nul, ne parle pas d'éco-prêt. Si « parcours_aide » vaut « primes CEE », ne parle pas de MaPrimeRénov' pour ce programme.
+- Si le profil est « propriétaire occupant », ne parle de location qu'au conditionnel (« si vous mettez en location »).
 - Pas de conseil juridique ou fiscal personnalisé au-delà des faits fournis.
 
 Règles de style (le texte ne doit pas sonner comme généré automatiquement) :
@@ -130,8 +132,14 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
     if best:
         strat += (f"Pris isolément, le geste le plus efficace est : {best['nom'][:1].lower() + best['nom'][1:]}, "
                   f"avec environ {eur(best['economie_seule_eur_an'])} d'économie par an. ")
-    strat += (f"Ensemble, ces travaux amènent le logement en classe {after['classe_dpe']} "
-              f"({after['consommation_kwh_ep_m2_an']} kWh/m²/an) et la facture à environ {eur(after['facture_estimee_eur_an'])} par an.")
+    if not works:
+        strat = "Aucun travaux n'est retenu dans ce scénario : choisissez des travaux pour obtenir une estimation."
+    elif after["gain_classes"]:
+        strat += (f"Ensemble, ces travaux amènent le logement en classe {after['classe_dpe']} "
+                  f"({after['consommation_kwh_ep_m2_an']} kWh/m²/an) et la facture à environ {eur(after['facture_estimee_eur_an'])} par an.")
+    else:
+        strat += (f"Ces travaux ne changent pas la classe ({after['classe_dpe']}) mais ramènent la consommation à "
+                  f"{after['consommation_kwh_ep_m2_an']} kWh/m²/an et la facture à environ {eur(after['facture_estimee_eur_an'])} par an.")
 
     rest_low, rest_high = fin["reste_a_charge_fourchette_eur"]
     finance = (f"Le coût des travaux se situe entre {eur(fin['cout_total_fourchette_eur'][0])} et {eur(fin['cout_total_fourchette_eur'][1])}. "
@@ -159,8 +167,9 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
             profile += (f"Avec un loyer de {eur(inv['loyer_mensuel_eur'])} par mois, le rendement brut ressort à "
                         f"{str(inv['rendement_brut_pct']).replace('.', ',')} % travaux compris.")
     else:
+        insulated = any(w["nom"].lower().startswith(("isolation", "fenêtres")) for w in works)
         profile = (f"Pour un occupant, l'enjeu est la facture et le confort : environ {eur(after['economies_eur_an'])} "
-                   "d'économie par an, des parois moins froides et moins de courants d'air.")
+                   "d'économie par an" + (", des parois moins froides et moins de courants d'air." if insulated else "."))
         if fin.get("retour_sur_investissement_ans"):
             profile += f" Le reste à charge est remboursé par les économies en {fin['retour_sur_investissement_ans']} ans environ."
 
@@ -168,8 +177,14 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
     vigilance.append("Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.")
     vigilance.append("Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.")
 
-    verdict = (f"Passer de {now['classe_dpe']} à {after['classe_dpe']} coûte entre {eur(rest_low)} et {eur(rest_high)} "
-               f"après aides, pour environ {eur(after['economies_eur_an'])} d'économie par an.")
+    if not works:
+        verdict = f"Logement classé {now['classe_dpe']}, facture estimée à {eur(now['facture_estimee_eur_an'])} par an. Aucun travaux retenu."
+    elif after["gain_classes"]:
+        verdict = (f"Passer de {now['classe_dpe']} à {after['classe_dpe']} coûte entre {eur(rest_low)} et {eur(rest_high)} "
+                   f"après aides, pour environ {eur(after['economies_eur_an'])} d'économie par an.")
+    else:
+        verdict = (f"Ces travaux coûtent entre {eur(rest_low)} et {eur(rest_high)} après aides, sans changer la classe "
+                   f"{now['classe_dpe']}, pour environ {eur(after['economies_eur_an'])} d'économie par an.")
     return {"verdict": verdict, "diagnostic": diag, "strategie": strat, "financement": finance,
             "profil": profile, "vigilance": vigilance[:5]}
 

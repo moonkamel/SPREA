@@ -108,7 +108,7 @@ export const HELP = {
     },
     cashflow: {
         title: 'Trésorerie mensuelle',
-        text: "Loyer mensuel moins la mensualité d'un prêt finançant le reste à charge (7 ans à 4,5 %). Hors charges, taxe foncière et impôts.",
+        text: "Loyer mensuel moins la mensualité de l'éco-prêt à taux zéro, et d'un prêt bancaire (7 ans à 4,5 %) pour la part du reste à charge qu'il ne couvre pas. Hors charges, taxe foncière et impôts.",
     },
     taxBenefit: {
         title: "Économie d'impôt",

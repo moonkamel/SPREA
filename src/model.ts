@@ -158,6 +158,12 @@ export const propertyInput = (property: PropertyData) => ({
     final_consumption: property.finalConsumption ?? null,
     insulation_quality: property.insulationQuality ?? null,
     dpe_losses: property.dpeLosses ?? null,
+    // Existing equipment: works already done are not proposed again
+    heating_generator: property.details?.heating_system ?? null,
+    heating_installation: property.details?.heating_installation ?? null,
+    hot_water_system: property.details?.hot_water_system ?? null,
+    hot_water_installation: property.details?.hot_water_installation ?? null,
+    ventilation: property.details?.ventilation ?? null,
 });
 
 // Maps an API search result to the UI property model
