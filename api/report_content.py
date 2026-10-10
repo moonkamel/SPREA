@@ -48,6 +48,10 @@ SMALL_WORDS = {"de", "du", "des", "la", "le", "les", "et", "à", "a", "au", "aux
 
 # --- Formatting helpers (plain text, the PDF escapes it) ---
 
+
+def round500(value) -> int:
+    return int(round((value or 0) / 500) * 500)
+
 def fr_int(value: float) -> str:
     return f"{round(value):,}".replace(",", " ")
 
@@ -434,8 +438,9 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "regles_aides": sim["aid_rules"],
         },
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
-        "valeur_verte_eur": int(round(sim["latent_gain"], -2)),
-        "valeur_verte_fourchette_eur": [int(round(sim["latent_gain_low"], -2)), int(round(sim["latent_gain_high"], -2))],
+        # Rounded to 500 € like the PDF, so that the text quotes the same figures
+        "valeur_verte_eur": round500(sim["latent_gain"]),
+        "valeur_verte_fourchette_eur": [round500(sim["latent_gain_low"]), round500(sim["latent_gain_high"])],
         "valeur_verte_methode": sim["green_value_basis"],
         "ecart_de_prix_entre_classes_pct": sim["green_value_premium_pct"],
         "valeur_verte_calculee_sur_prix_m2_par_defaut": report["price_is_default"],
