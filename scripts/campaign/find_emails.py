@@ -282,11 +282,49 @@ def mentions_officer(agency: Dict, text: str) -> bool:
     return any(last and first and last in t.replace(" ", "") and first in t for first, last in officer_tokens(agency))
 
 
+def name_tokens(agency: Dict) -> List[str]:
+    """Distinctive words of the agency's names and its officers' last names."""
+    tokens = []
+    for name in agency["names"]:
+        # "A.T.P.I." -> "atpi"
+        words = [w for w in norm(re.sub(r"\(.*?\)", " ", name).replace(".", "")).split() if w not in GENERIC]
+        tokens += [w for w in words if len(w) >= 3]
+        if len(words) >= 2:
+            tokens.append("".join(words[:2]))
+    return list(dict.fromkeys(tokens + officer_parts(agency)))
+
+
+def officer_parts(agency: Dict) -> List[str]:
+    """Officers' last names, each part of a compound or married name too."""
+    parts = []
+    for _, n in agency["officers"]:
+        words = norm(n.replace("(", " ").replace(")", " ")).replace(".", " ").split()
+        parts += [w for w in words if len(w) >= 3]
+        parts.append("".join(words))
+    return [p for p in dict.fromkeys(parts) if len(p) >= 3]
+
+
+def owned(agency: Dict, email: str) -> bool:
+    """The address belongs to the agency: its domain (or, for a free mailbox,
+    its local part) carries the agency's name or its officer's. Directory
+    sites also show the SIREN: their own address must not be taken."""
+    local, _, domain = email.partition("@")
+    where = local if domain in FREE_MAIL else domain.rsplit(".", 1)[0]
+    where = re.sub(r"[^a-z0-9]", "", where.lower())
+    if any(t in where for t in name_tokens(agency)):
+        return True
+    # Short names ("AB Transaction"): only at the start of the domain
+    short = [w for name in agency["names"] for w in norm(name.replace(".", "")).split() if len(w) == 2 and w not in GENERIC]
+    return domain not in FREE_MAIL and any(where.startswith(w) for w in short)
+
+
 def rank(agency: Dict, email: str, context: str, site: str, network: bool) -> Optional[Tuple[int, str]]:
+    if not network and not owned(agency, email):
+        return None
     local, _, domain = email.partition("@")
     lnorm = local.replace(".", "").replace("-", "").replace("_", "")
     own = domain.removeprefix("www.") == site or site.endswith("." + domain) or domain in FREE_MAIL
-    named = any(last and len(last) > 2 and last in lnorm for _, last in officer_tokens(agency))
+    named = any(last in lnorm for last in officer_parts(agency))
     if network:
         # A network page: only the agent's own address
         return (0, "dirigeant") if named and (domain in FREE_MAIL or any(n in domain for n in NETWORKS)) else None
