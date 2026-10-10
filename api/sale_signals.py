@@ -166,12 +166,17 @@ def explain_key(events: List[Dict[str, Any]]) -> str:
 
 
 async def explain(signal: Dict[str, Any], building: Dict[str, Any], today: date) -> Dict[str, Any]:
+    # dpe_fg adds up BDNB DPE, duplicates included: never more than the dwellings
+    fg, nb_log = building.get("dpe_fg"), building.get("nb_log")
+    if fg is not None and nb_log:
+        fg = min(fg, nb_log)
     facts = {
         "date_du_jour": today.isoformat(),
         "evenements": [{"date": e.get("date"), "nature": e.get("label")} for e in signal.get("events") or []],
         "immeuble": {"logements": building.get("nb_log"), "construction": building.get("year_built"),
-                     "classe_dpe": building.get("dpe_label"), "logements_f_ou_g": building.get("dpe_fg"),
+                     "classe_dpe": building.get("dpe_label"), "logements_f_ou_g": fg,
                      "derniere_vente": building.get("last_sale_date"),
+                     "lots_de_la_derniere_vente": building.get("last_sale_units"),
                      "autres_immeubles_du_proprietaire": building.get("portfolio_count")},
         "forme_juridique": building.get("legal_form"),
     }

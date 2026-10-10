@@ -286,8 +286,9 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
         distribution[r["etiquette_dpe"]] += 1
 
     surface = _float(apartment.get("surface_habitable_logement"))
+    # Unknown rather than 1 when only the flat's own DPE is published
     dwellings = (copro or {}).get("lots_housing") or (building or {}).get("apartments") or \
-        _int(apartment.get("nombre_appartement")) or len(apartments)
+        _int(apartment.get("nombre_appartement")) or (len(apartments) if len(apartments) > 1 else None)
     shab = (building or {}).get("surface") or _float(apartment.get("surface_habitable_immeuble")) or \
         (surface * dwellings if surface and dwellings else None)
     floors = [_int(r.get("numero_etage_appartement")) for r in apartments]
@@ -302,10 +303,12 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
     if not works and source.get("etiquette_dpe") in ("A", "B", "C"):
         works_note = (f"{'Immeuble' if building_row else 'Appartement'} classé {source['etiquette_dpe']} : "
                       "pas de gros travaux énergétiques collectifs à prévoir d'après le DPE.")
+    elif not works and not dwellings:
+        works_note = "Nombre de logements inconnu : les travaux collectifs ne sont pas chiffrés."
     elif not works:
         works_note = "Le DPE ne fait pas ressortir de travaux énergétiques collectifs importants."
     total = [sum(w["low"] for w in works), sum(w["high"] for w in works)]
-    share = min(surface / shab, 1.0) if surface and shab else None
+    share = min(surface / shab, 1.0) if surface and shab and dwellings else None
     estimate = None
     if works and share:
         # MaPrimeRénov' Copropriété on the works HT, within the ceiling per dwelling

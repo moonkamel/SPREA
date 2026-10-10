@@ -87,14 +87,18 @@ def test_surface_band_and_time_adjustment(monkeypatch):
     large = [row(f"l{i}", 3000 * 80, "Appartement", 80) for i in range(25)]   # large flats: 3 000 €/m²
     files = {2025: to_csv(small + large)}
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for(files), today=date(2026, 10, 8)))
-    assert res["price_per_m2"] == 3000
+    assert res["price_per_m2"] == 3000 and res["surface_matched"]
+    # No surface given: the report must not claim comparable surfaces
+    dvf._cache.clear()
+    res = asyncio.run(market_price("59350", "Appartement", *LILLE, transport=transport_for(files), today=date(2026, 10, 8)))
+    assert not res["surface_matched"] and "surface comparable" not in res["source"]
     # Sales of the first quarter 2025 were 10 % cheaper than the latest quarter
     dvf._cache.clear()
     monkeypatch.setattr(dvf, "quarter_index", lambda kind, dep: {"2025T1": -0.0953})
     dated = [{**r, "date_mutation": "2025-02-01"} for r in large]
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for({2025: to_csv(dated)}), today=date(2026, 10, 8)))
-    assert res["price_per_m2"] == 3300
-    assert "actualisées" in res["source"]
+    assert res["price_per_m2"] == 3300 and res["adjusted"]
+    assert "actualisées" in res["source"] and res["comparables"][0]["adjusted_m2"] == 3300
 
 
 def test_widens_to_neighbouring_communes():

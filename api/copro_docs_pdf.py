@@ -31,6 +31,16 @@ def _money(v: Any) -> str:
     return eur(v) if isinstance(v, (int, float)) else "–"
 
 
+def analysed_on(row: Dict[str, Any], today: date) -> date:
+    """Date of the analysis (last update of the row), today when unknown."""
+    for key in ("updated_at", "created_at"):
+        try:
+            return date.fromisoformat(str(row.get(key) or "")[:10])
+        except ValueError:
+            continue
+    return today
+
+
 def generate(row: Dict[str, Any], agency: Dict[str, Any], today: date) -> bytes:
     r = row["result"]
     buffer = BytesIO()
@@ -96,7 +106,8 @@ def generate(row: Dict[str, Any], agency: Dict[str, Any], today: date) -> bytes:
         story += [KeepTogether(block), Spacer(1, 10)]
 
     if r.get("procedures"):
-        items = [f"{text(p.get('objet'))} · syndicat {text(p.get('role_syndicat'))}"
+        items = [text(p.get('objet'))
+                 + (f" · syndicat {text(p.get('role_syndicat'))}" if p.get("role_syndicat") not in (None, "", "inconnu") else "")
                  + (f" · {_money(p.get('montant'))}" if p.get("montant") is not None else "")
                  + f" · {text(p.get('etat'))} <font color='#8A93A3'>({text(p.get('source'))})</font>" for p in r["procedures"]]
         story += [next_section("Procédures"), Spacer(1, 6), *_bullets(items), Spacer(1, 10)]
@@ -123,7 +134,7 @@ def generate(row: Dict[str, Any], agency: Dict[str, Any], today: date) -> bytes:
                                   + ([Paragraph(text(contact), S['muted'])] if contact else [])
                                   + [Spacer(1, 4), Paragraph(text(f"Documents analysés : {docs}." if docs else ""), S['small']),
                                      Paragraph("Synthèse établie avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des seuls "
-                                               "documents fournis, le " + today.strftime("%d/%m/%Y") + ". Elle ne remplace ni la lecture des "
+                                               "documents fournis, le " + analysed_on(row, today).strftime("%d/%m/%Y") + ". Elle ne remplace ni la lecture des "
                                                "documents, ni le pré-état daté, ni l'avis du notaire.", S['small'])],
                                   rule=BRASS_LIGHT, padding=10)]
 
