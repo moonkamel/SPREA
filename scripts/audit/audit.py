@@ -177,7 +177,9 @@ async def audit_dwelling(number: str, store) -> None:
         if label in ("E", "F", "G"):
             case.check(bool(works) or not available_works(sp)["works"], "aucun travaux proposé pour une passoire")
             # Best reachable: every work that applies to this kind of dwelling
-            every = sorted(available_works(sp)["works"]) or ["__none__"]
+            # Same rule as the app: no exterior insulation by default on a pre-1948 facade
+            old_facade = "avant 1948" in (sp.construction_period or "").lower() or (sp.construction_year or 9999) < 1948
+            every = sorted(w for w in available_works(sp)["works"] if not (w == "ite" and old_facade)) or ["__none__"]
             # Some works can raise the label (electric heating replacing gas): every combination
             best = min((simulate(SimulationInput(property=sp, works=[w for w in c if w != "__none__"]))["new_label"]
                         for n in range(1, len(every) + 1) for c in itertools.combinations(every, n)), key=idx)
