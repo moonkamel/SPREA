@@ -555,6 +555,10 @@ def single_work_effects(data: SimulationInput) -> Dict[str, Dict[str, float]]:
 INSULATION_BLOCKER = "La rénovation d'ampleur exige au moins deux travaux d'isolation"
 # Insulation works that can be added to open the rénovation d'ampleur, cheapest first
 VARIANT_CANDIDATES = ["roof", "floor_ceiling", "windows", "iti"]
+# What must be checked on site before relying on the variant
+VARIANT_CHECKS = {"floor_ceiling": "Possible seulement si le plancher est accessible par en dessous (cave, garage ou vide sanitaire) : "
+                                   "une maison sur terre-plein ne s'y prête pas.",
+                  "roof": "Combles accessibles ou rampants à isoler : à vérifier sur place."}
 VARIANT_PHRASES = {"roof": "l'isolation de la toiture", "floor_ceiling": "l'isolation du plancher bas",
                    "windows": "le remplacement des fenêtres", "iti": "l'isolation des murs"}
 
@@ -595,6 +599,7 @@ def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
         "work": work,
         "work_name": WORKS_BY_ID[work]["name"],
         "work_phrase": VARIANT_PHRASES[work],
+        "check": VARIANT_CHECKS.get(work),
         "work_cost": added["cost"],
         "work_cost_low": added["cost_low"],
         "work_cost_high": added["cost_high"],
