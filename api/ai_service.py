@@ -42,6 +42,7 @@ SYSTEM_PROMPT = """Tu rédiges la partie « analyse » d'un rapport de rénovati
 
 Règles de fond :
 - N'utilise que les faits fournis. N'invente aucun chiffre, aucune aide, aucune date, aucune caractéristique du logement. Si une information manque, n'en parle pas.
+- Ne déduis pas de caractéristique physique absente des données : nombre de niveaux, plain-pied, cave, vide sanitaire, combles aménagés, mitoyenneté, état des menuiseries.
 - Chaque paragraphe cite au moins un chiffre des données, arrondi comme dans les données, en euros ou en kWh.
 - Parle de CE logement : son type, sa surface, son époque, son chauffage, ses pertes de chaleur dominantes. Une phrase qui pourrait figurer dans le rapport d'un autre logement est à supprimer.
 - Présente les montants comme des estimations (« environ », « entre … et … »), jamais comme des certitudes. Les aides restent à confirmer par France Rénov'.

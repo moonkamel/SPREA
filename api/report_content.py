@@ -345,7 +345,9 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "period": meta.get("construction_period") or (str(meta.get("year")) if meta.get("year") else None),
             "dpe_number": meta.get("ademe_dpe_number"),
             "dpe_date": date_fr(dpe_date),
-            "floor": details.get("floor"),
+            # The DPE gives a floor for houses too (0): meaningless, and it
+            # led the text to call any house "de plain-pied"
+            "floor": None if house else details.get("floor"),
             "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "").capitalize(), details.get("heating_system"),
                                                 details.get("heating_installation")] if x) or None,
             "hot_water": details.get("hot_water_system"),
