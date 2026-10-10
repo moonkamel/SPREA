@@ -19,6 +19,12 @@ export default {
                 sage: '#6FBF8E',     // positive amounts
                 coral: '#E2775E',    // warnings
             },
+            keyframes: {
+                shimmer: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(100%)' } },
+            },
+            animation: {
+                shimmer: 'shimmer 1.2s linear infinite',
+            },
             fontFamily: {
                 sans: ['"Inter Variable"', 'system-ui', 'sans-serif'],
                 serif: ['"Source Serif 4 Variable"', 'Georgia', 'serif'],

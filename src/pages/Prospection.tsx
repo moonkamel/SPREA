@@ -9,6 +9,7 @@ import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
+import LoadingSequence, { BUILDING_STEPS, PROSPECTION_STEPS } from '../views/LoadingSequence';
 
 interface Dpe {
     number: string;
@@ -308,6 +309,19 @@ export default function ProspectionPage() {
 
     const showDetails = !!result && !result.locked;
 
+    // Analysis screen over the map on the first load of each mode only (not on every move)
+    const [intro, setIntro] = useState<{ dpe: boolean; immeubles: boolean }>({ dpe: true, immeubles: true });
+    const [introFor, setIntroFor] = useState<'dpe' | 'immeubles' | null>(null);
+    useEffect(() => { if (loading && intro[mode] && !introFor) setIntroFor(mode); }, [loading, intro, mode, introFor]);
+    const endIntro = useCallback(() => {
+        if (introFor) setIntro(i => ({ ...i, [introFor]: false }));
+        setIntroFor(null);
+    }, [introFor]);
+    // Switching mode drops the other mode's screen (it runs again on that mode's next first load)
+    useEffect(() => { setIntroFor(m => (m && m !== mode ? null : m)); }, [mode]);
+    useEffect(() => { if (error || !zoomOk) endIntro(); }, [error, zoomOk, endIntro]);
+    const introDone = !loading && (introFor === 'dpe' ? !!result : !!mono);
+
     // Markers
     useEffect(() => {
         const layer = layerRef.current;
@@ -510,6 +524,16 @@ export default function ProspectionPage() {
                 <div className="grid lg:grid-cols-[1fr_380px] gap-4">
                     <div className="relative rounded-2xl overflow-hidden border border-line lg:self-start">
                         <div ref={containerRef} className="sprea-map h-[60vh] lg:h-[70vh] w-full" />
+                        {introFor === mode && (
+                            <LoadingSequence
+                                variant="panel"
+                                steps={mode === 'dpe' ? PROSPECTION_STEPS : BUILDING_STEPS}
+                                title={mode === 'dpe' ? 'Analyse du secteur' : 'Recherche des immeubles'}
+                                sources={mode === 'dpe' ? 'ADEME, Base Adresse Nationale' : 'BDNB, fichiers fonciers, ADEME, BODACC'}
+                                done={introDone}
+                                onFinished={endIntro}
+                            />
+                        )}
                         <div className="absolute top-3 left-3 right-16 z-[500] flex flex-wrap gap-2 pointer-events-none">
                             {zoom < MIN_ZOOM && (
                                 <span className="rounded-lg border border-line bg-panel/90 backdrop-blur px-3 py-1.5 text-sm text-ink">Rapprochez-vous pour afficher les logements.</span>

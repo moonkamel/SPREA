@@ -20,6 +20,7 @@ const CoproDocsPage = lazy(() => import('./pages/CoproDocs'));
 import Landing from './views/Landing';
 import Home from './views/Home';
 import Results from './views/Results';
+import LoadingSequence, { SIMULATION_STEPS } from './views/LoadingSequence';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
 import { propertyInput, toProperty, toSimulation, type PropertyData, type RetrofitAction, type Simulation } from './model';
 
@@ -135,6 +136,9 @@ function Simulator() {
     const [busy, setBusy] = useState<Record<Scenario, boolean>>({ A: false, B: false });
     const [downloading, setDownloading] = useState(false);
     const [showValuation, setShowValuation] = useState(false);
+    // Analysis screen, from the search until the first simulation is back
+    const [analyzing, setAnalyzing] = useState(false);
+    useEffect(() => { if (error) setAnalyzing(false); }, [error]);
 
     useEffect(() => {
         fetch('/api/works')
@@ -153,10 +157,11 @@ function Simulator() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [path, catalog.length]);
 
-    const goHome = () => { setView('landing'); setError(null); window.scrollTo(0, 0); };
+    const goHome = () => { setView('landing'); setError(null); setAnalyzing(false); window.scrollTo(0, 0); };
 
     const search = async (url: string, notFound: string) => {
         setLoading(true);
+        setAnalyzing(true);
         setError(null);
         try {
             const res = await authedFetch(url);
@@ -281,51 +286,69 @@ function Simulator() {
         }
     };
 
-    if (view === 'results') {
-        return <Results results={results} onSelect={selectProperty} onBack={goHome} />;
-    }
-
-    if (view === 'dashboard' && property) {
-        const currentInput = scenario === 'A' ? inputA : inputB;
-        return (
-            <>
-            {showValuation && currentInput && (
-                <Suspense fallback={null}>
-                    <ValuationDialog meta={reportMeta()!} simulation={currentInput} onClose={() => setShowValuation(false)} />
-                </Suspense>
-            )}
-            <Dashboard
-                property={property}
-                scenario={scenario}
-                onScenario={setScenario}
-                actions={actions[scenario]}
-                onToggle={toggle}
-                sims={sims}
-                worksCount={{ A: actions.A.filter(a => a.active).length, B: actions.B.filter(a => a.active).length }}
-                updating={busy[scenario]}
-                settings={settings}
-                onSettings={updateSettings}
-                report={{
-                    // Reports need accounts and payments to be configured on the server
-                    available: !!config?.auth_enabled && !!config?.billing_enabled,
-                    price: config?.report_price ?? null,
-                    included: !!me?.is_pro,
-                    downloading,
-                    onDownload: downloadReport,
-                }}
-                valuation={me?.is_pro && property.inseeCode ? () => setShowValuation(true) : undefined}
-                onBack={goHome}
-            />
-            </>
-        );
-    }
-
-    return (
-        <Landing
-            loading={loading}
-            error={error}
-            onSearchAddress={address => search(`/api/search-address?q=${encodeURIComponent(address)}`, "Aucun DPE n'a été trouvé à cette adresse. Essayez avec le numéro du DPE, indiqué en haut du diagnostic.")}
-            onSearchDpe={n => search(`/api/search-dpe/${encodeURIComponent(n)}`, 'Aucun DPE ne correspond à ce numéro. Vérifiez les 13 caractères.')}
+    // Data ready: list of diagnostics, or the first simulation done (or failed)
+    const analysisDone = !loading && (view === 'results' || (view === 'dashboard' && (!!sims.A || !busy.A)));
+    const analysis = analyzing && (
+        <LoadingSequence
+            steps={SIMULATION_STEPS}
+            title="Analyse du logement"
+            subtitle={view === 'dashboard' ? property?.address : undefined}
+            sources="ADEME, DVF (DGFiP), Anah, barèmes officiels 2026"
+            done={analysisDone}
+            onFinished={() => setAnalyzing(false)}
         />
     );
+
+    // Same place in the tree whatever the view, so the sequence runs on across them
+    return <>{analysis}{page()}</>;
+
+    function page() {
+        if (view === 'results') {
+            return <Results results={results} onSelect={p => { setAnalyzing(true); selectProperty(p); }} onBack={goHome} />;
+        }
+
+        if (view === 'dashboard' && property) {
+            const currentInput = scenario === 'A' ? inputA : inputB;
+            return (
+                <>
+                {showValuation && currentInput && (
+                    <Suspense fallback={null}>
+                        <ValuationDialog meta={reportMeta()!} simulation={currentInput} onClose={() => setShowValuation(false)} />
+                    </Suspense>
+                )}
+                <Dashboard
+                    property={property}
+                    scenario={scenario}
+                    onScenario={setScenario}
+                    actions={actions[scenario]}
+                    onToggle={toggle}
+                    sims={sims}
+                    worksCount={{ A: actions.A.filter(a => a.active).length, B: actions.B.filter(a => a.active).length }}
+                    updating={busy[scenario]}
+                    settings={settings}
+                    onSettings={updateSettings}
+                    report={{
+                        // Reports need accounts and payments to be configured on the server
+                        available: !!config?.auth_enabled && !!config?.billing_enabled,
+                        price: config?.report_price ?? null,
+                        included: !!me?.is_pro,
+                        downloading,
+                        onDownload: downloadReport,
+                    }}
+                    valuation={me?.is_pro && property.inseeCode ? () => setShowValuation(true) : undefined}
+                    onBack={goHome}
+                />
+                </>
+            );
+        }
+
+        return (
+            <Landing
+                loading={loading}
+                error={error}
+                onSearchAddress={address => search(`/api/search-address?q=${encodeURIComponent(address)}`, "Aucun DPE n'a été trouvé à cette adresse. Essayez avec le numéro du DPE, indiqué en haut du diagnostic.")}
+                onSearchDpe={n => search(`/api/search-dpe/${encodeURIComponent(n)}`, 'Aucun DPE ne correspond à ce numéro. Vérifiez les 13 caractères.')}
+            />
+        );
+    }
 }
