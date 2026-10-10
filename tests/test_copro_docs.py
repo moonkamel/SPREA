@@ -175,3 +175,27 @@ def test_schema_is_strict_and_pdf_renders_sparse_results():
                                             "vigilance", "questions_syndic", "documents_manquants")},
                          "copropriete": {}, "finances": {}, "obligations": {}, "synthese": "Peu d'informations.", "niveau_risque": "faible"}}
     assert copro_docs_pdf.generate(sparse, {}, date(2026, 10, 10))[:4] == b"%PDF"
+
+
+def test_storage_calls():
+    """Live check: Storage answered 400 to an empty JSON body (signed upload URL)."""
+    import httpx
+    from api.store import SupabaseStore
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        if "/upload/sign/" in request.url.path:
+            if not request.content:
+                return httpx.Response(400, json={"error": "Body cannot be empty"})
+            return httpx.Response(200, json={"url": "/object/upload/sign/copro-docs/u/a/0-x?token=t"})
+        if request.method == "DELETE":
+            return httpx.Response(200, json=[])
+        return httpx.Response(404, json={})
+
+    store = SupabaseStore("https://p.supabase.co", "sb_secret_x", transport=httpx.MockTransport(handler))
+    url = asyncio.run(store.signed_upload_url("copro-docs", "u/a/0-x"))
+    assert url == "https://p.supabase.co/storage/v1/object/upload/sign/copro-docs/u/a/0-x?token=t"
+    assert asyncio.run(store.download_object("copro-docs", "u/a/0-x")) is None
+    asyncio.run(store.delete_objects("copro-docs", ["u/a/0-x"]))
+    assert seen[-1].method == "DELETE" and b"prefixes" in seen[-1].content

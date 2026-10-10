@@ -388,7 +388,8 @@ class SupabaseStore:
 
     async def signed_upload_url(self, bucket: str, path: str) -> str:
         async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
-            res = await client.post(f"{self.storage_base}/object/upload/sign/{bucket}/{path}", headers=self.headers)
+            # Storage rejects an empty body sent as JSON
+            res = await client.post(f"{self.storage_base}/object/upload/sign/{bucket}/{path}", headers=self.headers, json={})
             res.raise_for_status()
         return f"{self.storage_base}{res.json()['url']}"
 
