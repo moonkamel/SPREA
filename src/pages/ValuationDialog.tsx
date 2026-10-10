@@ -74,8 +74,8 @@ export default function ValuationDialog({ meta, simulation, onClose }: { meta: o
     };
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
-            <Card className="w-full max-w-2xl p-5 sm:p-6 relative">
+        <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
+            <Card className="w-full max-w-2xl p-5 sm:p-6 relative my-auto">
                 <button type="button" onClick={onClose} className="absolute top-4 right-4 text-faint hover:text-ink" aria-label="Fermer"><X size={18} /></button>
                 <h2 className="text-xl text-ink pr-8">Avis de valeur avant / après rénovation</h2>
                 <p className="mt-1 text-sm text-muted">Ventes comparables (DVF) corrigées de la classe DPE, avec le scénario de travaux en cours.</p>
