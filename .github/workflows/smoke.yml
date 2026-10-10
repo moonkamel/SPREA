@@ -1,0 +1,31 @@
+name: Production smoke test
+
+# Public pages, SEO files, API health, access control of private endpoints,
+# security headers. Read-only. On demand, and every morning.
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Site to test"
+        default: "https://sprea.app"
+  schedule:
+    - cron: "17 6 * * *"
+  push:
+    paths:
+      - "scripts/smoke/**"
+      - ".github/workflows/smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx==0.28.1
+      - run: python scripts/smoke/smoke.py ${{ inputs.base || 'https://sprea.app' }}
