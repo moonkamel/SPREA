@@ -111,6 +111,8 @@ LOAN_MONTHS = 84
 WORKS_CATALOG = [
     {"id": "iti", "range": (0.85, 1.25), "name": "Isolation des murs (par l'intérieur)", "cost": 85, "unit": "m2_wall", "zone": True, "days": 5,
      "description": "Doublage isolant posé côté intérieur des murs donnant sur l'extérieur. Efficace, mais réduit un peu la surface habitable."},
+    {"id": "ite", "range": (0.85, 1.3), "name": "Isolation des murs (par l'extérieur)", "cost": 165, "unit": "m2_wall", "zone": True, "days": 12,
+     "description": "Isolant fixé sur les façades puis enduit ou bardage. Supprime la plupart des ponts thermiques, sans perte de surface habitable ; change l'aspect des façades (déclaration préalable en mairie)."},
     {"id": "roof", "range": (0.85, 1.25), "name": "Isolation de la toiture", "cost": 65, "unit": "m2_roof", "zone": True, "days": 7,
      "description": "Isolation des combles ou des rampants. Souvent le geste le plus rentable dans une maison : la chaleur monte."},
     {"id": "floor_ceiling", "range": (0.85, 1.3), "name": "Isolation du plancher bas", "cost": 55, "unit": "m2_floor", "zone": True, "days": 3,
@@ -418,7 +420,10 @@ def simulate(data: SimulationInput) -> Dict:
     surface = prop.surface
     ges = prop.ges_value or 20
     thresholds, official = calibrated_thresholds(surface, prop.initial_cep, ges, prop.official_label, prop.dpe_date)
-    works = [WORKS_BY_ID[w] for w in dict.fromkeys(data.works) if w in WORKS_BY_ID]
+    ids = list(dict.fromkeys(data.works))
+    if "ite" in ids and "iti" in ids:
+        ids.remove("iti")  # The walls are insulated once, from outside
+    works = [WORKS_BY_ID[w] for w in ids if w in WORKS_BY_ID]
     work_ids = [w["id"] for w in works]
     perf = projected_performance(prop, work_ids)
     env = perf["envelope"]
@@ -446,7 +451,7 @@ def simulate(data: SimulationInput) -> Dict:
     for w in works:
         quantity = quantities[w["unit"]]
         item = w["cost"] * quantity
-        if w["unit"] == "m2_wall" and env.walls_uninsulated:
+        if w["id"] == "iti" and env.walls_uninsulated:
             item += WALL_PREPARATION_COST * quantity
         if w["zone"]:
             item *= zone
@@ -498,7 +503,7 @@ def simulate(data: SimulationInput) -> Dict:
     # Éco-PTZ: ceiling depends on the number of eligible actions (walls,
     # roof, low floor, windows, efficient heating, renewable hot water);
     # ventilation alone and electric radiators are not eligible
-    actions = {"iti": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows",
+    actions = {"iti": "walls", "ite": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows",
                "pac_air_eau": "heating", "ecs": "hot_water"}
     categories = {actions[w["id"]] for w in works if w["id"] in actions}
     if aids["pathway"] == "accompagne":
@@ -713,6 +718,8 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     works = set(systems)
     if walls_poor:
         works.add("iti")
+        if house:
+            works.add("ite")
     if windows_poor:
         works.add("windows")
     if ventilation_missing:
@@ -730,6 +737,39 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
             and not eq["heat_pump"] and energy_known(prop)):
         works.add("heating")
     return {"systems": systems, "works": works, "equipment": eq}
+
+
+def wall_alternative(data: SimulationInput, sim: Dict) -> Optional[Dict]:
+    """For a house whose walls are insulated in the programme: the same
+    programme with the other technique (exterior instead of interior, or the
+    reverse), to compare cost, aids and result."""
+    if not is_house(data.property.building_type):
+        return None
+    if "iti" in data.works and "ite" not in data.works:
+        other, current = "ite", "iti"
+    elif "ite" in data.works:
+        other, current = "iti", "ite"
+    else:
+        return None
+    alt = simulate(data.model_copy(update={"works": [other if w == current else w for w in data.works]}))
+    cost = next(d for d in alt["detailed_costs"] if d["id"] == other)
+    return {
+        "work": other,
+        "work_name": WORKS_BY_ID[other]["name"],
+        "work_cost_low": cost["cost_low"],
+        "work_cost_high": cost["cost_high"],
+        "cost_low": alt["cost_low"],
+        "cost_high": alt["cost_high"],
+        "aids": alt["subsidies"] + alt["cee_est"],
+        "rest_to_pay": alt["rest_to_pay"],
+        "rest_to_pay_low": alt["rest_to_pay_low"],
+        "rest_to_pay_high": alt["rest_to_pay_high"],
+        "rest_difference": alt["rest_to_pay"] - sim["rest_to_pay"],
+        "new_label": alt["new_label"],
+        "new_cep": alt["new_cep"],
+        "annual_bill_after": alt["annual_bill_after"],
+        "duration_days": alt["duration_days"],
+    }
 
 
 # --- Work suggestions ---
@@ -754,6 +794,9 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
     suggested = set()
     if shares["walls"] >= 0.18 and walls_poor:
         suggested.add("iti")
+        if house:
+            # Shown as the alternative to interior insulation
+            suggested.add("ite")
     # Roof: houses, and flats whose DPE puts most losses through the roof (top floor)
     if (house or shares["roof"] >= 0.35) and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
         suggested.add("roof")
@@ -783,7 +826,9 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         def pick(candidates: set, current: Tuple[int, float]) -> Tuple[int, float]:
             while current[0] > target:
                 # One heating system at most
-                options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected
+                # Exterior wall insulation is offered as the alternative to the
+                # interior one (report), not picked by default: it costs more
+                options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected and w != "ite"
                            and not (w in HEATING_SYSTEMS and any(p in HEATING_SYSTEMS for p in preselected))]
                 if not options:
                     break
