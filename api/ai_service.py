@@ -50,6 +50,7 @@ Règles de fond :
 - Si « variante_renovation_d_ampleur » est fournie, termine le paragraphe financement par cette variante : ajouter ce travail d'isolation ouvre la rénovation d'ampleur ; cite l'aide et le reste à charge de la variante, son accompagnement obligatoire et, s'il est fourni, ce qui est à vérifier sur place.
 - Si « valeur_verte_calculee_sur_prix_m2_par_defaut » vaut true, ne cite pas le montant de la valeur verte : il repose sur un prix au m² par défaut.
 - Les montants sont déjà arrondis : garde-les tels quels, sans recalculer de total.
+- « facture_estimee_eur_an » est la facture totale (chauffage, eau chaude, éclairage) : ne l'appelle pas « facture de chauffage ».
 - Si « eco_ptz_eur » est absent ou nul, ne parle pas d'éco-prêt. Si « parcours_aide » vaut « primes CEE », ne parle pas de MaPrimeRénov' pour ce programme.
 - Si le profil est « propriétaire occupant », ne parle de location qu'au conditionnel (« si vous mettez en location »).
 - Pas de conseil juridique ou fiscal personnalisé au-delà des faits fournis.
@@ -65,10 +66,19 @@ Réponds avec le texte final, dans le format demandé."""
 BANNED = re.compile(r"\*\*|__|^#+\s|[\U0001F300-\U0001FAFF☀-➿]", re.M)
 
 
+# An amount or a consumption written without the thousands space ("3680 €",
+# "7400 à 10 900 €"): the tables show "3 680 €"
+AMOUNT = re.compile(r"(?<![\d.,])(\d{1,3})(\d{3})(?=(?:\s?(?:€|kWh|euros))|(?:\s(?:et|à)\s\d[\d ]*\s?(?:€|kWh)))")
+
+
+def thousands(text: str) -> str:
+    return AMOUNT.sub(lambda m: f"{m.group(1)} {m.group(2)}", text)
+
+
 def _clean(value: Any, limit: int) -> str:
     text = BANNED.sub("", str(value or "")).replace("!", ".").strip()
     text = re.sub(r"\s+", " ", text)
-    return text[:limit]
+    return thousands(text)[:limit]
 
 
 def validate(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -229,6 +239,13 @@ def parse_stored(raw: Optional[str]) -> Optional[Dict[str, Any]]:
     except ValueError:
         return None  # Old plain-text narrative
     if isinstance(data, dict) and data.get("v") == NARRATIVE_VERSION and data.get("source") == "claude":
+        # Texts stored before the thousands fix
+        sections = data.get("sections") or {}
+        for key, value in sections.items():
+            if isinstance(value, str):
+                sections[key] = thousands(value)
+            elif isinstance(value, list):
+                sections[key] = [thousands(v) if isinstance(v, str) else v for v in value]
         return data
     return None
 
