@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Menu, X } from 'lucide-react';
 import { AccountButton, useAccount } from '../account';
 import { isLegalIncomplete, LEGAL } from '../legal';
-import { Link, navigate } from '../router';
+import { Link, navigate, usePath } from '../router';
 import { useSeo } from '../seo';
 
 export function Logo({ onClick }: { onClick?: () => void }) {
@@ -24,18 +25,59 @@ export function Logo({ onClick }: { onClick?: () => void }) {
 const NAV_LINK = 'px-2 sm:px-3 py-2 text-sm text-muted hover:text-ink transition-colors';
 
 // Subscribers see their tools; visitors see the showcase. On small screens,
-// only the links marked as essential stay in the header.
+// only the links marked as essential stay in the header, the others are in a menu.
 function Nav() {
     const { me } = useAccount();
+    const path = usePath();
+    const [open, setOpen] = useState(false);
+    const menu = useRef<HTMLDivElement>(null);
     const links: [string, string, boolean][] = me?.is_pro
         ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Visite guidée', true], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
+    const hidden = links.some(([, , essential]) => !essential);
+
+    // Closed on navigation, Escape or a click outside
+    useEffect(() => setOpen(false), [path]);
+    useEffect(() => {
+        if (!open) return;
+        const close = (e: Event) => {
+            if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Escape') return;
+            if (e.type === 'mousedown' && menu.current?.contains(e.target as Node)) return;
+            setOpen(false);
+        };
+        document.addEventListener('mousedown', close);
+        document.addEventListener('keydown', close);
+        return () => {
+            document.removeEventListener('mousedown', close);
+            document.removeEventListener('keydown', close);
+        };
+    }, [open]);
+
     return (
         <>
             {links.map(([to, label, essential]) => (
                 <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}`}>{label}</Link>
             ))}
+            {hidden && (
+                <div ref={menu} className="relative md:hidden">
+                    <button type="button" aria-expanded={open} aria-controls="site-menu" aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
+                        onClick={() => setOpen(o => !o)}
+                        className="h-10 w-10 flex items-center justify-center rounded-xl text-muted hover:text-ink transition-colors">
+                        {open ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                    {open && (
+                        <div id="site-menu" className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-line bg-panel p-2 shadow-2xl shadow-black/50">
+                            {links.map(([to, label]) => (
+                                <Link key={to} to={to}
+                                    className={`block rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-raised ${to === path ? 'text-brass' : 'text-ink-soft hover:text-ink'}`}>
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </>
     );
 }
@@ -102,8 +144,12 @@ export function LegalSection({ title, children }: { title: string; children: Rea
     );
 }
 
-export function LegalPage({ title, updated, children }: { title: string; updated?: string; children: ReactNode }) {
-    useSeo({ title: `${title} · SPREA`, path: window.location.pathname });
+export function LegalPage({ title, updated, description, children }: { title: string; updated?: string; description?: string; children: ReactNode }) {
+    useSeo({
+        title: `${title} · SPREA`,
+        description: description || `${title} de ${LEGAL.brand}, l'outil DPE des professionnels de l'immobilier : prospection, valeur verte et avis de valeur.`,
+        path: window.location.pathname,
+    });
     return (
         <PageShell>
             <article className="max-w-3xl mx-auto space-y-10">
@@ -114,6 +160,23 @@ export function LegalPage({ title, updated, children }: { title: string; updated
                 </header>
                 {children}
             </article>
+        </PageShell>
+    );
+}
+
+// Unknown address
+export function NotFound() {
+    useSeo({ title: 'Page introuvable · SPREA', noindex: true });
+    return (
+        <PageShell>
+            <div className="max-w-xl mx-auto text-center py-12">
+                <p className="text-sm text-brass tracking-wide">Erreur 404</p>
+                <h1 className="mt-3 text-4xl text-ink">Page introuvable</h1>
+                <p className="mt-4 text-muted">Cette adresse ne correspond à aucune page. Elle a peut-être changé, ou le lien est incomplet.</p>
+                <Link to="/" className="mt-8 inline-flex items-center justify-center rounded-xl px-5 h-12 font-semibold text-sm bg-brass text-canvas hover:bg-brass-light transition-colors">
+                    Revenir à l'accueil
+                </Link>
+            </div>
         </PageShell>
     );
 }

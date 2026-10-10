@@ -9,7 +9,7 @@ const td = 'p-3 align-top border-t border-line text-ink-soft';
 
 export default function ConfidentialitePage() {
     return (
-        <LegalPage title="Politique de confidentialité" updated={`Mise à jour le ${UPDATED}`}>
+        <LegalPage title="Politique de confidentialité" description="Données traitées par SPREA, finalités, bases légales, sous-traitants, durées de conservation et exercice de vos droits." updated={`Mise à jour le ${UPDATED}`}>
             <LegalSection title="Responsable du traitement">
                 <p>{LEGAL.companyName}, {LEGAL.address}, est responsable des traitements de données personnelles réalisés sur {LEGAL.brand}. Contact pour toute question ou demande : {LEGAL.email}.</p>
             </LegalSection>

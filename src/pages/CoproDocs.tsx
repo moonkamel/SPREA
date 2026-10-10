@@ -3,8 +3,7 @@ import { AlertTriangle, FileText, Info, Loader2, Sparkles, Trash2, Upload, X } f
 import { useAccount } from '../account';
 import { navigate } from '../router';
 import { useSeo } from '../seo';
-import { Button, Card, eur } from '../ui';
-import { errorDetail } from './Contacts';
+import { Button, Card, errorDetail, eur } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
 // Copropriété documents read by Claude (api/copro_docs.py): PV d'AG, carnet
@@ -254,14 +253,27 @@ export default function CoproDocsPage() {
     };
 
     const open = async (a: Analysis) => {
-        const res = await authedFetch(`/api/copro-docs/${a.id}`);
-        if (res.ok) { setCurrent(await res.json()); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        setError(null);
+        try {
+            const res = await authedFetch(`/api/copro-docs/${a.id}`);
+            if (!res.ok) { setError(await errorDetail(res, "L'analyse n'a pas pu être ouverte.")); return; }
+            setCurrent(await res.json());
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch {
+            setError("L'analyse n'a pas pu être ouverte. Vérifiez votre connexion et réessayez.");
+        }
     };
     const remove = async () => {
-        if (!current) return;
-        await authedFetch(`/api/copro-docs/${current.id}`, { method: 'DELETE' });
-        setCurrent(null);
-        load().catch(() => {});
+        if (!current || !window.confirm('Supprimer cette analyse et ses documents ? Cette action est définitive.')) return;
+        setError(null);
+        try {
+            const res = await authedFetch(`/api/copro-docs/${current.id}`, { method: 'DELETE' });
+            if (!res.ok) { setError(await errorDetail(res, "La suppression a échoué.")); return; }
+            setCurrent(null);
+            load().catch(() => {});
+        } catch {
+            setError('La suppression a échoué. Vérifiez votre connexion et réessayez.');
+        }
     };
     const pdf = async () => {
         if (!current) return;
@@ -299,6 +311,7 @@ export default function CoproDocsPage() {
                     </Card>
                 ) : (
                     <>
+                        {error && current?.result && <p role="alert" className="text-sm text-coral">{error}</p>}
                         {current?.result && <ResultView analysis={current} onDelete={remove} onPdf={pdf} />}
 
                         <Card className="p-5 sm:p-6 space-y-4">
@@ -332,7 +345,7 @@ export default function CoproDocsPage() {
                                 </ul>
                             )}
                             {total > MAX_TOTAL && <p className="text-sm text-coral">22 Mo au total au maximum : analysez les documents en deux fois.</p>}
-                            {error && <p className="text-sm text-coral">{error}</p>}
+                            {error && !current?.result && <p role="alert" className="text-sm text-coral">{error}</p>}
                             {step ? (
                                 <p className="text-sm text-muted flex items-center gap-2"><Loader2 size={14} className="animate-spin text-brass" />{step}</p>
                             ) : (

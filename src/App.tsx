@@ -6,6 +6,7 @@ import CgvPage from './pages/Cgv';
 import ConfidentialitePage from './pages/Confidentialite';
 import MentionsLegalesPage from './pages/MentionsLegales';
 import PricingPage from './pages/Pricing';
+import { NotFound } from './pages/site';
 // Leaflet is only loaded on the map page
 const ProspectionPage = lazy(() => import('./pages/Prospection'));
 const OwnerPage = lazy(() => import('./pages/Owner'));
@@ -33,7 +34,14 @@ export default function App() {
 }
 
 function Pages() {
-    const path = usePath();
+    const rawPath = usePath();
+    // "/tarifs/" -> "/tarifs"
+    const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') || '/' : rawPath;
+    useEffect(() => {
+        if (path === rawPath) return;
+        window.history.replaceState(window.history.state, '', `${path}${window.location.search}${window.location.hash}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }, [path, rawPath]);
     const pages: Record<string, JSX.Element> = {
         '/tarifs': <PricingPage />,
         '/cgv': <CgvPage />,
@@ -49,12 +57,13 @@ function Pages() {
         '/documents-copro': <Suspense fallback={null}><CoproDocsPage /></Suspense>,
     };
     // Owner page reached from a letter's QR code: /l/<code>
-    const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})\/?$/)?.[1];
-    // Observatory of one department: /observatoire/<name>-<code>
-    const department = path.match(/^\/observatoire\/([a-z0-9-]+)\/?$/)?.[1];
+    const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})$/)?.[1];
+    // Observatory of one department: /observatoire/<name>-<code> (unknown slug: 404 shown by the page)
+    const department = path.match(/^\/observatoire\/([a-z0-9-]+)$/)?.[1];
     const page = ownerCode ? <Suspense fallback={null}><OwnerPage code={ownerCode} /></Suspense>
         : department ? <Suspense fallback={null}><ObservatoirePage slug={department} /></Suspense>
-        : pages[path] ?? null;
+        : path === '/' ? null
+        : pages[path] ?? <NotFound />;
     return (
         <>
             {page}
@@ -79,14 +88,17 @@ const DEFAULT_SETTINGS: Settings = {
     parkingCost: 35,
 };
 
-// Debounced server-side simulation; the previous result stays displayed meanwhile
+// Debounced server-side simulation; the previous result stays displayed meanwhile.
+// `attempt` is bumped to retry after a failure.
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
 
-function useSimulation(input: object | null, setSim: (s: Simulation | null) => void, setBusy: (b: boolean) => void, fetcher: Fetcher) {
+function useSimulation(input: object | null, attempt: number, setSim: (s: Simulation | null) => void, setBusy: (b: boolean) => void,
+    setFailed: (f: boolean) => void, fetcher: Fetcher) {
     useEffect(() => {
         if (!input) return;
         const controller = new AbortController();
         setBusy(true);
+        setFailed(false);
         const timer = setTimeout(async () => {
             try {
                 const res = await fetcher('/api/simulate', {
@@ -99,11 +111,11 @@ function useSimulation(input: object | null, setSim: (s: Simulation | null) => v
                 setSim(toSimulation(await res.json()));
                 setBusy(false);
             } catch (err) {
-                if ((err as Error).name !== 'AbortError') { console.error(err); setBusy(false); }
+                if ((err as Error).name !== 'AbortError') { console.error(err); setBusy(false); setFailed(true); }
             }
         }, 250);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [input, setSim, setBusy, fetcher]);
+    }, [input, attempt, setSim, setBusy, setFailed, fetcher]);
 }
 
 // The tools are for subscribers; visitors get the showcase
@@ -134,6 +146,8 @@ function Simulator() {
     const [actions, setActions] = useState<Record<Scenario, RetrofitAction[]>>({ A: [], B: [] });
     const [sims, setSims] = useState<Record<Scenario, Simulation | null>>({ A: null, B: null });
     const [busy, setBusy] = useState<Record<Scenario, boolean>>({ A: false, B: false });
+    const [failed, setFailed] = useState<Record<Scenario, boolean>>({ A: false, B: false });
+    const [attempts, setAttempts] = useState<Record<Scenario, number>>({ A: 0, B: 0 });
     const [downloading, setDownloading] = useState(false);
     const [showValuation, setShowValuation] = useState(false);
     // Analysis screen, from the search until the first simulation is back
@@ -254,8 +268,10 @@ function Simulator() {
     const setSimB = useCallback((s: Simulation | null) => setSims(p => ({ ...p, B: s })), []);
     const setBusyA = useCallback((b: boolean) => setBusy(p => ({ ...p, A: b })), []);
     const setBusyB = useCallback((b: boolean) => setBusy(p => ({ ...p, B: b })), []);
-    useSimulation(inputA, setSimA, setBusyA, authedFetch);
-    useSimulation(inputB, setSimB, setBusyB, authedFetch);
+    const setFailedA = useCallback((f: boolean) => setFailed(p => ({ ...p, A: f })), []);
+    const setFailedB = useCallback((f: boolean) => setFailed(p => ({ ...p, B: f })), []);
+    useSimulation(inputA, attempts.A, setSimA, setBusyA, setFailedA, authedFetch);
+    useSimulation(inputB, attempts.B, setSimB, setBusyB, setFailedB, authedFetch);
 
     const reportMeta = () => property && ({
         address: property.address || 'Adresse inconnue',
@@ -325,6 +341,8 @@ function Simulator() {
                     sims={sims}
                     worksCount={{ A: actions.A.filter(a => a.active).length, B: actions.B.filter(a => a.active).length }}
                     updating={busy[scenario]}
+                    failed={failed[scenario] && !busy[scenario]}
+                    onRetry={() => setAttempts(p => ({ ...p, [scenario]: p[scenario] + 1 }))}
                     settings={settings}
                     onSettings={updateSettings}
                     report={{

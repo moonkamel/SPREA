@@ -10,7 +10,7 @@ function Article({ n, title, children }: { n: number; title: string; children: R
 export default function CgvPage() {
     const version = new Date(CGV_VERSION.slice(0, 10)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     return (
-        <LegalPage title="Conditions générales de vente"
+        <LegalPage title="Conditions générales de vente" description="Conditions générales de vente des abonnements SPREA (Solo, Agence, Réseau) : services, prix TTC, engagement de 12 mois, résiliation, carte de prospection et données personnelles."
             updated={`Version du ${version}${CGV_VERSION.length > 10 ? `, révision ${CGV_VERSION.slice(11)}` : ''}`}>
 
                 <Article n={1} title="Objet et champ d'application">

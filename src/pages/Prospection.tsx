@@ -589,7 +589,7 @@ export default function ProspectionPage() {
                         {mode === 'immeubles' && mono && (
                             <Card className="p-0 overflow-hidden">
                                 <div className="px-4 py-3 border-b border-line">
-                                    <p className="text-sm text-ink font-medium">{mono.buildings.length.toLocaleString('fr-FR')} immeubles</p>
+                                    <p className="text-sm text-ink font-medium">{mono.buildings.length.toLocaleString('fr-FR')} immeuble{mono.buildings.length > 1 ? 's' : ''}</p>
                                     <p className="text-xs text-faint">Les plus grands d'abord</p>
                                 </div>
                                 <MonoproList buildings={mono.buildings}
@@ -613,14 +613,14 @@ export default function ProspectionPage() {
                         {mode === 'dpe' && showDetails && (
                             <Card className="p-0 overflow-hidden">
                                 <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-line">
-                                    <p className="text-sm text-ink font-medium">{visible.length.toLocaleString('fr-FR')} adresses</p>
+                                    <p className="text-sm text-ink font-medium">{visible.length.toLocaleString('fr-FR')} adresse{visible.length > 1 ? 's' : ''}</p>
                                     <Button variant="secondary" className="h-9 px-3" onClick={exportCsv} disabled={!visible.length}>
                                         <Download size={14} />CSV
                                     </Button>
                                 </div>
                                 <ul className="max-h-[60vh] overflow-y-auto divide-y divide-line/70">
                                     {visible.slice(0, 300).map(a => (
-                                        <li key={a.address} className="px-4 py-3">
+                                        <li key={`${a.address || ''}@${a.lat},${a.lon}`} className="px-4 py-3">
                                             <button type="button" onClick={() => focus(a)} className="flex items-start gap-3 text-left w-full">
                                                 <DpeBadge label={a.worst} size="sm" />
                                                 <span className="min-w-0">

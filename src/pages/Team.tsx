@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, Copy, Loader2, Mail, Trash2, Users } from 'lucide-react';
-import { Button, Card } from '../ui';
+import { Button, Card, errorDetail as apiErrorDetail } from '../ui';
 import { ROLE_NAMES, useAccount, type Team } from '../account';
 import { navigate } from '../router';
 import { PageShell } from './site';
@@ -20,9 +20,8 @@ interface Agency { id: string; name: string; seats: number; members: number; lea
 
 const FIELD = 'h-11 px-3 rounded-xl bg-raised border border-line text-ink placeholder:text-faint outline-none focus:border-brass/70';
 
-const errorDetail = async (res: Response) => {
-    try { return (await res.json()).detail || `Erreur ${res.status}`; } catch { return `Erreur ${res.status}`; }
-};
+const errorDetail = (res: Response) => apiErrorDetail(res, `Erreur ${res.status}`);
+const NETWORK_ERROR = 'La requête a échoué. Vérifiez votre connexion et réessayez.';
 
 export default function TeamPage() {
     useSeo({ title: 'Équipe · SPREA', noindex: true });
@@ -30,6 +29,9 @@ export default function TeamPage() {
     const [data, setData] = useState<TeamData | null>(null);
     const [agencies, setAgencies] = useState<Agency[] | null>(null);
     const [error, setError] = useState<string | null>(null);
+    // Action that failed, to show the message next to it
+    const [errorAt, setErrorAt] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<'agent' | 'admin'>('agent');
     const [busy, setBusy] = useState<string | null>(null);
@@ -38,14 +40,19 @@ export default function TeamPage() {
     const [seats, setSeats] = useState(0);
 
     const load = useCallback(async () => {
-        const res = await authedFetch('/api/team');
-        if (!res.ok) { setError(await errorDetail(res)); return; }
-        const d: TeamData = await res.json();
-        setData(d);
-        if (d.team) setSeats(d.team.seats);
-        if (d.team?.kind === 'reseau' && d.can_manage) {
-            const n = await authedFetch('/api/team/network');
-            if (n.ok) setAgencies((await n.json()).agencies);
+        try {
+            const res = await authedFetch('/api/team');
+            if (!res.ok) { setLoadError(await errorDetail(res)); return; }
+            const d: TeamData = await res.json();
+            setLoadError(null);
+            setData(d);
+            if (d.team) setSeats(d.team.seats);
+            if (d.team?.kind === 'reseau' && d.can_manage) {
+                const n = await authedFetch('/api/team/network');
+                if (n.ok) setAgencies((await n.json()).agencies);
+            }
+        } catch {
+            setLoadError(NETWORK_ERROR);
         }
     }, [authedFetch]);
 
@@ -54,18 +61,23 @@ export default function TeamPage() {
     const run = async (key: string, fn: () => Promise<Response>, after?: (res: Response) => Promise<void>) => {
         setBusy(key);
         setError(null);
+        setErrorAt(null);
         try {
             const res = await fn();
-            if (!res.ok) { setError(await errorDetail(res)); return; }
+            if (!res.ok) { setError(await errorDetail(res)); setErrorAt(key); return; }
             if (after) await after(res);
             await load();
+        } catch {
+            setError(NETWORK_ERROR);
+            setErrorAt(key);
         } finally {
             setBusy(null);
         }
     };
     const json = (method: string, body?: object): RequestInit => ({ method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
 
-    if (!config?.auth_enabled) return <PageShell><p className="text-muted">Les comptes ne sont pas encore disponibles.</p></PageShell>;
+    if (!config) return <PageShell><Loader2 className="animate-spin text-faint mx-auto" /></PageShell>;
+    if (!config.auth_enabled) return <PageShell><p className="text-muted">Les comptes ne sont pas encore disponibles.</p></PageShell>;
     if (!session) {
         return (
             <PageShell>
@@ -77,7 +89,18 @@ export default function TeamPage() {
             </PageShell>
         );
     }
-    if (!data) return <PageShell><Loader2 className="animate-spin text-faint mx-auto" /></PageShell>;
+    if (!data) {
+        return (
+            <PageShell>
+                {loadError ? (
+                    <Card className="max-w-lg mx-auto p-8 text-center">
+                        <p role="alert" className="text-coral">{loadError}</p>
+                        <Button variant="secondary" className="mt-6" onClick={() => { setLoadError(null); load(); }}>Réessayer</Button>
+                    </Card>
+                ) : <Loader2 className="animate-spin text-faint mx-auto" />}
+            </PageShell>
+        );
+    }
 
     if (!data.team) {
         return (
@@ -107,7 +130,7 @@ export default function TeamPage() {
                     </p>
                 </header>
 
-                {error && <p role="alert" className="text-sm text-coral">{error}</p>}
+                {error && errorAt !== 'seats' && <p role="alert" className="text-sm text-coral">{error}</p>}
 
                 <Card className="p-6">
                     <h2 className="text-xl text-ink">Membres</h2>
@@ -204,6 +227,7 @@ export default function TeamPage() {
                                 {busy === 'seats' && <Loader2 className="animate-spin" size={16} />} Mettre à jour
                             </Button>
                         </form>
+                        {error && errorAt === 'seats' && <p role="alert" className="mt-3 text-sm text-coral">{error}</p>}
                     </Card>
                 )}
 

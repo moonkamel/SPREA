@@ -4,7 +4,7 @@ import { LegalPage, LegalSection } from './site';
 
 export default function MentionsLegalesPage() {
     return (
-        <LegalPage title="Mentions légales">
+        <LegalPage title="Mentions légales" description="Éditeur, hébergeur, propriété intellectuelle et sources des données publiques réutilisées par SPREA.">
             <LegalSection title="Éditeur du site">
                 <p>
                     {LEGAL.companyName}, {LEGAL.legalForm}<br />

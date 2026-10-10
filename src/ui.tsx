@@ -274,3 +274,18 @@ export function Row({ label, help, value, tone, strong }: {
         </div>
     );
 }
+
+// --- API errors ---
+
+// FastAPI returns `detail` as a string for handled errors and as an array of
+// objects for validation errors (422): always give a displayable string.
+export function detailMessage(detail: unknown, fallback: string, invalid = 'Vérifiez les informations saisies.'): string {
+    if (typeof detail === 'string' && detail.trim()) return detail;
+    if (Array.isArray(detail)) return invalid;
+    return fallback;
+}
+
+export async function errorDetail(res: Response, fallback: string, invalid?: string): Promise<string> {
+    const body = await res.json().catch(() => null);
+    return detailMessage(body?.detail, fallback, invalid);
+}

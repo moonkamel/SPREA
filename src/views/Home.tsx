@@ -1,6 +1,6 @@
 import { ArrowRight, Bell, Calculator, FileText, MapPinned, Scale, ShieldCheck } from 'lucide-react';
 import { Button, Card } from '../ui';
-import { navigate, Link } from '../router';
+import { navigate, Link, usePath } from '../router';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { Screen } from '../pages/Screen';
 import { useSeo } from '../seo';
@@ -38,6 +38,8 @@ export default function Home() {
         title: "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte, avis de valeur",
         description: "Repérez les passoires thermiques de votre secteur, recevez chaque matin les nouveaux DPE et remettez à vos vendeurs un avis de valeur avant / après travaux fondé sur les ventes DVF.",
         path: '/',
+        // Kept mounted (hidden) under the other routes: only the home page sets these
+        active: usePath() === '/',
     });
     return (
         <div className="min-h-screen flex flex-col">

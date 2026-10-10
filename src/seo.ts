@@ -15,13 +15,16 @@ const setMeta = (attr: 'name' | 'property', key: string, value: string) => {
     el.setAttribute('content', value);
 };
 
-export function useSeo({ title, description, path, noindex = false }: {
+export function useSeo({ title, description, path, noindex = false, active = true }: {
     title: string;
     description?: string;
     path?: string;
     noindex?: boolean;
+    // False for a component kept mounted while hidden (the home page under the other routes)
+    active?: boolean;
 }) {
     useEffect(() => {
+        if (!active) return;
         document.title = title;
         setMeta('property', 'og:title', title);
         if (description) {
@@ -40,7 +43,7 @@ export function useSeo({ title, description, path, noindex = false }: {
             link.href = url;
             setMeta('property', 'og:url', url);
         }
-    }, [title, description, path, noindex]);
+    }, [title, description, path, noindex, active]);
 }
 
 // "Côtes-d'Armor", "22" -> "cotes-d-armor-22" (same rule in scripts/seo/prerender.mjs)

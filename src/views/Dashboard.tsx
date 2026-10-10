@@ -33,6 +33,9 @@ interface Props {
     sims: Record<Scenario, Simulation | null>;
     worksCount: Record<Scenario, number>;
     updating: boolean;
+    // Last simulation of the current scenario failed
+    failed: boolean;
+    onRetry: () => void;
     settings: Settings;
     onSettings: (patch: Partial<Settings>) => void;
     report: { available: boolean; price: string | null; included: boolean; downloading: boolean; onDownload: () => void };
@@ -58,11 +61,13 @@ function climateStatus(ban: Date | null) {
 
 // --- Summary (sticky on desktop) ---
 
-function Summary({ sim, property, report, updating, scenarioName, valuation }: {
+function Summary({ sim, property, report, updating, failed, onRetry, scenarioName, valuation }: {
     sim: Simulation | null;
     property: PropertyData;
     report: Props['report'];
     updating: boolean;
+    failed: boolean;
+    onRetry: () => void;
     scenarioName: string;
     valuation?: () => void;
 }) {
@@ -76,6 +81,13 @@ function Summary({ sim, property, report, updating, scenarioName, valuation }: {
                     {updating && <Loader2 size={12} className="animate-spin" />}{scenarioName}
                 </span>
             </div>
+
+            {failed && (
+                <div role="alert" className="mt-4 rounded-xl border border-coral/40 bg-coral/10 p-4 flex flex-wrap items-center justify-between gap-3">
+                    <span className="text-sm text-ink flex items-center gap-2"><AlertTriangle size={16} className="text-coral shrink-0" /> La simulation a échoué.</span>
+                    <button type="button" onClick={onRetry} className="text-sm font-medium text-brass-light hover:underline">Réessayer</button>
+                </div>
+            )}
 
             <div className="mt-5 flex items-center gap-3">
                 <DpeBadge label={sim?.currentLabel || property.label} size="lg" />
@@ -162,7 +174,7 @@ function Summary({ sim, property, report, updating, scenarioName, valuation }: {
 // --- Main view ---
 
 export default function Dashboard(props: Props) {
-    const { property, scenario, onScenario, actions, onToggle, sims, worksCount, updating, settings, onSettings, report, onBack } = props;
+    const { property, scenario, onScenario, actions, onToggle, sims, worksCount, updating, failed, onRetry, settings, onSettings, report, onBack } = props;
     const sim = sims[scenario];
     const [showAdvanced, setShowAdvanced] = useState(false);
     const house = isHouse(property.buildingType);
@@ -208,7 +220,7 @@ export default function Dashboard(props: Props) {
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] items-start">
                     {/* Summary first on mobile, sticky column on desktop */}
                     <aside className="lg:order-2 lg:sticky lg:top-24">
-                        <Summary sim={sim} property={property} report={report} updating={updating} scenarioName={scenarioName} valuation={props.valuation} />
+                        <Summary sim={sim} property={property} report={report} updating={updating} failed={failed} onRetry={onRetry} scenarioName={scenarioName} valuation={props.valuation} />
                     </aside>
 
                     <div className="lg:order-1 space-y-6 min-w-0">
