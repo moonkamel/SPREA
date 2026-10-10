@@ -133,3 +133,27 @@ def test_narrative_amounts_get_the_thousands_space():
     assert thousands("estimée à 3680 € par an, de 7400 à 10 900 €") == "estimée à 3 680 € par an, de 7 400 à 10 900 €"
     # Years and consumptions below 1 000 stay as they are
     assert thousands("construite entre 1948 et 1974, après 2015, 360 kWh") == "construite entre 1948 et 1974, après 2015, 360 kWh"
+
+
+def test_exterior_wall_insulation_is_offered_to_houses_and_compared():
+    """Feedback of an agent (10/10): a house can be insulated from outside."""
+    from api.simulation import wall_alternative
+    house = prop(HOUSE)
+    assert "ite" in works_of(house) and "ite" not in works_of(prop(FLAT))
+    iti = simulate(SimulationInput(property=house, works=["iti"]))
+    ite = simulate(SimulationInput(property=house, works=["ite"]))
+    both = simulate(SimulationInput(property=house, works=["iti", "ite"]))
+    # Exterior: better (thermal bridges), dearer; never both at once
+    assert ite["new_cep"] < iti["new_cep"] and ite["cost"] > iti["cost"]
+    assert both["cost"] == pytest.approx(ite["cost"]) and both["new_cep"] == pytest.approx(ite["new_cep"])
+    data = SimulationInput(property=house, works=["iti", "pac_air_eau"])
+    alt = wall_alternative(data, simulate(data))
+    assert alt["work"] == "ite" and alt["rest_difference"] > 0
+    assert wall_alternative(SimulationInput(property=prop(FLAT), works=["iti"]), iti) is None
+
+
+def test_every_insulation_work_has_a_technical_spec():
+    from api.report_content import tech_spec
+    for work in ("iti", "ite", "roof", "floor_ceiling", "windows", "vmc", "pac_air_eau", "ecs", "heating"):
+        assert tech_spec(work, {"heat_pump_kw": 8})
+    assert "R ≥ 3,7" in tech_spec("iti", {}) and "7 à 9 kW" in tech_spec("pac_air_eau", {"heat_pump_kw": 8})

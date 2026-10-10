@@ -38,10 +38,14 @@ U_BY_QUALITY = {
 # Insulation works: element improved and U value reached
 WORK_TARGETS = {
     "iti": ("walls", 0.30),  # R ~ 3.7 with remaining thermal bridges
+    "ite": ("walls", 0.25),  # R ~ 4.5, continuous on the facade
     "roof": ("roof", 0.15),  # R ~ 7
     "floor_ceiling": ("floor", 0.30),  # R ~ 3
     "windows": ("windows", 1.3),  # Double glazing, Uw 1.3
 }
+# External insulation wraps floor slabs and partition walls: most of the
+# thermal bridges disappear
+ITE_BRIDGES_FACTOR = 0.4
 # Humidity-controlled mechanical ventilation vs uncontrolled air renewal
 VMC_AIR_FACTOR = 0.75
 
@@ -170,11 +174,17 @@ class Envelope:
     def losses(self, works: List[str] = ()) -> Dict[str, float]:
         """Heat losses (W/K) per element after the given works."""
         losses = dict(self.dpe_losses or self._estimated_losses())
+        done = set()
         for work in works:
             if work in WORK_TARGETS:
                 element, u_new = WORK_TARGETS[work]
+                if element in done:  # Interior and exterior wall insulation: once
+                    continue
+                done.add(element)
                 # Never worse than the current state
                 losses[element] *= min(1.0, u_new / self.u[element])
+                if work == "ite":
+                    losses["bridges"] *= ITE_BRIDGES_FACTOR
             elif work == "vmc":
                 losses["air"] *= VMC_AIR_FACTOR
         return losses

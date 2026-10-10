@@ -81,7 +81,7 @@ AMPLEUR_ECRETEMENT = {
 }
 
 # Works counted as "isolation" for the rénovation d'ampleur requirement.
-INSULATION_WORKS = {"iti", "iti_ossature", "ite_pse", "ite_bois", "roof", "combles", "floor_ceiling", "windows", "windows_pvc"}
+INSULATION_WORKS = {"iti", "ite", "iti_ossature", "ite_pse", "ite_bois", "roof", "combles", "floor_ceiling", "windows", "windows_pvc"}
 FOSSIL_ENERGIES = {"gas", "oil"}
 # Works that remove gas or oil heating
 FOSSIL_REPLACEMENTS = {"pac_air_eau"}
@@ -105,6 +105,7 @@ GESTURE_ECRETEMENT = {
 # unit. Actual premiums depend on the energy supplier's offer.
 CEE_ESTIMATES = {
     "iti": ("m2", (14, 8)),
+    "ite": ("m2", (14, 8)),
     "roof": ("m2", (14, 8)),
     "floor_ceiling": ("m2", (18, 10)),
     "windows": ("unit", (60, 35)),

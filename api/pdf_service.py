@@ -620,6 +620,8 @@ class PDFReportGenerator:
         for label, key in (('Chauffage', 'heating'), ('Eau chaude', 'hot_water'), ('Ventilation', 'ventilation')):
             if ident.get(key):
                 rows.append(kv(label, text(ident[key])))
+        for item in report.get('insulation_state') or []:
+            rows.append(kv(text(item['label']), text(item['value'])))
         rows.append(kv("Facture d'énergie estimée", f"{eur_r(sim['annual_bill_before'], 10)} / an"))
         if ident.get('dpe_annual_cost'):
             rows.append(kv('Coût annuel indiqué par le DPE (prix 2021)', f"{eur(float(ident['dpe_annual_cost']))} / an"))
@@ -682,6 +684,8 @@ class PDFReportGenerator:
                 cell.append(Paragraph(text(w['reason']), S['muted']))
             if effect:
                 cell.append(Paragraph('Effet seul : ' + ' · '.join(effect), style('eff', fontSize=8.5, leading=12, textColor=SAGE)))
+            if w.get('spec'):
+                cell.append(Paragraph('<b>Préconisation :</b> ' + text(w['spec']), style('spec', fontSize=8.5, leading=12, textColor=INK)))
             if w['caution']:
                 cell.append(Paragraph('À prévoir : ' + text(w['caution']), style('caut', fontSize=8.5, leading=12, textColor=CORAL)))
             rows.append([cell, Paragraph(eur_range(w['cost_low'], w['cost_high']), S['right'])])
@@ -697,6 +701,29 @@ class PDFReportGenerator:
             notes.append(f"Durée indicative du chantier : {text(sim['duration_days'])} jours ouvrés, hors délais d'approvisionnement.")
         notes.append("TVA à 5,5 % incluse. Fourchettes fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.")
         out += [Spacer(1, 6), Paragraph(' '.join(notes), S['muted'])]
+
+        alt = report.get('wall_alternative')
+        if alt:
+            exterior = alt['work'] == 'ite'
+            diff = alt['rest_difference']
+            rows_alt = [
+                kv(f"{text(alt['work_name'])}", eur_range(alt['work_cost_low'], alt['work_cost_high'])),
+                kv('Coût total du programme', eur_range(alt['cost_low'], alt['cost_high'])),
+                kv('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_r(alt['aids'])}</font>"),
+                kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_range(alt['rest_to_pay_low'], alt['rest_to_pay_high'])}</b></font>"),
+            ]
+            pros = ("Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade "
+                    "rénovée. En contrepartie : coût plus élevé et déclaration préalable en mairie." if exterior else
+                    "Moins cher et sans formalité en mairie. En contrepartie : perte de surface habitable, ponts thermiques "
+                    "en partie conservés, pièces à libérer pendant le chantier.")
+            out += [Spacer(1, 12), KeepTogether([boxed([
+                Paragraph(f"<b>Autre solution pour les murs : {text(alt['work_name'][0].lower() + alt['work_name'][1:])}</b>", S['body']),
+                Spacer(1, 3),
+                Paragraph(f"{pros} Résultat : classe {text(alt['new_label'])}, facture d'environ "
+                          f"{eur_r(alt['annual_bill_after'], 10)} par an, reste à charge "
+                          f"{'supérieur' if diff > 0 else 'inférieur'} d'environ {eur_r(abs(diff))}.", S['muted']),
+                Spacer(1, 6), rows_table(rows_alt, [CONTENT_W * 0.55, CONTENT_W * 0.35], bold_last=True),
+            ], background=TINT, rule=BRASS_LIGHT, padding=9)])]
 
         if sim.get('thresholds'):
             out += [Spacer(1, 14), KeepTogether([
