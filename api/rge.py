@@ -5,8 +5,11 @@ one line per company and qualification, with its work domain and location.
 Public professional data (Licence Ouverte 2.0): shown as found, closest first,
 without any ranking or recommendation.
 """
+import asyncio
 import logging
+import math
 import time
+import unicodedata
 from datetime import date
 from typing import Dict, List, Optional, Tuple
 
@@ -44,10 +47,69 @@ DOMAINS: Dict[str, List[str]] = {
 GLOBAL_DOMAINS = ["Projet complet de rénovation"]
 AUDIT_DOMAINS = {"maison": ["Audit énergétique Maison individuelle"], "appartement": ["Audit énergétique Logement collectif"]}
 
+GEO_URL = "https://geo.api.gouv.fr/communes"
+
 RADII_KM = (10, 25, 50)
+# A company whose town lies further than this from the dwelling, although
+# ADEME puts it close by, has wrong coordinates in the directory
+MAX_TOWN_KM = 15
 PER_WORK = 3
 CACHE_TTL = 24 * 3600
 _cache: Dict[Tuple, Tuple[float, Dict]] = {}
+_towns: Dict[str, Optional[List[Tuple[str, float, float]]]] = {}  # postcode -> (name, lat, lon) of its towns
+
+
+def _norm(name: str) -> str:
+    text = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
+    return "".join(c for c in text if c.isalnum())
+
+
+def km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    a = math.sin((p2 - p1) / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(math.radians(lon2 - lon1) / 2) ** 2
+    return 6371 * 2 * math.asin(math.sqrt(a))
+
+
+async def _postcode_towns(client: httpx.AsyncClient, postcode: str) -> Optional[List[Tuple[str, float, float]]]:
+    """Towns of a postcode with their centre (geo.api.gouv.fr); None when unknown."""
+    if postcode in _towns:
+        return _towns[postcode]
+    towns = None
+    try:
+        res = await client.get(GEO_URL, params={"codePostal": postcode, "fields": "nom,centre", "format": "json"}, timeout=4)
+        if res.status_code == 200:
+            towns = [(_norm(t["nom"]), t["centre"]["coordinates"][1], t["centre"]["coordinates"][0])
+                     for t in res.json() if isinstance(t, dict) and t.get("centre")]
+    except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError):
+        towns = None
+    _towns[postcode] = towns or None
+    return _towns[postcode]
+
+
+def town_distance(row: Dict, towns: Optional[List[Tuple[str, float, float]]], lat: float, lon: float) -> Optional[float]:
+    """Distance from the dwelling to the centre of the company's town, when known."""
+    if not towns:
+        return None
+    name = _norm(row.get("commune") or "")
+    match = [t for t in towns if t[0] == name] or [t for t in towns if name and (name in t[0] or t[0] in name)]
+    if not match and len(towns) > 1:
+        return None
+    t = (match or towns)[0]
+    return km(lat, lon, t[1], t[2])
+
+
+async def plausible(client: httpx.AsyncClient, rows: List[Dict], lat: float, lon: float) -> List[Dict]:
+    """Drops the companies whose town is far from the dwelling while ADEME
+    places them nearby (wrong coordinates in the directory)."""
+    postcodes = sorted({r.get("code_postal") for r in rows if r.get("code_postal")})
+    towns = dict(zip(postcodes, await asyncio.gather(*(_postcode_towns(client, p) for p in postcodes))))
+    out = []
+    for r in rows:
+        d = town_distance(r, towns.get(r.get("code_postal")), lat, lon)
+        if d is not None and d > MAX_TOWN_KM:
+            continue
+        out.append(r)
+    return out
 
 
 def query(domains: List[str]) -> str:
@@ -97,7 +159,8 @@ async def search(client: httpx.AsyncClient, lat: float, lon: float, domains: Lis
             "qs": query(domains), "geo_distance": f"{lon},{lat},{radius * 1000}",
             "size": 40, "select": FIELDS})
         res.raise_for_status()
-        found = closest_companies(res.json().get("results") or [], today, limit)
+        rows = await plausible(client, res.json().get("results") or [], lat, lon)
+        found = closest_companies(rows, today, limit)
         if len(found) >= limit:
             break
     return found

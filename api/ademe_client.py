@@ -244,7 +244,8 @@ class AdemeConnector:
             ademe_dpe_number=raw.get("numero_dpe"),
             construction_year=self._safe_int(raw.get("annee_construction")),
             construction_period=raw.get("periode_construction") or raw.get("nom_periode_construction") or raw.get("periode_construction_ban"),
-            shab=self._safe_float(raw.get("surface_habitable_logement"), 50.0), # Safer default
+            # Building DPE: the building's surface (its consumptions are per m² of it)
+            shab=self._safe_float(raw.get("surface_habitable_logement") or raw.get("surface_habitable_immeuble"), 50.0),
             altitude=self._safe_float(raw.get("classe_altitude")),
             climate_zone=self._map_climate_zone(raw.get("zone_climatique")),
             dpe_class_current=self._map_dpe_label(raw.get("etiquette_dpe")),

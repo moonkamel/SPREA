@@ -42,12 +42,12 @@ SYSTEM_PROMPT = """Tu rédiges la partie « analyse » d'un rapport de rénovati
 
 Règles de fond :
 - N'utilise que les faits fournis. N'invente aucun chiffre, aucune aide, aucune date, aucune caractéristique du logement. Si une information manque, n'en parle pas.
-- Ne déduis pas de caractéristique physique absente des données : nombre de niveaux, plain-pied, cave, vide sanitaire, combles aménagés, mitoyenneté, état des menuiseries.
+- Ne déduis pas de caractéristique physique absente des données : nombre de niveaux, plain-pied, cave, vide sanitaire, combles aménagés, mitoyenneté, état des menuiseries, âge ou vétusté des équipements (n'écris pas « anciens » si les données ne le disent pas).
 - Chaque paragraphe cite au moins un chiffre des données, arrondi comme dans les données, en euros ou en kWh.
 - Parle de CE logement : son type, sa surface, son époque, son chauffage, ses pertes de chaleur dominantes. Une phrase qui pourrait figurer dans le rapport d'un autre logement est à supprimer.
 - Présente les montants comme des estimations (« environ », « entre … et … »), jamais comme des certitudes. Les aides restent à confirmer par France Rénov'.
 - Si les données expliquent pourquoi la rénovation d'ampleur n'est pas accessible, explique-le simplement.
-- Dans la stratégie, présente les travaux dans l'ordre de « travaux » (l'ordre du tableau du rapport), sans en changer l'ordre.
+- Dans la stratégie, présente les travaux dans l'ordre de « travaux » (l'ordre du tableau du rapport), sans en changer l'ordre et sans parler de cet ordre ni du rapport : enchaîne simplement (« d'abord », « ensuite », « enfin »).
 - Dans la stratégie, donne pour les travaux d'isolation la préconisation technique fournie (épaisseur, résistance thermique R exigée pour les aides) et, pour la pompe à chaleur, la puissance indicative si elle est fournie.
 - Si « autre_solution_murs » est fournie, compare en une ou deux phrases l'isolation des murs par l'intérieur et par l'extérieur (surface habitable, ponts thermiques, coût, déclaration en mairie), avec l'écart de reste à charge. Si sa « contrainte » est fournie, cite-la.
 - Si « variante_renovation_d_ampleur » est fournie, termine le paragraphe financement par cette variante : ajouter ce travail d'isolation ouvre la rénovation d'ampleur ; cite l'aide et le reste à charge de la variante, son accompagnement obligatoire et, s'il est fourni, ce qui est à vérifier sur place.
@@ -79,7 +79,9 @@ def thousands(text: str) -> str:
 
 
 def _clean(value: Any, limit: int) -> str:
-    text = BANNED.sub("", str(value or "")).replace("!", ".").strip()
+    # The NF stars of electric heaters (« NF** et NF*** ») are not markdown
+    text = re.sub(r"NF(\*+)", lambda m: "NF" + "\ue000" * len(m.group(1)), str(value or ""))
+    text = BANNED.sub("", text).replace("!", ".").replace("\ue000", "*").strip()
     text = re.sub(r"\s+", " ", text)
     return thousands(text)[:limit]
 

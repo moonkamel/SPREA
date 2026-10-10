@@ -6,6 +6,7 @@ according to the dwelling's own heat losses (api/envelope.py); heating and
 hot water systems then change the energy used. The result is scaled on the
 official DPE figures, so the starting label matches the real certificate.
 """
+import itertools
 import math
 from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
@@ -145,7 +146,8 @@ INCOME_LEVELS = {
 
 class SimulationProperty(BaseModel):
     """Dwelling as described by its DPE."""
-    surface: float = Field(..., gt=0, le=10000)
+    # Up to large whole-building DPE (some exceed 20 000 m²)
+    surface: float = Field(..., gt=0, le=200000)
     initial_cep: float = Field(..., ge=0)
     ges_value: Optional[float] = None
     # Label and date of the official DPE, when known
@@ -252,7 +254,9 @@ def get_labels(cep: float, ges: float, thresholds: List[Dict]) -> Dict[str, str]
 def rental_ban_date(label: str, final_consumption: float, postcode: Optional[str]) -> Optional[date]:
     """Loi Climat & Résilience rental ban schedule (the 450 kWh rule is in final energy)."""
     overseas = bool(postcode) and postcode.startswith("97")
-    if not overseas and final_consumption > 450:
+    # Above 450 kWh/m² of final energy: banned since 2023 (always a G; the label
+    # guards against a total read as a consumption per m²)
+    if not overseas and label == "G" and final_consumption > 450:
         return date(2023, 1, 1)
     schedule = {"G": date(2028, 1, 1), "F": date(2031, 1, 1)} if overseas else \
         {"G": date(2025, 1, 1), "F": date(2028, 1, 1), "E": date(2034, 1, 1)}
@@ -307,7 +311,7 @@ def equipment(prop: "SimulationProperty") -> Dict[str, Any]:
     return {
         "heat_pump": heat_pump,
         # Water-based heating (radiators or underfloor) that a heat pump can use
-        "hydronic": heat_pump and "air/air" not in gen or "chaudi" in gen or "plancher" in gen,
+        "hydronic": heat_pump and "air/air" not in gen or "chaudi" in gen or ("plancher" in gen and "lectrique" not in gen),
         "collective_heating": "collecti" in inst,
         "efficient_hot_water": any(k in hw for k in ("thermodynamique", "pac ", "pompe", "solaire")),
         "collective_hot_water": "collecti" in hw_inst or "collecti" in hw,
@@ -816,7 +820,10 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         suggested.add("vmc")
     if poor_label:
         suggested.update(systems)
-        if water_heater and (energy == "electricity" or (eq["hot_water_energy"] or energy) == "electricity"):
+        # No hot water consumption in the DPE: nothing to save on a water heater
+        u = prop.usage_consumption or {}
+        no_hot_water = (u.get("heating") or 0) > 0 and not u.get("hot_water")
+        if water_heater and not no_hot_water and (energy == "electricity" or (eq["hot_water_energy"] or energy) == "electricity"):
             suggested.add("ecs")
 
     # Default selection: the works that bring the label down the most (both
@@ -847,13 +854,65 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
                 current = best
             return current
 
+        def rest(works: List[str]) -> float:
+            return simulate(SimulationInput(property=prop, works=works))["rest_to_pay"] if works else 0.0
+
+        def droppable(w: str, reached: Tuple[int, float]) -> bool:
+            """Leaving w out keeps the label and does not cost more (a work
+            can be what opens the rénovation d'ampleur)."""
+            without = [p for p in preselected if p != w]
+            return score(without)[0] <= reached[0] and rest(without) <= rest(preselected) + 1
+
         current = pick(suggested, score([]))
         if current[0] > target:
             # The works the DPE points out are not enough: the other works that
             # apply to this dwelling, so the default scenario reaches the target
             # whenever it can be reached
-            pick(set(avail["works"]) - suggested, current)
+            before = list(preselected)
+            reached = pick(set(avail["works"]) - suggested, current)
+            added = [w for w in preselected if w not in before]
+            # Kept only for a better label: a work the DPE does not point out,
+            # which only trims the consumption, is not pushed by default
+            for w in reversed(added):
+                if droppable(w, reached):
+                    preselected.remove(w)
+            # A poor label still gets one work: the most effective of them
+            if poor_label and not preselected and added:
+                preselected.append(min(added, key=lambda w: score([w])))
+            current = score(preselected)
             suggested.update(preselected)
+
+        # Greedy choice short of the target: every combination of the works that
+        # apply here, when one reaches a better label (cheapest of those)
+        if current[0] > target:
+            # Exterior wall insulation counts here (it can be the only way to the
+            # target), except on pre-1948 facades, often refused in protected areas
+            pool = sorted(w for w in avail["works"] if not (w == "ite" and env.period == 0))
+            best_combo, best_key = None, (current[0], 0.0)
+            for n in range(1, len(pool) + 1):
+                for combo in itertools.combinations(pool, n):
+                    if sum(1 for w in combo if w in HEATING_SYSTEMS) > 1 or {"iti", "ite"} <= set(combo):
+                        continue
+                    label_idx = score(list(combo))[0]
+                    if label_idx < best_key[0] or (best_combo and label_idx == best_key[0]):
+                        cost = simulate(SimulationInput(property=prop, works=list(combo)))["rest_to_pay"]
+                        if best_combo is None or (label_idx, cost) < best_key:
+                            best_combo, best_key = list(combo), (label_idx, cost)
+            if best_combo and best_key[0] < current[0]:
+                preselected[:] = sorted(best_combo, key=lambda w: (w not in suggested, w))
+                suggested.update(preselected)
+                current = score(preselected)
+
+        # An envelope work worth a few percent of the losses, that the DPE does
+        # not call poor and that changes neither the label nor the aid: left out
+        shares_now = env.shares()
+        qualities = {k: (v or "").lower() for k, v in (prop.insulation_quality or {}).items()}
+        share_key = {"iti": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows"}
+        for w in [w for w in preselected if w in share_key]:
+            key = share_key[w]
+            poor = qualities.get(key, "") in ("insuffisante", "très insuffisante")
+            if shares_now.get(key, 0) < 0.08 and not poor and len(preselected) > 1 and droppable(w, current):
+                preselected.remove(w)
 
         # Insulating a dwelling aired only through its windows without a
         # ventilation system: condensation and mould. Ventilation comes with it

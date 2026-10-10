@@ -175,7 +175,11 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
         if energy in ("gas", "oil"):
             return (f"Le chauffage au {ENERGY_NAMES[energy]} fait l'essentiel des émissions de CO₂ du logement : des radiateurs "
                     "électriques à inertie améliorent son étiquette climat.")
-        return ("Le logement est chauffé par des convecteurs électriques : des radiateurs à inertie bien régulés consomment "
+        generator = (ctx.get("heating_generator") or "").lower()
+        emitters = ("des panneaux rayonnants électriques" if "rayonnant" in generator
+                    else "des radiateurs électriques directs" if "radiateur" in generator
+                    else "des convecteurs électriques")
+        return (f"Le logement est chauffé par {emitters} : des radiateurs à inertie bien régulés consomment "
                 "environ 10 % de moins.")
     if work_id == "ecs":
         return (f"L'eau chaude représente {fr_pct(ctx['hot_water_share'])} de la consommation : un chauffe-eau "
@@ -452,8 +456,9 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "window_count": env.window_count,
         "hot_water_share": hot_water_share(prop, env, energy),
         "house": house,
-        "pre_1948": env.period == 0,
+        "pre_1948": env.period == 0 or "avant 1948" in (prop.construction_period or "").lower(),
         "roof_kind": prop.roof_kind,
+        "heating_generator": prop.heating_generator,
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
         "heat_pump_kw": heat_pump_kw(prop, env, energy, list(sim_input.works)),
@@ -591,7 +596,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "emissions_kg_co2_m2_an": round(sim["initial_ges"]),
             "facture_estimee_eur_an": int(round(sim["annual_bill_before"], -1)),
             "repartition_pertes_chaleur": {l["name"]: fr_pct(l["share"]) for l in report["losses"]},
-            "factures_par_usage_eur_an": {u["name"]: int(round(u["eur_before"], -1)) for u in report["usages"]},
+            "factures_par_usage_eur_an": {u["name"]: int(round(u["eur_before"], -1)) for u in report["usages"] if u["eur_before"]},
         },
         "travaux": [{
             "nom": w["name"],

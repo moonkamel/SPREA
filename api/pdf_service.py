@@ -635,6 +635,12 @@ class PDFReportGenerator:
 
         usage_rows = [[head('Usage'), head("Aujourd'hui", 2), head('Après travaux', 2)]]
         for u in report['usages']:
+            if u['usage'] == 'hot_water' and not u['eur_before'] and not u['eur_after']:
+                # No hot water consumption in the DPE: said as such, not "0 €"
+                usage_rows.append([Paragraph(text(u['name']), S['body']),
+                                   Paragraph("<font color='#8A93A3'>non renseignée dans le DPE</font>", S['right']),
+                                   Paragraph("<font color='#8A93A3'>–</font>", S['right'])])
+                continue
             after = eur_r(u['eur_after'], 10)
             if u['energy_after'] != u['energy_before']:
                 after += f" <font size='7.5' color='#8A93A3'>({text(u['energy_after'])})</font>"
