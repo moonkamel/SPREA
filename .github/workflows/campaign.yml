@@ -1,0 +1,71 @@
+name: Campagne email (Brevo)
+
+# 1. "liste" (on demand): the real estate agencies of the chosen departments,
+#    from the Annuaire des entreprises, as a CSV to download (Artifacts), to
+#    complete with the email addresses before the import into Brevo.
+# 2. "chiffres" (every Monday, or on demand): the figures of each contact's
+#    town written on their Brevo contact (scripts/campaign/brevo_sync.py).
+#    Requires the secrets BREVO_API_KEY and BREVO_LIST_ID (and SUPABASE_URL,
+#    SUPABASE_SERVICE_ROLE_KEY for the building figures).
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "liste ou chiffres"
+        required: true
+        default: "chiffres"
+      departments:
+        description: "Pour la liste : départements (ex. 59 62)"
+        required: false
+        default: "59 62"
+      prefixes:
+        description: "Pour la liste : débuts de codes postaux à garder (vide = tous)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  liste:
+    if: github.event_name == 'workflow_dispatch' && inputs.task == 'liste'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - env:
+          DEPS: ${{ inputs.departments }}
+          PREFIXES: ${{ inputs.prefixes }}
+        run: python scripts/campaign/agencies.py --dep $DEPS ${PREFIXES:+--prefix $PREFIXES} --out agences.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agences
+          path: agences.csv
+          retention-days: 30
+
+  chiffres:
+    if: github.event_name == 'schedule' || inputs.task == 'chiffres'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_LIST_ID: ${{ secrets.BREVO_LIST_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$BREVO_API_KEY" ] || [ -z "$BREVO_LIST_ID" ]; then
+            echo "Secrets BREVO_API_KEY / BREVO_LIST_ID absents : aperçu sur Lille, Roubaix et Lambersart."
+            python scripts/campaign/brevo_sync.py --dry-run --insee 59350 59512 59328
+          else
+            python scripts/campaign/brevo_sync.py
+          fi

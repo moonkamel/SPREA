@@ -19,9 +19,10 @@ OWNERS = [{"siren": "444315543", "name": "DU BRUNIOL", "legal_form": "SCI", "pos
 
 
 def add_monopro(store):
-    async def in_bbox(w, s, e, n, company_only, min_log, limit, poor_dpe=False):
+    async def in_bbox(w, s, e, n, company_only, min_log, limit, poor_dpe=False, min_signal=None):
         out = [b for b in BUILDINGS if s <= b["lat"] <= n and w <= b["lon"] <= e and b["nb_log"] >= min_log
                and (b["owner_siren"] or not company_only)
+               and (min_signal is None or (b.get("signal_score") or 0) >= min_signal)
                and (not poor_dpe or b.get("dpe_label") in ("F", "G") or (b.get("dpe_fg") or 0) > 0)]
         return sorted(out, key=lambda b: -b["nb_log"])[:limit]
 
@@ -34,7 +35,17 @@ def add_monopro(store):
     async def owners(sirens):
         return [o for o in OWNERS if o["siren"] in sirens]
 
+    store.signals, store.summaries = {}, []
+
+    async def signal(siren):
+        return store.signals.get(siren)
+
+    async def save_summary(siren, summary, key):
+        store.signals[siren].update(summary=summary, summary_key=key)
+        store.summaries.append(siren)
+
     store.monopro_in_bbox, store.get_monopro, store.monopro_by_owner, store.monopro_owners = in_bbox, get, by_owner, owners
+    store.monopro_signal, store.save_signal_summary = signal, save_summary
 
 
 def test_map_is_pro_only_and_lists_buildings(env):
@@ -349,3 +360,85 @@ def test_dossier_pdf_fits_two_pages_with_every_section():
                                      {"price_per_m2": 4100, "source": "prix médian des ventes DVF voisines"}, agency, TODAY)
     assert len(d["works"]["items"]) >= 5 and len(d["arguments"]) == 8
     assert monopro_pdf.pages(monopro_pdf.generate(d)) == 2
+
+
+# --- Sale signals (BODACC) ---
+
+from datetime import date as _d  # noqa: E402
+
+from api import sale_signals  # noqa: E402
+
+LIQUIDATION = {"id": "A1", "dateparution": "2026-09-01", "familleavis_lib": "Procédures collectives", "commercant": "DU BRUNIOL",
+               "jugement": '{"famille": "Jugement d\'ouverture", "nature": "Jugement d\'ouverture de liquidation judiciaire", '
+                           '"complementJugement": "désignant liquidateur Selarl X (maître Pierre Dupont)"}',
+               "url_complete": "https://www.bodacc.fr/a1"}
+DISSOLUTION = {"id": "B1", "dateparution": "2025-03-01", "familleavis_lib": "Modifications diverses",
+               "commercant": "DU BRUNIOL (en liquidation)",
+               "listepersonnes": '{"personne": {"administration": "nomination du Liquidateur : Dupont, Jean ; Gérant partant : Dupont, Jean"}}',
+               "modificationsgenerales": '{"descriptif": "Cessation d\'activité et dissolution de la société"}'}
+DEATH = {"id": "C1", "dateparution": "2026-01-15", "familleavis_lib": "Modifications diverses",
+         "listepersonnes": '{"personne": {"administration": "Gérant partant : Martin, Paul (décédé)"}}'}
+ORDINARY = {"id": "D1", "dateparution": "2026-01-01", "familleavis_lib": "Modifications diverses",
+            "modificationsgenerales": '{"descriptif": "modification survenue sur l\'adresse du siège"}'}
+
+
+def test_bodacc_events_and_score():
+    assert [e["kind"] for e in sale_signals.classify(LIQUIDATION)] == ["liquidation_judiciaire"]
+    assert [e["kind"] for e in sale_signals.classify(DISSOLUTION)] == ["dissolution", "dirigeant"]
+    assert [e["kind"] for e in sale_signals.classify(DEATH)] == ["deces"]
+    assert sale_signals.classify(ORDINARY) == []
+    # No names kept: kind, label, date, link only
+    for e in sale_signals.classify(LIQUIDATION) + sale_signals.classify(DISSOLUTION):
+        assert set(e) == {"date", "kind", "label", "url"} and "Dupont" not in str(e)
+    today = _d(2026, 10, 10)
+    events = [e for r in (LIQUIDATION, DISSOLUTION, ORDINARY) for e in sale_signals.classify(r)]
+    s = sale_signals.score(events, today)
+    assert s["level"] == "fort" and s["score"] >= 60 and s["events"][0]["kind"] == "liquidation_judiciaire"
+    # Old events weigh less, very old ones not at all
+    assert sale_signals.score(sale_signals.classify(DEATH), today)["level"] == "moyen"
+    assert sale_signals.score(sale_signals.classify({**DEATH, "dateparution": "2015-01-01"}), today) == {"score": 0, "level": None, "events": []}
+
+
+def test_signal_on_the_sheet_and_explained_once(env, monkeypatch):
+    from tests import claude_mock
+    client, store, _, _ = env
+    add_monopro(store)
+    make_pro(store)
+
+    async def no_company(siren):
+        return None
+    monkeypatch.setattr(monopro, "fetch_company", no_company)
+    today = _d.today()
+    events = [{"date": today.isoformat(), "kind": "liquidation_judiciaire", "label": "Liquidation judiciaire", "url": "https://www.bodacc.fr/a1"}]
+    store.signals["444315543"] = {"siren": "444315543", "score": 60, "level": "fort", "events": events, "checked_on": today.isoformat()}
+    answer = {"titre": "Société en liquidation judiciaire : l'immeuble sera vendu par le liquidateur.",
+              "lecture": "La vente des actifs est conduite par le liquidateur.", "approche": "Contactez le liquidateur.",
+              "probabilite": "forte"}
+    mock = claude_mock.install(monkeypatch, lambda body: answer)
+    sheet = client.get("/api/monopro/bdnb-bg-AAAA").json()
+    assert sheet["signal"]["level"] == "fort" and sheet["signal"]["summary"] is None and sheet["signal"]["can_explain"]
+    assert client.post("/api/monopro/bdnb-bg-AAAA/signal/explain").json()["probabilite"] == "forte"
+    assert client.post("/api/monopro/bdnb-bg-AAAA/signal/explain").json()["titre"].startswith("Société en liquidation")
+    assert len(mock.requests) == 1 and store.summaries == ["444315543"]
+    sent = mock.requests[0]["body"]["messages"][0]["content"]
+    assert "Liquidation judiciaire" in sent and "bodacc.fr" not in sent
+    assert client.get("/api/monopro/bdnb-bg-AAAA").json()["signal"]["summary"]["probabilite"] == "forte"
+    # New events: the explanation is written again
+    store.signals["444315543"]["events"] = events + [{"date": today.isoformat(), "kind": "deces", "label": "Décès", "url": None}]
+    assert client.get("/api/monopro/bdnb-bg-AAAA").json()["signal"]["summary"] is None
+    # Building without an identified owner
+    assert client.post("/api/monopro/bdnb-bg-BBBB/signal/explain").status_code == 404
+    BUILDINGS[0]["signal_score"] = 60
+    res = client.get("/api/monopro", params={"bbox": "3.06,50.62,3.08,50.64", "signal": "strong"}).json()
+    assert [b["id"] for b in res["buildings"]] == ["bdnb-bg-AAAA"] and res["buildings"][0]["signal_level"] is None
+    BUILDINGS[0].pop("signal_score")
+
+
+def test_closed_company_signal_is_capped():
+    today = _d(2026, 10, 10)
+    events = [{"date": "2024-05-01", "kind": "radiation", "label": "Radiation du registre", "url": None},
+              {"date": "2024-05-01", "kind": "radiation", "label": "Radiation du registre", "url": None},
+              {"date": "2024-01-01", "kind": "dissolution", "label": "Dissolution de la société", "url": None}]
+    assert sale_signals.score(events, today)["level"] == "moyen"
+    # Dissolution under way, not closed yet: strong
+    assert sale_signals.score(events[2:3] + [{**events[2], "date": "2026-06-01"}], today)["level"] == "fort"

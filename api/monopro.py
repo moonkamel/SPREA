@@ -18,13 +18,14 @@ objections honoured, no phone or email canvassing).
 import logging
 import math
 import time
+from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 try:
-    from api import monopro_pdf
+    from api import claude, monopro_pdf, sale_signals
     from api.accounts import is_pro, safe_filename, store_dep
     from api.auth import User, current_user
     from api.dvf import market_price
@@ -34,7 +35,9 @@ try:
     from api.ratelimit import ai_limiter, search_limiter
     from api.store import SupabaseStore
 except ImportError:
+    import claude
     import monopro_pdf
+    import sale_signals
     from accounts import is_pro, safe_filename, store_dep
     from auth import User, current_user
     from dvf import market_price
@@ -78,6 +81,7 @@ def building_summary(b: Dict, owners: Dict[str, Dict]) -> Dict:
         "dpe_count": b.get("dpe_count"), "dpe_fg": b.get("dpe_fg"),
         "last_sale_date": b.get("last_sale_date"), "last_sale_price": b.get("last_sale_price"),
         "last_sale_units": b.get("last_sale_units"),
+        "signal_score": b.get("signal_score"), "signal_level": b.get("signal_level"),
     }
 
 
@@ -145,6 +149,7 @@ async def monopro_near(lat: float = Query(..., ge=-90, le=90), lon: float = Quer
 @router.get("/monopro", dependencies=[Depends(search_limiter)])
 async def monopro_map(bbox: str, owner: str = Query("all", pattern="^(all|company)$"),
                       min_log: int = Query(3, ge=3, le=200), dpe: str = Query("all", pattern="^(all|fg)$"),
+                      signal: str = Query("all", pattern="^(all|any|strong)$"),
                       user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     await require_pro(store, user)
     try:
@@ -153,7 +158,8 @@ async def monopro_map(bbox: str, owner: str = Query("all", pattern="^(all|compan
         raise HTTPException(status_code=400, detail=str(e))
     try:
         buildings = await store.monopro_in_bbox(west, south, east, north, owner == "company", min_log, MAX_BUILDINGS + 1,
-                                                poor_dpe=dpe == "fg")
+                                                poor_dpe=dpe == "fg",
+                                                min_signal={"any": 1, "strong": sale_signals.STRONG}.get(signal))
         sirens = sorted({b["owner_siren"] for b in buildings if b.get("owner_siren")})
         owners = {o["siren"]: o for o in await store.monopro_owners(sirens)} if sirens else {}
     except httpx.HTTPError as e:
@@ -214,4 +220,43 @@ async def monopro_sheet(building_id: str, user: User = Depends(current_user), st
         portfolio = [{"id": b["id"], "address": b.get("address"), "nb_log": b["nb_log"], "dpe_label": b.get("dpe_label"),
                       "lat": b["lat"], "lon": b["lon"]} for b in others if b["id"] != building_id][:PORTFOLIO_LIMIT]
         company = await fetch_company(siren)
-    return {**building_summary(building, owners), "company": company, "portfolio": portfolio}
+    signal = await owner_signal(store, siren) if siren else None
+    return {**building_summary(building, owners), "company": company, "portfolio": portfolio, "signal": signal}
+
+
+async def owner_signal(store: SupabaseStore, siren: str) -> Optional[Dict[str, Any]]:
+    try:
+        row = await store.monopro_signal(siren)
+    except httpx.HTTPError as e:
+        logger.warning(f"Signal lookup failed: {type(e).__name__}")
+        return None
+    if not row:
+        return None
+    fresh = row.get("summary_key") == sale_signals.explain_key(row.get("events") or [])
+    return {"score": row["score"], "level": row.get("level"), "events": row.get("events") or [],
+            "checked_on": row.get("checked_on"), "summary": row.get("summary") if fresh else None,
+            "can_explain": claude.configured()}
+
+
+@router.post("/monopro/{building_id}/signal/explain")
+async def explain_signal(building_id: str, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """What the BODACC events of the owner mean for this building, by Claude.
+    Written once per set of events, then read from the table."""
+    await require_pro(store, user)
+    building = await store.get_monopro(building_id) if building_id.startswith("bdnb-") and len(building_id) <= 40 else None
+    siren = (building or {}).get("owner_siren")
+    row = await store.monopro_signal(siren) if siren else None
+    if not row:
+        raise HTTPException(status_code=404, detail="Aucun signal pour ce propriétaire.")
+    key = sale_signals.explain_key(row.get("events") or [])
+    if row.get("summary") and row.get("summary_key") == key:
+        return row["summary"]
+    owner = (await store.monopro_owners([siren]) or [{}])[0]
+    portfolio = len(await store.monopro_by_owner(siren, PORTFOLIO_LIMIT + 1)) - 1
+    try:
+        summary = await sale_signals.explain(row, {**building, "legal_form": owner.get("legal_form"),
+                                                   "portfolio_count": max(portfolio, 0)}, date.today())
+    except claude.ClaudeUnavailable:
+        raise HTTPException(status_code=503, detail="L'analyse n'est pas disponible pour le moment, réessayez plus tard.")
+    await store.save_signal_summary(siren, summary, key)
+    return summary

@@ -1,0 +1,25 @@
+name: Essai IA (Claude)
+
+# Live check of the Claude features on fictitious data: the document reader on
+# a sample PV d'AG (scripts/audit/sample_pv.py) and the reading of sale
+# signals. Run from the Actions tab once the ANTHROPIC_API_KEY secret is set;
+# prints the results, stores nothing.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/audit/try_claude.py

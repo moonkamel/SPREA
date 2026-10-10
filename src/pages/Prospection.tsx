@@ -131,6 +131,7 @@ export default function ProspectionPage() {
     const [mode, setMode] = useState<'dpe' | 'immeubles'>('dpe');
     const [minLog, setMinLog] = useState('3');
     const [monoDpe, setMonoDpe] = useState<'all' | 'fg'>('all');
+    const [monoSignal, setMonoSignal] = useState<'all' | 'any' | 'strong'>('all');
     const [mono, setMono] = useState<{ buildings: MonoBuilding[]; truncated: boolean } | null>(null);
     const [sheet, setSheet] = useState<SheetTarget | null>(null);
 
@@ -279,7 +280,7 @@ export default function ProspectionPage() {
     useEffect(() => {
         if (mode !== 'immeubles' || !session || !ready || !zoomOk || !areaKey) return;
         const box = areaKey.split(',').map(Number);
-        const filters = [minLog, monoDpe].join('|');
+        const filters = [minLog, monoDpe, monoSignal].join('|');
         const last = monoLoaded.current;
         if (last && last.filters === filters && box[0] >= last.box[0] && box[1] >= last.box[1] && box[2] <= last.box[2] && box[3] <= last.box[3]) return;
         const controller = new AbortController();
@@ -287,7 +288,7 @@ export default function ProspectionPage() {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams({ bbox: areaKey, owner: 'company', min_log: minLog, dpe: monoDpe });
+                const params = new URLSearchParams({ bbox: areaKey, owner: 'company', min_log: minLog, dpe: monoDpe, signal: monoSignal });
                 const res = await authedFetch(`/api/monopro?${params}`, { signal: controller.signal });
                 if (!res.ok) {
                     const detail = await res.json().catch(() => ({}));
@@ -303,7 +304,7 @@ export default function ProspectionPage() {
             }
         }, 450);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [mode, session, ready, zoomOk, areaKey, minLog, monoDpe, authedFetch]);
+    }, [mode, session, ready, zoomOk, areaKey, minLog, monoDpe, monoSignal, authedFetch]);
 
     const showDetails = !!result && !result.locked;
 
@@ -318,11 +319,12 @@ export default function ProspectionPage() {
             for (const b of mono.buildings) {
                 const marker = L.circleMarker([b.lat, b.lon], {
                     radius: Math.min(16, 4 + Math.sqrt(b.nb_log) * 2),
-                    // Gold outline: owned by a company (owner identified)
-                    color: b.owner ? '#E3C98F' : '#0A0F1A', weight: b.owner ? 2 : 1.5, opacity: 0.95,
+                    // Gold outline: owned by a company (owner identified); red: sale signal
+                    color: b.signal_level === 'fort' ? '#FF6B4A' : b.owner ? '#E3C98F' : '#0A0F1A',
+                    weight: b.signal_level === 'fort' || b.signal_level === 'moyen' ? 3.5 : b.owner ? 2 : 1.5, opacity: 0.95,
                     fillColor: monoColor(b), fillOpacity: 0.95,
                 });
-                marker.bindTooltip(`${escapeHtml(b.address || '')}<br>${b.nb_log} logements · ${escapeHtml(b.owner ? `${b.owner.legal_form || ''} ${b.owner.name || ''}` : 'propriétaire non identifié')}`);
+                marker.bindTooltip(`${escapeHtml(b.address || '')}<br>${b.nb_log} logements · ${escapeHtml(b.owner ? `${b.owner.legal_form || ''} ${b.owner.name || ''}` : 'propriétaire non identifié')}${b.signal_level ? `<br>Signal de vente ${b.signal_level}` : ''}`);
                 marker.on('click', () => setSheet({ id: b.id }));
                 marker.addTo(layer);
             }
@@ -447,7 +449,8 @@ export default function ProspectionPage() {
                         <p className="mt-3 text-sm text-muted max-w-3xl">
                             Les immeubles de 3 logements ou plus détenus en entier par une SCI ou une autre société privée, hors copropriété,
                             bailleurs sociaux et organismes publics : à vendre en bloc à un investisseur, ou lot par lot après découpe. La fiche
-                            donne le siège de la société, ses dirigeants et ses autres immeubles.
+                            donne le siège de la société, ses dirigeants et ses autres immeubles. Contour rouge : signal de vente au BODACC
+                            (dissolution, liquidation, procédure collective, changement de dirigeant), expliqué par l'IA dans la fiche.
                         </p>
                     )}
                 </div>
@@ -475,6 +478,12 @@ export default function ProspectionPage() {
                                 className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
                                 <option value="all">Tous les DPE</option>
                                 <option value="fg">DPE F ou G (location interdite)</option>
+                            </select>
+                            <select value={monoSignal} onChange={e => setMonoSignal(e.target.value as 'all' | 'any' | 'strong')} aria-label="Signaux de vente"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                <option value="all">Tous les propriétaires</option>
+                                <option value="any">Avec un signal de vente</option>
+                                <option value="strong">Signal de vente fort</option>
                             </select>
                         </>
                     ) : <>

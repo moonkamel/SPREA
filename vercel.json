@@ -41,13 +41,17 @@
     ],
     "functions": {
         "api/main.py": {
-            "maxDuration": 60
+            "maxDuration": 300
         }
     },
     "crons": [
         {
             "path": "/api/cron/alerts",
             "schedule": "0 5 * * *"
+        },
+        {
+            "path": "/api/cron/copro-docs",
+            "schedule": "30 4 * * *"
         }
     ]
 }

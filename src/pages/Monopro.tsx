@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building2, Copy, ExternalLink, FileText, Loader2, MapPin, Printer, X } from 'lucide-react';
+import { Building2, Copy, ExternalLink, FileText, Loader2, MapPin, Printer, Sparkles, X } from 'lucide-react';
 import { useAccount } from '../account';
 import { Button, Card, DPE_COLORS, DpeBadge, eur, type DPEClass } from '../ui';
 import { AgentPageForm, errorDetail, type AgentPageData } from './Contacts';
@@ -26,6 +26,31 @@ export interface MonoBuilding {
     last_sale_date: string | null;
     last_sale_price: number | null;
     last_sale_units: number | null;
+    signal_score: number | null;
+    signal_level: SignalLevel | null;
+}
+
+export type SignalLevel = 'fort' | 'moyen' | 'faible';
+
+interface SignalSummary { titre: string; lecture: string; approche: string; probabilite: 'faible' | 'moyenne' | 'forte' }
+
+interface Signal {
+    score: number;
+    level: SignalLevel | null;
+    events: { date: string | null; kind: string; label: string; url: string | null }[];
+    checked_on: string | null;
+    summary: SignalSummary | null;
+    can_explain: boolean;
+}
+
+const SIGNAL_STYLE: Record<SignalLevel, string> = {
+    fort: 'border-coral/60 bg-coral/10 text-coral',
+    moyen: 'border-brass/60 bg-brass/10 text-brass-light',
+    faible: 'border-line bg-raised text-muted',
+};
+
+export function SignalBadge({ level }: { level: SignalLevel }) {
+    return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${SIGNAL_STYLE[level]}`}>Signal {level}</span>;
 }
 
 interface Company {
@@ -40,6 +65,63 @@ interface Company {
 interface Sheet extends MonoBuilding {
     company: Company | null;
     portfolio: { id: string; address: string | null; nb_log: number; dpe_label: DPEClass | null; lat: number; lon: number }[];
+    signal: Signal | null;
+}
+
+// BODACC notices of the owner, and what they mean, written by Claude
+function SignalPanel({ buildingId, signal }: { buildingId: string; signal: Signal }) {
+    const { authedFetch } = useAccount();
+    const [summary, setSummary] = useState<SignalSummary | null>(signal.summary);
+    const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle');
+    useEffect(() => {
+        if (summary || !signal.can_explain) return;
+        let cancelled = false;
+        setState('loading');
+        authedFetch(`/api/monopro/${encodeURIComponent(buildingId)}/signal/explain`, { method: 'POST' })
+            .then(async r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(s => { if (!cancelled) { setSummary(s); setState('idle'); } })
+            .catch(() => { if (!cancelled) setState('error'); });
+        return () => { cancelled = true; };
+    }, [buildingId, summary, signal.can_explain, authedFetch]);
+
+    return (
+        <div className="rounded-xl border border-coral/40 bg-coral/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-ink">Signaux de vente au BODACC</p>
+                {signal.level && <SignalBadge level={signal.level} />}
+            </div>
+            <ul className="mt-2 space-y-1 text-sm">
+                {signal.events.slice(0, 6).map((e, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3">
+                        <span className="text-ink-soft">{e.label}</span>
+                        <span className="shrink-0 text-xs text-faint">
+                            {dateFr(e.date)}
+                            {e.url && <a href={e.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-brass-light hover:underline">annonce</a>}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+            <div className="mt-3 border-t border-line/60 pt-3">
+                <p className="text-xs text-faint flex items-center gap-1.5"><Sparkles size={12} className="text-brass" />Lecture par l'IA</p>
+                {summary ? (
+                    <div className="mt-1.5 space-y-2 text-sm">
+                        <p className="text-ink">{summary.titre}</p>
+                        <p className="text-ink-soft">{summary.lecture}</p>
+                        <p className="text-ink-soft"><span className="text-faint">Approche : </span>{summary.approche}</p>
+                        <p className="text-xs text-faint">Probabilité de mise en vente sous 12 mois : <span className="text-ink-soft">{summary.probabilite}</span></p>
+                    </div>
+                ) : state === 'loading' ? (
+                    <p className="mt-1.5 text-sm text-muted flex items-center gap-2"><Loader2 size={14} className="animate-spin" />Analyse des annonces…</p>
+                ) : (
+                    <p className="mt-1.5 text-sm text-muted">{state === 'error' ? "L'analyse n'est pas disponible pour le moment." : 'Analyse non disponible.'}</p>
+                )}
+            </div>
+            <p className="mt-3 text-xs text-faint">
+                Annonces légales publiques (BODACC, DILA){signal.checked_on ? `, vérifiées le ${dateFr(signal.checked_on)}` : ''}. Des indices, pas des certitudes :
+                vérifiez l'annonce avant toute démarche, et restez discret.
+            </p>
+        </div>
+    );
 }
 
 export const NO_DPE_COLOR = '#6C778C';
@@ -70,6 +152,7 @@ export function MonoproList({ buildings, onFocus, onOpen }: {
                                 {b.nb_log} logements · <span className={b.owner ? 'text-ink-soft' : ''}>{ownerLabel(b)}</span>
                                 {b.last_sale_date ? ` · vendu en ${year(b.last_sale_date)}` : ''}
                             </span>
+                            {b.signal_level && b.signal_level !== 'faible' && <span className="mt-1 block"><SignalBadge level={b.signal_level} /></span>}
                         </span>
                     </button>
                     <button type="button" onClick={() => onOpen(b)} className="mt-2 ml-10 text-xs text-brass-light hover:text-ink">
@@ -255,6 +338,8 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                             )}
                         </div>
 
+                        {sheet.signal && <SignalPanel buildingId={sheet.id} signal={sheet.signal} />}
+
                         {sheet.portfolio.length > 0 && (
                             <div>
                                 <p className="text-sm font-medium text-ink-soft">Autres immeubles de cette société ({sheet.portfolio.length})</p>
@@ -311,7 +396,7 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
 
                         <p className="text-xs text-faint">
                             Sources publiques : base nationale des bâtiments (CSTB, Licence Ouverte), fichiers des personnes morales propriétaires (DGFiP),
-                            Annuaire des entreprises (INSEE, RNE). Courrier postal uniquement, avec l'origine des données et le droit d'opposition
+                            Annuaire des entreprises (INSEE, RNE), annonces légales (BODACC). Courrier postal uniquement, avec l'origine des données et le droit d'opposition
                             (article 14 des CGV). Un immeuble absent du registre peut être une petite copropriété non immatriculée.
                         </p>
                     </div>

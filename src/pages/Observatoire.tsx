@@ -252,7 +252,7 @@ export default function ObservatoirePage({ slug }: { slug?: string }) {
                         <h2 className="text-xl text-ink">Vous êtes agent immobilier ?</h2>
                         <p className="mt-1 text-sm text-muted">Avec SPREA, chiffrez en rendez-vous les travaux, les aides et la valeur d'un bien avant et après rénovation, et repérez les passoires de votre secteur.</p>
                     </div>
-                    <Link to="/demo"><Button>Voir la démo</Button></Link>
+                    <Link to="/demo"><Button>Faire la visite guidée</Button></Link>
                 </Card>
 
                 <section className="text-sm text-muted space-y-2 max-w-4xl">

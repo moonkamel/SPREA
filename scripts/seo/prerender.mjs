@@ -87,7 +87,7 @@ const page = ({ path, title, description, body = '', jsonld = [], noindex = fals
     return path;
 };
 
-const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Démo</a> · <a href="/tarifs">Tarifs</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
+const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Visite guidée</a> · <a href="/tarifs">Tarifs</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
 const ul = items => `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
 
 // --- Pages ---
@@ -109,16 +109,16 @@ ${ul([
         '<strong>Convaincre</strong> : travaux, aides, reste à charge et valeur du bien avant et après travaux, appuyée sur les ventes DVF voisines.',
     ])}
 <p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € HT par mois.</p>
-<p><a href="/demo">Voir la démo</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
+<p><a href="/demo">Faire la visite guidée</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
 }));
 
 pages.push(page({
     path: '/demo',
-    title: 'Démo SPREA : prospection DPE, immeubles de rapport, avis de valeur',
-    description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et dossier de cession, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux : découvrez SPREA en images.",
-    jsonld: [SOFTWARE, BREADCRUMB([['SPREA', '/'], ['Démo', '/demo']])],
+    title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
+    description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
+    jsonld: [SOFTWARE, BREADCRUMB([['SPREA', '/'], ['Visite guidée', '/demo']])],
     body: `${nav}
-<h1>Une matinée avec SPREA</h1>
+<h1>Une journée avec SPREA</h1>
 <p>De la publication d'un DPE au rendez-vous chez le propriétaire : comment SPREA fait gagner des mandats aux agents immobiliers.</p>
 <h2>8 h 00 · Les DPE publiés la veille dans vos secteurs</h2>
 <p>Un DPE est obligatoire avant de vendre ou de louer : quand un propriétaire en fait réaliser un, il prépare presque toujours un projet. Jusqu'à 10 zones, filtres par étiquette, récapitulatif par email chaque matin.</p>
@@ -148,7 +148,7 @@ pages.push(page({
 }));
 
 const FAQ = [
-    ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la page Démo présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, fiches immeubles et dossiers de cession). Pour une présentation en direct, écrivez-nous."],
+    ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous."],
     ["Y a-t-il un engagement ?", "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte »."],
     ['Les prix sont-ils HT ?', "Oui, tous les prix affichés sont hors taxes. La TVA à 20 % s'ajoute sur la facture, qui mentionne votre raison sociale et votre numéro de TVA."],
     ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Le nombre d'agents s'ajuste à tout moment, au prorata."],
@@ -222,7 +222,7 @@ for (const [i, d] of deps.entries()) {
 ${table([['Maisons', d.maisons], ['Appartements', d.appartements]])}
 ${poor != null ? `<p>${poor} % des maisons vendues ${esc(where)} étaient classées F ou G.</p>` : ''}
 <h2>Vous êtes agent immobilier ${esc(where)} ?</h2>
-<p>Avec SPREA, repérez les passoires thermiques de votre secteur, recevez les nouveaux DPE chaque matin et remettez à vos vendeurs un avis de valeur avant / après travaux. <a href="/demo">Voir la démo</a>.</p>
+<p>Avec SPREA, repérez les passoires thermiques de votre secteur, recevez les nouveaux DPE chaque matin et remettez à vos vendeurs un avis de valeur avant / après travaux. <a href="/demo">Faire la visite guidée</a>.</p>
 <p>${prev ? `<a href="/observatoire/${slug(prev.name, prev.code)}">← ${esc(prev.name)}</a>` : ''} ${next ? `<a href="/observatoire/${slug(next.name, next.code)}">${esc(next.name)} →</a>` : ''}</p>`,
     }));
 }

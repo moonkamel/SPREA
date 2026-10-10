@@ -70,6 +70,12 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Exécution du contrat</td>
                             </tr>
                             <tr>
+                                <td className={td}>Documents de copropriété (abonnés)</td>
+                                <td className={td}>PV d'assemblée générale, carnet d'entretien, pré-état daté et autres documents déposés, qui peuvent mentionner des copropriétaires ; synthèse produite</td>
+                                <td className={td}>Extraire les informations utiles à la vente. Les documents sont supprimés dès l'analyse terminée (au plus tard 24 heures après leur envoi) ; la synthèse, rédigée sans les noms des personnes, est conservée jusqu'à sa suppression par l'abonné ou celle de son compte.</td>
+                                <td className={td}>Exécution du contrat ; intérêt légitime pour les personnes citées dans les documents</td>
+                            </tr>
+                            <tr>
                                 <td className={td}>Toute visite</td>
                                 <td className={td}>Adresse IP, journaux techniques</td>
                                 <td className={td}>Sécurité, limitation des abus, diagnostic des erreurs</td>
@@ -93,7 +99,8 @@ export default function ConfidentialitePage() {
                     <li><b>Vercel</b> (États-Unis) : hébergement du site et de l'API.</li>
                     <li><b>Supabase</b> (région {LEGAL.databaseRegion}) : comptes, authentification, base de données, envoi des liens de connexion.</li>
                     <li><b>Stripe</b> (Irlande, États-Unis) : paiement, factures, gestion de l'abonnement.</li>
-                    <li><b>Anthropic</b> (États-Unis) : rédaction de l'analyse du rapport par le modèle Claude, à partir des caractéristiques et chiffres du logement et de sa commune, sans votre email ni le numéro et la rue du bien. Ces données ne servent pas à entraîner ses modèles.</li>
+                    <li><b>Anthropic</b> (États-Unis) : rédaction de l'analyse du rapport par le modèle Claude, à partir des caractéristiques et chiffres du logement et de sa commune, sans votre email ni le numéro et la rue du bien ; lecture des documents de copropriété déposés par un abonné ; lecture des annonces légales d'une société propriétaire d'immeuble. Ces données ne servent pas à entraîner ses modèles.</li>
+                    <li><b>Supabase</b> (hébergeur de la base de données, voir plus haut) : stockage temporaire des documents de copropriété le temps de leur analyse.</li>
                     <li><b>OpenAI</b> : extraction des informations d'un PDF de DPE, uniquement si vous utilisez cette fonction.</li>
                     <li><b>Services publics</b> : l'adresse recherchée est transmise à la Base Adresse Nationale (adresse.data.gouv.fr) pour la localiser, et à l'ADEME pour retrouver le DPE.</li>
                 </ul>
@@ -124,6 +131,10 @@ export default function ConfidentialitePage() {
 
             <LegalSection title="Dirigeants des sociétés propriétaires d'immeubles">
                 <p>La carte de prospection affiche, pour un immeuble détenu par une société, les dirigeants publiés par l'Annuaire des entreprises (INSEE, registre national des entreprises) : prénom, nom et qualité. Ces informations sont lues au moment de l'affichage, à des fins de prospection commerciale par courrier postal auprès de la société (intérêt légitime des abonnés), et ne sont pas conservées par SPREA. Les abonnés qui les utilisent sont responsables de leur traitement (article 14 des CGV). Un dirigeant peut s'opposer à leur affichage en écrivant à {LEGAL.email}.</p>
+            </LegalSection>
+
+            <LegalSection title="Signaux de vente des sociétés propriétaires">
+                <p>Pour les immeubles détenus par une société, SPREA lit chaque semaine les annonces légales publiques du BODACC (DILA) concernant la société : dissolution, liquidation, procédure collective, radiation, changement de dirigeant. Seuls la nature et la date de chaque annonce, et le lien vers celle-ci, sont conservés, sans les noms qu'elle contient. Une lecture de ces annonces peut être rédigée par l'IA (Claude) à la demande d'un abonné, sans aucun nom de personne.</p>
             </LegalSection>
 
             <LegalSection title="Vos droits">

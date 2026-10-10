@@ -54,7 +54,7 @@ export default function Home() {
                             SPREA repère chaque passoire thermique de votre secteur, vous signale les nouveaux DPE chaque matin et transforme un DPE en avis de valeur avant / après travaux.
                         </p>
                         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
-                            <Button onClick={() => navigate('/demo')} className="sm:w-56">Voir la démo <ArrowRight size={18} /></Button>
+                            <Button onClick={() => navigate('/demo')} className="sm:w-56">Faire la visite guidée <ArrowRight size={18} /></Button>
                             <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Dès 79 € HT / mois</Button>
                         </div>
                         <p className="mt-5 text-xs text-faint flex items-center justify-center gap-2">
@@ -106,7 +106,7 @@ export default function Home() {
                     <h2 className="text-3xl text-ink">Un mandat signé rembourse des années d'abonnement</h2>
                     <p className="mt-4 text-muted">Formule Solo à 79 € HT par mois, Agence à 59 € HT par agent, Réseau sur devis.</p>
                     <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button onClick={() => navigate('/demo')} className="sm:w-56">Voir la démo</Button>
+                        <Button onClick={() => navigate('/demo')} className="sm:w-56">Faire la visite guidée</Button>
                         <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Voir les tarifs</Button>
                     </div>
                 </section>

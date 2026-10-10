@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Building2, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertTriangle, Building2, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { Link } from '../router';
 import { DpeBadge, Step, eurRange, num } from '../ui';
 import type { DPEClass } from '../ui';
 import { useAccount } from '../account';
@@ -13,6 +14,7 @@ interface Copro {
 interface Obligation { id: string; title: string; since: string | null; status: 'due' | 'upcoming' | 'check' | 'done'; detail: string }
 interface Work { id: string; name: string; reason: string; low: number; high: number }
 interface Sheet {
+    address: string | null;
     copro: Copro | null;
     building_dpe: { label: DPEClass; date_fr: string; number: string } | null;
     apartments: { count: number; distribution: Record<DPEClass, number> };
@@ -124,6 +126,17 @@ export default function BuildingSheet({ property, n }: { property: PropertyData;
                             )}
                         </div>
                     </div>
+
+                    {sheet.copro && (
+                        <Link to={`/documents-copro?adresse=${encodeURIComponent(sheet.address || '')}`}
+                            className="flex items-start gap-3 rounded-xl border border-brass/40 bg-brass/5 p-4 hover:border-brass">
+                            <Sparkles size={16} className="mt-0.5 shrink-0 text-brass" />
+                            <span className="text-sm">
+                                <span className="block text-ink">Analyser les PV d'AG de cette copropriété</span>
+                                <span className="block text-muted">Travaux votés, appels de fonds, procédures et impayés, lus par l'IA en quelques minutes.</span>
+                            </span>
+                        </Link>
+                    )}
 
                     {sheet.obligations.length > 0 && (
                         <div>
