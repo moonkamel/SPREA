@@ -721,7 +721,8 @@ class PDFReportGenerator:
                 Spacer(1, 3),
                 Paragraph(f"{pros} Résultat : classe {text(alt['new_label'])}, facture d'environ "
                           f"{eur_r(alt['annual_bill_after'], 10)} par an, reste à charge "
-                          f"{'supérieur' if diff > 0 else 'inférieur'} d'environ {eur_r(abs(diff))}.", S['muted']),
+                          f"{'supérieur' if diff > 0 else 'inférieur'} d'environ {eur_r(abs(diff))}."
+                          + (f" À noter : {text(alt['caution'])}." if alt.get('caution') else ''), S['muted']),
                 Spacer(1, 6), rows_table(rows_alt, [CONTENT_W * 0.55, CONTENT_W * 0.35], bold_last=True),
             ], background=TINT, rule=BRASS_LIGHT, padding=9)])]
 

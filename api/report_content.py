@@ -259,6 +259,17 @@ def heat_pump_kw(prop, env, energy: str, works: List[str]) -> Optional[int]:
     return max(3, kw) if kw else None
 
 
+OLD_FACADE = ("façade ancienne souvent refusée en secteur protégé (accord de l'Architecte des Bâtiments de France) : "
+              "à vérifier en mairie avant d'y compter")
+
+
+def wall_alternative_with_caution(sim_input: SimulationInput, sim: Dict[str, Any], ctx: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    alt = wall_alternative(sim_input, sim)
+    if alt:
+        alt["caution"] = OLD_FACADE if alt["work"] == "ite" and ctx.get("pre_1948") else None
+    return alt
+
+
 def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "iti":
         return f"Surface habitable réduite d'environ {fr_dec(ctx['iti_surface_loss'])} m²."
@@ -404,7 +415,10 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
     prices = ", ".join(f"{ENERGY_NAMES[e]} {fr_dec(p, 2)} €" for e, p in ENERGY_PRICES_EUR_KWH.items()
                        if e in (energy, "electricity"))
     out = [
-        "Point de départ : les consommations du DPE officiel (base ADEME), réparties entre chauffage, eau chaude et autres usages selon l'époque du logement.",
+        "Point de départ : les consommations du DPE officiel (base ADEME), "
+        + ("par usage (chauffage, eau chaude, autres usages) comme le DPE les détaille."
+           if (sim_input.property.usage_consumption or {}).get("heating")
+           else "réparties entre chauffage, eau chaude et autres usages selon l'époque du logement."),
         "Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un pourcentage forfaitaire.",
         f"Prix de l'énergie retenus (par kWh, hors abonnement) : {prices}.",
         "Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au chantier. "
@@ -511,7 +525,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "ampleur_possible_label": sim["current_label"] in AMPLEUR_LABELS,
         },
         "ampleur_variant": ampleur_variant(sim_input, sim),
-        "wall_alternative": wall_alternative(sim_input, sim),
+        "wall_alternative": wall_alternative_with_caution(sim_input, sim, ctx),
         "insulation_state": insulation_state(prop),
         "steps": next_steps(sim, sim_input.is_investor),
         "assumptions": assumptions(sim, sim_input, price_per_m2, not prop.price_per_m2),
@@ -619,6 +633,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "reste_a_charge_fourchette_eur": [r100(report["wall_alternative"]["rest_to_pay_low"]), r100(report["wall_alternative"]["rest_to_pay_high"])],
             "ecart_reste_a_charge_eur": r100(report["wall_alternative"]["rest_difference"]),
             "classe_dpe_apres": report["wall_alternative"]["new_label"],
+            "contrainte": report["wall_alternative"].get("caution"),
         } if report.get("wall_alternative") else None,
         "etat_isolation_selon_dpe": {i["label"]: i["value"] for i in report.get("insulation_state") or []} or None,
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},

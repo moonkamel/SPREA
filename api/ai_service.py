@@ -47,8 +47,9 @@ Règles de fond :
 - Parle de CE logement : son type, sa surface, son époque, son chauffage, ses pertes de chaleur dominantes. Une phrase qui pourrait figurer dans le rapport d'un autre logement est à supprimer.
 - Présente les montants comme des estimations (« environ », « entre … et … »), jamais comme des certitudes. Les aides restent à confirmer par France Rénov'.
 - Si les données expliquent pourquoi la rénovation d'ampleur n'est pas accessible, explique-le simplement.
+- Dans la stratégie, présente les travaux dans l'ordre de « travaux » (l'ordre du tableau du rapport), sans en changer l'ordre.
 - Dans la stratégie, donne pour les travaux d'isolation la préconisation technique fournie (épaisseur, résistance thermique R exigée pour les aides) et, pour la pompe à chaleur, la puissance indicative si elle est fournie.
-- Si « autre_solution_murs » est fournie, compare en une ou deux phrases l'isolation des murs par l'intérieur et par l'extérieur (surface habitable, ponts thermiques, coût, déclaration en mairie), avec l'écart de reste à charge.
+- Si « autre_solution_murs » est fournie, compare en une ou deux phrases l'isolation des murs par l'intérieur et par l'extérieur (surface habitable, ponts thermiques, coût, déclaration en mairie), avec l'écart de reste à charge. Si sa « contrainte » est fournie, cite-la.
 - Si « variante_renovation_d_ampleur » est fournie, termine le paragraphe financement par cette variante : ajouter ce travail d'isolation ouvre la rénovation d'ampleur ; cite l'aide et le reste à charge de la variante, son accompagnement obligatoire et, s'il est fourni, ce qui est à vérifier sur place.
 - Si « valeur_verte_calculee_sur_prix_m2_par_defaut » vaut true, ne cite pas le montant de la valeur verte : il repose sur un prix au m² par défaut.
 - Les montants sont déjà arrondis : garde-les tels quels, sans recalculer de total.
@@ -151,7 +152,8 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
     if alt:
         gap = alt["ecart_reste_a_charge_eur"]
         strat += (f"Autre solution pour les murs : {alt['travail'][:1].lower() + alt['travail'][1:]}, pour un reste à charge "
-                  f"{'supérieur' if gap > 0 else 'inférieur'} d'environ {eur(abs(gap))}. ")
+                  f"{'supérieur' if gap > 0 else 'inférieur'} d'environ {eur(abs(gap))}"
+                  + (f" ; {alt['contrainte']}" if alt.get("contrainte") else "") + ". ")
     if not works:
         strat = "Aucun travaux n'est retenu dans ce scénario : choisissez des travaux pour obtenir une estimation."
     elif after["gain_classes"]:
