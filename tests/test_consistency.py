@@ -126,3 +126,10 @@ def test_bill_uses_the_dpe_consumption_per_usage():
     sim = simulate(SimulationInput(property=dpe))
     # 27 860 kWh of gas at 0.11 € + 3 090 kWh of electricity at 0.20 €
     assert sim["annual_bill_before"] == pytest.approx(27860.2 * 0.11 + (2097.9 + 991.6) * 0.20, rel=1e-6)
+
+
+def test_narrative_amounts_get_the_thousands_space():
+    from api.ai_service import thousands
+    assert thousands("estimée à 3680 € par an, de 7400 à 10 900 €") == "estimée à 3 680 € par an, de 7 400 à 10 900 €"
+    # Years and consumptions below 1 000 stay as they are
+    assert thousands("construite entre 1948 et 1974, après 2015, 360 kWh") == "construite entre 1948 et 1974, après 2015, 360 kWh"
