@@ -348,6 +348,7 @@ def scan_site(agency: Dict, url: str) -> Optional[Dict]:
 def queries(agency: Dict) -> Iterable[str]:
     name = re.sub(r"\(.*?\)", "", agency["names"][0]).strip()
     yield f'"{name}" {agency["town"]} immobilier'
+    yield f'{name} agence immobilière {agency["postcode"]} contact'
     for p, n in agency["officers"][:1]:
         yield f'"{p.split(" ")[0]} {n}" immobilier {agency["town"]}'
     for other in agency["names"][1:2]:
