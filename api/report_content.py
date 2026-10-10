@@ -9,14 +9,14 @@ from typing import Any, Dict, List, Optional
 try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
-    from api.simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, ENERGY_PRICES_EUR_KWH,
+    from api.simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, usage_split, ENERGY_PRICES_EUR_KWH,
                                 HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
-    from simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, ENERGY_PRICES_EUR_KWH,
+    from simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, usage_split, ENERGY_PRICES_EUR_KWH,
                             HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
@@ -134,6 +134,12 @@ def usage_breakdown(sim_input: SimulationInput, works: List[str]) -> List[Dict[s
             "energy_after": ENERGY_NAMES[energy_after],
         })
     return rows
+
+
+def hot_water_share(prop, env, energy: str) -> float:
+    heating, hot_water, other = usage_split(prop, env, energy)
+    total = heating + hot_water + other
+    return hot_water / total if total else env.hot_water_share
 
 
 def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
@@ -344,7 +350,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "qualities": {k: v for k, v in (prop.insulation_quality or {}).items()},
         "energy": energy,
         "window_count": env.window_count,
-        "hot_water_share": env.hot_water_share,
+        "hot_water_share": hot_water_share(prop, env, energy),
         "house": house,
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
