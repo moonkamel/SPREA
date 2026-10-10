@@ -29,13 +29,14 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={3} title="Services proposés">
-                    <p>L'abonnement donne accès, pendant sa durée et sans limite d'usage raisonnable, aux services suivants : simulateur de rénovation à partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME (travaux, étiquette après travaux, aides, reste à charge, économies, valeur verte) ; rapports PDF ; avis de valeur avant et après travaux fondés sur les ventes publiées dans la base DVF ; carte de prospection et alertes sur les nouveaux DPE (article 14) ; courriers, pages de contact et suivi des demandes reçues.</p>
+                    <p>L'abonnement donne accès, pendant sa durée et sans limite d'usage raisonnable, aux services suivants : simulateur de rénovation à partir des données publiques du diagnostic de performance énergétique (DPE) publiées par l'ADEME (travaux, étiquette après travaux, aides, reste à charge, économies, valeur verte) ; rapports PDF ; avis de valeur avant et après travaux fondés sur les ventes publiées dans la base DVF ; carte de prospection et alertes sur les nouveaux DPE (article 14) ; immeubles détenus par une société, avec leur dossier de cession et les signaux de vente tirés des annonces légales (BODACC) ; analyse des documents de copropriété déposés par le Client ; courriers, pages de contact et suivi des demandes reçues. L'analyse des documents est limitée à un nombre d'analyses par mois indiqué dans le service.</p>
                     <p>Trois formules sont proposées : <b>Solo</b>, pour un utilisateur ; <b>Agence</b>, facturée par utilisateur, à partir de deux ; <b>Réseau</b>, pour plusieurs agences, sur devis et conditions particulières. Leurs caractéristiques et leurs prix sont présentés sur la page <Link to="/tarifs" className="underline text-brass hover:text-brass-light">Tarifs</Link> et rappelés avant le paiement.</p>
                 </Article>
 
                 <Article n={4} title="Nature des résultats">
                     <p>Les simulations et rapports sont des <b>estimations indicatives</b>, établies à partir des données publiques du DPE, de valeurs moyennes de construction et de coûts moyens de marché. Ils ne constituent ni un DPE, ni un audit énergétique réglementaire, ni un devis, ni une étude thermique, ni un conseil juridique, fiscal ou financier.</p>
                     <p>Les montants d'aides sont calculés selon les barèmes publics connus à la date de la simulation. Leur attribution dépend de conditions d'éligibilité vérifiées par les organismes compétents (Anah, fournisseurs d'énergie, banques) et doit être confirmée par France Rénov' ou un Accompagnateur Rénov' avant tout engagement. Les résultats dépendent de l'exactitude des données du DPE, dont le Vendeur n'est pas l'auteur.</p>
+                    <p>Certains résultats sont produits par une intelligence artificielle (modèle Claude d'Anthropic) : analyse des rapports, synthèse des documents de copropriété, lecture des signaux de vente. Ils peuvent comporter des erreurs ou des omissions, ne remplacent ni la lecture des documents sources, ni le pré-état daté, ni l'avis d'un notaire ou d'un avocat, et doivent être vérifiés par le Client avant toute utilisation auprès de ses clients. Le Client ne dépose que des documents qu'il est en droit de communiquer ; ils sont supprimés après l'analyse.</p>
                 </Article>
 
                 <Article n={5} title="Compte et utilisateurs">
@@ -59,7 +60,7 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={9} title="Durée et engagement">
-                    <p>Les abonnements Solo et Agence souscrits sous la présente version des CGV comportent un <b>engagement d'une durée de 12 mois</b> à compter de la souscription. En paiement mensuel, le Client règle chaque mensualité pendant au moins 12 mois ; en paiement annuel, les 12 mois sont réglés d'avance. Les contrats Réseau sont conclus pour 12 mois, sauf conditions particulières.</p>
+                    <p>Les abonnements Solo et Agence souscrits à compter du 9 octobre 2026 comportent un <b>engagement d'une durée de 12 mois</b> à compter de la souscription. En paiement mensuel, le Client règle chaque mensualité pendant au moins 12 mois ; en paiement annuel, les 12 mois sont réglés d'avance. Les contrats Réseau sont conclus pour 12 mois, sauf conditions particulières.</p>
                     <p>Le droit de rétractation prévu par le Code de la consommation ne s'applique pas à l'abonnement, souscrit à distance par un professionnel pour les besoins de son activité. Aucune somme versée n'est remboursée, sauf manquement du Vendeur à ses obligations.</p>
                     <p>Pendant l'engagement, l'abonnement ne peut pas être résilié avant son terme : une demande de résiliation prend effet à la fin de la période d'engagement, les mensualités restant dues jusqu'à cette date. Le nombre d'utilisateurs d'une formule Agence peut être ajusté, au prorata, sans descendre sous le minimum de la formule.</p>
                 </Article>
@@ -67,7 +68,7 @@ export default function CgvPage() {
                 <Article n={10} title="Renouvellement et résiliation">
                     <p>À l'issue de l'engagement, l'abonnement est renouvelé automatiquement par périodes successives d'un mois ou d'un an selon la périodicité choisie. Il est alors résiliable à tout moment depuis « Mon compte », rubrique « Factures et abonnement » ; la résiliation prend effet à la fin de la période en cours, déjà payée, qui n'est pas remboursée.</p>
                     <p>En cas d'échec du paiement, l'accès aux services est suspendu jusqu'à régularisation, les sommes restant dues.</p>
-                    <p>Le compte ne peut pas être supprimé pendant la période d'engagement. Après celle-ci, sa suppression par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours. Les abonnements souscrits sous une version antérieure des CGV restent sans engagement et résiliables à tout moment.</p>
+                    <p>Le compte ne peut pas être supprimé pendant la période d'engagement. Après celle-ci, sa suppression par le Client entraîne la résiliation immédiate de l'abonnement, sans remboursement de la période en cours. Les abonnements souscrits avant le 9 octobre 2026 restent sans engagement et résiliables à tout moment.</p>
                 </Article>
 
                 <Article n={11} title="Disponibilité et assistance">

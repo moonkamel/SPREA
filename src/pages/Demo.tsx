@@ -7,7 +7,7 @@ import { SiteFooter, SiteHeader } from './site';
 import { Screen } from './Screen';
 import { useSeo } from '../seo';
 
-// Product walkthrough for professionals: a morning with SPREA, from the new
+// Product walkthrough for professionals ("Visite guidée"): a day with SPREA, from the new
 // DPE of the day to the valuation handed to the owner.
 
 function Step({ id, kicker, title, children, points, media, reverse = false }: {
@@ -42,8 +42,8 @@ export default function DemoPage() {
     const { me, startSubscription } = useAccount();
 
     useSeo({
-        title: "Démo SPREA : prospection DPE, immeubles de rapport, avis de valeur",
-        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et dossier de cession, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur avant / après travaux : découvrez SPREA en images.",
+        title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
+        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
         path: '/demo',
     });
     useEffect(() => {
@@ -61,13 +61,13 @@ export default function DemoPage() {
                 <section className="relative overflow-hidden border-b border-line/60">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,164,92,0.12),transparent_60%)] pointer-events-none" />
                     <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-14 text-center">
-                        <p className="text-sm text-brass tracking-wide mb-5">Démo</p>
-                        <h1 className="text-4xl sm:text-5xl leading-[1.1] text-ink">Une matinée avec SPREA</h1>
+                        <p className="text-sm text-brass tracking-wide mb-5">Visite guidée</p>
+                        <h1 className="text-4xl sm:text-5xl leading-[1.1] text-ink">Une journée avec SPREA</h1>
                         <p className="mt-6 text-lg text-muted">
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
-                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3 text-left">
-                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['14 h', 'Le rendez-vous', 'convaincre']].map(([h, t, a]) => (
+                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-left">
+                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre']].map(([h, t, a]) => (
                                 <li key={a}>
                                     <a href={`#${a}`} className="block rounded-xl border border-line bg-panel px-4 py-3 hover:border-brass/50 transition-colors">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
@@ -140,6 +140,29 @@ export default function DemoPage() {
                     }>
                     <p>Un immeuble de logements classés G ne peut plus être reloué, ses loyers sont gelés, et il faut un audit énergétique pour le vendre. SPREA rassemble ces faits, chiffre les travaux et la valeur de l'immeuble, et en fait un dossier à vos couleurs.</p>
                     <p>Vous arrivez chez le gérant de la SCI avec des chiffres, pas avec une simple demande de mandat.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step kicker="11 h 30 · Signaux de vente" title="Les SCI qui vont vendre, repérées au BODACC"
+                    points={['Dissolution, liquidation, procédure collective, radiation, changement de dirigeant', 'Annonces légales vérifiées chaque semaine pour chaque société propriétaire', 'Contour rouge sur la carte et filtre « signal de vente fort »', 'Lecture par l\'IA : ce que ça implique, qui contacter, à quel horizon']}
+                    media={<Screen src="/demo/sig_sheet.webp" alt="Fiche d'un immeuble dont la SCI est en liquidation judiciaire : annonces du BODACC et lecture par l'IA" width={1100} height={1879} />}>
+                    <p>Une SCI en liquidation judiciaire vend ses immeubles, une SCI dissoute aussi, et un changement de gérant annonce souvent une succession ou un arbitrage. Ces annonces sont publiques mais personne ne les lit : SPREA les croise chaque semaine avec les immeubles de votre secteur.</p>
+                    <p>L'IA vous dit ce que la situation implique et à qui s'adresser : le liquidateur plutôt que le gérant, le notaire chargé d'une succession… Vous arrivez au bon moment, avec le bon interlocuteur.</p>
+                    <p className="text-xs text-faint">Capture réalisée avec des données d'exemple : société, dirigeants et annonces fictifs.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step id="pv-ag" kicker="12 h · Documents de copropriété" title="Les PV d'AG lus par l'IA en deux minutes" reverse
+                    points={['PV d\'AG, carnet d\'entretien, pré-état daté : PDF ou photos', 'Travaux votés et appels de fonds, travaux à venir, procédures, impayés', 'Points de vigilance classés, avec la page de chaque information', 'Questions à poser au syndic et documents manquants', 'Synthèse PDF à vos couleurs pour l\'acheteur ou le notaire']}
+                    media={
+                        <div className="grid gap-4 sm:grid-cols-5 items-start">
+                            <div className="sm:col-span-3"><Screen src="/demo/docs_result.webp" alt="Synthèse des PV d'AG d'une copropriété : risque, points de vigilance, travaux votés et à venir, finances" width={1400} height={2426} /></div>
+                            <div className="sm:col-span-2"><Screen src="/demo/docs_pdf.webp" alt="Synthèse de copropriété en PDF à remettre à l'acheteur" width={900} height={1272} chrome={false} /></div>
+                        </div>
+                    }>
+                    <p>Avant chaque compromis, il faut lire les trois derniers PV d'assemblée générale : des dizaines de pages pour trouver le ravalement voté, l'ascenseur refusé ou la procédure contre un copropriétaire. Déposez-les : l'IA en sort l'essentiel, page par page.</p>
+                    <p>Vous anticipez les questions de l'acheteur et du notaire, et vous évitez la mauvaise surprise qui fait tomber une vente.</p>
+                    <p className="text-xs text-faint">Capture réalisée avec un PV d'AG fictif. Les documents sont supprimés après l'analyse.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />

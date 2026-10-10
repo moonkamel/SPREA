@@ -11,22 +11,21 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-import httpx
+try:
+    from api import claude
+except ImportError:
+    import claude
 
 logger = logging.getLogger(__name__)
 
-ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 DEFAULT_MODEL = "claude-sonnet-5-5"
 NARRATIVE_VERSION = 2
 TIMEOUT_SECONDS = 50
 
 SECTIONS = ("verdict", "diagnostic", "strategie", "financement", "profil")
 
-TOOL = {
-    "name": "rediger_analyse",
-    "description": "Enregistre l'analyse rédigée du rapport de rénovation.",
-    "input_schema": {
-        "type": "object",
+SCHEMA = claude.strict_schema({
+    "type": "object",
         "properties": {
             "verdict": {"type": "string", "description": "2 phrases maximum : ce qu'il faut retenir pour ce logement, avec les 2 chiffres décisifs."},
             "diagnostic": {"type": "string", "description": "Un paragraphe de 70 à 110 mots : pourquoi ce logement est classé ainsi, en s'appuyant sur ses pertes de chaleur, son chauffage et son époque."},
@@ -37,8 +36,7 @@ TOOL = {
                           "description": "3 à 5 points de vigilance concrets pour ce projet, une phrase chacun."},
         },
         "required": ["verdict", "diagnostic", "strategie", "financement", "profil", "vigilance"],
-    },
-}
+})
 
 SYSTEM_PROMPT = """Tu rédiges la partie « analyse » d'un rapport de rénovation énergétique payant, destiné à un client qui va s'engager financièrement. Le rapport contient déjà tous les tableaux chiffrés ; ton texte les relie et les interprète pour ce logement précis.
 
@@ -58,7 +56,7 @@ Règles de style (le texte ne doit pas sonner comme généré automatiquement) :
 - Ne commence pas deux phrases de suite par le même mot. Ne répète pas le même chiffre dans deux sections, sauf le reste à charge.
 - Écris les nombres comme dans les données, avec une espace pour les milliers (12 400 €).
 
-Appelle l'outil rediger_analyse avec le texte final."""
+Réponds avec le texte final, dans le format demandé."""
 
 BANNED = re.compile(r"\*\*|__|^#+\s|[\U0001F300-\U0001FAFF☀-➿]", re.M)
 
@@ -171,9 +169,6 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
 # --- Claude ---
 
 class AIService:
-    def __init__(self, transport: Optional[httpx.AsyncBaseTransport] = None):
-        self.transport = transport  # Tests only
-
     @property
     def model(self) -> str:
         return os.getenv("ANTHROPIC_MODEL", "").strip() or DEFAULT_MODEL
@@ -182,43 +177,24 @@ class AIService:
         """Returns {"source": "claude" | "rules", "sections": {...}}."""
         key = os.getenv("ANTHROPIC_API_KEY", "").strip()
         if key:
-            sections = await self._claude(key, facts)
+            sections = await self._claude(facts)
             if sections:
                 return {"v": NARRATIVE_VERSION, "source": "claude", "model": self.model, "sections": sections}
         else:
             logger.warning("ANTHROPIC_API_KEY not set: rule-based analysis")
         return {"v": NARRATIVE_VERSION, "source": "rules", "sections": fallback_analysis(facts)}
 
-    async def _claude(self, key: str, facts: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        payload = {
-            "model": self.model,
-            "max_tokens": 3000,
-            "system": SYSTEM_PROMPT,
-            "tools": [TOOL],
-            "tool_choice": {"type": "tool", "name": TOOL["name"]},
-            "messages": [{
-                "role": "user",
-                "content": "Données du logement et du projet (JSON) :\n" + json.dumps(facts, ensure_ascii=False, indent=1),
-            }],
-        }
-        headers = {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+    async def _claude(self, facts: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        content = "Données du logement et du projet (JSON) :\n" + json.dumps(facts, ensure_ascii=False, indent=1)
         try:
-            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS, transport=self.transport) as client:
-                res = await client.post(ANTHROPIC_URL, json=payload, headers=headers)
-            if res.status_code != 200:
-                # Never log the body of the request (facts) nor the key
-                logger.error(f"Anthropic API error {res.status_code}: {res.text[:300]}")
-                return None
-            for block in res.json().get("content", []):
-                if block.get("type") == "tool_use" and block.get("name") == TOOL["name"]:
-                    sections = validate(block.get("input") or {})
-                    if not sections:
-                        logger.error("Anthropic analysis rejected by validation")
-                    return sections
-            logger.error("Anthropic response without analysis")
-        except Exception as e:
-            logger.error(f"Anthropic call failed: {type(e).__name__}")
-        return None
+            raw = await claude.json_call(SYSTEM_PROMPT, content, SCHEMA, model=self.model, effort="medium",
+                                         max_tokens=8000, timeout=TIMEOUT_SECONDS)
+        except claude.ClaudeUnavailable:
+            return None
+        sections = validate(raw)
+        if not sections:
+            logger.error("Anthropic analysis rejected by validation")
+        return sections
 
 
 def parse_stored(raw: Optional[str]) -> Optional[Dict[str, Any]]:

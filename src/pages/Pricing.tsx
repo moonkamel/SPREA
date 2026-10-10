@@ -19,12 +19,14 @@ const INCLUDED = [
     'Artisans RGE les plus proches pour chaque travail',
     'Fiche immeuble des copropriétés : registre, DPE collectif, travaux à venir',
     'Immeubles entiers détenus par des SCI, avec leur propriétaire et un dossier de cession',
+    'Signaux de vente des SCI (BODACC : dissolution, liquidation…) expliqués par l\'IA',
+    'Lecture des PV d\'AG par l\'IA : travaux votés, appels de fonds, procédures, points de vigilance',
 ];
 
 const FAQ = [
     {
         q: 'Puis-je voir SPREA avant de m\'abonner ?',
-        a: "Oui : la page Démo présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, fiches immeubles et dossiers de cession). Pour une présentation en direct, écrivez-nous.",
+        a: "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous.",
     },
     {
         q: "Y a-t-il un engagement ?",

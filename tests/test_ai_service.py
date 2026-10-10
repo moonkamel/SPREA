@@ -1,8 +1,8 @@
 import asyncio
 import json
 
-import httpx
 
+from tests import claude_mock
 from api.ai_service import AIService, NARRATIVE_VERSION, parse_stored, validate
 from api.report_content import build_report, facts_for_writer
 from api.simulation import SimulationInput
@@ -40,30 +40,26 @@ def test_without_key_uses_rules(monkeypatch):
     assert parse_stored(json.dumps(res)) is None
 
 
-def test_claude_tool_output_is_used(monkeypatch):
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-    seen = {}
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        seen["headers"] = request.headers
-        seen["body"] = json.loads(request.content)
-        return httpx.Response(200, json={"content": [{"type": "tool_use", "name": "rediger_analyse",
-                                                      "input": {**GOOD, "diagnostic": "**Gras** " + GOOD["diagnostic"]}}]})
-
-    res = asyncio.run(AIService(transport=httpx.MockTransport(handler)).write_analysis(facts()))
+def test_claude_output_is_used(monkeypatch):
+    mock = claude_mock.install(monkeypatch, lambda body: {**GOOD, "diagnostic": "**Gras** " + GOOD["diagnostic"]})
+    res = asyncio.run(AIService().write_analysis(facts()))
     assert res["source"] == "claude"
     assert res["sections"]["diagnostic"].startswith("Gras Cette maison")
-    assert seen["headers"]["x-api-key"] == "sk-ant-test"
-    assert seen["body"]["tool_choice"] == {"type": "tool", "name": "rediger_analyse"}
+    req = mock.requests[0]
+    assert req["headers"]["x-api-key"] == "sk-ant-test"
+    # Structured output, no forced tool (rejected by the current models)
+    assert "tool_choice" not in req["body"] and req["body"]["output_config"]["format"]["type"] == "json_schema"
+    assert req["body"]["fallbacks"] == "default"
     stored = parse_stored(json.dumps(res))
     assert stored and stored["v"] == NARRATIVE_VERSION
 
 
 def test_api_error_falls_back_to_rules(monkeypatch):
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-    transport = httpx.MockTransport(lambda r: httpx.Response(529, json={"error": "overloaded"}))
-    res = asyncio.run(AIService(transport=transport).write_analysis(facts()))
+    claude_mock.install(monkeypatch, lambda body: GOOD, status=529)
+    res = asyncio.run(AIService().write_analysis(facts()))
     assert res["source"] == "rules"
+    claude_mock.install(monkeypatch, lambda body: GOOD, stop_reason="refusal")
+    assert asyncio.run(AIService().write_analysis(facts()))["source"] == "rules"
 
 
 def test_incomplete_output_is_rejected():

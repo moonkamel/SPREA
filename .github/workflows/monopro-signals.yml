@@ -1,0 +1,42 @@
+name: Signaux de vente (BODACC)
+
+# Reads the BODACC notices of the companies owning whole buildings and stores
+# their sale signals (scripts/monopro/signals.py). Weekly, after the BODACC
+# publications of the week, or on demand from the Actions tab.
+# Requires the repository secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Nombre de sociétés (vide = toutes)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "23 4 * * 6"
+  workflow_run:
+    workflows: ["Monopropriétés (BDNB)"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monopro-signals
+  cancel-in-progress: false
+
+jobs:
+  signals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Signaux
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LIMIT: ${{ inputs.limit }}
+        run: python scripts/monopro/signals.py ${LIMIT:+--limit "$LIMIT"}

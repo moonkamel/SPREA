@@ -625,29 +625,20 @@ def test_checkout_tax_parameters(automatic_tax):
 
 
 def test_claude_analysis_is_generated_once_and_stored(env, monkeypatch):
-    import httpx
-    from api.ai_service import ai_service
+    from tests import claude_mock
 
     client, store, billing, state = env
     store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
-    calls = []
     sections = {k: f"Texte {k} pour ce logement de 85 m²." for k in ("verdict", "diagnostic", "strategie", "financement", "profil")}
-
-    def handler(request):
-        calls.append(request)
-        return httpx.Response(200, json={"content": [{"type": "tool_use", "name": "rediger_analyse",
-                                                      "input": {**sections, "vigilance": ["Premier point à vérifier.", "Second point à vérifier."]}}]})
-
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-    monkeypatch.setattr(ai_service, "transport", httpx.MockTransport(handler))
+    mock = claude_mock.install(monkeypatch, lambda body: {**sections, "vigilance": ["Premier point à vérifier.", "Second point à vérifier."]})
     report_id = client.post("/api/reports", json=REPORT_REQUEST).json()["id"]
     assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
     assert json.loads(store.reports[report_id]["narrative"])["source"] == "claude"
     # Second download reuses the stored analysis
     assert client.get(f"/api/reports/{report_id}/pdf").status_code == 200
-    assert len(calls) == 1
+    assert len(mock.requests) == 1
     # The street address is never sent
-    prompt = json.loads(calls[0].content)["messages"][0]["content"]
+    prompt = mock.requests[0]["body"]["messages"][0]["content"]
     assert "rue de l" not in prompt and "Église" not in prompt
     assert "surface_m2" in prompt
 

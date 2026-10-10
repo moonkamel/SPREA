@@ -14,6 +14,7 @@ class SupabaseStore:
                  transport: Optional[httpx.AsyncBaseTransport] = None):
         self.base = f"{url.rstrip('/')}/rest/v1"
         self.auth_base = f"{url.rstrip('/')}/auth/v1"
+        self.storage_base = f"{url.rstrip('/')}/storage/v1"
         self.headers = {"apikey": service_key, "Content-Type": "application/json"}
         # Legacy service_role keys are JWTs and also go in Authorization. The new
         # secret keys (sb_secret_...) are not JWTs: they must only be sent as apikey.
@@ -314,9 +315,13 @@ class SupabaseStore:
     # --- Monopropriétés: whole buildings with a single owner (011_monopro.sql) ---
 
     async def monopro_in_bbox(self, west: float, south: float, east: float, north: float,
-                              company_only: bool, min_log: int, limit: int, poor_dpe: bool = False) -> List[Dict[str, Any]]:
+                              company_only: bool, min_log: int, limit: int, poor_dpe: bool = False,
+                              min_signal: Optional[int] = None) -> List[Dict[str, Any]]:
         params = {"and": f"(lat.gte.{south},lat.lte.{north},lon.gte.{west},lon.lte.{east})",
-                  "nb_log": f"gte.{min_log}", "select": "*", "order": "nb_log.desc", "limit": str(limit)}
+                  "nb_log": f"gte.{min_log}", "select": "*", "order": "signal_score.desc.nullslast,nb_log.desc",
+                  "limit": str(limit)}
+        if min_signal is not None:
+            params["signal_score"] = f"gte.{min_signal}"
         if company_only:
             params["owner_siren"] = "not.is.null"
         if poor_dpe:
@@ -335,6 +340,13 @@ class SupabaseStore:
     async def monopro_owners(self, sirens: List[str]) -> List[Dict[str, Any]]:
         return await self._request("GET", "monopro_owners", params={"siren": self._in(sirens), "select": "*"})
 
+    async def monopro_signal(self, siren: str) -> Optional[Dict[str, Any]]:
+        return await self._one("monopro_signals", {"siren": f"eq.{siren}"})
+
+    async def save_signal_summary(self, siren: str, summary: Dict[str, Any], key: str) -> None:
+        await self._request("PATCH", "monopro_signals", params={"siren": f"eq.{siren}"},
+                            json={"summary": summary, "summary_key": key}, prefer="return=minimal")
+
     # --- Account deletion ---
 
     async def archive_purchases(self, rows: List[Dict[str, Any]]) -> None:
@@ -344,6 +356,57 @@ class SupabaseStore:
         # Idempotent: a retried deletion does not duplicate records
         await self._request("POST", "purchase_archive", params={"on_conflict": "stripe_session_id"}, json=rows,
                             prefer="resolution=ignore-duplicates")
+
+    # --- Copropriété documents read by Claude (013_copro_docs.sql) ---
+
+    async def create_doc_analysis(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "copro_doc_analyses", json=row, prefer="return=representation")
+        return rows[0]
+
+    async def get_doc_analysis(self, analysis_id: str) -> Optional[Dict[str, Any]]:
+        return await self._one("copro_doc_analyses", {"id": f"eq.{analysis_id}"})
+
+    async def update_doc_analysis(self, analysis_id: str, fields: Dict[str, Any]) -> None:
+        await self._request("PATCH", "copro_doc_analyses", params={"id": f"eq.{analysis_id}"}, json=fields,
+                            prefer="return=minimal")
+
+    async def list_doc_analyses(self, user_id: str, since: Optional[str] = None) -> List[Dict[str, Any]]:
+        params = {"user_id": f"eq.{user_id}", "select": "id,address,status,files,created_at,result->synthese,result->niveau_risque",
+                  "order": "created_at.desc", "limit": "100"}
+        if since:
+            params["created_at"] = f"gte.{since}"
+        return await self._request("GET", "copro_doc_analyses", params=params)
+
+    async def delete_doc_analysis(self, analysis_id: str) -> None:
+        await self._request("DELETE", "copro_doc_analyses", params={"id": f"eq.{analysis_id}"})
+
+    async def stale_doc_uploads(self, before: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "copro_doc_analyses", params={
+            "status": "eq.uploading", "created_at": f"lt.{before}", "select": "id,files", "limit": "200"})
+
+    # --- Storage (private bucket copro-docs) ---
+
+    async def signed_upload_url(self, bucket: str, path: str) -> str:
+        async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
+            res = await client.post(f"{self.storage_base}/object/upload/sign/{bucket}/{path}", headers=self.headers)
+            res.raise_for_status()
+        return f"{self.storage_base}{res.json()['url']}"
+
+    async def download_object(self, bucket: str, path: str) -> Optional[bytes]:
+        async with httpx.AsyncClient(timeout=60, transport=self.transport) as client:
+            res = await client.get(f"{self.storage_base}/object/{bucket}/{path}", headers=self.headers)
+            if res.status_code in (400, 404):  # Never uploaded
+                return None
+            res.raise_for_status()
+            return res.content
+
+    async def delete_objects(self, bucket: str, paths: List[str]) -> None:
+        if not paths:
+            return
+        async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
+            res = await client.request("DELETE", f"{self.storage_base}/object/{bucket}", headers=self.headers,
+                                       json={"prefixes": paths})
+            res.raise_for_status()
 
     async def delete_user(self, user_id: str) -> None:
         """Deletes the Supabase Auth user; profile and reports follow (on delete cascade)."""
