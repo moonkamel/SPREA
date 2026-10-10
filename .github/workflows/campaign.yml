@@ -33,6 +33,10 @@ on:
         description: "Pour emails : SIREN des agences, séparés par des espaces"
         required: false
         default: ""
+      max_queries:
+        description: "Pour emails : nombre maximal de requêtes Brave (facturées)"
+        required: false
+        default: "500"
   schedule:
     - cron: "17 5 * * 1"
 
@@ -95,6 +99,7 @@ jobs:
       - env:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SIRENS: ${{ inputs.sirens }}
+          MAX_QUERIES: ${{ inputs.max_queries }}
         run: python scripts/campaign/find_emails.py --sirens $SIRENS --out emails.csv
       - uses: actions/upload-artifact@v4
         with:

@@ -731,6 +731,26 @@ class PDFReportGenerator:
                                           *bullet_list(sim['aid_blockers'], 'muted')],
                                          background=TINT, rule=BRASS_LIGHT, padding=9)]
 
+        variant = report.get('ampleur_variant')
+        if variant:
+            vrows = [
+                kv(f"+ {text(variant['work_name'])}", eur_range(variant['work_cost_low'], variant['work_cost_high'])),
+                kv("Coût total des travaux", eur_range(variant['cost_low'], variant['cost_high'])),
+                kv("MaPrimeRénov' rénovation d'ampleur", f"<font color='#3E8E63'>−{NBSP}{eur_r(variant['subsidies'])}</font>"),
+                kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_range(variant['rest_to_pay_low'], variant['rest_to_pay_high'])}</b></font>"),
+            ]
+            gain = (f"Pour environ {eur_r(variant['saving_vs_programme'])} de moins à votre charge, le logement est mieux isolé "
+                    f"(classe {variant['new_label']}, facture d'environ {eur_r(variant['annual_bill_after'], 10)} par an).")
+            out += [Spacer(1, 12), KeepTogether([boxed([
+                Paragraph(f"<b>Variante : ajouter {text(variant['work_phrase'])} "
+                          "ouvre la rénovation d'ampleur</b>", S['body']), Spacer(1, 3),
+                Paragraph("Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation "
+                          "d'ampleur, qui finance une part de l'ensemble des travaux. " + gain, S['muted']), Spacer(1, 6),
+                rows_table(vrows, [CONTENT_W * 0.55, CONTENT_W * 0.35], bold_last=True), Spacer(1, 4),
+                Paragraph("Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) "
+                          "et audit énergétique confirmant un gain d'au moins deux classes. Primes CEE non cumulables.", S['small']),
+            ], background=TINT, rule=BRASS_LIGHT, padding=9)])]
+
         if sim['eco_ptz_amount']:
             loan = [
                 kv('Éco-prêt à taux zéro', eur_r(sim['eco_ptz_amount'])),
@@ -770,7 +790,8 @@ class PDFReportGenerator:
             notes.append(f"Valeur verte : {text(sim['green_value_basis'])}.")
             if sim['green_value_method'] in ('department', 'national'):
                 notes.append("Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, "
-                             "surface, époque de construction et date de vente comparables. Fourchette : intervalle de confiance à 95 %.")
+                             "surface, époque de construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle "
+                             "de confiance à 95 % de l'écart à la totalité de son haut.")
         out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 4)] + [Paragraph(n, S['small']) for n in notes]
         if report['is_investor']:
             inv_w = CONTENT_W / 4
@@ -906,7 +927,9 @@ class PDFReportGenerator:
         story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
             "Valeur estimée à partir des ventes réelles publiées (DVF), d'un seul logement du même type et de surface comparable, au plus près du bien, "
             "prix ramenés au dernier trimestre connu.",
-            "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE.",
+            "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE. "
+            "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus : le reste tient à l'état général des "
+            "logements vendus, que les travaux énergétiques seuls n'apportent pas.",
             "Fourchette : entre le premier et le troisième quart des prix au m² des ventes comparables.",
             "Cet avis de valeur ne constitue pas une expertise immobilière. Il ne tient compte que des éléments indiqués et de l'ajustement du conseiller ;"
             " l'état réel, les prestations et la situation précise du bien peuvent modifier sa valeur.",

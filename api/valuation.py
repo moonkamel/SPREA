@@ -17,7 +17,7 @@ try:
     from api.accounts import ReportMeta, is_pro, safe_filename, store_dep
     from api.auth import User, current_user
     from api.dvf import market_price
-    from api.green_value import LABELS, department, kind_of, model
+    from api.green_value import LABELS, WORKS_SHARE, department, kind_of, model
     from api.pdf_service import pdf_service
     from api.report_content import display_address
     from api.simulation import SimulationInput, simulate
@@ -26,7 +26,7 @@ except ImportError:
     from accounts import ReportMeta, is_pro, safe_filename, store_dep
     from auth import User, current_user
     from dvf import market_price
-    from green_value import LABELS, department, kind_of, model
+    from green_value import LABELS, WORKS_SHARE, department, kind_of, model
     from pdf_service import pdf_service
     from report_content import display_address
     from simulation import SimulationInput, simulate
@@ -60,7 +60,10 @@ def compute(sim: Dict[str, Any], market: Dict[str, Any], surface: float, kind: s
         return surface * price_m2 * factor * adj
 
     now = {k: values(market[p], f_now) for k, p in (("value", "price_per_m2"), ("low", "q25"), ("high", "q75"))}
-    after = {k: values(market[p], f_after) for k, p in (("value", "price_per_m2"), ("low", "q25"), ("high", "q75"))}
+    # Same prudence as the report: only part of the price gap between classes
+    # is credited to the works (api/green_value.py)
+    after = {k: now[k] + WORKS_SHARE * (values(market[p], f_after) - now[k])
+             for k, p in (("value", "price_per_m2"), ("low", "q25"), ("high", "q75"))}
     works = sim["cost"] > 0 and target != current
     net = after["value"] - now["value"] - sim["rest_to_pay"] if works else None
     premium = {c: round((math.exp(m["class"][c]) - 1) * 100, 1) for c in LABELS} if m else None

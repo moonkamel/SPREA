@@ -20,6 +20,12 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "green_value.json")
 # Fallback: average gap per class from the notaries' studies (Notaires de France)
 FLAT_RATE_PER_CLASS = 0.045
 Z_95 = 1.96
+# Share of the measured gap credited to the works. Sales compare dwellings,
+# not works: an F dwelling is also often less well kept than a C one (kitchen,
+# bathroom, finishes), which the price gap includes and energy works alone do
+# not bring. Prudent value: 70 % of the gap; range from half of its lower
+# bound to the whole of its upper bound.
+WORKS_SHARE, WORKS_SHARE_LOW, WORKS_SHARE_HIGH = 0.7, 0.5, 1.0
 
 
 @lru_cache(maxsize=1)
@@ -111,13 +117,17 @@ def estimate(current: str, target: str, surface: float, price_m2: float, kind: s
     # "2022T1-2025T4" -> "2022 à 2025"
     years = period.replace("T1", "").replace("T2", "").replace("T3", "").replace("T4", "").split("-")
     period = f"{years[0]} à {years[-1]}" if len(years) == 2 and years[0] != years[-1] else period
+    premium = round((math.exp(delta) - 1) * 100, 1)
     return {
-        "value": gain(delta),
-        "low": gain(delta - Z_95 * se),
-        "high": gain(delta + Z_95 * se),
+        "value": WORKS_SHARE * gain(delta),
+        "low": WORKS_SHARE_LOW * gain(delta - Z_95 * se),
+        "high": WORKS_SHARE_HIGH * gain(delta + Z_95 * se),
         "method": m["scope"],
         "value_now": value_now,
-        "premium_pct": round((math.exp(delta) - 1) * 100, 1),
-        "basis": (f"écart de prix mesuré entre les classes {current} et {target} sur les ventes {scope} "
-                  f"({format(m['n'], ',').replace(',', ' ')} ventes rapprochées de leur DPE, {period})"),
+        "premium_pct": premium,
+        "works_share_pct": round(WORKS_SHARE * 100),
+        "basis": (f"écart de prix de {format(premium, '.0f')} % mesuré entre les classes {current} et {target} sur les ventes "
+                  f"{scope} ({format(m['n'], ',').replace(',', ' ')} ventes rapprochées de leur DPE, {period}), dont "
+                  f"{round(WORKS_SHARE * 100)} % retenus pour les seuls travaux énergétiques : le reste de l'écart tient "
+                  "à l'état général des logements vendus (cuisine, salle de bains, finitions)"),
     }

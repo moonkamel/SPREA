@@ -30,8 +30,11 @@ def test_estimate_uses_department_effects_and_class_mix():
     mix_level = sum(DATA["kinds"]["Appartement"]["departments"]["59"]["mix"][c] * math.exp(DATA["kinds"]["Appartement"]["departments"]["59"]["class"][c]) for c in "ABCDEFG")
     value_now = 50 * 3000 * math.exp(-0.06) / mix_level
     assert res["method"] == "department"
-    assert res["value"] == pytest.approx(value_now * (math.exp(0.11) - 1))
-    assert res["low"] < res["value"] < res["high"]
+    # Only part of the measured gap is credited to the works
+    assert res["premium_pct"] == pytest.approx((math.exp(0.11) - 1) * 100, abs=0.1)
+    assert res["value"] == pytest.approx(gv.WORKS_SHARE * value_now * (math.exp(0.11) - 1))
+    assert res["low"] < res["value"] < res["high"] <= value_now * (math.exp(0.11 + 0.1) - 1)
+    assert "70 % retenus pour les seuls travaux" in res["basis"]
     assert "8 000 ventes" in res["basis"]
 
 
@@ -40,3 +43,22 @@ def test_national_fallback_and_flat_rate_without_data():
     flat = gv.estimate("G", "D", 50, 3000, "Maison", "75", {"kinds": {}})
     assert flat["method"] == "flat" and flat["value"] == pytest.approx(3 * 50 * 3000 * 0.045)
     assert gv.estimate("D", "D", 50, 3000, "Appartement", "59", DATA)["value"] == 0
+
+
+def test_variant_opens_renovation_d_ampleur_with_a_second_insulation():
+    """Live case (Dainville, house F, gas): walls + heat pump + water heater
+    only got the gesture aids; adding the roof opens the rénovation d'ampleur."""
+    from api.simulation import SimulationInput, SimulationProperty, ampleur_variant, simulate
+    prop = SimulationProperty(surface=93.7, initial_cep=360, ges_value=69, official_label="F", dpe_date="2025-06-02",
+                              building_type="Maison", postcode="62000", insee_code="62263", construction_period="1948-1974",
+                              heating_energy="Gaz naturel", price_per_m2=1992, insulation_quality={"walls": "insuffisante"},
+                              dpe_losses={"walls": 41, "bridges": 18, "air": 16, "roof": 12, "floor": 6, "windows": 6})
+    data = SimulationInput(property=prop, works=["iti", "pac_air_eau", "ecs"])
+    sim = simulate(data)
+    assert sim["aid_pathway"] == "geste"
+    variant = ampleur_variant(data, sim)
+    assert variant["work"] == "roof" and variant["subsidies"] > 2 * (sim["subsidies"] + sim["cee_est"])
+    assert 0 < variant["saving_vs_programme"] and variant["rest_to_pay"] < sim["rest_to_pay"]
+    # Already in the rénovation d'ampleur, or nothing to add: no variant
+    data2 = SimulationInput(property=prop, works=["iti", "roof", "pac_air_eau", "ecs"])
+    assert ampleur_variant(data2, simulate(data2)) is None

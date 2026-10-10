@@ -8,13 +8,13 @@ from typing import Any, Dict, List, Optional
 
 try:
     from api.aids import AMPLEUR_LABELS
-    from api.simulation import (DEFAULT_PRICE_PER_M2, ENERGY_PRICES_EUR_KWH,
+    from api.simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, ENERGY_PRICES_EUR_KWH,
                                 HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
-    from simulation import (DEFAULT_PRICE_PER_M2, ENERGY_PRICES_EUR_KWH,
+    from simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, ENERGY_PRICES_EUR_KWH,
                             HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
@@ -47,6 +47,10 @@ SMALL_WORDS = {"de", "du", "des", "la", "le", "les", "et", "à", "a", "au", "aux
 
 
 # --- Formatting helpers (plain text, the PDF escapes it) ---
+
+
+def round500(value) -> int:
+    return int(round((value or 0) / 500) * 500)
 
 def fr_int(value: float) -> str:
     return f"{round(value):,}".replace(",", " ")
@@ -257,8 +261,8 @@ def green_value_assumption(sim: Dict[str, Any], sim_input: SimulationInput, pric
              else f"{fr_int(price_m2)} €/m², {sim_input.property.price_source}" if sim_input.property.price_source
              else f"{fr_int(price_m2)} €/m², prix saisi")
     if sim["green_value_method"] in ("department", "national"):
-        return (f"Valeur verte : {sim['green_value_basis']}, appliqué au prix local ({price}). "
-                "Fourchette : intervalle de confiance à 95 % de cet écart.")
+        return (f"Valeur verte : {sim['green_value_basis']} ; appliquée au prix local ({price}). "
+                "Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.")
     if sim["green_value_method"] == "flat":
         return f"Valeur verte : {sim['green_value_basis']}, appliquée au prix local ({price})."
     return f"Prix local retenu : {price}."
@@ -365,11 +369,28 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "net_monthly_effort": sim["eco_ptz_monthly"] - monthly_saving if sim["eco_ptz_amount"] else None,
             "ampleur_possible_label": sim["current_label"] in AMPLEUR_LABELS,
         },
+        "ampleur_variant": ampleur_variant(sim_input, sim),
         "steps": next_steps(sim, sim_input.is_investor),
         "assumptions": assumptions(sim, sim_input, price_per_m2, not prop.price_per_m2),
         "price_per_m2": price_per_m2,
         "price_is_default": not prop.price_per_m2,
         "price_source": prop.price_source,
+    }
+
+
+def variant_facts(v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not v:
+        return None
+    return {
+        "travail_ajoute": v["work_phrase"],
+        "cout_du_travail_ajoute_fourchette_eur": [r100(v["work_cost_low"]), r100(v["work_cost_high"])],
+        "parcours_aide": "MaPrimeRénov' rénovation d'ampleur",
+        "maprimerenov_eur": r100(v["subsidies"]),
+        "reste_a_charge_fourchette_eur": [r100(v["rest_to_pay_low"]), r100(v["rest_to_pay_high"])],
+        "reste_a_charge_en_moins_eur": r100(v["saving_vs_programme"]),
+        "classe_dpe_apres": v["new_label"],
+        "economies_eur_an": int(round(v["annual_savings"], -1)),
+        "condition": "Accompagnement obligatoire par un Accompagnateur Rénov' et audit énergétique confirmant le gain de classes.",
     }
 
 
@@ -433,9 +454,11 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "retour_sur_investissement_ans": round(sim["roi_years"]) if sim["roi_years"] is not None else None,
             "regles_aides": sim["aid_rules"],
         },
+        "variante_renovation_d_ampleur": variant_facts(report.get("ampleur_variant")),
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
-        "valeur_verte_eur": int(round(sim["latent_gain"], -2)),
-        "valeur_verte_fourchette_eur": [int(round(sim["latent_gain_low"], -2)), int(round(sim["latent_gain_high"], -2))],
+        # Rounded to 500 € like the PDF, so that the text quotes the same figures
+        "valeur_verte_eur": round500(sim["latent_gain"]),
+        "valeur_verte_fourchette_eur": [round500(sim["latent_gain_low"]), round500(sim["latent_gain_high"])],
         "valeur_verte_methode": sim["green_value_basis"],
         "ecart_de_prix_entre_classes_pct": sim["green_value_premium_pct"],
         "valeur_verte_calculee_sur_prix_m2_par_defaut": report["price_is_default"],

@@ -262,8 +262,9 @@ export default function ObservatoirePage({ slug }: { slug?: string }) {
                         l'ADEME : même adresse, même type de bien, surface proche, DPE établi avant la vente. L'écart de prix entre classes est estimé par une
                         régression du prix au m² sur la classe DPE, l'époque de construction, la surface et le trimestre de vente, à emplacement identique
                         (secteurs d'environ 1 km). Les estimations départementales s'appuient sur l'estimation nationale quand les ventes sont peu nombreuses,
-                        et les écarts ne peuvent pas croître de A vers G. Départements affichés à partir de 300 ventes rapprochées ; l'Alsace-Moselle et
-                        Mayotte ne sont pas couvertes par DVF.
+                        et les écarts ne peuvent pas croître de A vers G. Départements affichés à partir de 300 ventes rapprochées : la Corse et la Lozère n'y
+                        arrivent pas encore. L'Alsace-Moselle et Mayotte ne sont pas couvertes par DVF, et les DPE de Guadeloupe, Martinique, Guyane et
+                        La Réunion ne figurent pas dans la base nationale de l'ADEME.
                     </p>
                     <p className="text-xs text-faint">
                         Sources : DVF (DGFiP, Etalab) et DPE des logements existants (ADEME), Licence Ouverte 2.0. Reprise libre avec la mention

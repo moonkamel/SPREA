@@ -551,6 +551,70 @@ def single_work_effects(data: SimulationInput) -> Dict[str, Dict[str, float]]:
     return effects
 
 
+
+INSULATION_BLOCKER = "La rénovation d'ampleur exige au moins deux travaux d'isolation"
+# Insulation works that can be added to open the rénovation d'ampleur, cheapest first
+VARIANT_CANDIDATES = ["roof", "floor_ceiling", "windows", "iti"]
+VARIANT_PHRASES = {"roof": "l'isolation de la toiture", "floor_ceiling": "l'isolation du plancher bas",
+                   "windows": "le remplacement des fenêtres", "iti": "l'isolation des murs"}
+
+
+def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
+    """When the only thing missing for the rénovation d'ampleur is a second
+    insulation work: the same programme plus the insulation work that leaves
+    the lowest cost to the owner over ten years (rest to pay less ten years
+    of bill savings), if its rest to pay is below the programme's as it is
+    (the rénovation d'ampleur pays a share of every work)."""
+    if sim["aid_pathway"] == "accompagne":
+        return None
+    blockers = sim.get("aid_blockers") or []
+    if len(blockers) != 1 or not blockers[0].startswith(INSULATION_BLOCKER):
+        return None
+    prop = data.property
+    house = is_house(prop.building_type)
+    shares = build_envelope(prop).shares()
+    best = None
+    for work in VARIANT_CANDIDATES:
+        if work in data.works:
+            continue
+        if work == "roof" and not (house or shares["roof"] >= 0.35):
+            continue
+        if work == "floor_ceiling" and not house:
+            continue
+        alt = simulate(data.model_copy(update={"works": [*data.works, work]}))
+        if alt["aid_pathway"] != "accompagne":
+            continue
+        net = alt["rest_to_pay"] - 10 * alt["annual_savings"]
+        if best is None or net < best[2]:
+            best = (work, alt, net)
+    if best is None or best[1]["rest_to_pay"] >= sim["rest_to_pay"]:
+        return None
+    work, alt, _ = best
+    added = next(d for d in alt["detailed_costs"] if d["id"] == work)
+    return {
+        "work": work,
+        "work_name": WORKS_BY_ID[work]["name"],
+        "work_phrase": VARIANT_PHRASES[work],
+        "work_cost": added["cost"],
+        "work_cost_low": added["cost_low"],
+        "work_cost_high": added["cost_high"],
+        "loss_share": shares.get({"roof": "roof", "floor_ceiling": "floor", "windows": "windows", "iti": "walls"}[work]),
+        "cost_low": alt["cost_low"],
+        "cost_high": alt["cost_high"],
+        "subsidies": alt["subsidies"],
+        "rest_to_pay": alt["rest_to_pay"],
+        "rest_to_pay_low": alt["rest_to_pay_low"],
+        "rest_to_pay_high": alt["rest_to_pay_high"],
+        "saving_vs_programme": sim["rest_to_pay"] - alt["rest_to_pay"],
+        "new_label": alt["new_label"],
+        "new_cep": alt["new_cep"],
+        "annual_bill_after": alt["annual_bill_after"],
+        "annual_savings": alt["annual_savings"],
+        "eco_ptz_amount": alt["eco_ptz_amount"],
+        "eco_ptz_months": alt["eco_ptz_months"],
+        "eco_ptz_monthly": alt["eco_ptz_monthly"],
+    }
+
 # --- Work suggestions ---
 
 def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, List[str]]:
