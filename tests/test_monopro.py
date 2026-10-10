@@ -213,7 +213,7 @@ from api import monopro_report  # noqa: E402
 TODAY = _date(2026, 10, 9)
 DOSSIER_BUILDING = {"id": "bdnb-bg-AAAA", "address": "38 Rue de Bourgogne 59800 Lille", "lat": 50.6301, "lon": 3.0702, "insee": "59350",
                     "nb_log": 6, "levels": 4, "year_built": 1900, "owner_siren": "444315543", "dpe_label": "F",
-                    "last_sale_date": "2016-03-02", "last_sale_price": 410000}
+                    "last_sale_date": "2016-03-02", "last_sale_price": 410000, "last_sale_units": 6}
 
 
 def flat(n, label, surface=40, date_="2025-01-01", address="38 Rue de Bourgogne 59800 Lille"):
@@ -237,14 +237,82 @@ def test_dossier_units_bans_and_arguments():
     assert not d["works"]["detailed"] and d["works"]["low"] == 240 * 450
     v = d["value"]
     assert v["block_low"] < v["block_high"] < v["lots_now"] < v["after_works"] and v["dpe_discount"] > 0
-    assert d["collective_dpe"] == {"done": False, "text": "DPE collectif obligatoire depuis le 01/01/2026 pour un immeuble de 6 logements ; "
-                                                          "aucun n'est publié à cette adresse."}
+    assert d["collective_dpe"] == {"done": False, "text": "DPE collectif obligatoire depuis le 01/01/2024 pour un immeuble en monopropriété, "
+                                                          "quelle que soit sa taille ; aucun n'est publié à cette adresse."}
 
 
 def test_dossier_without_dpe_nor_prices():
     d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": None, "last_sale_date": None}, None, None, 0, [], None, {}, TODAY)
     assert d["works"] is None and d["value"] is None and d["units"]["unknown"] == 6
-    assert d["arguments"] == ["Aucune vente de l'immeuble depuis 2014 (base DVF) : détenu depuis plus de dix ans."]
+    assert d["arguments"] == ["Aucune mutation enregistrée dans DVF depuis 2014 (une cession de parts de SCI n'y figure pas)."]
+
+
+def test_dossier_holding_only_for_a_sale_of_the_whole_building():
+    h = lambda **k: monopro_report.holding_text({**DOSSIER_BUILDING, **k}, TODAY)
+    assert h() == "Immeuble acquis en 2016 (dernière vente connue) : détenu depuis environ 10 ans."
+    assert h(last_sale_units=5) == "Immeuble acquis en 2016 (dernière vente connue) : détenu depuis environ 10 ans."
+    assert h(last_sale_date="2025-06-01") == "Immeuble acquis en 2025 (dernière vente connue) : détenu depuis environ 1 an."
+    assert h(last_sale_date="2026-02-01") == "Immeuble acquis en 2026 (dernière vente connue)."
+    # Some lots only, or an unknown number: not the purchase of the building
+    assert h(last_sale_units=2) == "Dernière mutation connue portant sur 2 lots (2016)."
+    assert h(last_sale_units=1) == "Dernière mutation connue portant sur 1 lot (2016)."
+    assert h(last_sale_units=None) == "Dernière mutation connue (2016)."
+
+
+def test_dossier_audit_on_the_class_of_the_building():
+    """The audit before the sale depends on the class of the building, not on
+    that of its worst dwelling (which still drives the rental bans)."""
+    rows = [flat(1, "G"), flat(2, "G")]
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "D"}, None, None, 0, rows, None, {}, TODAY)
+    assert d["worst"] == "G" and d["label"] == "D"
+    assert not d["audit"]["required"] and "(classe D)" in d["audit"]["text"] and "01/01/2034" in d["audit"]["text"]
+    assert {r["label"]: r["units"] for r in d["rental_ban"]}["G"] == 2
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "C"}, None, None, 0, rows, None, {}, TODAY)
+    assert d["audit"] == {"required": False, "text": None}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "E"}, None, None, 0, [flat(1, "C")], None, {}, TODAY)
+    assert d["audit"]["required"] and "(classe E" in d["audit"]["text"]
+
+
+def test_dossier_value_after_works_keeps_the_works_share():
+    from api.green_value import WORKS_SHARE
+    from api.valuation import class_factor
+    rows = [flat(i, "G") for i in range(6)]
+    market = {"price_per_m2": 3000, "source": "DVF"}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "G"}, None, None, 0, rows, market, {}, TODAY)
+    m = monopro_report.model(monopro_report.kind_of("Appartement"), monopro_report.department("59350", None))
+    now = 240 * 3000 * class_factor(m, "G")
+    full = 240 * 3000 * class_factor(m, "C")
+    v = d["value"]
+    assert v["after_works"] == monopro_report.round_value(now + WORKS_SHARE * (full - now))
+    assert v["lots_now"] < v["after_works"] < monopro_report.round_value(full)
+    assert v["scope"] in ("department", "national")
+    # Already better than C: never below the current value
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "A"}, None, None, 0, [flat(i, "A") for i in range(6)],
+                                     market, {}, TODAY)
+    assert d["value"]["after_works"] == d["value"]["lots_now"]
+
+
+def test_dossier_without_f_or_g_dwellings():
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    rows = [flat(i, "D") for i in range(6)]
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "dpe_label": "D"}, None, None, 0, rows,
+                                     {"price_per_m2": 3000, "source": "DVF"}, {}, TODAY)
+    assert d["worst"] == "D" and d["works"]
+    text = " ".join(d["arguments"])
+    assert "Travaux à prévoir pour atteindre la classe C" in text and "sortir de ces classes" not in text
+    pdf = pdf_text(monopro_pdf.generate(d))
+    assert "Logements F ou G" not in pdf and "6 logements" in pdf and "4 niveaux" in pdf
+    assert "de l'écart retenus" in pdf.replace("\n", " ")
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "levels": 1}, None, None, 0, [flat(1, "G")], None, {}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d))
+    assert "Logements F ou G" in pdf and "1 niveau " in pdf
+
+
+def test_unit_surface_for_the_market_price():
+    assert monopro_report.unit_surface(DOSSIER_BUILDING, []) == monopro_report.DEFAULT_UNIT_M2
+    rows = [flat(1, "E", 70), flat(2, "E", 80), flat(3, "E", 90, address="40 Rue de Bourgogne 59800 Lille")]
+    assert monopro_report.unit_surface(DOSSIER_BUILDING, rows) == 75
 
 
 def test_dossier_pdf_route(env, monkeypatch):

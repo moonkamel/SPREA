@@ -270,6 +270,7 @@ class AdemeConnector:
             "heating_system": label("type_generateur_chauffage_principal", "type_generateur_n1_installation_n1"),
             "heating_installation": label("type_installation_chauffage"),
             "hot_water_system": label("type_generateur_n1_ecs_n1", "type_generateur_ecs_principal"),
+            "hot_water_installation": label("type_installation_ecs"),
             "ventilation": label("type_ventilation"),
             "dpe_annual_cost": f"{round(cost)}" if cost else None,
         }

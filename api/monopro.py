@@ -30,7 +30,7 @@ try:
     from api.auth import User, current_user
     from api.dvf import market_price
     from api.immeuble import ademe_rows
-    from api.monopro_report import DEFAULT_UNIT_M2, build_dossier
+    from api.monopro_report import build_dossier, unit_surface
     from api.prospection import parse_bbox
     from api.ratelimit import ai_limiter, search_limiter
     from api.store import SupabaseStore
@@ -42,7 +42,7 @@ except ImportError:
     from auth import User, current_user
     from dvf import market_price
     from immeuble import ademe_rows
-    from monopro_report import DEFAULT_UNIT_M2, build_dossier
+    from monopro_report import build_dossier, unit_surface
     from prospection import parse_bbox
     from ratelimit import ai_limiter, search_limiter
     from store import SupabaseStore
@@ -193,7 +193,8 @@ async def monopro_dossier(building_id: str, user: User = Depends(current_user), 
         logger.warning(f"ADEME lookup failed for the dossier: {type(e).__name__}")
     market = None
     try:
-        market = await market_price(building.get("insee") or "", "Appartement", building["lat"], building["lon"], DEFAULT_UNIT_M2)
+        market = await market_price(building.get("insee") or "", "Appartement", building["lat"], building["lon"],
+                                    unit_surface(building, rows))
     except Exception as e:  # The dossier is still useful without prices
         logger.warning(f"DVF lookup failed for the dossier: {type(e).__name__}")
     dossier = build_dossier(building, owner, company, max(portfolio, 0), rows, market, agency)

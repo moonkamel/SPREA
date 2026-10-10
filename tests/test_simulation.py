@@ -85,11 +85,13 @@ def test_income_from_rfr():
 
 def test_bill_is_split_by_usage_and_energy():
     res = run()
-    assert res["annual_bill_before"] == pytest.approx(380 * 80 * 0.11)
+    heating, hot_water = 380 * 0.75, 380 * 0.15
+    other = 380 - heating - hot_water
+    # Lighting and auxiliaries are electric
+    assert res["annual_bill_before"] == pytest.approx((heating * 0.11 + hot_water * 0.11 + other * 0.20) * 80)
     # Heat pump: heating moves to electricity
     hp = run(works=["pac_air_eau"])
-    heating = 380 * 0.75
-    expected = (heating * 0.85 / 2.9 * 0.20 + (380 - heating) * 0.11) * 80
+    expected = (heating * 0.85 / 2.9 * 0.20 + hot_water * 0.11 + other * 0.20) * 80
     assert hp["annual_bill_after"] == pytest.approx(expected)
     assert hp["new_ges"] < 60
 
@@ -190,4 +192,7 @@ def test_preselection_goes_beyond_the_works_the_dpe_points_out():
             "construction_year": 1970, "official_label": "G"}
     res = suggest(label="G", **prop)
     assert "vmc" in res["preselected"] and "vmc" in res["suggested"]
-    assert run(works=res["preselected"], property=prop)["new_label"] == "D"
+    # Electric radiators raise primary consumption here, and a 9 m² flat has no
+    # room for a thermodynamic water heater: E is the best honest scenario
+    assert "heating" not in res["preselected"] and "ecs" not in res["preselected"]
+    assert run(works=res["preselected"], property=prop)["new_label"] in ("D", "E")

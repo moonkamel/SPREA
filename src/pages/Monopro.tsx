@@ -131,6 +131,15 @@ const dateFr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').revers
 // "SCI DU BRUNIOL" already carries its legal form
 const withForm = (form: string | null, name: string | null) =>
     !form || (name || '').toUpperCase().startsWith(`${form.toUpperCase()} `) ? (name || '') : `${form} ${name || ''}`.trim();
+// dpe_fg adds up BDNB DPE, duplicates included: never more than the dwellings
+const fgCount = (b: MonoBuilding) => Math.min(b.dpe_fg || 0, b.nb_log);
+// The last DVF sale is the purchase of the building only when it covered
+// (nearly) all its dwellings
+const wholeSale = (b: MonoBuilding) => !!b.last_sale_units && b.last_sale_units >= 0.8 * b.nb_log;
+const lots = (n: number) => `${n} lot${n > 1 ? 's' : ''}`;
+const saleLabel = (b: MonoBuilding) =>
+    wholeSale(b) ? `acquis en ${year(b.last_sale_date)}`
+        : `dernière mutation${b.last_sale_units ? ` portant sur ${lots(b.last_sale_units)}` : ''} (${year(b.last_sale_date)})`;
 const ownerLabel = (b: MonoBuilding) => (b.owner ? withForm(b.owner.legal_form, b.owner.name) : 'Propriétaire non identifié');
 
 export function MonoproList({ buildings, onFocus, onOpen }: {
@@ -150,7 +159,7 @@ export function MonoproList({ buildings, onFocus, onOpen }: {
                             <span className="block text-sm text-ink truncate">{b.address || 'Adresse non renseignée'}</span>
                             <span className="block text-xs text-faint">
                                 {b.nb_log} logements · <span className={b.owner ? 'text-ink-soft' : ''}>{ownerLabel(b)}</span>
-                                {b.last_sale_date ? ` · vendu en ${year(b.last_sale_date)}` : ''}
+                                {b.last_sale_date ? ` · ${saleLabel(b)}` : ''}
                             </span>
                             {b.signal_level && b.signal_level !== 'faible' && <span className="mt-1 block"><SignalBadge level={b.signal_level} /></span>}
                         </span>
@@ -168,7 +177,8 @@ export function ownerLetter(s: Sheet, agency: AgentPageData) {
     const company = s.company?.name || s.owner?.name || 'la société propriétaire';
     const signature = [agency.agent_name, agency.agency_name, agency.phone, agency.email].filter(Boolean).join('\n');
     const optOut = agency.email || agency.phone || "l'agence";
-    const dpe = s.dpe_fg ? `\n\nPar ailleurs, ${s.dpe_fg > 1 ? `${s.dpe_fg} des logements de l'immeuble sont classés` : "un logement de l'immeuble est classé"} F ou G au diagnostic de performance énergétique : ${s.dpe_fg > 1 ? 'ils sont' : 'il est'} progressivement interdit${s.dpe_fg > 1 ? 's' : ''} à la location (G depuis 2025, F en 2028). C'est souvent le bon moment pour envisager une cession.` : '';
+    const fg = fgCount(s);
+    const dpe = fg ? `\n\nPar ailleurs, ${fg > 1 ? `${fg} des logements de l'immeuble sont classés` : "un logement de l'immeuble est classé"} F ou G au diagnostic de performance énergétique : ${fg > 1 ? 'ils sont' : 'il est'} progressivement interdit${fg > 1 ? 's' : ''} à la location (G depuis 2025, F en 2028). C'est souvent le bon moment pour envisager une cession.` : '';
     return `${company}
 À l'attention de la gérance
 ${s.company?.address || s.owner?.city || ''}
@@ -292,18 +302,18 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                         </div>
 
                         <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                            <div><dt className="text-xs text-faint">Logements</dt><dd className="text-ink">{sheet.nb_log}{sheet.levels ? ` · ${sheet.levels} niveaux` : ''}</dd></div>
+                            <div><dt className="text-xs text-faint">Logements</dt><dd className="text-ink">{sheet.nb_log}{sheet.levels ? ` · ${sheet.levels} niveau${sheet.levels > 1 ? 'x' : ''}` : ''}</dd></div>
                             {sheet.year_built && <div><dt className="text-xs text-faint">Construction</dt><dd className="text-ink">{sheet.year_built}</dd></div>}
                             <div>
                                 <dt className="text-xs text-faint">DPE</dt>
                                 <dd className="text-ink flex items-center gap-2">
                                     {sheet.dpe_label ? <DpeBadge label={sheet.dpe_label} size="sm" /> : 'Aucun publié'}
-                                    {sheet.dpe_fg ? <span className="text-xs text-coral">{sheet.dpe_fg} en F ou G</span> : null}
+                                    {fgCount(sheet) ? <span className="text-xs text-coral">{fgCount(sheet)} en F ou G</span> : null}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-faint">Dernière vente</dt>
-                                <dd className="text-ink">{sheet.last_sale_date ? `${dateFr(sheet.last_sale_date)}${sheet.last_sale_price ? ` · ${eur(sheet.last_sale_price)}` : ''}` : 'Aucune depuis 2014'}</dd>
+                                <dt className="text-xs text-faint">{wholeSale(sheet) ? "Vente de l'immeuble" : 'Dernière mutation connue'}</dt>
+                                <dd className="text-ink">{sheet.last_sale_date ? `${dateFr(sheet.last_sale_date)}${sheet.last_sale_price ? ` · ${eur(sheet.last_sale_price)}` : ''}${!wholeSale(sheet) && sheet.last_sale_units ? ` · ${lots(sheet.last_sale_units)}` : ''}` : 'Aucune dans DVF depuis 2014'}</dd>
                             </div>
                         </dl>
 

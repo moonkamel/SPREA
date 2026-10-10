@@ -9,3 +9,4 @@ __pycache__/
 .DS_Store
 !.env.example
 audit.json
+.claude/worktrees/

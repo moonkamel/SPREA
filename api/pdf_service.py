@@ -284,6 +284,14 @@ def dpe_scale(thresholds: List[Dict], current: str, target: str) -> List[Any]:
 
 
 
+def roi_label(roi: Optional[float]) -> str:
+    if roi is None:
+        return '–'
+    if roi <= 0:
+        return "immédiat (aucun reste à charge)"
+    return "moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}an{'s' if round(roi) > 1 else ''}"
+
+
 def eur_r(value: Optional[float], step: int = 100) -> str:
     """Estimates are shown rounded: 11 443 -> 11 400 €."""
     return eur(round((value or 0) / step) * step)
@@ -415,7 +423,9 @@ class PDFReportGenerator:
             out.append(KeepTogether(works_block))
             out += [Spacer(1, 6), Paragraph(
                 f"Ordres de grandeur déduits {source} ({num(dims.get('surface'))}{NBSP}m² habitables{' estimés' if sheet['works_source'] != 'immeuble' else ''}, "
-                f"{dims.get('levels')} niveaux, {dims.get('dwellings')} logements). Le montant réel dépend du plan pluriannuel "
+                f"{dims.get('levels')} niveau{'x' if (dims.get('levels') or 0) > 1 else ''}"
+                + (f", {dims['dwellings']} logement{'s' if dims['dwellings'] > 1 else ''}" if dims.get('dwellings') else "")
+                + "). Le montant réel dépend du plan pluriannuel "
                 "de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. "
                 "Sources : registre national des copropriétés (Anah), base DPE de l'ADEME.", S['small'])]
         return out
@@ -577,8 +587,7 @@ class PDFReportGenerator:
             ('LINEAFTER', (0, 0), (1, 0), 0.5, LINE),
         ]))
 
-        roi = sim['roi_years']
-        roi_text = '–' if roi is None else ("moins d'un an" if roi < 1 else f"environ {round(roi)}{NBSP}ans")
+        roi_text = roi_label(sim['roi_years'])
         green = (f"+{NBSP}{eur_r(sim['latent_gain'], 500)} <font size='7.5' color='#8A93A3'>"
                  f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if sim['latent_gain'] else '–'
         after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
@@ -766,14 +775,14 @@ class PDFReportGenerator:
                 Paragraph('Financer le reste à charge', S['h3']), Spacer(1, 6),
                 rows_table(loan, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True),
                 Spacer(1, 3),
-                Paragraph("Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.", S['small']),
+                Paragraph("Sans intérêts ni frais de dossier, sous conditions de la banque. "
+                          + ("Il se cumule avec MaPrimeRénov'." if sim['subsidies'] > 0 else "Il se cumule avec les primes CEE." if sim['cee_est'] > 0 else ""), S['small']),
             ])]
         return out
 
     def _value(self, report: Dict[str, Any]) -> List[Any]:
         sim = report['sim']
-        roi = sim['roi_years']
-        rows = [kv('Retour sur investissement', '–' if roi is None else f"environ {round(roi)}{NBSP}ans")]
+        rows = [kv('Retour sur investissement', roi_label(sim['roi_years']))]
         if sim['latent_gain']:
             rows += [
                 kv('Prix de marché local', f"{eur(report['price_per_m2'])}/m²" + (" <font size='7.5' color='#8A93A3'>(par défaut)</font>" if report['price_is_default'] else '')),
@@ -806,7 +815,7 @@ class PDFReportGenerator:
                                      ('LINEAFTER', (0, 0), (2, 0), 0.5, LINE), ('LEFTPADDING', (1, 0), (-1, 0), 8)]))
             out += [Spacer(1, 12), inv, Spacer(1, 6), Paragraph(
                 f"Prix d'achat {eur(report['purchase_price'])}, loyer {eur(report['monthly_rent'])} par mois. Trésorerie : loyer moins la "
-                "mensualité d'un prêt finançant le reste à charge (7 ans, 4,5 %), hors charges et impôts. Économie d'impôt : "
+                "mensualité de l'éco-PTZ, et d'un prêt bancaire (7 ans, 4,5 %) pour la part qu'il ne couvre pas, hors charges et impôts. Économie d'impôt : "
                 "déduction des travaux des revenus fonciers au taux marginal saisi.", S['muted'])]
         return out
 
@@ -868,6 +877,10 @@ class PDFReportGenerator:
             return section(n, title)
 
         # Local market
+        # Markets saved before these flags: read them from the source text
+        surface_matched = market.get('surface_matched', 'surface comparable' in (market.get('source') or ''))
+        adjusted = market.get('adjusted', 'actualisées' in (market.get('source') or ''))
+        similar = " et de surface comparable" if surface_matched else ""
         rows = [
             kv('Prix médian au m² des ventes comparables', f"<b>{eur(market['price_per_m2'])}</b>"),
             kv('Moitié des ventes entre', f"{eur(market['q25'])} et {eur(market['q75'])} /m²"),
@@ -876,10 +889,13 @@ class PDFReportGenerator:
         ]
         story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le marché local'), Spacer(1, 8),
                   rows_table(rows, [CONTENT_W * 0.55, CONTENT_W * 0.45]), Spacer(1, 3),
-                  Paragraph(f"Source : {text(market['source'])}. Ventes d'un seul logement du même type et de surface comparable "
+                  Paragraph(f"Source : {text(market['source'])}. Ventes d'un seul logement du même type{similar} "
                             "(données DVF, DGFiP), hors ventes atypiques.", S['small'])]
         if market.get('comparables'):
-            head_row = [head('Date'), head('Rue'), head('Surface', 2), head('Prix', 2), head('Prix /m²', 2), head('Distance', 2)]
+            # The median is computed on prices brought to the last quarter: show them next to the raw ones
+            head_row = [head('Date'), head('Rue'), head('Surface', 2), head('Prix', 2),
+                        head('Prix /m² à la vente' if adjusted else 'Prix /m²', 2),
+                        *([head('Prix /m² actualisé', 2)] if adjusted else []), head('Distance', 2)]
             comp_rows = [head_row]
             for c in market['comparables']:
                 comp_rows.append([
@@ -888,10 +904,12 @@ class PDFReportGenerator:
                     Paragraph(f"{c['surface']:g}".replace('.', ',') + f"{NBSP}m²", S['right']),
                     Paragraph(eur(c['price']), S['right']),
                     Paragraph(eur(c['price_m2']), S['right']),
+                    *([Paragraph(eur(c.get('adjusted_m2') or c['price_m2']), S['right'])] if adjusted else []),
                     Paragraph(distance_text(c.get('distance')), S['right']),
                 ])
+            widths = [0.10, 0.27, 0.11, 0.13, 0.13, 0.13, 0.13] if adjusted else [0.12, 0.34, 0.13, 0.15, 0.13, 0.13]
             story += [Spacer(1, 10), Paragraph('Ventes comparables les plus proches', S['h3']), Spacer(1, 4),
-                      grid(comp_rows, [CONTENT_W * 0.12, CONTENT_W * 0.34, CONTENT_W * 0.13, CONTENT_W * 0.15, CONTENT_W * 0.13, CONTENT_W * 0.13])]
+                      grid(comp_rows, [CONTENT_W * w for w in widths])]
 
         # DPE effect
         if v.get('class_premium'):
@@ -926,8 +944,8 @@ class PDFReportGenerator:
         # Method and signature
         contact = ' · '.join(x for x in [text(agency.get('agent_name') or ''), text(agency.get('phone') or ''), text(agency.get('email') or '')] if x)
         story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
-            "Valeur estimée à partir des ventes réelles publiées (DVF), d'un seul logement du même type et de surface comparable, au plus près du bien, "
-            "prix ramenés au dernier trimestre connu.",
+            f"Valeur estimée à partir des ventes réelles publiées (DVF), d'un seul logement du même type{similar}, au plus près du bien"
+            + (", prix ramenés au dernier trimestre connu." if adjusted else "."),
             "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE. "
             "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus : le reste tient à l'état général des "
             "logements vendus, que les travaux énergétiques seuls n'apportent pas.",

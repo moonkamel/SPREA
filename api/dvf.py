@@ -166,6 +166,8 @@ def _result(sales: List[Dict], kind: str, scope: str, similar: str, adjusted: bo
         "source": (f"prix médian DVF de {n} ventes {what} {similar}{scope} ({period}"
                    + (", actualisées au dernier trimestre)" if adjusted else ")")),
         "comparables": comparables(sales),
+        "surface_matched": bool(similar),
+        "adjusted": adjusted,
     }
 
 

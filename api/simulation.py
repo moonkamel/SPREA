@@ -8,7 +8,7 @@ official DPE figures, so the starting label matches the real certificate.
 """
 import math
 from datetime import date
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -120,7 +120,7 @@ WORKS_CATALOG = [
     {"id": "pac_air_eau", "range": (0.85, 1.25), "name": "Pompe à chaleur air/eau", "cost": 13000, "unit": "flat", "zone": True, "days": 3,
      "description": "Remplace une chaudière gaz ou fioul : environ trois fois moins d'énergie consommée. Utilise vos radiateurs à eau ou votre plancher chauffant."},
     {"id": "heating", "range": (0.85, 1.2), "name": "Radiateurs électriques à inertie", "cost": 650, "unit": "radiator", "zone": False, "days": 2,
-     "description": "Remplacent d'anciens convecteurs électriques, ou une chaudière gaz ou fioul dans un appartement : chaleur plus douce et mieux régulée, plus d'émissions de CO₂ sur place. À combiner avec l'isolation."},
+     "description": "Remplacent d'anciens convecteurs électriques : chaleur plus douce et mieux régulée, aucune émission de CO₂ sur place. À combiner avec l'isolation."},
     {"id": "ecs", "range": (0.85, 1.2), "name": "Chauffe-eau thermodynamique", "cost": 3500, "unit": "flat", "zone": True, "days": 1,
      "description": "Produit l'eau chaude avec une petite pompe à chaleur : deux à trois fois moins d'électricité qu'un ballon classique."},
     {"id": "windows", "range": (0.8, 1.3), "name": "Fenêtres double vitrage", "cost": 812.5, "unit": "window", "zone": False, "days": 2,
@@ -160,6 +160,14 @@ class SimulationProperty(BaseModel):
     insulation_quality: Optional[Dict[str, Optional[str]]] = None
     # DPE heat losses per element (walls, roof, floor, windows, air, bridges), used as weights
     dpe_losses: Optional[Dict[str, Optional[float]]] = None
+    # Existing equipment, as labelled by the DPE (e.g. "PAC air/eau installée après 2015",
+    # "Installation de chauffage collectif", "Ballon électrique à accumulation vertical",
+    # "VMC SF Hygro A après 2012"): works already done are not proposed again
+    heating_generator: Optional[str] = Field(None, max_length=200)
+    heating_installation: Optional[str] = Field(None, max_length=200)
+    hot_water_system: Optional[str] = Field(None, max_length=200)
+    hot_water_installation: Optional[str] = Field(None, max_length=200)
+    ventilation: Optional[str] = Field(None, max_length=200)
 
 
 class SimulationInput(BaseModel):
@@ -178,7 +186,7 @@ class SimulationInput(BaseModel):
     is_investor: bool = False
     monthly_rent: float = Field(0.0, ge=0)
     purchase_price: float = Field(0.0, ge=0)
-    tmi: float = Field(30.0, ge=0, le=100)
+    tmi: float = Field(30.0, ge=0, le=45)
 
 
 # --- Helpers ---
@@ -250,16 +258,51 @@ def rental_status(ban: Optional[date], today: Optional[date] = None) -> str:
     return f"Louable jusqu'au {ban.strftime('%d/%m/%Y')}"
 
 
-def normalize_energy(source: Optional[str]) -> str:
-    """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys."""
-    s = (source or "gas").lower()
+def _energy_of(label: str) -> Optional[str]:
+    s = label.lower()
     if s in ENERGY_CONVERSION: return s
-    if "lectri" in s: return "electricity"
-    if "gaz" in s or "gpl" in s or "propane" in s: return "gas"
+    if "lectri" in s or "pac " in f"{s} " or "pompe" in s or "convecteur" in s or "joule" in s or "panneau rayonnant" in s:
+        return "electricity"
+    if "gaz" in s or "gpl" in s or "propane" in s or "butane" in s: return "gas"
     if "fioul" in s: return "oil"
-    if "bois" in s or "granul" in s: return "wood"
+    if "bois" in s or "granul" in s or "bûche" in s or "buche" in s: return "wood"
     if "seau" in s: return "district_heating"
-    return "gas"
+    return None
+
+
+def normalize_energy(source: Optional[str], generator: Optional[str] = None) -> str:
+    """Map ADEME labels (French, e.g. 'Électricité', 'Gaz naturel') to ENERGY_CONVERSION keys;
+    the heating generator when the energy is missing ('PAC air/eau' -> electricity).
+    Gas when nothing is known: see energy_known()."""
+    return _energy_of(source or "") or _energy_of(generator or "") or "gas"
+
+
+def energy_known(prop: "SimulationProperty") -> bool:
+    return bool(_energy_of(prop.heating_energy or "") or _energy_of(prop.heating_generator or ""))
+
+
+def prop_energy(prop: "SimulationProperty") -> str:
+    return normalize_energy(prop.heating_energy, prop.heating_generator)
+
+
+def equipment(prop: "SimulationProperty") -> Dict[str, Any]:
+    """What the DPE says is already installed."""
+    gen = (prop.heating_generator or "").lower()
+    inst = (prop.heating_installation or "").lower()
+    hw = (prop.hot_water_system or "").lower()
+    hw_inst = (prop.hot_water_installation or "").lower()
+    vent = (prop.ventilation or "").lower()
+    heat_pump = "pac " in f"{gen} " or "pompe à chaleur" in gen or "pompe a chaleur" in gen
+    return {
+        "heat_pump": heat_pump,
+        # Water-based heating (radiators or underfloor) that a heat pump can use
+        "hydronic": heat_pump and "air/air" not in gen or "chaudi" in gen or "plancher" in gen,
+        "collective_heating": "collecti" in inst,
+        "efficient_hot_water": any(k in hw for k in ("thermodynamique", "pac ", "pompe", "solaire")),
+        "collective_hot_water": "collecti" in hw_inst or "collecti" in hw,
+        "hot_water_energy": _energy_of(hw) if hw else None,
+        "mechanical_ventilation": any(k in vent for k in ("vmc", "simple flux", "double flux", "hygro", "mécanique", "mecanique")),
+    }
 
 
 def build_envelope(prop: "SimulationProperty", works: List[str] = ()) -> Envelope:
@@ -300,10 +343,13 @@ def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works
     final = initial_final_consumption(prop, energy)
     heating = final * env.heating_share
     hot_water = final * env.hot_water_share
+    # Hot water often has its own energy (electric tank with gas heating)
+    hw_energy = equipment(prop)["hot_water_energy"] or energy
     before = {
         "heating": (heating, energy),
-        "hot_water": (hot_water, energy),
-        "other": (final - heating - hot_water, energy),
+        "hot_water": (hot_water, hw_energy),
+        # Lighting and auxiliaries are electric
+        "other": (final - heating - hot_water, "electricity"),
     }
 
     # 1. Insulation reduces the heating need
@@ -319,9 +365,9 @@ def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works
         heating_after = min(options, key=lambda o: o[0] * ENERGY_CONVERSION[o[1]])
 
     # 3. Thermodynamic water heater
-    hot_water_after = (hot_water, energy)
+    hot_water_after = (hot_water, hw_energy)
     if "ecs" in works:
-        hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[energy] / HEAT_PUMP_WATER_HEATER_COP, "electricity")
+        hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[hw_energy] / HEAT_PUMP_WATER_HEATER_COP, "electricity")
 
     after = {"heating": heating_after, "hot_water": hot_water_after, "other": before["other"]}
     return {"before": before, "after": after}
@@ -333,7 +379,7 @@ def _total(usages: Dict, factors: Dict[str, float]) -> float:
 
 def projected_performance(prop: "SimulationProperty", works: List[str]) -> Dict:
     """New primary consumption and GHG, scaled on the official DPE values."""
-    energy = normalize_energy(prop.heating_energy)
+    energy = prop_energy(prop)
     env = build_envelope(prop, works)
     balance = energy_balance(prop, env, energy, works)
     ges = prop.ges_value or 20
@@ -434,20 +480,18 @@ def simulate(data: SimulationInput) -> Dict:
         return max(0.0, total - res["mpr"] - res["cee"])
     rest_low, rest_high = rest_for("cost_low"), rest_for("cost_high")
 
-    # Éco-PTZ: ceiling depends on the number of work categories
-    categories = set()
-    for w in works:
-        if w["id"] == "roof" and not is_house(prop.building_type):
-            continue
-        if w["id"] in ("iti", "roof", "floor_ceiling"):
-            categories.add("isolation")
-        elif w["id"] in ("heating", "ecs", "pac_air_eau"):
-            categories.add("heating")
-        else:
-            categories.add("other")
+    # Éco-PTZ: ceiling depends on the number of eligible actions (walls,
+    # roof, low floor, windows, efficient heating, renewable hot water);
+    # ventilation alone and electric radiators are not eligible
+    actions = {"iti": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows",
+               "pac_air_eau": "heating", "ecs": "hot_water"}
+    categories = {actions[w["id"]] for w in works if w["id"] in actions}
     if aids["pathway"] == "accompagne":
         # Éco-PTZ "performance énergétique globale", paired with MaPrimeRénov'
         eco_ptz_limit, eco_ptz_months = 50000, 240
+    elif categories == {"windows"}:
+        # Windows alone: 7 000 €
+        eco_ptz_limit, eco_ptz_months = 7000, 180
     else:
         eco_ptz_limit = {0: 0, 1: 15000, 2: 25000}.get(len(categories), 30000)
         eco_ptz_months = 180
@@ -460,7 +504,10 @@ def simulate(data: SimulationInput) -> Dict:
     tax_benefit = rest * (data.tmi / 100 + SOCIAL_CHARGES) if data.is_investor else 0.0
     total_investment = data.purchase_price + cost
     yield_brut = (data.monthly_rent * 12 / total_investment * 100) if total_investment > 0 else 0.0
-    cashflow = data.monthly_rent - monthly_payment(rest) if data.is_investor else 0.0
+    # The éco-PTZ (0 %) first, a bank loan for what it does not cover
+    eco_monthly = eco_ptz_amount / eco_ptz_months if eco_ptz_amount else 0.0
+    cashflow = (data.monthly_rent - eco_monthly - monthly_payment(max(0.0, rest - eco_ptz_amount))
+                if data.is_investor else 0.0)
 
     price_per_m2 = prop.price_per_m2 or DEFAULT_PRICE_PER_M2
     green = green_value_estimate(current["label"], target["label"], surface, price_per_m2,
@@ -534,7 +581,7 @@ def single_work_effects(data: SimulationInput) -> Dict[str, Dict[str, float]]:
     """Effect of each selected work on its own: primary consumption and bill
     saving. Used by the report to explain what each work brings."""
     prop = data.property
-    energy = normalize_energy(prop.heating_energy)
+    energy = prop_energy(prop)
     base = projected_performance(prop, [])
     bill_before = _total(base["balance"]["before"], ENERGY_PRICES_EUR_KWH) * prop.surface
     effects = {}
@@ -620,37 +667,91 @@ def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
         "eco_ptz_monthly": alt["eco_ptz_monthly"],
     }
 
+def available_works(prop: SimulationProperty) -> Dict[str, Any]:
+    """Works that make sense for this dwelling given its type and what the DPE
+    says is already installed. "systems": heating systems to suggest; "works":
+    everything the default selection may use."""
+    house = is_house(prop.building_type)
+    energy = prop_energy(prop)
+    env = build_envelope(prop)
+    shares = env.shares()
+    eq = equipment(prop)
+    # Heating systems this dwelling can take: none with collective heating (a
+    # decision of the co-owners), an unknown energy or an existing heat pump
+    systems = set()
+    if not eq["collective_heating"] and energy_known(prop) and not eq["heat_pump"]:
+        # Air/water heat pump: houses with a boiler (gas, oil, electric boiler);
+        # not district heating (often mandatory, low-carbon), nor wood
+        if house and (energy in ("gas", "oil") or (energy == "electricity" and eq["hydronic"])):
+            systems.add("pac_air_eau")
+        # Inertia radiators only replace electric convectors
+        if energy == "electricity" and not eq["hydronic"]:
+            systems.add("heating")
+    # Thermodynamic water heater: not when hot water is already thermodynamic,
+    # solar or collective; a small flat rarely has room for it
+    water_heater = (not eq["efficient_hot_water"] and not eq["collective_hot_water"]
+                    and (house or prop.surface >= 30))
+    walls_poor = env.u["walls"] > 0.45
+    windows_poor = env.u["windows"] > 2.0
+    ventilation_missing = not eq["mechanical_ventilation"]
+
+    works = set(systems)
+    if walls_poor:
+        works.add("iti")
+    if windows_poor:
+        works.add("windows")
+    if ventilation_missing:
+        works.add("vmc")
+    if water_heater:
+        works.add("ecs")
+    if house or shares["roof"] >= 0.35:
+        works.add("roof")
+    if house:
+        works.add("floor_ceiling")
+    # Individual gas or oil heating in a flat: electric radiators, only kept
+    # by the default selection when they improve the label (emissions often
+    # make it), even though the bill goes up
+    if (not house and energy in ("gas", "oil") and not eq["collective_heating"]
+            and not eq["heat_pump"] and energy_known(prop)):
+        works.add("heating")
+    return {"systems": systems, "works": works, "equipment": eq}
+
+
 # --- Work suggestions ---
 
 def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, List[str]]:
     """Works to suggest for this dwelling, and a default selection aiming at
     class C (or D for a G), computed with the simulation model."""
     house = is_house(prop.building_type)
-    energy = normalize_energy(prop.heating_energy)
+    energy = prop_energy(prop)
     env = build_envelope(prop)
     shares = env.shares()
     label = label or "G"
     poor_label = label in ("E", "F", "G")
 
+    avail = available_works(prop)
+    systems = avail["systems"]
+    water_heater = "ecs" in avail["works"]
+    walls_poor, windows_poor = "iti" in avail["works"], "windows" in avail["works"]
+    ventilation_missing = "vmc" in avail["works"]
+    eq = avail["equipment"]
+
     suggested = set()
-    if shares["walls"] >= 0.18 and env.u["walls"] > 0.45:
+    if shares["walls"] >= 0.18 and walls_poor:
         suggested.add("iti")
     # Roof: houses, and flats whose DPE puts most losses through the roof (top floor)
     if (house or shares["roof"] >= 0.35) and shares["roof"] >= 0.10 and env.u["roof"] > 0.3:
         suggested.add("roof")
     if house and shares["floor"] >= 0.08 and env.u["floor"] > 0.5:
         suggested.add("floor_ceiling")
-    if env.u["windows"] > 2.0:
+    if windows_poor:
         suggested.add("windows")
-    if shares["air"] >= 0.20 and env.period <= 2:
+    if shares["air"] >= 0.20 and env.period <= 2 and ventilation_missing:
         suggested.add("vmc")
-    # Heating: heat pump for houses heated with fossil fuels; electric heating
-    # and a thermodynamic water heater for electric dwellings, and for flats
-    # heated with fossil fuels (GHG emissions often make the label)
-    if house and energy in ("gas", "oil") and poor_label:
-        suggested.add("pac_air_eau")
-    if poor_label and (energy == "electricity" or (not house and energy in ("gas", "oil"))):
-        suggested.update({"heating", "ecs"})
+    if poor_label:
+        suggested.update(systems)
+        if water_heater and (energy == "electricity" or (eq["hot_water_energy"] or energy) == "electricity"):
+            suggested.add("ecs")
 
     # Default selection: the works that bring the label down the most (both
     # consumption and emissions count), one at a time, until class C (D for a G)
@@ -666,7 +767,9 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
 
         def pick(candidates: set, current: Tuple[int, float]) -> Tuple[int, float]:
             while current[0] > target:
-                options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected]
+                # One heating system at most
+                options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected
+                           and not (w in HEATING_SYSTEMS and any(p in HEATING_SYSTEMS for p in preselected))]
                 if not options:
                     break
                 best, work = min(options)
@@ -681,16 +784,7 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             # The works the DPE points out are not enough: the other works that
             # apply to this dwelling, so the default scenario reaches the target
             # whenever it can be reached
-            others = {"iti", "windows", "vmc", "ecs"}
-            if house or shares["roof"] >= 0.35:
-                others.add("roof")
-            if house:
-                others.add("floor_ceiling")
-                if energy != "wood":
-                    others.add("pac_air_eau")
-            if energy == "electricity":
-                others.add("heating")
-            pick(others - suggested, current)
+            pick(set(avail["works"]) - suggested, current)
             suggested.update(preselected)
 
     return {
