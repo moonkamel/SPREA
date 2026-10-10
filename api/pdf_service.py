@@ -747,6 +747,7 @@ class PDFReportGenerator:
                 Paragraph("Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation "
                           "d'ampleur, qui finance une part de l'ensemble des travaux. " + gain, S['muted']), Spacer(1, 6),
                 rows_table(vrows, [CONTENT_W * 0.55, CONTENT_W * 0.35], bold_last=True), Spacer(1, 4),
+                *([Paragraph(f"<b>À vérifier :</b> {text(variant['check'])}", S['small']), Spacer(1, 2)] if variant.get('check') else []),
                 Paragraph("Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) "
                           "et audit énergétique confirmant un gain d'au moins deux classes. Primes CEE non cumulables.", S['small']),
             ], background=TINT, rule=BRASS_LIGHT, padding=9)])]

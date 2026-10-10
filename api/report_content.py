@@ -390,6 +390,7 @@ def variant_facts(v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         "reste_a_charge_en_moins_eur": r100(v["saving_vs_programme"]),
         "classe_dpe_apres": v["new_label"],
         "economies_eur_an": int(round(v["annual_savings"], -1)),
+        "a_verifier_sur_place": v.get("check"),
         "condition": "Accompagnement obligatoire par un Accompagnateur Rénov' et audit énergétique confirmant le gain de classes.",
     }
 
