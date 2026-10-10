@@ -47,7 +47,7 @@ def token_hash(token: str) -> str:
 
 
 def join_url(token: str) -> str:
-    base = os.getenv("PUBLIC_APP_URL", "").strip().rstrip("/") or "https://sprea.vercel.app"
+    base = os.getenv("PUBLIC_APP_URL", "").strip().rstrip("/") or "https://sprea.app"
     return f"{base}/rejoindre?token={token}"
 
 

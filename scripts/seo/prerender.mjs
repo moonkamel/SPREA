@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DIST = join(ROOT, 'dist');
-const SITE = (process.env.PUBLIC_SITE_URL || 'https://sprea.vercel.app').replace(/\/$/, '');
+const SITE = (process.env.PUBLIC_SITE_URL || 'https://sprea.app').replace(/\/$/, '');
 const OG_IMAGE = `${SITE}/og.jpg`;
 
 const template = readFileSync(join(DIST, 'index.html'), 'utf8');

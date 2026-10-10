@@ -43,7 +43,7 @@ LABELS = ["A", "B", "C", "D", "E", "F", "G"]
 
 
 def app_url() -> str:
-    return os.getenv("PUBLIC_APP_URL", "https://sprea.vercel.app").rstrip("/")
+    return os.getenv("PUBLIC_APP_URL", "https://sprea.app").rstrip("/")
 
 
 async def fetch_new_dpe(zone: Dict[str, Any], since: date,

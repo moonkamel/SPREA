@@ -40,7 +40,7 @@ ADEME_URL = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7
 ADEME_FIELDS = ["numero_dpe", "date_etablissement_dpe", "etiquette_dpe", "type_batiment", "surface_habitable_logement",
                 "identifiant_ban", "numero_voie_ban", "nom_rue_ban", "code_insee_ban", "periode_construction"]
 FIRST_YEAR = 2022  # The DPE dataset starts in July 2021
-UA = {"User-Agent": "sprea-green-value/1.0 (+https://sprea.vercel.app)"}
+UA = {"User-Agent": "sprea-green-value/1.0 (+https://sprea.app)"}
 
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
 KINDS = {"Maison": "maison", "Appartement": "appartement"}

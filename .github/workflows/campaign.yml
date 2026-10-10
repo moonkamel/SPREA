@@ -7,11 +7,14 @@ name: Campagne email (Brevo)
 #    town written on their Brevo contact (scripts/campaign/brevo_sync.py).
 #    Requires the secrets BREVO_API_KEY and BREVO_LIST_ID (and SUPABASE_URL,
 #    SUPABASE_SERVICE_ROLE_KEY for the building figures).
+# 3. "emails" (on demand): the contact email of the given agencies (SIREN),
+#    read on their own website (scripts/campaign/find_emails.py). Requires the
+#    secret BRAVE_API_KEY (Brave Search API, free plan).
 on:
   workflow_dispatch:
     inputs:
       task:
-        description: "liste ou chiffres"
+        description: "liste, chiffres ou emails"
         required: true
         default: "chiffres"
       departments:
@@ -24,6 +27,10 @@ on:
         default: ""
       epci:
         description: "Pour la liste : intercommunalité (SIREN ; 200093201 = Métropole européenne de Lille ; vide = toutes)"
+        required: false
+        default: ""
+      sirens:
+        description: "Pour emails : SIREN des agences, séparés par des espaces"
         required: false
         default: ""
   schedule:
@@ -74,3 +81,23 @@ jobs:
           else
             python scripts/campaign/brevo_sync.py
           fi
+
+  emails:
+    if: github.event_name == 'workflow_dispatch' && inputs.task == 'emails'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - env:
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          SIRENS: ${{ inputs.sirens }}
+        run: python scripts/campaign/find_emails.py --sirens $SIRENS --out emails.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: emails
+          path: emails.csv
+          retention-days: 30

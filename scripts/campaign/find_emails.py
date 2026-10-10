@@ -72,7 +72,7 @@ EMAIL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9.-]+\.[A-Za-z]{
 session = requests.Session()
 session.headers.update({"User-Agent": UA, "Accept-Language": "fr-FR,fr;q=0.9"})
 DEBUG = bool(os.getenv("DEBUG"))
-STATS = {"ddg": 0, "bing": 0, "brave": 0, "search_fail": 0}
+STATS = {"brave_api": 0, "ddg": 0, "bing": 0, "brave": 0, "search_fail": 0}
 
 
 def norm(text: str) -> str:
@@ -161,7 +161,24 @@ def brave(query: str) -> List[str]:
     return [h for h in re.findall(r'<a[^>]+href="(https?://[^"]+)"[^>]*class="[^"]*(?:heading-serpresult|result-header|l1)', res.text)]
 
 
-ENGINES = [("ddg", ddg), ("bing", bing), ("brave", brave)]
+def brave_api(query: str) -> List[str]:
+    """Brave Search API (BRAVE_API_KEY; free plan: 2 000 searches a month).
+    The search engines' own pages answer bots from data centres with
+    unrelated results, so this is the reliable path."""
+    try:
+        res = session.get("https://api.search.brave.com/res/v1/web/search", timeout=15,
+                          params={"q": query, "country": "fr", "search_lang": "fr", "count": 10},
+                          headers={"X-Subscription-Token": os.environ["BRAVE_API_KEY"], "Accept": "application/json"})
+        if res.status_code == 429:
+            time.sleep(2)
+            return brave_api(query)
+        return [r["url"] for r in (res.json().get("web") or {}).get("results") or []] if res.status_code == 200 else []
+    except (requests.RequestException, ValueError, KeyError):
+        return []
+
+
+ENGINES = ([("brave_api", brave_api)] if os.getenv("BRAVE_API_KEY") else
+           [("ddg", ddg), ("bing", bing), ("brave", brave)])
 
 
 def search(query: str) -> List[str]:
