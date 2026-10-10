@@ -927,7 +927,9 @@ class PDFReportGenerator:
         story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
             "Valeur estimée à partir des ventes réelles publiées (DVF), d'un seul logement du même type et de surface comparable, au plus près du bien, "
             "prix ramenés au dernier trimestre connu.",
-            "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE.",
+            "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE. "
+            "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus : le reste tient à l'état général des "
+            "logements vendus, que les travaux énergétiques seuls n'apportent pas.",
             "Fourchette : entre le premier et le troisième quart des prix au m² des ventes comparables.",
             "Cet avis de valeur ne constitue pas une expertise immobilière. Il ne tient compte que des éléments indiqués et de l'ajustement du conseiller ;"
             " l'état réel, les prestations et la situation précise du bien peuvent modifier sa valeur.",
