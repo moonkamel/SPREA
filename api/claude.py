@@ -60,7 +60,8 @@ async def json_call(system: str, content: Union[str, List[Dict[str, Any]]], sche
         raise ClaudeUnavailable("rate limited")
     except anthropic.APIStatusError as e:
         logger.error(f"Anthropic API error {e.status_code}: {str(e.message)[:300]}")
-        raise ClaudeUnavailable(f"API error {e.status_code}")
+        # The message says what was refused (never the content sent)
+        raise ClaudeUnavailable(f"API error {e.status_code}: {str(e.message)[:300]}")
     except anthropic.APIConnectionError as e:
         logger.error(f"Anthropic API unreachable: {type(e).__name__}")
         raise ClaudeUnavailable("unreachable")

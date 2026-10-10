@@ -46,7 +46,7 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={6} title="Prix">
-                    <p>Les prix sont indiqués en euros hors taxes ; la TVA au taux en vigueur s'y ajoute et figure sur la facture. Le prix applicable est celui affiché au moment de la souscription.</p>
+                    <p>Les prix sont indiqués en euros toutes taxes comprises, TVA au taux de 20 % incluse ; la facture détaille le montant hors taxes et la TVA. Le prix applicable est celui affiché au moment de la souscription.</p>
                     <p>Le Vendeur peut modifier ses prix. Le Client en est informé par email au moins 30 jours avant leur application ; le nouveau prix s'applique à la période suivante, et le Client peut résilier sans frais avant cette date.</p>
                 </Article>
 

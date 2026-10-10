@@ -108,7 +108,7 @@ ${ul([
         '<strong>Contacter</strong> : un courrier prêt à imprimer avec un QR code vers la rénovation du logement, à vos couleurs.',
         '<strong>Convaincre</strong> : travaux, aides, reste à charge et valeur du bien avant et après travaux, appuyée sur les ventes DVF voisines.',
     ])}
-<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € HT par mois.</p>
+<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € TTC par mois.</p>
 <p><a href="/demo">Faire la visite guidée</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
 }));
 
@@ -144,20 +144,20 @@ pages.push(page({
 <p>Synthèse, analyse rédigée, plan de travaux et de financement, valeur verte et calendrier de la loi Climat, fiche immeuble et artisans RGE.</p>
 <h2>Toute l'agence sur le même outil</h2>
 <p>Une place par agent, invitations par lien, contacts et alertes partagés dans l'agence, console réseau.</p>
-<p><a href="/tarifs">Démarrer à 79 € HT / mois</a></p>`,
+<p><a href="/tarifs">Démarrer à 79 € TTC / mois</a></p>`,
 }));
 
 const FAQ = [
     ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous."],
     ["Y a-t-il un engagement ?", "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte »."],
-    ['Les prix sont-ils HT ?', "Oui, tous les prix affichés sont hors taxes. La TVA à 20 % s'ajoute sur la facture, qui mentionne votre raison sociale et votre numéro de TVA."],
+    ['Les prix sont-ils TTC ?', "Oui, tous les prix affichés incluent la TVA à 20 %. La facture détaille le montant hors taxes et la TVA, avec votre raison sociale et votre numéro de TVA."],
     ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Le nombre d'agents s'ajuste à tout moment, au prorata."],
     ["D'où viennent les données ?", "Des bases publiques officielles : DPE de l'ADEME, ventes immobilières DVF de la DGFiP, Base Adresse Nationale."],
 ];
 pages.push(page({
     path: '/tarifs',
-    title: 'Tarifs SPREA : dès 79 € HT par mois pour les agents immobiliers',
-    description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
+    title: 'Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers',
+    description: "Solo 79 € TTC / mois, Agence 59 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
     jsonld: [SOFTWARE, {
         '@context': 'https://schema.org', '@type': 'FAQPage',
         mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
@@ -165,9 +165,9 @@ pages.push(page({
     body: `${nav}
 <h1>Tarifs SPREA</h1>
 ${ul([
-        '<strong>Solo</strong> : 79 € HT par mois ou 790 € HT par an, pour un agent ou un mandataire indépendant.',
-        "<strong>Agence</strong> : 59 € HT par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
-        '<strong>Réseau</strong> : sur devis, à partir de 39 € HT par agent et par mois, console du siège.',
+        '<strong>Solo</strong> : 79 € TTC par mois ou 790 € TTC par an, pour un agent ou un mandataire indépendant.',
+        "<strong>Agence</strong> : 59 € TTC par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
+        '<strong>Réseau</strong> : sur devis, à partir de 39 € TTC par agent et par mois, console du siège.',
     ])}
 <p>Tous les outils inclus dans chaque formule. Engagement de 12 mois, paiement mensuel ou annuel.</p>
 <h2>Questions fréquentes</h2>

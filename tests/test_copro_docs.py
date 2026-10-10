@@ -199,3 +199,13 @@ def test_storage_calls():
     assert asyncio.run(store.download_object("copro-docs", "u/a/0-x")) is None
     asyncio.run(store.delete_objects("copro-docs", ["u/a/0-x"]))
     assert seen[-1].method == "DELETE" and b"prefixes" in seen[-1].content
+
+
+def test_schema_fits_structured_outputs_limits():
+    """Live check: the API refused the schema (400) with 20 nullable fields."""
+    import json
+    assert json.dumps(copro_docs.SCHEMA).count("anyOf") <= 8
+    out = copro_docs.clean({**RESULT, "copropriete": {"nom": "", "adresse": " ", "syndic": "Foncia", "lots": ""},
+                            "obligations": {"plan_pluriannuel": "", "dtg": "Voté", "dpe_collectif": ""}})
+    assert out["copropriete"] == {"nom": None, "adresse": None, "syndic": "Foncia", "lots": None}
+    assert out["obligations"]["dtg"] == "Voté" and out["obligations"]["plan_pluriannuel"] is None
