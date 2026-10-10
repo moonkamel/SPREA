@@ -161,10 +161,18 @@ def brave(query: str) -> List[str]:
     return [h for h in re.findall(r'<a[^>]+href="(https?://[^"]+)"[^>]*class="[^"]*(?:heading-serpresult|result-header|l1)', res.text)]
 
 
+# Spending cap: each Brave request is billed (free monthly credit)
+MAX_QUERIES = int(os.getenv("MAX_QUERIES") or 0)
+CALLS = {"brave_api": 0}
+
+
 def brave_api(query: str, attempt: int = 0) -> List[str]:
     """Brave Search API (BRAVE_API_KEY; free plan: 2 000 searches a month).
     The search engines' own pages answer bots from data centres with
     unrelated results, so this is the reliable path."""
+    if MAX_QUERIES and CALLS["brave_api"] >= MAX_QUERIES:
+        return []
+    CALLS["brave_api"] += 1
     try:
         res = session.get("https://api.search.brave.com/res/v1/web/search", timeout=15,
                           params={"q": query, "country": "fr", "search_lang": "fr", "count": 10},
@@ -395,7 +403,7 @@ def main():
     counts: Dict[str, int] = {}
     for r in rows:
         counts[r["email_type"]] = counts.get(r["email_type"], 0) + 1
-    print(f"Bilan : {counts} — moteurs : {STATS}")
+    print(f"Bilan : {counts} — moteurs : {STATS} — requêtes Brave facturées : {CALLS['brave_api']}")
 
 
 if __name__ == "__main__":
