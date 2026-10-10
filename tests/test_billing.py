@@ -92,7 +92,7 @@ def test_plan_checkout_adds_vat_when_stripe_tax_is_off():
     asyncio.run(billing.subscription_checkout("u1", "cus_1", "solo_yearly"))
     assert sent[0]["line_items"] == [{"price": "price_solo_y", "quantity": 1, "tax_rates": ["txr_vat"]}]
     assert sent[0]["tax_id_collection"] == {"enabled": True}
-    assert len(created) == 1 and created[0]["percentage"] == 20 and created[0]["inclusive"] is False
+    assert len(created) == 1 and created[0]["percentage"] == 20 and created[0]["inclusive"] is True
 
 
 def test_unknown_plan_falls_back_to_pro_price():

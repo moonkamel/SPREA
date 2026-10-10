@@ -36,10 +36,13 @@ for name in ("Fictif", "Anne Exemple"):
     print(f"nom '{name}' repris :", name in text)
 pdf = c.get(f"{SITE}/api/copro-docs/{up['id']}/pdf", headers=H)
 print("pdf:", pdf.status_code, len(pdf.content))
-print("delete:", c.delete(f"{SITE}/api/copro-docs/{up['id']}", headers=H).json())
+if res.status_code == 200:
+    print("delete:", c.delete(f"{SITE}/api/copro-docs/{up['id']}", headers=H).json())
+else:
+    print("analyse en échec gardée pour diagnostic :", up["id"])
 
-mono = c.get(f"{SITE}/api/monopro", headers=H, params={"bbox": "2.95,50.55,3.25,50.75", "owner": "company", "signal": "strong"}).json()
-print("immeubles avec signal fort (zone Lille):", len(mono.get("buildings", [])))
+mono = c.get(f"{SITE}/api/monopro", headers=H, params={"bbox": "3.07,50.63,3.10,50.65", "owner": "company", "signal": "strong"}).json()
+print("immeubles avec signal fort (Lille-Fives):", len(mono.get("buildings", [])), "" if "buildings" in mono else mono)
 if mono.get("buildings"):
     b = mono["buildings"][0]
     print(b["address"], b["signal_score"], b["owner"])

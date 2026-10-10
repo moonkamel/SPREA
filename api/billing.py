@@ -36,7 +36,8 @@ COMMITMENT_MONTHS = 12
 # Subscription plans: Stripe lookup keys
 PLANS = ("solo_monthly", "solo_yearly", "agence_monthly", "agence_yearly")
 AGENCY_PLANS = ("agence_monthly", "agence_yearly")
-VAT_RATE_KEY = "tva20"
+# Prices are displayed and set VAT included (79 € TTC): the rate is inclusive
+VAT_RATE_KEY = "tva20_ttc"
 
 
 def format_price(unit_amount: int, currency: str, interval: Optional[str] = None) -> str:
@@ -127,16 +128,16 @@ class Billing:
         return {plan: await self.price_label(await self.plan_price(plan)) for plan in PLANS}
 
     async def vat_rate(self) -> Optional[str]:
-        """20 % VAT tax rate added to prices excluding VAT when Stripe Tax is off
-        (found or created once, tagged with metadata sprea=tva20)."""
+        """20 % VAT rate included in the prices, shown on the invoice, when Stripe
+        Tax is off (found or created once, tagged with metadata sprea=tva20_ttc)."""
         if self._vat_rate is None:
             try:
                 rates = as_dict(await self.client.v1.tax_rates.list_async(params={"active": True, "limit": 100}))
                 rate = next((r for r in rates.get("data") or [] if (r.get("metadata") or {}).get("sprea") == VAT_RATE_KEY), None)
                 if rate is None:
                     rate = as_dict(await self.client.v1.tax_rates.create_async(params={
-                        "display_name": "TVA", "percentage": 20, "inclusive": False, "country": "FR",
-                        "jurisdiction": "FR", "tax_type": "vat", "description": "TVA 20 % (France)",
+                        "display_name": "TVA", "percentage": 20, "inclusive": True, "country": "FR",
+                        "jurisdiction": "FR", "tax_type": "vat", "description": "TVA 20 % incluse (France)",
                         "metadata": {"sprea": VAT_RATE_KEY},
                     }))
                 self._vat_rate = rate["id"]

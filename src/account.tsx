@@ -741,7 +741,7 @@ function PurchaseModal({ plan, order, price, onClose, onConfirm }: {
     return (
         <Modal title={`Abonnement ${PLAN_NAMES[plan]}`} onClose={onClose}>
             <div className="rounded-xl border border-line bg-raised p-5 mb-5">
-                <p className="font-serif text-3xl text-ink">{price && order ? multiply(price, order.seats) : price || '–'}<span className="font-sans text-xs text-faint ml-2">HT</span></p>
+                <p className="font-serif text-3xl text-ink">{price && order ? multiply(price, order.seats) : price || '–'}<span className="font-sans text-xs text-faint ml-2">TTC</span></p>
                 {order && <p className="text-sm text-ink-soft mt-1">{order.agency_name} · {order.seats} agents × {price}</p>}
                 <p className="text-sm text-muted mt-2">
                     {order

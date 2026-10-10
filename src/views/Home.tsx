@@ -55,7 +55,7 @@ export default function Home() {
                         </p>
                         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
                             <Button onClick={() => navigate('/demo')} className="sm:w-56">Faire la visite guidée <ArrowRight size={18} /></Button>
-                            <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Dès 79 € HT / mois</Button>
+                            <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Dès 79 € TTC / mois</Button>
                         </div>
                         <p className="mt-5 text-xs text-faint flex items-center justify-center gap-2">
                             <ShieldCheck size={14} className="text-sage" /> Mensuel ou annuel · engagement 12 mois · facture avec TVA
@@ -104,7 +104,7 @@ export default function Home() {
 
                 <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-20 text-center">
                     <h2 className="text-3xl text-ink">Un mandat signé rembourse des années d'abonnement</h2>
-                    <p className="mt-4 text-muted">Formule Solo à 79 € HT par mois, Agence à 59 € HT par agent, Réseau sur devis.</p>
+                    <p className="mt-4 text-muted">Formule Solo à 79 € TTC par mois, Agence à 59 € TTC par agent, Réseau sur devis.</p>
                     <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                         <Button onClick={() => navigate('/demo')} className="sm:w-56">Faire la visite guidée</Button>
                         <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-56">Voir les tarifs</Button>

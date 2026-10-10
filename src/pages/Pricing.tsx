@@ -33,8 +33,8 @@ const FAQ = [
         a: "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte » et reste actif jusqu'à la fin de la période payée.",
     },
     {
-        q: 'Les prix sont-ils HT ?',
-        a: "Oui, tous les prix affichés sont hors taxes. La TVA à 20 % s'ajoute sur la facture, qui mentionne votre raison sociale et votre numéro de TVA.",
+        q: 'Les prix sont-ils TTC ?',
+        a: "Oui, tous les prix affichés incluent la TVA à 20 %. La facture détaille le montant hors taxes et la TVA, avec votre raison sociale et votre numéro de TVA.",
     },
     {
         q: 'Comment équiper toute mon agence ?',
@@ -48,8 +48,8 @@ const FAQ = [
 
 export default function PricingPage() {
     useSeo({
-        title: 'Tarifs SPREA : dès 79 € HT par mois pour les agents immobiliers',
-        description: "Solo 79 € HT / mois, Agence 59 € HT par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
+        title: 'Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers',
+        description: "Solo 79 € TTC / mois, Agence 59 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
         path: '/tarifs',
     });
     const { config, me, startSubscription } = useAccount();
@@ -66,7 +66,7 @@ export default function PricingPage() {
             name: 'Solo',
             tagline: 'Pour un agent ou un mandataire indépendant.',
             price: soloPrice,
-            unit: `${per} · HT`,
+            unit: `${per} · TTC`,
             note: billing === 'yearly' ? 'soit 2 mois offerts' : 'engagement 12 mois',
             cta: me?.is_pro
                 ? <Button disabled className="mt-8 w-full">Abonnement actif</Button>
@@ -78,7 +78,7 @@ export default function PricingPage() {
             name: 'Agence',
             tagline: 'Pour équiper une équipe de 2 à 15 agents.',
             price: billing === 'monthly' ? '59 €' : '590 €',
-            unit: `par agent, ${per} · HT`,
+            unit: `par agent, ${per} · TTC`,
             note: '2 agents minimum · engagement 12 mois',
             cta: me?.is_pro
                 ? <Button variant="secondary" disabled className="mt-8 w-full">Abonnement actif</Button>
@@ -90,7 +90,7 @@ export default function PricingPage() {
             name: 'Réseau',
             tagline: 'Pour les enseignes et réseaux de plusieurs agences.',
             price: 'Sur devis',
-            unit: 'à partir de 39 € par agent et par mois · HT',
+            unit: 'à partir de 39 € par agent et par mois · TTC',
             note: 'engagement 12 mois',
             cta: <Button variant="secondary" onClick={() => setQuote('reseau')} className="mt-8 w-full">Demander un devis</Button>,
             highlighted: false,
@@ -258,8 +258,8 @@ function AgencyDialog({ billing, onClose, onConfirm, onQuote }: {
                         <input type="number" min={2} max={50} value={seats} onChange={e => setSeats(Math.max(0, Number(e.target.value) || 0))} className={`${FIELD} w-24`} aria-label="Nombre d'agents" />
                     </label>
                     <div className="rounded-xl border border-line bg-raised p-4 flex items-baseline justify-between">
-                        <span className="text-sm text-muted">{seats} × {unit} € HT</span>
-                        <span className="font-serif text-2xl text-ink">{(seats * unit).toLocaleString('fr-FR')} € <span className="font-sans text-xs text-faint">HT / {billing === 'monthly' ? 'mois' : 'an'}</span></span>
+                        <span className="text-sm text-muted">{seats} × {unit} € TTC</span>
+                        <span className="font-serif text-2xl text-ink">{(seats * unit).toLocaleString('fr-FR')} € <span className="font-sans text-xs text-faint">TTC / {billing === 'monthly' ? 'mois' : 'an'}</span></span>
                     </div>
                     <Button type="submit" disabled={!valid} className="w-full">Continuer</Button>
                     <p className="text-xs text-faint">Plus de 50 agents, ou besoin d'un bon de commande ? <button type="button" onClick={onQuote} className="underline text-brass">Demandez un devis</button>.</p>

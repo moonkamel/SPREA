@@ -57,6 +57,12 @@ def _s(description: str) -> Dict[str, Any]:
     return {"type": "string", "description": description}
 
 
+# Structured outputs accept few nullable fields (union types): only the amounts
+# are; texts are left empty when unknown, and turned into null by clean()
+OPTIONAL_TEXTS = {"nom", "adresse", "syndic", "lots", "date", "date_vote", "appels_de_fonds", "estimation", "horizon",
+                  "commentaire", "plan_pluriannuel", "dtg", "dpe_collectif"}
+
+
 def _opt(schema: Dict[str, Any]) -> Dict[str, Any]:
     return claude.nullable(schema)
 
@@ -68,15 +74,15 @@ SCHEMA = claude.strict_schema({
     "type": "object",
     "properties": {
         "copropriete": {"type": "object", "properties": {
-            "nom": _opt(_s("Nom ou désignation du syndicat des copropriétaires.")),
-            "adresse": _opt(_s("Adresse de l'immeuble.")),
-            "syndic": _opt(_s("Syndic professionnel (nom de la société) ; null pour un syndic bénévole.")),
-            "lots": _opt(_s("Nombre de lots, s'il est indiqué.")),
+            "nom": _s("Nom ou désignation du syndicat des copropriétaires."),
+            "adresse": _s("Adresse de l'immeuble."),
+            "syndic": _s("Syndic professionnel (nom de la société) ; vide pour un syndic bénévole."),
+            "lots": _s("Nombre de lots, s'il est indiqué."),
         }},
         "documents": {"type": "array", "description": "Chaque document fourni.", "items": {"type": "object", "properties": {
             "fichier": _s("Nom du fichier."),
             "nature": _s("PV d'assemblée générale, carnet d'entretien, pré-état daté, appel de fonds, DTG, PPT, règlement de copropriété, autre."),
-            "date": _opt(_s("Date du document, JJ/MM/AAAA.")),
+            "date": _s("Date du document, JJ/MM/AAAA."),
             "lisible": {"type": "boolean", "description": "false si le document est illisible ou incomplet."},
         }}},
         "synthese": _s("5 à 8 phrases pour l'agent : l'état de la copropriété, ce qui pèse sur le prix ou la vente, ce qu'il faut dire à l'acheteur."),
@@ -85,16 +91,16 @@ SCHEMA = claude.strict_schema({
         "travaux_votes": {"type": "array", "items": {"type": "object", "properties": {
             "objet": _s("Travaux votés."),
             "montant": _opt(MONEY),
-            "date_vote": _opt(_s("Date de l'AG qui les a votés, JJ/MM/AAAA.")),
-            "appels_de_fonds": _opt(_s("Échéancier des appels de fonds (dates et montants ou pourcentages).")),
+            "date_vote": _s("Date de l'AG qui les a votés, JJ/MM/AAAA."),
+            "appels_de_fonds": _s("Échéancier des appels de fonds (dates et montants ou pourcentages)."),
             "etat": {"type": "string", "enum": ["voté", "en cours", "réalisé"]},
             "source": SOURCE,
         }}},
         "travaux_a_venir": {"type": "array", "description": "Travaux évoqués, refusés, reportés, prévus au plan pluriannuel ou au carnet d'entretien, pas encore votés.",
                             "items": {"type": "object", "properties": {
                                 "objet": _s("Travaux."),
-                                "estimation": _opt(_s("Montant ou fourchette annoncés.")),
-                                "horizon": _opt(_s("Échéance annoncée.")),
+                                "estimation": _s("Montant ou fourchette annoncés."),
+                                "horizon": _s("Échéance annoncée."),
                                 "source": SOURCE,
                             }}},
         "procedures": {"type": "array", "description": "Procédures judiciaires ou contentieux en cours ou annoncés.",
@@ -110,13 +116,13 @@ SCHEMA = claude.strict_schema({
             "fonds_travaux": _opt({**MONEY, "description": "Montant du fonds de travaux (loi ALUR), en euros."}),
             "impayes_coproprietaires": _opt({**MONEY, "description": "Total des charges impayées par les copropriétaires, en euros."}),
             "dettes_fournisseurs": _opt({**MONEY, "description": "Dettes du syndicat envers les fournisseurs, en euros."}),
-            "commentaire": _opt(_s("Ce qui ressort des comptes : trésorerie, dépassements, recouvrement.")),
-            "source": _opt(SOURCE),
+            "commentaire": _s("Ce qui ressort des comptes : trésorerie, dépassements, recouvrement."),
+            "source": SOURCE,
         }},
         "obligations": {"type": "object", "description": "Obligations réglementaires de la copropriété.", "properties": {
-            "plan_pluriannuel": _opt(_s("Projet de plan pluriannuel de travaux (PPT) : adopté, en cours, absent, avec la date.")),
-            "dtg": _opt(_s("Diagnostic technique global : réalisé, voté, absent.")),
-            "dpe_collectif": _opt(_s("DPE collectif ou audit : réalisé, voté, absent, avec la classe si indiquée.")),
+            "plan_pluriannuel": _s("Projet de plan pluriannuel de travaux (PPT) : adopté, en cours, absent, avec la date."),
+            "dtg": _s("Diagnostic technique global : réalisé, voté, absent."),
+            "dpe_collectif": _s("DPE collectif ou audit : réalisé, voté, absent, avec la classe si indiquée."),
         }},
         "vie_copropriete": {"type": "array", "items": _s("Fait marquant : changement de syndic, sinistre, conflit, assurance, ascenseur, gardiennage, majorité difficile à réunir…")},
         "vigilance": {"type": "array", "description": "Points de vigilance pour la vente, du plus important au moins important.",
@@ -140,7 +146,8 @@ Règles :
 - Distingue bien les travaux votés (décision d'AG, à la charge du vendeur ou de l'acheteur selon le compromis) des travaux seulement évoqués, refusés ou reportés.
 - Une résolution refusée faute de majorité est un signal à mentionner.
 - Montants en euros, dates au format JJ/MM/AAAA. Français sobre, phrases courtes, pas de markdown.
-- Si un document est illisible ou incomplet, dis-le dans « documents » et n'en tire rien."""
+- Si un document est illisible ou incomplet, dis-le dans « documents » et n'en tire rien.
+- Une information texte absente reste une chaîne vide ; un montant absent reste null."""
 
 
 def build_content(files: List[Dict[str, Any]], blobs: List[bytes], address: Optional[str], today: date) -> List[Dict[str, Any]]:
@@ -161,8 +168,21 @@ def build_content(files: List[Dict[str, Any]], blobs: List[bytes], address: Opti
     return content
 
 
+def _nulls(value: Any, key: str = "") -> Any:
+    if isinstance(value, dict):
+        return {k: _nulls(v, k) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_nulls(v) for v in value]
+    if key in OPTIONAL_TEXTS and isinstance(value, str) and not value.strip():
+        return None
+    return value
+
+
 def clean(result: Dict[str, Any]) -> Dict[str, Any]:
-    """Lists kept short and ordered: alerts first."""
+    """Empty texts as null, lists kept short and ordered: alerts first."""
+    result = _nulls(result)
+    if not (result.get("finances") or {}).get("source"):
+        result.setdefault("finances", {})["source"] = None
     order = {"alerte": 0, "attention": 1, "info": 2}
     result["vigilance"] = sorted(result.get("vigilance") or [], key=lambda v: order.get(v.get("niveau"), 3))[:12]
     for key, limit in (("travaux_votes", 20), ("travaux_a_venir", 20), ("procedures", 10), ("vie_copropriete", 12),

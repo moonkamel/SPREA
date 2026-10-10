@@ -230,13 +230,13 @@ export default function DemoPage() {
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
                         <h2 className="text-3xl sm:text-4xl text-ink">Le calcul est vite fait</h2>
                         <p className="mt-5 text-lg text-muted">
-                            Sur une vente à 250 000 €, des honoraires de 5 % TTC représentent plus de 10 000 € HT. L'abonnement Solo annuel coûte 790 € HT :
+                            Sur une vente à 250 000 €, des honoraires de 5 % TTC représentent plus de 10 000 € HT. L'abonnement Solo annuel coûte 790 € TTC :
                             un seul mandat signé grâce à SPREA le rembourse plus de dix fois.
                         </p>
                         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
                             {me?.is_pro
                                 ? <Button onClick={start} className="sm:w-60">Ouvrir le simulateur <ArrowRight size={18} /></Button>
-                                : <Button onClick={() => startSubscription('solo_monthly')} className="sm:w-60">Démarrer à 79 € HT / mois</Button>}
+                                : <Button onClick={() => startSubscription('solo_monthly')} className="sm:w-60">Démarrer à 79 € TTC / mois</Button>}
                             <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-60">Formules Agence et Réseau</Button>
                         </div>
                         <p className="mt-5 text-sm text-muted flex items-center justify-center gap-2">

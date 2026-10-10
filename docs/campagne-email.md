@@ -155,7 +155,7 @@ Objet : un mandat = des années d'abonnement
 >
 > Le calcul que font les agences qui utilisent SPREA : sur une vente à
 > 250 000 €, les honoraires dépassent 10 000 € HT. L'abonnement Solo coûte
-> 79 € HT par mois. Un seul mandat signé grâce à un DPE repéré à temps ou à
+> 79 € TTC par mois. Un seul mandat signé grâce à un DPE repéré à temps ou à
 > un immeuble de SCI paie plus de dix ans d'abonnement.
 >
 > Je vous propose 20 minutes en visio, sur votre secteur : vous voyez les
