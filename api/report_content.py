@@ -186,13 +186,30 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
 def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     """How the work is to be done: materials, thicknesses and the performance
     the aids require (RGE, CEE fiches, MaPrimeRénov')."""
+    old_walls = ctx.get("pre_1948")
     if work_id == "iti":
+        if old_walls:
+            return ("Mur ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm "
+                    "(fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de "
+                    "pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides.")
         return ("Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, "
                 "résistance thermique R ≥ 3,7 m².K/W exigée pour les aides.")
+    if work_id == "ite" and old_walls:
+        return ("Mur ancien (avant 1948) : isolant perméable à la vapeur, fibre de bois de 14 à 16 cm sous enduit à la "
+                "chaux ou bardage ventilé (pas de polystyrène sur un mur en brique ou pierre), R ≥ 3,7 m².K/W exigée "
+                "pour les aides ; retours d'isolant en tableaux de fenêtres et en soubassement.")
     if work_id == "ite":
         return ("Isolant de 14 à 16 cm (polystyrène graphité ou fibre de bois) sous enduit ou bardage ventilé, "
                 "R ≥ 3,7 m².K/W exigée pour les aides ; retours d'isolant en tableaux de fenêtres et en soubassement.")
     if work_id == "roof":
+        kind = ctx.get("roof_kind")
+        if kind == "combles perdus":
+            return "Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec pare-vapeur côté chauffé."
+        if kind == "combles aménagés":
+            return ("Combles aménagés : isolation des rampants, 20 à 24 cm en deux couches croisées entre et sous chevrons "
+                    "(laine minérale ou fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.")
+        if kind == "toit terrasse":
+            return "Toit terrasse : isolant de 14 à 18 cm sur l'étanchéité refaite (polyuréthane ou laine de roche), R ≥ 4,5 m².K/W exigée pour les aides."
         return ("Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou toiture : 20 à 24 cm, R ≥ 6 "
                 "(valeurs exigées pour les aides), avec pare-vapeur côté chauffé.")
     if work_id == "floor_ceiling":
@@ -246,8 +263,12 @@ def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "iti":
         return f"Surface habitable réduite d'environ {fr_dec(ctx['iti_surface_loss'])} m²."
     if work_id == "ite":
-        return ("Déclaration préalable de travaux en mairie (aspect des façades, règles du PLU) ; prévoir les appuis de "
-                "fenêtres, descentes d'eau et débords de toit.")
+        caution = ("Déclaration préalable de travaux en mairie (aspect des façades, règles du PLU) ; prévoir les appuis de "
+                   "fenêtres, descentes d'eau et débords de toit.")
+        if ctx.get("pre_1948"):
+            caution += (" Façade ancienne : souvent refusée en secteur protégé (Architecte des Bâtiments de France, "
+                        "site patrimonial remarquable) ; une façade sur rue en brique peut imposer l'isolation par l'intérieur.")
+        return caution
     if work_id == "pac_air_eau":
         return ("Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à chaleur "
                 "après l'isolation.")
@@ -417,6 +438,8 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "window_count": env.window_count,
         "hot_water_share": hot_water_share(prop, env, energy),
         "house": house,
+        "pre_1948": env.period == 0,
+        "roof_kind": prop.roof_kind,
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
         "heat_pump_kw": heat_pump_kw(prop, env, energy, list(sim_input.works)),

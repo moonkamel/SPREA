@@ -166,6 +166,7 @@ export const propertyInput = (property: PropertyData) => ({
     hot_water_installation: property.details?.hot_water_installation ?? null,
     ventilation: property.details?.ventilation ?? null,
     hot_water_energy: property.details?.hot_water_energy ?? null,
+    roof_kind: property.details?.roof_kind ?? null,
     usage_consumption: property.usageConsumption ?? null,
 });
 

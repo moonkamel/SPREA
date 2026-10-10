@@ -91,6 +91,9 @@ CURRENT_HOT_WATER_EFFICIENCY = {
 }
 HEAT_PUMP_WATER_HEATER_COP = 2.5
 
+# Roof insulation cost by kind of roof, around the 65 €/m2 average
+ROOF_COST_FACTOR = {"combles perdus": 0.6, "combles aménagés": 1.45, "toit terrasse": 2.0}
+
 # Wall preparation before interior insulation of uninsulated walls (EUR/m2)
 WALL_PREPARATION_COST = 15
 
@@ -171,6 +174,8 @@ class SimulationProperty(BaseModel):
     hot_water_installation: Optional[str] = Field(None, max_length=200)
     ventilation: Optional[str] = Field(None, max_length=200)
     hot_water_energy: Optional[str] = Field(None, max_length=120)
+    # "combles perdus", "combles aménagés" or "toit terrasse", from the DPE
+    roof_kind: Optional[str] = Field(None, max_length=40)
     # Final consumption per usage computed by the DPE (kWh/year): heating,
     # hot_water, other. Used instead of the typical split when present
     usage_consumption: Optional[Dict[str, Optional[float]]] = None
@@ -451,6 +456,9 @@ def simulate(data: SimulationInput) -> Dict:
     for w in works:
         quantity = quantities[w["unit"]]
         item = w["cost"] * quantity
+        if w["id"] == "roof":
+            # Blown wool on a loft floor costs far less than rafters or a flat roof
+            item *= ROOF_COST_FACTOR.get(prop.roof_kind or "", 1.0)
         if w["id"] == "iti" and env.walls_uninsulated:
             item += WALL_PREPARATION_COST * quantity
         if w["zone"]:
@@ -846,6 +854,14 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             # whenever it can be reached
             pick(set(avail["works"]) - suggested, current)
             suggested.update(preselected)
+
+        # Insulating a dwelling aired only through its windows without a
+        # ventilation system: condensation and mould. Ventilation comes with it
+        envelope = {"iti", "ite", "roof", "floor_ceiling", "windows"}
+        if (envelope & set(preselected) and "vmc" not in preselected and "vmc" in avail["works"]
+                and not eq["mechanical_ventilation"]):
+            preselected.append("vmc")
+            suggested.add("vmc")
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],

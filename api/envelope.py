@@ -105,6 +105,7 @@ class Envelope:
         self.areas = self._geometry()
         self.u = self._u_values(qualities or {})
         self.dpe_losses = self._valid_dpe_losses(dpe_losses)
+        self._areas_from_dpe()
 
     # --- Geometry ---
 
@@ -126,6 +127,22 @@ class Envelope:
             "windows": windows,
             "volume": self.surface * FLOOR_HEIGHT,
         }
+
+    def _areas_from_dpe(self) -> None:
+        """The DPE gives each wall's heat loss (W/K): divided by its U value,
+        it gives the area actually exposed. A terraced house has two facades,
+        not four; a three-storey town house a small roof. The geometric
+        estimate is kept as a bound against unusual DPE values."""
+        # Losses in W/K (a poorly insulated dwelling loses several W/K per m²);
+        # low totals may be relative weights, and an efficient dwelling keeps
+        # the geometric estimate
+        if not self.dpe_losses or sum(self.dpe_losses.values()) < 1.2 * self.surface:
+            return
+        factors = {"walls": 1.0, "roof": 1.0, "floor": FLOOR_TEMPERATURE_FACTOR}
+        for element, factor in factors.items():
+            loss, u, geometric = self.dpe_losses.get(element), self.u[element], self.areas[element]
+            if loss and u > 0 and geometric > 0:
+                self.areas[element] = min(1.5 * geometric, max(0.3 * geometric, loss / (u * factor)))
 
     @property
     def wall_area(self) -> float:

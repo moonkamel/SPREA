@@ -157,3 +157,29 @@ def test_every_insulation_work_has_a_technical_spec():
     for work in ("iti", "ite", "roof", "floor_ceiling", "windows", "vmc", "pac_air_eau", "ecs", "heating"):
         assert tech_spec(work, {"heat_pump_kw": 8})
     assert "R ≥ 3,7" in tech_spec("iti", {}) and "7 à 9 kW" in tech_spec("pac_air_eau", {"heat_pump_kw": 8})
+
+
+def test_terraced_town_house_uses_the_dpe_areas_roof_kind_and_ventilation():
+    """Live case (21 rue Sainte-Catherine, Lille): 41 m² on three levels,
+    terraced, converted attic, aired through the windows. The detached-house
+    geometry priced about 60 m² of walls and a 41 m² loft."""
+    from api.envelope import Envelope
+    from api.report_content import tech_spec
+    losses = {"walls": 69.4, "roof": 48.8, "floor": 6.1, "windows": 28.3, "air": 46.2, "bridges": 14.6}
+    q = {"walls": "insuffisante", "roof": "insuffisante", "floor": "insuffisante", "windows": "moyenne"}
+    env = Envelope(40.9, "Maison", None, "avant 1948", q, losses)
+    assert 30 < env.wall_area < 40 and 15 < env.areas["roof"] < 25
+    lille = prop(HOUSE, surface=40.9, initial_cep=445, ges_value=18, official_label="G", construction_year=None,
+                 construction_period="avant 1948", heating_energy="Électricité",
+                 heating_generator="Panneau rayonnant électrique NFC", hot_water_energy="Électricité",
+                 ventilation="Ventilation par ouverture des fenêtres", insulation_quality=q, dpe_losses=losses,
+                 roof_kind="combles aménagés")
+    # Insulating without a ventilation system: ventilation comes with it
+    assert "vmc" in suggest_works(lille, "G")["preselected"]
+    # Rafters cost more than blown wool on a loft floor
+    rafters = simulate(SimulationInput(property=lille, works=["roof"]))["cost"]
+    loft = simulate(SimulationInput(property=prop(HOUSE, **{**lille.model_dump(), "roof_kind": "combles perdus"}), works=["roof"]))["cost"]
+    assert rafters > 2 * loft
+    assert "rampants" in tech_spec("roof", {"roof_kind": "combles aménagés"})
+    # Old walls: breathable materials, no polystyrene, protected areas
+    assert "fibre de bois" in tech_spec("ite", {"pre_1948": True}) and "polystyrène sur un mur" in tech_spec("ite", {"pre_1948": True})
