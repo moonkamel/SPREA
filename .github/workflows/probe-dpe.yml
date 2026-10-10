@@ -1,0 +1,14 @@
+name: Sonde DPE (temporaire)
+on:
+  push:
+    branches: [claude/hopeful-fermi-re2vn1]
+    paths: [".github/workflows/probe-dpe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?q=2562E1801788C&q_fields=numero_dpe&size=1" \
+          | python3 -c "import json,sys; r=json.load(sys.stdin)['results'][0]; [print(k, '=', v) for k,v in sorted(r.items()) if any(s in k for s in ('conso','cout','ecs','energie','surface'))]"
