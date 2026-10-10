@@ -46,6 +46,7 @@ Règles de fond :
 - Parle de CE logement : son type, sa surface, son époque, son chauffage, ses pertes de chaleur dominantes. Une phrase qui pourrait figurer dans le rapport d'un autre logement est à supprimer.
 - Présente les montants comme des estimations (« environ », « entre … et … »), jamais comme des certitudes. Les aides restent à confirmer par France Rénov'.
 - Si les données expliquent pourquoi la rénovation d'ampleur n'est pas accessible, explique-le simplement.
+- Si « variante_renovation_d_ampleur » est fournie, termine le paragraphe financement par cette variante : ajouter ce travail d'isolation ouvre la rénovation d'ampleur ; cite l'aide et le reste à charge de la variante, et son accompagnement obligatoire.
 - Si « valeur_verte_calculee_sur_prix_m2_par_defaut » vaut true, ne cite pas le montant de la valeur verte : il repose sur un prix au m² par défaut.
 - Les montants sont déjà arrondis : garde-les tels quels, sans recalculer de total.
 - Pas de conseil juridique ou fiscal personnalisé au-delà des faits fournis.
@@ -136,6 +137,12 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
                f"Avec {fin['parcours_aide']}, le reste à charge est estimé entre {eur(rest_low)} et {eur(rest_high)}. ")
     if fin.get("pourquoi_pas_la_renovation_d_ampleur") and fin["parcours_aide"] != "MaPrimeRénov' rénovation d'ampleur":
         finance += fin["pourquoi_pas_la_renovation_d_ampleur"][0] + " "
+    variant = facts.get("variante_renovation_d_ampleur")
+    if variant:
+        low, high = variant["reste_a_charge_fourchette_eur"]
+        finance += (f"Ajouter {variant['travail_ajoute']} ouvrirait la rénovation d'ampleur : "
+                    f"environ {eur(variant['maprimerenov_eur'])} d'aide, pour un reste à charge entre {eur(low)} et {eur(high)}, "
+                    "avec un Accompagnateur Rénov' obligatoire. ")
     if fin["eco_ptz_eur"]:
         finance += (f"Un éco-prêt à taux zéro de {eur(fin['eco_ptz_eur'])} sur {fin['eco_ptz_duree_ans']} ans représente "
                     f"environ {eur(fin['eco_ptz_mensualite_eur'])} par mois, à comparer à {eur(fin['economie_mensuelle_eur'])} "
