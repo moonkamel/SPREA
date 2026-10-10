@@ -29,7 +29,8 @@ FIELDS = "siret,nom_entreprise,adresse,code_postal,commune,latitude,longitude,te
 
 # Work of the simulation -> RGE work domains (values of the "domaine" field)
 DOMAINS: Dict[str, List[str]] = {
-    "iti": ["Isolation par l'intérieur des murs ou rampants de toitures  ou plafonds", "Isolation des murs par l'extérieur"],
+    "iti": ["Isolation par l'intérieur des murs ou rampants de toitures  ou plafonds"],
+    "ite": ["Isolation des murs par l'extérieur"],
     "roof": ["Isolation des combles perdus", "Isolation des toitures terrasses ou des toitures par l'extérieur",
              "Isolation par l'intérieur des murs ou rampants de toitures  ou plafonds"],
     "floor_ceiling": ["Isolation des planchers bas"],

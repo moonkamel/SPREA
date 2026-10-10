@@ -9,14 +9,14 @@ from typing import Any, Dict, List, Optional
 try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
-    from api.simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, usage_split, ENERGY_PRICES_EUR_KWH,
+    from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
                                 HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
-    from simulation import (DEFAULT_PRICE_PER_M2, ampleur_variant, usage_split, ENERGY_PRICES_EUR_KWH,
+    from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
                             HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
@@ -40,10 +40,10 @@ LOSS_NAMES = {
 
 USAGE_NAMES = {"heating": "Chauffage", "hot_water": "Eau chaude", "other": "Autres usages (éclairage, auxiliaires)"}
 
-QUALITY_ELEMENT = {"iti": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows"}
+QUALITY_ELEMENT = {"iti": "walls", "ite": "walls", "roof": "roof", "floor_ceiling": "floor", "windows": "windows"}
 
 # Works order on site: envelope first, then ventilation, then systems
-WORK_ORDER = ["roof", "iti", "floor_ceiling", "windows", "vmc", "pac_air_eau", "heating", "ecs"]
+WORK_ORDER = ["roof", "iti", "ite", "floor_ceiling", "windows", "vmc", "pac_air_eau", "heating", "ecs"]
 
 SMALL_WORDS = {"de", "du", "des", "la", "le", "les", "et", "à", "a", "au", "aux", "sur", "sous", "en", "d", "l"}
 
@@ -152,6 +152,9 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
     quality_text = f" ; le DPE juge leur isolation « {quality} »" if quality else ""
     if work_id == "iti":
         return f"Les murs représentent {fr_pct(shares['walls'])} des pertes de chaleur{quality_text}."
+    if work_id == "ite":
+        return (f"Les murs représentent {fr_pct(shares['walls'])} des pertes de chaleur{quality_text}, et les ponts "
+                f"thermiques {fr_pct(shares['bridges'])} : l'isolation par l'extérieur traite les deux.")
     if work_id == "roof":
         return f"La toiture représente {fr_pct(shares['roof'])} des pertes de chaleur{quality_text.replace('leur', 'son')}."
     if work_id == "floor_ceiling":
@@ -180,9 +183,71 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
     return ""
 
 
+def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
+    """How the work is to be done: materials, thicknesses and the performance
+    the aids require (RGE, CEE fiches, MaPrimeRénov')."""
+    if work_id == "iti":
+        return ("Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, "
+                "résistance thermique R ≥ 3,7 m².K/W exigée pour les aides.")
+    if work_id == "ite":
+        return ("Isolant de 14 à 16 cm (polystyrène graphité ou fibre de bois) sous enduit ou bardage ventilé, "
+                "R ≥ 3,7 m².K/W exigée pour les aides ; retours d'isolant en tableaux de fenêtres et en soubassement.")
+    if work_id == "roof":
+        return ("Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou toiture : 20 à 24 cm, R ≥ 6 "
+                "(valeurs exigées pour les aides), avec pare-vapeur côté chauffé.")
+    if work_id == "floor_ceiling":
+        return "Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène, polyuréthane ou laine minérale), R ≥ 3 m².K/W."
+    if work_id == "windows":
+        return ("Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), "
+                "menuiseries PVC, bois ou aluminium à rupture de pont thermique, pose en rénovation ou en dépose totale.")
+    if work_id == "vmc":
+        return "VMC simple flux hygroréglable type B ; double flux si le logement est rendu étanche à l'air."
+    if work_id == "pac_air_eau":
+        power = ctx.get("heat_pump_kw")
+        sizing = (f"puissance indicative d'environ {power - 1} à {power + 1} kW après isolation, à confirmer par l'étude "
+                  "de l'installateur" if power else "puissance à calculer après isolation par l'installateur")
+        return ("Pompe à chaleur air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse "
+                f"température) ou ≥ 111 % (moyenne et haute) ; {sizing}.")
+    if work_id == "ecs":
+        return "Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non chauffé."
+    if work_id == "heating":
+        return ("Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et détection d'ouverture de fenêtre, "
+                "label NF Électricité Performance 3 étoiles.")
+    return None
+
+
+# Equivalent full-load hours of a heat pump in the north of France
+FULL_LOAD_HOURS = 2000
+
+QUALITY_NAMES = {"walls": "Isolation des murs", "roof": "Isolation de la toiture", "floor": "Isolation du plancher bas",
+                 "windows": "Fenêtres"}
+
+
+def insulation_state(prop) -> List[Dict[str, str]]:
+    """Insulation of each wall as judged by the DPE."""
+    q = prop.insulation_quality or {}
+    return [{"label": QUALITY_NAMES[k], "value": f"{q[k][:1].upper()}{q[k][1:]} (selon le DPE)"}
+            for k in ("walls", "roof", "floor", "windows") if q.get(k)]
+
+
+def heat_pump_kw(prop, env, energy: str, works: List[str]) -> Optional[int]:
+    """Rough heat pump power: the heat need after insulation spread over the
+    equivalent full-load hours of a northern French winter."""
+    if "pac_air_eau" not in works:
+        return None
+    heating, _, _ = usage_split(prop, env, energy)
+    insulation = [w for w in works if w in ("iti", "ite", "roof", "floor_ceiling", "windows", "vmc")]
+    need = heating * prop.surface * CURRENT_HEATING_EFFICIENCY.get(energy, 0.85) * (1 - env.heating_reduction(insulation))
+    kw = round(need / FULL_LOAD_HOURS)
+    return max(3, kw) if kw else None
+
+
 def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "iti":
         return f"Surface habitable réduite d'environ {fr_dec(ctx['iti_surface_loss'])} m²."
+    if work_id == "ite":
+        return ("Déclaration préalable de travaux en mairie (aspect des façades, règles du PLU) ; prévoir les appuis de "
+                "fenêtres, descentes d'eau et débords de toit.")
     if work_id == "pac_air_eau":
         return ("Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à chaleur "
                 "après l'isolation.")
@@ -354,6 +419,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         "house": house,
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
+        "heat_pump_kw": heat_pump_kw(prop, env, energy, list(sim_input.works)),
     }
 
     ordered = sorted(works, key=lambda d: WORK_ORDER.index(d["id"]) if d["id"] in WORK_ORDER else 99)
@@ -372,6 +438,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "days": d["days"],
             "reason": work_reason(d["id"], ctx),
             "caution": work_caution(d["id"], ctx),
+            "spec": tech_spec(d["id"], ctx),
             "cep_saved": e.get("cep_saved", 0.0),
             "bill_saving": e.get("bill_saving", 0.0),
             "aid": (aid.get("mpr", 0.0) + aid.get("cee", 0.0)) if aid else None,
@@ -421,6 +488,8 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "ampleur_possible_label": sim["current_label"] in AMPLEUR_LABELS,
         },
         "ampleur_variant": ampleur_variant(sim_input, sim),
+        "wall_alternative": wall_alternative(sim_input, sim),
+        "insulation_state": insulation_state(prop),
         "steps": next_steps(sim, sim_input.is_investor),
         "assumptions": assumptions(sim, sim_input, price_per_m2, not prop.price_per_m2),
         "price_per_m2": price_per_m2,
@@ -493,6 +562,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "fourchette_cout_eur": [r100(w["cost_low"]), r100(w["cost_high"])],
             "pourquoi": w["reason"],
             "point_de_vigilance": w["caution"],
+            "preconisation_technique": w.get("spec"),
             "effet_seul_kwh_ep_m2_an": round(w["cep_saved"]),
             "economie_seule_eur_an": int(round(w["bill_saving"], -1)),
         } for w in report["works"]],
@@ -521,6 +591,13 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "regles_aides": sim["aid_rules"],
         },
         "variante_renovation_d_ampleur": variant_facts(report.get("ampleur_variant")),
+        "autre_solution_murs": {
+            "travail": report["wall_alternative"]["work_name"],
+            "reste_a_charge_fourchette_eur": [r100(report["wall_alternative"]["rest_to_pay_low"]), r100(report["wall_alternative"]["rest_to_pay_high"])],
+            "ecart_reste_a_charge_eur": r100(report["wall_alternative"]["rest_difference"]),
+            "classe_dpe_apres": report["wall_alternative"]["new_label"],
+        } if report.get("wall_alternative") else None,
+        "etat_isolation_selon_dpe": {i["label"]: i["value"] for i in report.get("insulation_state") or []} or None,
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
         # Rounded to 500 € like the PDF, so that the text quotes the same figures
         "valeur_verte_eur": round500(sim["latent_gain"]),
