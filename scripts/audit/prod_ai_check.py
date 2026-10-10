@@ -10,7 +10,7 @@ import httpx
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.audit.sample_pv import main as make_pv  # noqa: E402
 
-SITE = "https://sprea.vercel.app"
+SITE = "https://sprea.app"
 c = httpx.Client(timeout=320)
 cfg = c.get(f"{SITE}/api/config").json()
 tok = c.post(f"{cfg['supabase_url']}/auth/v1/token?grant_type=password", headers={"apikey": cfg["supabase_anon_key"]},

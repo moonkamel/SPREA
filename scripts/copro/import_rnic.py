@@ -24,7 +24,7 @@ from datetime import date
 from typing import Dict, Iterable, Iterator, List, Optional
 
 DATASET_API = "https://www.data.gouv.fr/api/1/datasets/registre-national-dimmatriculation-des-coproprietes/"
-UA = {"User-Agent": "sprea-copro-import/1.0 (+https://sprea.vercel.app)"}
+UA = {"User-Agent": "sprea-copro-import/1.0 (+https://sprea.app)"}
 BATCH = 1000
 # A complete national file has more than 600 000 copropriétés: below this,
 # the stale rows are kept (truncated download, partial file)

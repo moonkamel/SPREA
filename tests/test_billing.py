@@ -9,7 +9,7 @@ from api.billing import Billing
 
 
 def make_billing():
-    return Billing("sk_test_x", "whsec_test", "price_report", "price_pro", "https://sprea.vercel.app")
+    return Billing("sk_test_x", "whsec_test", "price_report", "price_pro", "https://sprea.app")
 
 
 def stripe_obj(data):

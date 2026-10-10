@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Tuple
 ADEME = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
 GEO = "https://geo.api.gouv.fr/communes"
 BREVO = "https://api.brevo.com/v3"
-SITE = os.getenv("PUBLIC_APP_URL", "https://sprea.vercel.app").rstrip("/")
+SITE = os.getenv("PUBLIC_APP_URL", "https://sprea.app").rstrip("/")
 ATTRIBUTES = {"SPREA_ACCROCHE": "text", "SPREA_VILLE": "text", "SPREA_DPE_30J": "float", "SPREA_DPE_12M": "float",
               "SPREA_IMMEUBLES": "float", "SPREA_SIGNAUX": "float", "SPREA_LIEN": "text", "SPREA_MAJ": "date"}
 

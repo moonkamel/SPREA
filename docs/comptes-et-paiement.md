@@ -39,7 +39,7 @@ Commencer en mode test (clés `sk_test_…`), puis refaire ces étapes en mode l
 2. **Développeurs > Clés API** : `STRIPE_SECRET_KEY`. La clé publique
    (`pk_…`) n'est pas utilisée : le paiement se fait sur la page Stripe Checkout.
 3. **Développeurs > Webhooks** : ajouter l'endpoint
-   `https://sprea.vercel.app/api/stripe/webhook` avec les événements
+   `https://sprea.app/api/stripe/webhook` avec les événements
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
    - `customer.subscription.created`
@@ -69,7 +69,7 @@ Commencer en mode test (clés `sk_test_…`), puis refaire ces étapes en mode l
 
 Renseigner toutes les variables de `.env.example` dans
 **Project Settings > Environment Variables**, avec `PUBLIC_APP_URL` égal à
-l'URL publique du site (`https://sprea.vercel.app`). Commencer avec les clés Stripe de test
+l'URL publique du site (`https://sprea.app`). Commencer avec les clés Stripe de test
 (`sk_test_…`), puis passer aux clés live une fois le parcours vérifié.
 
 Analyse des rapports : créer une clé sur console.anthropic.com (API Keys),

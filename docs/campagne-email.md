@@ -44,7 +44,9 @@ auprès d'un prestataire conforme au RGPD.
 
 1. GitHub > **Actions** > **Campagne email (Brevo)** > **Run workflow** :
    tâche `liste`, départements `59 62`, codes postaux `590 591 595 596 597`
-   pour la métropole lilloise (vide pour tout le département).
+   pour la métropole lilloise (vide pour tout le département). Plus précis :
+   laisser les codes postaux vides et mettre `200093201` dans « intercommunalité »
+   (les 95 communes de la Métropole européenne de Lille).
 2. À la fin, télécharger le fichier `agences` (rubrique *Artifacts*).
    Colonnes : agence, dirigeant, adresse, code postal, ville, code INSEE,
    SIREN… et une colonne `email` vide.

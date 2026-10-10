@@ -605,7 +605,7 @@ def test_checkout_tax_parameters(automatic_tax):
 
     from api.billing import Billing
 
-    billing = Billing("sk_test_x", "whsec", "price_r", "price_p", "https://sprea.vercel.app", automatic_tax=automatic_tax)
+    billing = Billing("sk_test_x", "whsec", "price_r", "price_p", "https://sprea.app", automatic_tax=automatic_tax)
     sent = []
 
     async def fake_create(params):
@@ -616,7 +616,7 @@ def test_checkout_tax_parameters(automatic_tax):
     asyncio.run(billing.report_checkout("r1", "u1", "cus_1"))
     asyncio.run(billing.subscription_checkout("u1", "cus_1"))
     for params in sent:
-        assert params["success_url"].startswith("https://sprea.vercel.app/?")
+        assert params["success_url"].startswith("https://sprea.app/?")
         assert ("automatic_tax" in params) is automatic_tax
         if automatic_tax:
             assert params["automatic_tax"] == {"enabled": True}

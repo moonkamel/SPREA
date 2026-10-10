@@ -271,8 +271,8 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
     };
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
-            <Card className="w-full max-w-2xl p-5 sm:p-6 relative">
+        <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
+            <Card className="w-full max-w-2xl p-5 sm:p-6 relative my-auto">
                 <button type="button" onClick={onClose} className="absolute top-4 right-4 text-faint hover:text-ink" aria-label="Fermer"><X size={18} /></button>
                 {notFound && 'near' in target ? (
                     <div className="pr-8 space-y-3">
@@ -348,7 +348,10 @@ p:first-child{margin-left:9cm}p:last-child{font-size:9pt;color:#555;margin-top:2
                                         <li key={p.id}>
                                             <button type="button" onClick={() => { onFocus(p.lat, p.lon); onClose(); }}
                                                 className="w-full py-2 flex items-center justify-between gap-3 text-left text-sm hover:text-ink">
-                                                <span className="flex items-center gap-2 min-w-0 text-ink-soft"><MapPin size={12} className="shrink-0 text-brass" /><span className="truncate">{p.address}</span></span>
+                                                <span className="flex items-center gap-2 min-w-0 text-ink-soft"><MapPin size={12} className="shrink-0 text-brass" /><span className="truncate">{p.address}</span>
+                                                    {p.address && sheet.address && p.address.trim().toLowerCase() === sheet.address.trim().toLowerCase() && (
+                                                        <span className="shrink-0 text-xs text-faint">autre bâtiment, même adresse</span>
+                                                    )}</span>
                                                 <span className="shrink-0 text-xs text-faint">{p.nb_log} log.{p.dpe_label ? ` · ${p.dpe_label}` : ''}</span>
                                             </button>
                                         </li>
