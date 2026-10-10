@@ -130,7 +130,7 @@ def score(events: List[Dict[str, Any]], today: date) -> Dict[str, Any]:
     latest = list({e["kind"]: e for e in reversed(kept)}.values())
     weights = sorted((WEIGHTS[e["kind"]] * recency(e.get("date"), today) for e in latest), reverse=True)
     value = round(min(100, (weights[0] + 0.3 * sum(weights[1:])) if weights else 0))
-    if kept and kept[0]["kind"] in CLOSED:
+    if kept and any(e["kind"] in CLOSED and e.get("date") == kept[0].get("date") for e in kept):
         # Company closed: the building has most likely already been sold or
         # handed to the partners
         value = min(value, MEDIUM + 10)

@@ -443,5 +443,10 @@ def test_closed_company_signal_is_capped():
     # Closed last month too: the building is likely gone already
     recent = [{**e, "date": "2026-09-15"} for e in events]
     assert sale_signals.score(recent, today)["level"] == "moyen"
+    # Liquidation and removal published the same day, in any order
+    same_day = [{"date": "2026-09-13", "kind": "liquidation_amiable", "label": "", "url": None},
+                {"date": "2026-09-13", "kind": "radiation", "label": "", "url": None},
+                {"date": "2026-08-16", "kind": "dissolution", "label": "", "url": None}]
+    assert sale_signals.score(same_day, today)["level"] == "moyen"
     # Dissolution under way, not closed yet: strong
     assert sale_signals.score(events[2:3] + [{**events[2], "date": "2026-06-01"}], today)["level"] == "fort"
