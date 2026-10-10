@@ -8,6 +8,7 @@ import into Brevo. Officers' names are public (RNE) and only used to greet
 the manager of the agency.
 
   python scripts/campaign/agencies.py --dep 59 62 --out agences.csv [--prefix 590 591 595]
+  python scripts/campaign/agencies.py --dep 59 --epci 200093201 --out agences_mel.csv   # Métropole européenne de Lille
 """
 import argparse
 import csv
@@ -19,6 +20,7 @@ import urllib.request
 from typing import Dict, Iterator, List, Optional
 
 URL = "https://recherche-entreprises.api.gouv.fr/search"
+GEO_EPCI = "https://geo.api.gouv.fr/epcis/{}/communes?fields=code,nom"
 COLUMNS = ["email", "agence", "civilite_nom", "adresse", "code_postal", "ville", "code_insee", "siren",
            "etablissements", "categorie", "date_creation"]
 
@@ -36,6 +38,13 @@ def get(params: Dict[str, str]) -> Optional[Dict]:
             pass
         time.sleep(2 ** attempt)
     return None
+
+
+def epci_towns(siren: str) -> Dict[str, str]:
+    """INSEE code -> name of the towns of an intercommunality (geo.api.gouv.fr)."""
+    req = urllib.request.Request(GEO_EPCI.format(siren), headers={"User-Agent": "SPREA"})
+    with urllib.request.urlopen(req, timeout=30) as res:
+        return {t["code"]: t["nom"] for t in json.loads(res.read())}
 
 
 def officer(result: Dict) -> str:
@@ -76,12 +85,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dep", nargs="+", default=["59", "62"])
     ap.add_argument("--prefix", nargs="*", help="Only these postcode prefixes (e.g. 590 591 595 for the Lille area)")
+    ap.add_argument("--epci", help="Only the towns of this intercommunality (SIREN, e.g. 200093201 for the MEL)")
     ap.add_argument("--out", default="agences.csv")
     args = ap.parse_args()
+    towns = epci_towns(args.epci) if args.epci else None
+    if towns:
+        print(f"{len(towns)} communes dans l'intercommunalité {args.epci}", flush=True)
     rows: List[Dict] = []
     for dep in args.dep:
         for a in agencies(dep):
             if args.prefix and not any((a["code_postal"] or "").startswith(p) for p in args.prefix):
+                continue
+            if towns is not None and a["code_insee"] not in towns:
                 continue
             rows.append(a)
         print(f"{dep} : {len(rows)} agences au total", flush=True)

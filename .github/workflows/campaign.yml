@@ -22,6 +22,10 @@ on:
         description: "Pour la liste : débuts de codes postaux à garder (vide = tous)"
         required: false
         default: ""
+      epci:
+        description: "Pour la liste : intercommunalité (SIREN ; 200093201 = Métropole européenne de Lille ; vide = toutes)"
+        required: false
+        default: ""
   schedule:
     - cron: "17 5 * * 1"
 
@@ -41,7 +45,8 @@ jobs:
       - env:
           DEPS: ${{ inputs.departments }}
           PREFIXES: ${{ inputs.prefixes }}
-        run: python scripts/campaign/agencies.py --dep $DEPS ${PREFIXES:+--prefix $PREFIXES} --out agences.csv
+          EPCI: ${{ inputs.epci }}
+        run: python scripts/campaign/agencies.py --dep $DEPS ${PREFIXES:+--prefix $PREFIXES} ${EPCI:+--epci $EPCI} --out agences.csv
       - uses: actions/upload-artifact@v4
         with:
           name: agences
