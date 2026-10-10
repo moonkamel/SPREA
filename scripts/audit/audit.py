@@ -24,6 +24,7 @@ import os
 import random
 import sys
 import traceback
+import zlib
 from datetime import date, timedelta
 from typing import Any, Callable, Dict, List, Optional
 
@@ -43,6 +44,8 @@ from api.pdf_service import pdf_service  # noqa: E402
 from api.report_content import build_report, facts_for_writer  # noqa: E402
 from api.simulation import SimulationInput, available_works, simulate  # noqa: E402
 from api.valuation import compute  # noqa: E402
+from api import rge  # noqa: E402
+from scripts.audit.checks import equipment_checks, marginal_checks, pdf_text, report_checks, text_checks  # noqa: E402
 
 ADEME = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
 LABELS = "ABCDEFG"
@@ -50,7 +53,13 @@ LABELS = "ABCDEFG"
 PLACES = ["59350", "62041", "75111", "75117", "69383", "13208", "33063", "35238", "67482", "31555", "44109", "06088",
           "34172", "38185", "76540", "21231", "63113", "29019", "80021", "02691", "57463", "87085", "14118", "25056"]
 
+# Every metropolitan department, for rural houses (fuel oil, wood) as well as city flats
+DEPARTMENTS = [f"{i:02d}" for i in range(1, 96) if i != 20] + ["2A", "2B"]
+ENERGIES = ["Fioul domestique", "Bois – Bûches", "Bois – Granulés (pellets) ou briquettes", "Réseau de Chauffage urbain",
+            "GPL", "Électricité", "Gaz naturel", "Propane"]
+
 results: List[Dict[str, Any]] = []
+properties: List[Dict[str, Any]] = []  # DPE read, for the before/after comparison of the default selection
 
 
 class Case:
@@ -88,19 +97,61 @@ def idx(label: Optional[str]) -> int:
 
 # --- Dwellings ---
 
-async def sample_dpe(client: httpx.AsyncClient, n: int, rng: random.Random) -> List[str]:
-    """Recent DPE of apartments and houses, every class, several regions."""
+def strata(rng: random.Random) -> List[Dict[str, str]]:
+    """Kinds of DPE to draw, in a shuffled order: every kind and class in every
+    department, plus heating energies, small dwellings, whole buildings."""
+    base = [{"type_batiment": k, "etiquette_dpe": l, "code_departement_ban": d}
+            for k in ("appartement", "maison") for l in LABELS for d in DEPARTMENTS]
+    extra = ([{"type_energie_principale_chauffage": f'"{e}"', "code_departement_ban": rng.choice(DEPARTMENTS)}
+              for e in ENERGIES for _ in range(12)]
+             + [{"type_batiment": "appartement", "surface_habitable_logement": "[8 TO 30]", "code_departement_ban": rng.choice(DEPARTMENTS)}
+                for _ in range(40)]
+             + [{"type_batiment": "maison", "surface_habitable_logement": "[8 TO 45]", "code_departement_ban": rng.choice(DEPARTMENTS)}
+                for _ in range(30)]
+             + [{"type_batiment": "immeuble", "code_departement_ban": rng.choice(DEPARTMENTS)} for _ in range(25)]
+             + [{"type_batiment": "maison", "periode_construction": '"avant 1948"', "code_departement_ban": rng.choice(DEPARTMENTS)}
+                for _ in range(40)])
+    rng.shuffle(base)
+    rng.shuffle(extra)
+    # Interleave: about one extra stratum for three base ones
+    out: List[Dict[str, str]] = []
+    for i, b in enumerate(base):
+        out.append(b)
+        if i % 3 == 2 and extra:
+            out.append(extra.pop())
+    return out + extra
+
+
+async def sample_dpe(client: httpx.AsyncClient, n: int, rng: random.Random, shard: int = 0, shards: int = 1) -> List[str]:
+    """Recent DPE (2024 on) drawn from the strata of this shard."""
     numbers: List[str] = []
-    combos = [(kind, label, insee) for kind in ("appartement", "maison") for label in LABELS for insee in PLACES]
-    rng.shuffle(combos)
-    for kind, label, insee in combos:
+    mine = strata(rng)[shard::shards]
+    misses = 0
+    # Department field of the dataset; else the postcode prefix
+    probe = await client.get(ADEME, params={"qs": "code_departement_ban:59", "size": 1, "select": "numero_dpe"})
+    by_department = probe.status_code == 200 and bool(probe.json().get("results"))
+    if not by_department:
+        print("--- champ code_departement_ban absent : tirage par préfixe de code postal", flush=True)
+        for st in mine:
+            d = st.pop("code_departement_ban", None)
+            if d:
+                st["code_postal_ban"] = ("20" if d in ("2A", "2B") else d) + "*"
+    for st in mine:
         if len(numbers) >= n:
             break
-        res = await client.get(ADEME, params={
-            "qs": f"type_batiment:{kind} AND etiquette_dpe:{label} AND code_insee_ban:{insee} AND date_etablissement_dpe:[2024-01-01 TO *]",
-            "size": 2, "select": "numero_dpe", "sort": "-date_etablissement_dpe"})
-        if res.status_code == 200:
-            numbers += [r["numero_dpe"] for r in res.json().get("results", [])[:1]]
+        qs = " AND ".join(f"{k}:{v}" for k, v in st.items()) + " AND date_etablissement_dpe:[2024-01-01 TO *]"
+        try:
+            res = await client.get(ADEME, params={"qs": qs, "size": 6, "select": "numero_dpe", "sort": "-date_etablissement_dpe"})
+        except httpx.HTTPError:
+            continue
+        rows = res.json().get("results", []) if res.status_code == 200 else []
+        if not rows:
+            misses += 1
+            continue
+        pick = rng.choice(rows)["numero_dpe"]
+        if pick not in numbers:
+            numbers.append(pick)
+    print(f"--- tirage : {len(numbers)} DPE, {misses} strates vides sur {len(mine)}", flush=True)
     return numbers
 
 
@@ -112,6 +163,7 @@ async def audit_dwelling(number: str, store) -> None:
             case.check(False, "DPE introuvable par son numéro")
             return case.done()
         case.data["property"] = prop.model_dump(mode="json")
+        properties.append(case.data["property"])
         enriched = enrich_property(prop)
         sp = simulation_property(prop)
         label = prop.dpe_class_current.value if prop.dpe_class_current else None
@@ -145,6 +197,10 @@ async def audit_dwelling(number: str, store) -> None:
             case.check(sim["new_cep"] <= sim["initial_cep"] + 1, f"consommation après travaux {sim['new_cep']} > avant {sim['initial_cep']}")
             case.check(sim["annual_savings"] >= 0, f"économies négatives {sim['annual_savings']}")
             case.check(sim["annual_bill_after"] <= sim["annual_bill_before"] + 1, "facture après travaux plus élevée")
+        equipment_checks(case, sp, works, enriched.get("suggested_works") or [])
+        if works:
+            marginal_checks(case, sp, works, sim)
+        case.note(f"{'+'.join(works) or 'aucun'} → {sim['new_label']}, {sim['cost']:.0f} €, {sim['aid_pathway']}")
         # Valuation
         market = None
         if prop.insee_code:
@@ -170,6 +226,16 @@ async def audit_dwelling(number: str, store) -> None:
         content = build_report(meta, SimulationInput(property=sp, works=works))
         pdf = pdf_service.generate(content, fallback_analysis(facts_for_writer(content)))
         case.check(pdf[:4] == b"%PDF" and 3 <= pdf_pages(pdf) <= 9, f"rapport PDF : {pdf_pages(pdf)} pages")
+        report_checks(case, sp, content, (market["price_per_m2"] * prop.shab) if market else None)
+        text_checks(case, pdf_text(pdf), sp)
+        # RGE companies, one dwelling in eight (one call per work)
+        if works and prop.latitude is not None and zlib.crc32(number.encode()) % 8 == 0:
+            found = await rge.nearby_or_empty(prop.latitude, prop.longitude, works, prop.building_type)
+            if found:
+                for w, companies in found["works"].items():
+                    for c in companies:
+                        case.check(c["distance_km"] <= 50, f"artisan RGE à {c['distance_km']} km ({c['name']})")
+                case.note(f"RGE : {sum(len(c) for c in found['works'].values())} entreprises")
         # Building sheet of an apartment
         if (prop.building_type or "").lower().startswith("appartement"):
             sheet = await immeuble.sheet(number, store)
@@ -305,6 +371,10 @@ async def main():
     ap.add_argument("--dwellings", type=int, default=60)
     ap.add_argument("--buildings", type=int, default=40)
     ap.add_argument("--seed", type=int, default=int(date.today().strftime("%Y%m%d")))
+    ap.add_argument("--shard", type=int, default=0)
+    ap.add_argument("--shards", type=int, default=1)
+    ap.add_argument("--concurrency", type=int, default=4)
+    ap.add_argument("--no-map", action="store_true")
     args = ap.parse_args()
     rng = random.Random(args.seed)
 
@@ -313,15 +383,22 @@ async def main():
         from api.store import SupabaseStore
         store = SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"], timeout=30)
 
-    for name, lat, lon in [("Lille centre", 50.6365, 3.0635), ("Roubaix", 50.6900, 3.1817), ("Paris 11e", 48.8590, 2.3790),
-                           ("Marseille 1er", 43.2980, 5.3810), ("Lyon 3e", 45.7600, 4.8500)]:
-        await audit_area(name, lat, lon)
+    if not args.no_map:
+        for name, lat, lon in [("Lille centre", 50.6365, 3.0635), ("Roubaix", 50.6900, 3.1817), ("Paris 11e", 48.8590, 2.3790),
+                               ("Marseille 1er", 43.2980, 5.3810), ("Lyon 3e", 45.7600, 4.8500)]:
+            await audit_area(name, lat, lon)
 
     async with httpx.AsyncClient(timeout=20) as client:
-        numbers = await sample_dpe(client, args.dwellings, rng)
+        numbers = await sample_dpe(client, args.dwellings, random.Random(args.seed), args.shard, args.shards)
     print(f"--- {len(numbers)} logements", flush=True)
-    for number in numbers:
-        await audit_dwelling(number, store)
+    gate = asyncio.Semaphore(max(1, args.concurrency))
+
+    async def one(number: str):
+        async with gate:
+            await audit_dwelling(number, store)
+    await asyncio.gather(*(one(n) for n in numbers))
+    with open("properties.json", "w") as f:
+        json.dump(properties, f, ensure_ascii=False)
 
     if store:
         buildings = await sample_buildings(store, args.buildings, rng)

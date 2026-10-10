@@ -2,7 +2,9 @@ name: Consistency audit
 
 # Runs the app's code on real cases (dwellings, whole buildings, map areas)
 # and checks that every figure holds together. Read-only. On demand from the
-# Actions tab, or on a push touching the audit.
+# Actions tab, or on a push touching the audit. A large audit is split in
+# shards run side by side; with base_ref, the default works of every dwelling
+# are also compared with that branch (before/after of a change).
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +14,12 @@ on:
       buildings:
         description: "Number of buildings"
         default: "40"
+      shards:
+        description: "Parallel jobs"
+        default: "1"
+      base_ref:
+        description: "Branch to compare the default works with (empty = none)"
+        default: ""
       seed:
         description: "Random seed (empty = today)"
         default: ""
@@ -24,9 +32,25 @@ permissions:
   contents: read
 
 jobs:
-  audit:
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+    steps:
+      - id: plan
+        run: echo "shards=$(python3 -c "print(list(range(int('${{ inputs.shards || '1' }}'))))")" >> "$GITHUB_OUTPUT"
+
+  audit:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    env:
+      SHARDS: ${{ inputs.shards || '1' }}
+      DWELLINGS: ${{ inputs.dwellings || '60' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,10 +61,43 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python scripts/audit/audit.py --dwellings ${{ inputs.dwellings || '60' }} --buildings ${{ inputs.buildings || '40' }} ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }}
+        run: |
+          PER=$(( (DWELLINGS + SHARDS - 1) / SHARDS ))
+          if [ "${{ matrix.shard }}" = "0" ]; then EXTRA="--buildings ${{ inputs.buildings || '40' }}"; else EXTRA="--buildings 0 --no-map"; fi
+          python scripts/audit/audit.py --dwellings $PER --shard ${{ matrix.shard }} --shards $SHARDS $EXTRA ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }}
+      - uses: actions/checkout@v4
+        if: inputs.base_ref != ''
+        with:
+          ref: ${{ inputs.base_ref }}
+          path: base
+      - name: Before / after
+        if: inputs.base_ref != ''
+        run: |
+          mkdir -p base/scripts/audit && cp scripts/audit/selection.py base/scripts/audit/selection.py
+          (cd base && python scripts/audit/selection.py ../properties.json ../sel_base.json)
+          python scripts/audit/selection.py properties.json sel_new.json
+          python scripts/audit/compare.py sel_base.json sel_new.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: audit
-          path: audit.json
+          name: audit-${{ matrix.shard }}
+          path: |
+            audit.json
+            sel_base.json
+            sel_new.json
           retention-days: 14
+
+  summary:
+    needs: audit
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: audit-*
+          path: shards
+      - run: python scripts/audit/aggregate.py shards
