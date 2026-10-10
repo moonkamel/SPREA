@@ -93,6 +93,9 @@ class PropertySchema(BaseModel):
     # Per-element insulation quality and heat losses, when the DPE provides them
     insulation_quality: Dict[str, Optional[str]] = {}
     dpe_losses: Optional[Dict[str, Optional[float]]] = None
+    # Final consumption per usage computed by the DPE, kWh/year (heating, hot
+    # water, other = lighting + auxiliaries + cooling)
+    usage_consumption: Optional[Dict[str, Optional[float]]] = None
     walls: List[WallSchema] = []
     windows: List[WindowSchema] = []
     systems: List[SystemSchema] = []
@@ -265,12 +268,18 @@ class AdemeConnector:
             return None
 
         cost = self._safe_float(raw.get("cout_total_5_usages"), None)
+        usage = {k: self._safe_float(raw.get(f), None) for k, f in
+                 (("heating", "conso_chauffage_ef"), ("hot_water", "conso_ecs_ef"))}
+        other = [self._safe_float(raw.get(f), None) for f in ("conso_eclairage_ef", "conso_auxiliaires_ef", "conso_refroidissement_ef")]
+        usage["other"] = sum(v for v in other if v) if any(v is not None for v in other) else None
+        prop.usage_consumption = usage if usage["heating"] else None
         prop.details = {
             "floor": label("numero_etage_appartement"),
             "heating_system": label("type_generateur_chauffage_principal", "type_generateur_n1_installation_n1"),
             "heating_installation": label("type_installation_chauffage"),
             "hot_water_system": label("type_generateur_n1_ecs_n1", "type_generateur_ecs_principal"),
-            "hot_water_installation": label("type_installation_ecs"),
+            "hot_water_installation": label("type_installation_ecs_n1", "type_installation_ecs"),
+            "hot_water_energy": label("type_energie_principale_ecs", "type_energie_generateur_n1_ecs_n1"),
             "ventilation": label("type_ventilation"),
             "dpe_annual_cost": f"{round(cost)}" if cost else None,
         }

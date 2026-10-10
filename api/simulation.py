@@ -168,6 +168,10 @@ class SimulationProperty(BaseModel):
     hot_water_system: Optional[str] = Field(None, max_length=200)
     hot_water_installation: Optional[str] = Field(None, max_length=200)
     ventilation: Optional[str] = Field(None, max_length=200)
+    hot_water_energy: Optional[str] = Field(None, max_length=120)
+    # Final consumption per usage computed by the DPE (kWh/year): heating,
+    # hot_water, other. Used instead of the typical split when present
+    usage_consumption: Optional[Dict[str, Optional[float]]] = None
 
 
 class SimulationInput(BaseModel):
@@ -300,7 +304,7 @@ def equipment(prop: "SimulationProperty") -> Dict[str, Any]:
         "collective_heating": "collecti" in inst,
         "efficient_hot_water": any(k in hw for k in ("thermodynamique", "pac ", "pompe", "solaire")),
         "collective_hot_water": "collecti" in hw_inst or "collecti" in hw,
-        "hot_water_energy": _energy_of(hw) if hw else None,
+        "hot_water_energy": _energy_of(prop.hot_water_energy or "") or (_energy_of(hw) if hw else None),
         "mechanical_ventilation": any(k in vent for k in ("vmc", "simple flux", "double flux", "hygro", "mécanique", "mecanique")),
     }
 
@@ -338,18 +342,29 @@ def initial_final_consumption(prop: "SimulationProperty", energy: str) -> float:
     return prop.initial_cep / ENERGY_CONVERSION[energy]
 
 
+def usage_split(prop: "SimulationProperty", env: Envelope, energy: str) -> Tuple[float, float, float]:
+    """Final consumption (kWh/m2/year) of heating, hot water and the other
+    usages: the DPE's own figures when available, else the typical split of
+    the construction period."""
+    u = prop.usage_consumption or {}
+    if (u.get("heating") or 0) > 0 and prop.surface > 0:
+        return (u["heating"] / prop.surface, (u.get("hot_water") or 0) / prop.surface,
+                (u.get("other") or 0) / prop.surface)
+    final = initial_final_consumption(prop, energy)
+    heating, hot_water = final * env.heating_share, final * env.hot_water_share
+    return heating, hot_water, final - heating - hot_water
+
+
 def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works: List[str]) -> Dict:
     """Final consumption per usage (kWh/m2/year) and its energy, before and after the works."""
-    final = initial_final_consumption(prop, energy)
-    heating = final * env.heating_share
-    hot_water = final * env.hot_water_share
+    heating, hot_water, other = usage_split(prop, env, energy)
     # Hot water often has its own energy (electric tank with gas heating)
     hw_energy = equipment(prop)["hot_water_energy"] or energy
     before = {
         "heating": (heating, energy),
         "hot_water": (hot_water, hw_energy),
         # Lighting and auxiliaries are electric
-        "other": (final - heating - hot_water, "electricity"),
+        "other": (other, "electricity"),
     }
 
     # 1. Insulation reduces the heating need

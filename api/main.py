@@ -211,6 +211,8 @@ def simulation_property(prop: PropertySchema) -> SimulationProperty:
         hot_water_system=(prop.details or {}).get("hot_water_system"),
         hot_water_installation=(prop.details or {}).get("hot_water_installation"),
         ventilation=(prop.details or {}).get("ventilation"),
+        hot_water_energy=(prop.details or {}).get("hot_water_energy"),
+        usage_consumption=prop.usage_consumption,
     )
 
 def enrich_property(prop: PropertySchema) -> Dict[str, Any]:

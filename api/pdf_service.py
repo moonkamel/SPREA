@@ -622,7 +622,7 @@ class PDFReportGenerator:
                 rows.append(kv(label, text(ident[key])))
         rows.append(kv("Facture d'énergie estimée", f"{eur_r(sim['annual_bill_before'], 10)} / an"))
         if ident.get('dpe_annual_cost'):
-            rows.append(kv('Coût annuel indiqué par le DPE', f"{eur(float(ident['dpe_annual_cost']))} / an"))
+            rows.append(kv('Coût annuel indiqué par le DPE (prix 2021)', f"{eur(float(ident['dpe_annual_cost']))} / an"))
         out: List[Any] = [rows_table(rows, [CONTENT_W * 0.5, CONTENT_W * 0.5])]
 
         out += [Spacer(1, 14), KeepTogether([

@@ -116,3 +116,13 @@ def test_dpe_validity():
                                               (0, 0, "aucune aide")])
 def test_pathway_label_names_the_aids_counted(mpr, cee, expected):
     assert pathway_label({"aid_pathway": "geste" if mpr or cee else "none", "subsidies": mpr, "cee_est": cee}) == expected
+
+
+def test_bill_uses_the_dpe_consumption_per_usage():
+    """Live case (Dainville): the typical split put 75 % of the consumption on
+    heating and billed the electric tank as gas; the DPE gives each usage."""
+    dpe = prop(HOUSE, surface=93.7, initial_cep=360, ges_value=69, final_consumption=330,
+               hot_water_energy="Électricité", usage_consumption={"heating": 27860.2, "hot_water": 2097.9, "other": 991.6})
+    sim = simulate(SimulationInput(property=dpe))
+    # 27 860 kWh of gas at 0.11 € + 3 090 kWh of electricity at 0.20 €
+    assert sim["annual_bill_before"] == pytest.approx(27860.2 * 0.11 + (2097.9 + 991.6) * 0.20, rel=1e-6)

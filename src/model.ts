@@ -44,6 +44,7 @@ export interface PropertyData {
     lossShares?: Record<string, number>;
     insulationQuality?: Record<string, string | null>;
     dpeLosses?: Record<string, number | null> | null;
+    usageConsumption?: Record<string, number | null> | null;
     city?: string;
     // Equipment labels from the DPE (heating, hot water, ventilation...)
     details?: Record<string, string | null>;
@@ -164,6 +165,8 @@ export const propertyInput = (property: PropertyData) => ({
     hot_water_system: property.details?.hot_water_system ?? null,
     hot_water_installation: property.details?.hot_water_installation ?? null,
     ventilation: property.details?.ventilation ?? null,
+    hot_water_energy: property.details?.hot_water_energy ?? null,
+    usage_consumption: property.usageConsumption ?? null,
 });
 
 // Maps an API search result to the UI property model
@@ -185,6 +188,7 @@ export const toProperty = (r: any): PropertyData => ({
     lossShares: r.loss_shares,
     insulationQuality: r.insulation_quality,
     dpeLosses: r.dpe_losses,
+    usageConsumption: r.usage_consumption ?? null,
     suggestedWorks: r.suggested_works || [],
     preselectedWorks: r.preselected_works || [],
     city: r.city || undefined,
