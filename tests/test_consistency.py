@@ -255,3 +255,22 @@ def test_launch_audit_cases():
     sim = simulate(SimulationInput(property=propane, works=works))
     assert sim["annual_bill_after"] <= sim["annual_bill_before"] + 1
     assert normalize_energy("Charbon", "Poêle fioul ou GPL ou charbon") == "coal"
+
+
+def test_studio_rue_meurein():
+    """Live case (54 rue Meurein, 1er étage arrière, Lille): 16.2 m² G whose
+    target (D) is out of reach; walls alone reach F, windows and radiators
+    tripled the cost for 60 € a year. The DPE gave floor 0, the address says 1."""
+    from api.report_content import floor_of
+    p = prop(FLAT, surface=16.2, initial_cep=523, ges_value=20, official_label="G", dpe_date="2026-06-03",
+             construction_year=None, construction_period="avant 1948", heating_energy="Électricité",
+             heating_generator="Radiateur électrique NFC, NF** et NF***", hot_water_energy="Électricité",
+             ventilation="VMC SF Auto réglable de 1982 à 2000",
+             insulation_quality={"walls": "insuffisante", "roof": "insuffisante", "floor": "très bonne", "windows": "moyenne"},
+             dpe_losses={k: v * 0.5 for k, v in {"air": 45, "walls": 30, "roof": 10, "windows": 8, "bridges": 8, "floor": 0}.items()},
+             usage_consumption={"heating": 3100, "hot_water": 1200, "other": 150})
+    sel = suggest_works(p, "G")["preselected"]
+    assert sel == ["iti"]
+    assert simulate(SimulationInput(property=p, works=sel))["new_label"] == "F"
+    assert floor_of("54 rue Meurein 1er étage arrière", "0") == "1"
+    assert floor_of("3 rue X, RDC", "2") == "0" and floor_of("3 rue X", "2") == "2"

@@ -26,6 +26,12 @@ on:
       numbers:
         description: "Only these DPE numbers, comma separated, with their data printed"
         default: ""
+      review:
+        description: "Expert review by Claude of this many real reports instead of the audit (0 = audit)"
+        default: "0"
+      budget:
+        description: "Expert review: dollars of Claude spend, all shards together"
+        default: "3"
   push:
     paths:
       - "scripts/audit/**"
@@ -60,7 +66,18 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: Expert review
+        if: inputs.review && inputs.review != '0'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          PER=$(( (${{ inputs.review }} + SHARDS - 1) / SHARDS ))
+          BUDGET=$(python3 -c "print(float('${{ inputs.budget || '3' }}') / $SHARDS)")
+          python scripts/audit/review_pdfs.py --count $PER --budget $BUDGET --shard ${{ matrix.shard }} --shards $SHARDS ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }} ${{ inputs.numbers && format('--numbers {0}', inputs.numbers) || '' }}
       - name: Audit
+        if: ${{ !inputs.review || inputs.review == '0' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -88,6 +105,7 @@ jobs:
             audit.json
             sel_base.json
             sel_new.json
+            reviews.json
           retention-days: 14
 
   summary:
@@ -104,3 +122,4 @@ jobs:
           pattern: audit-*
           path: shards
       - run: python scripts/audit/aggregate.py shards
+      - run: python scripts/audit/review_aggregate.py shards

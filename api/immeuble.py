@@ -234,6 +234,9 @@ def collective_works(source: Dict, shab: float, levels: int, dwellings: int,
     if walls in poor and not (recent and label not in ("E", "F", "G")):
         area = shab * FACADE_PER_SHAB
         add("facade", f"Isolation des murs {walls}", area * COSTS["facade"][0], area * COSTS["facade"][1])
+        # Old façades: often refused from outside in protected areas (ABF)
+        if built_until is not None and built_until < 1949:
+            works[-1]["name"] = "Isolation des façades (par l'extérieur si l'Architecte des Bâtiments de France l'accepte)"
     terrace = (source.get("qualite_isolation_plancher_haut_toit_terrase") or "").lower()
     attic = (source.get("qualite_isolation_plancher_haut_comble_perdu") or "").lower()
     other_roof = (source.get("qualite_isolation_plancher_haut_comble_amenage") or "").lower()

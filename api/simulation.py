@@ -929,6 +929,18 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
                 preselected[:] = sorted(best_combo, key=lambda w: (w not in suggested, w))
                 suggested.update(preselected)
                 current = score(preselected)
+            # Target out of reach: the cheapest part of the selection that keeps
+            # its label (16 m² studio: walls alone reach F for about 1 100 €,
+            # windows and radiators added 3 000 € for 90 € a year)
+            if current[0] > target and len(preselected) > 1:
+                full = rest(preselected)
+                subsets = [list(c) for n in range(1, len(preselected))
+                           for c in itertools.combinations(preselected, n) if score(list(c))[0] <= current[0]]
+                if subsets:
+                    cheapest = min(subsets, key=rest)
+                    if rest(cheapest) < full - 1:
+                        preselected[:] = cheapest
+                        current = score(preselected)
 
         # An envelope work worth a few percent of the losses, that the DPE does
         # not call poor and that changes neither the label nor the aid: left out

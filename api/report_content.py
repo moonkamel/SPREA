@@ -275,6 +275,18 @@ def wall_alternative_with_caution(sim_input: SimulationInput, sim: Dict[str, Any
     return alt
 
 
+def floor_of(address: Optional[str], dpe_floor: Optional[str]) -> Optional[str]:
+    """Floor of a flat: the one written in its address wins over the DPE field
+    ("54 rue Meurein 1er étage arrière" with a DPE giving 0)."""
+    text = (address or "").lower()
+    if re.search(r"\brez[- ]de[- ]chauss|\brdc\b", text):
+        return "0"
+    m = re.search(r"\b(\d{1,2})\s*(?:er|ere|ère|e|eme|ème)?\s*étage", text)
+    if m:
+        return m.group(1)
+    return dpe_floor
+
+
 def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "iti":
         return f"Surface habitable réduite d'environ {fr_dec(ctx['iti_surface_loss'])} m²."
@@ -506,7 +518,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "dpe_date": date_fr(dpe_date),
             # The DPE gives a floor for houses too (0): meaningless, and it
             # led the text to call any house "de plain-pied"
-            "floor": None if house else details.get("floor"),
+            "floor": None if house else floor_of(meta.get("address"), details.get("floor")),
             "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "").capitalize(), details.get("heating_system"),
                                                 details.get("heating_installation")] if x) or None,
             "hot_water": details.get("hot_water_system"),

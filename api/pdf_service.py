@@ -297,6 +297,12 @@ def eur_r(value: Optional[float], step: int = 100) -> str:
     return eur(round((value or 0) / step) * step)
 
 
+def eur_aid(value: Optional[float]) -> str:
+    """Aids to the ten euros below 1 000 €, so that the total matches the
+    amounts per work shown under it."""
+    return eur_r(value, 10 if abs(value or 0) < 1000 else 100)
+
+
 def eur_range(low: Optional[float], high: Optional[float]) -> str:
     if round((low or 0) / 100) == round((high or 0) / 100):
         return eur_r(low)
@@ -574,7 +580,7 @@ class PDFReportGenerator:
         kpis = Table([[
             [*kpi_cell('Coût des travaux', f"≈{NBSP}{eur_r(sim['cost'])}"),
              Paragraph(f"entre {eur_r(sim['cost_low'])} et {eur_r(sim['cost_high'])}", small)],
-            kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_r(aids)}</font>"),
+            kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_aid(aids)}</font>"),
             [*kpi_cell('Reste à charge', f"≈{NBSP}{eur_r(sim['rest_to_pay'])}", big=True),
              Paragraph(f"entre {eur_r(sim['rest_to_pay_low'])} et {eur_r(sim['rest_to_pay_high'])}", small)],
             kpi_cell("Économies d'énergie", f"<font color='#3E8E63'>{eur_r(sim['annual_savings'], 10)}</font>"
@@ -590,8 +596,11 @@ class PDFReportGenerator:
         ]))
 
         roi_text = roi_label(sim['roi_years'])
+        # Below 250 €: no measurable gap between the two classes, not "+0 €"
+        measurable = round((sim['latent_gain'] or 0) / 500) > 0
         green = (f"+{NBSP}{eur_r(sim['latent_gain'], 500)} <font size='7.5' color='#8A93A3'>"
-                 f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if sim['latent_gain'] else '–'
+                 f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if measurable else \
+            ("Pas d'écart de prix mesuré" if sim['new_label'] != sim['current_label'] else '–')
         after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
         secondary = rows_table([
             kv('Retour sur investissement', roi_text),
@@ -753,9 +762,9 @@ class PDFReportGenerator:
             rows.append(kv("MaPrimeRénov' rénovation d'ampleur", f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['subsidies'])}</font>"))
         else:
             if sim['subsidies']:
-                rows.append(kv("MaPrimeRénov' par geste", f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['subsidies'])}</font>"))
+                rows.append(kv("MaPrimeRénov' par geste", f"<font color='#3E8E63'>−{NBSP}{eur_aid(sim['subsidies'])}</font>"))
             if sim['cee_est']:
-                rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur_r(sim['cee_est'])}</font>"))
+                rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur_aid(sim['cee_est'])}</font>"))
             if not sim['subsidies'] and not sim['cee_est']:
                 rows.append(kv('Aides', '–'))
         rows.append(kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_range(sim['rest_to_pay_low'], sim['rest_to_pay_high'])}</b></font>"))
@@ -819,12 +828,14 @@ class PDFReportGenerator:
     def _value(self, report: Dict[str, Any]) -> List[Any]:
         sim = report['sim']
         rows = [kv('Retour sur investissement', roi_label(sim['roi_years']))]
-        if sim['latent_gain']:
+        if round((sim['latent_gain'] or 0) / 500) > 0:
             rows += [
                 kv('Prix de marché local', f"{eur(report['price_per_m2'])}/m²" + (" <font size='7.5' color='#8A93A3'>(par défaut)</font>" if report['price_is_default'] else '')),
                 kv('Valeur verte estimée', f"<b>+{NBSP}{eur_r(sim['latent_gain'], 500)}</b>"),
                 kv('Fourchette', f"{eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)}"),
             ]
+        elif sim['new_label'] != sim['current_label']:
+            rows.append(kv('Valeur verte estimée', "Pas d'écart de prix mesuré entre ces classes"))
         else:
             rows.append(kv('Valeur verte estimée', '–'))
         notes = []
