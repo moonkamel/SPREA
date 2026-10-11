@@ -59,6 +59,7 @@ ENERGIES = ["Fioul domestique", "Bois – Bûches", "Bois – Granulés (pellets
             "GPL", "Électricité", "Gaz naturel", "Propane"]
 
 results: List[Dict[str, Any]] = []
+VERBOSE = False  # data of every case printed (--numbers)
 properties: List[Dict[str, Any]] = []  # DPE read, for the before/after comparison of the default selection
 
 
@@ -81,7 +82,7 @@ class Case:
         print(f"{status} [{self.kind}] {self.name}" + (f" | {' ; '.join(self.notes)}" if self.notes else ""), flush=True)
         for f in self.failures:
             print(f"     ✗ {f}", flush=True)
-        if self.failures and self.data:
+        if (self.failures or VERBOSE) and self.data:
             # What it takes to reproduce the case without the network
             print("     DATA " + json.dumps(self.data, ensure_ascii=False, default=str), flush=True)
         results.append({"kind": self.kind, "name": self.name, "failures": self.failures, "notes": self.notes})
@@ -171,6 +172,8 @@ async def audit_dwelling(number: str, store) -> None:
         case.check(prop.shab and 5 <= prop.shab <= 2000, f"surface improbable : {prop.shab}")
         works = enriched.get("preselected_works") or []
         sim_in = SimulationInput(property=sp, works=works, suggested_works=enriched.get("suggested_works") or [])
+        case.data["simulation_property"] = sp.model_dump(mode="json")
+        case.data["works"] = works
         sim = simulate(sim_in)
         case.check(sim["current_label"] == label, f"classe recalculée {sim['current_label']} ≠ classe officielle {label}")
         case.check(idx(sim["new_label"]) <= idx(sim["current_label"]), f"classe après travaux {sim['new_label']} pire que {sim['current_label']}")
@@ -377,6 +380,7 @@ async def main():
     ap.add_argument("--shards", type=int, default=1)
     ap.add_argument("--concurrency", type=int, default=4)
     ap.add_argument("--no-map", action="store_true")
+    ap.add_argument("--numbers", default="", help="DPE numbers to check (comma separated), with their data printed")
     args = ap.parse_args()
     rng = random.Random(args.seed)
 
@@ -385,13 +389,18 @@ async def main():
         from api.store import SupabaseStore
         store = SupabaseStore(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"], timeout=30)
 
-    if not args.no_map:
+    if not args.no_map and not args.numbers:
         for name, lat, lon in [("Lille centre", 50.6365, 3.0635), ("Roubaix", 50.6900, 3.1817), ("Paris 11e", 48.8590, 2.3790),
                                ("Marseille 1er", 43.2980, 5.3810), ("Lyon 3e", 45.7600, 4.8500)]:
             await audit_area(name, lat, lon)
 
-    async with httpx.AsyncClient(timeout=20) as client:
-        numbers = await sample_dpe(client, args.dwellings, random.Random(args.seed), args.shard, args.shards)
+    global VERBOSE
+    if args.numbers:
+        numbers, VERBOSE = [n.strip() for n in args.numbers.split(",") if n.strip()], True
+        args.buildings = 0
+    else:
+        async with httpx.AsyncClient(timeout=20) as client:
+            numbers = await sample_dpe(client, args.dwellings, random.Random(args.seed), args.shard, args.shards)
     print(f"--- {len(numbers)} logements", flush=True)
     gate = asyncio.Semaphore(max(1, args.concurrency))
 
