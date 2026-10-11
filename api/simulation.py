@@ -393,6 +393,31 @@ def usage_split(prop: "SimulationProperty", env: Envelope, energy: str) -> Tuple
     return heating, hot_water, final - heating - hot_water
 
 
+# Equivalent full-load hours of a heat pump in the north of France
+FULL_LOAD_HOURS = 2000
+# Air/water heat pump installed, before regional and index coefficients: a
+# fixed part (hydraulics, commissioning, removal of the boiler) and a part
+# that grows with the power; 8 kW gives the catalogue price
+HEAT_PUMP_COST_FIXED = 6500
+HEAT_PUMP_COST_PER_KW = 800
+# Above 12 kW the unit grows, not the installation: each kW costs less
+HEAT_PUMP_COST_PER_KW_ABOVE_12 = 500
+# Double-service heat pump: the hot water tank and its connection
+HEAT_PUMP_HOT_WATER_EXTRA = 1500
+
+
+def heat_pump_kw(prop: "SimulationProperty", env: "Envelope", energy: str, works: List[str]) -> Optional[int]:
+    """Rough heat pump power: the heat need after insulation spread over the
+    equivalent full-load hours of a northern French winter."""
+    if "pac_air_eau" not in works:
+        return None
+    heating, _, _ = usage_split(prop, env, energy)
+    insulation = [w for w in works if w in ("iti", "ite", "roof", "floor_ceiling", "windows", "vmc")]
+    need = heating * prop.surface * CURRENT_HEATING_EFFICIENCY.get(energy, 0.85) * (1 - env.heating_reduction(insulation))
+    kw = round(need / FULL_LOAD_HOURS)
+    return max(3, kw) if kw else None
+
+
 def boiler_makes_hot_water(prop: "SimulationProperty", energy: str, hw_energy: str) -> bool:
     """The fuel boiler heats the water too: replaced by a heat pump, it leaves
     no hot water production unless the heat pump takes it over."""
@@ -502,6 +527,16 @@ def simulate(data: SimulationInput) -> Dict:
             item *= ROOF_COST_FACTOR.get(prop.roof_kind or "", 1.0)
         if w["id"] == "iti" and env.walls_uninsulated:
             item += WALL_PREPARATION_COST * quantity
+        if w["id"] == "pac_air_eau":
+            # Priced on its power (4 kW for a small insulated house, 20 kW for
+            # a large draughty one), and its hot water tank in double service
+            kw = heat_pump_kw(prop, build_envelope(prop), energy, work_ids) or 8
+            kw = min(max(kw, 4), 22)
+            item = (HEAT_PUMP_COST_FIXED + HEAT_PUMP_COST_PER_KW * min(kw, 12)
+                    + HEAT_PUMP_COST_PER_KW_ABOVE_12 * max(kw - 12, 0))
+            hw_energy = equipment(prop)["hot_water_energy"] or energy
+            if "ecs" not in work_ids and boiler_makes_hot_water(prop, energy, hw_energy):
+                item += HEAT_PUMP_HOT_WATER_EXTRA
         if w["zone"]:
             item *= zone
         item *= index_ratio * coeff_access * coeff_urban

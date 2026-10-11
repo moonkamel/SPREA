@@ -10,14 +10,14 @@ try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
     from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                                FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
+                                FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
     from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                            FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
+                            FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
 
@@ -243,9 +243,6 @@ def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-# Equivalent full-load hours of a heat pump in the north of France
-FULL_LOAD_HOURS = 2000
-
 QUALITY_NAMES = {"walls": "Isolation des murs", "roof": "Isolation de la toiture", "floor": "Isolation du plancher bas",
                  "windows": "Fenêtres"}
 
@@ -255,18 +252,6 @@ def insulation_state(prop) -> List[Dict[str, str]]:
     q = prop.insulation_quality or {}
     return [{"label": QUALITY_NAMES[k], "value": f"{q[k][:1].upper()}{q[k][1:]} (selon le DPE)"}
             for k in ("walls", "roof", "floor", "windows") if q.get(k)]
-
-
-def heat_pump_kw(prop, env, energy: str, works: List[str]) -> Optional[int]:
-    """Rough heat pump power: the heat need after insulation spread over the
-    equivalent full-load hours of a northern French winter."""
-    if "pac_air_eau" not in works:
-        return None
-    heating, _, _ = usage_split(prop, env, energy)
-    insulation = [w for w in works if w in ("iti", "ite", "roof", "floor_ceiling", "windows", "vmc")]
-    need = heating * prop.surface * CURRENT_HEATING_EFFICIENCY.get(energy, 0.85) * (1 - env.heating_reduction(insulation))
-    kw = round(need / FULL_LOAD_HOURS)
-    return max(3, kw) if kw else None
 
 
 OLD_FACADE = ("façade ancienne souvent refusée en secteur protégé (accord de l'Architecte des Bâtiments de France) : "

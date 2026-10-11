@@ -83,3 +83,14 @@ def test_one_dwelling_or_absurd_surface_gives_no_quote_part():
     many = build_sheet(APT, [flat(1, "E", 1), flat(2, "E", 2)], {**one, "lots_housing": 63}, "position", TODAY)
     dims = many["dimensions"]
     assert dims["surface"] is None or dims["surface"] / dims["dwellings"] >= 12
+
+
+def test_heat_pump_priced_on_its_power():
+    def pac_cost(**kw):
+        sim = simulate(SimulationInput(property=prop(HOUSE, heating_generator="Chaudière gaz standard 1991-2000", **kw),
+                                       works=["pac_air_eau"]))
+        return next(d["cost"] for d in sim["detailed_costs"] if d["id"] == "pac_air_eau")
+    small, large = pac_cost(surface=50), pac_cost(surface=200)
+    assert large > small * 1.3
+    # Still within the usual market range
+    assert 8000 < small and large < 32000
