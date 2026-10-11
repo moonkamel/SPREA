@@ -173,3 +173,14 @@ def test_studio_rue_de_dinan():
     found = [facts] + [v for v in facts.values() if isinstance(v, dict)]
     found = [v for v in found if "valeur_verte_fourchette_eur" in v]
     assert found and found[0]["valeur_verte_fourchette_eur"] is None
+
+
+
+def test_dpe_ground_floor_with_roof_losses_not_printed():
+    """235 rue de la République, Dunkerque: DPE floor 0, but 44 % of the losses
+    through the roof (roof insulation in the programme): not "rez-de-chaussée"."""
+    from api.report_content import shown_floor
+    losses = {"roof": 44, "walls": 26, "air": 18, "windows": 5, "floor": 4, "bridges": 3}
+    assert shown_floor("235 rue de la république", "0", losses) is None
+    assert shown_floor("12 rue X", "0", {"walls": 50, "floor": 20, "air": 30, "roof": 0}) == "0"
+    assert shown_floor("12 rue X 2e étage", "0", losses) == "2"
