@@ -94,3 +94,22 @@ def test_heat_pump_priced_on_its_power():
     assert large > small * 1.3
     # Still within the usual market range
     assert 8000 < small and large < 32000
+
+
+def test_second_review_round():
+    """Second batch of 200 reports: good walls not redone, no label change
+    without works, sums that hold once rounded, green range said when too wide."""
+    good_windows = prop(HOUSE, insulation_quality={"windows": "très bonne", "walls": "insuffisante"})
+    assert "windows" not in available_works(good_windows)["works"]
+    official_b = prop(HOUSE, official_label="B", initial_cep=70, ges_value=2, heating_energy="Électricité")
+    sim = simulate(SimulationInput(property=official_b, works=[]))
+    assert sim["new_label"] == sim["current_label"]
+    from api.pdf_service import figures, green_range
+    from api.report_content import build_report
+    from tests.test_pdf import META, PROP
+    content = build_report(META, SimulationInput(property=PROP, works=["roof", "iti", "pac_air_eau"]))
+    f = figures(content)
+    assert f["rest"] == f["cost"] - f["aids"] and f["rest_low"] == f["cost_low"] - f["aids_low"]
+    assert f["cost_low"] == sum(round(w["cost_low"] / 100) * 100 for w in content["works"]) + \
+        sum(round(x["cost"] / 10) * 10 for x in content["extra_costs"])
+    assert "fourchette large" in green_range({"latent_gain": 20000, "latent_gain_low": 0, "latent_gain_high": 134000})

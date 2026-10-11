@@ -211,7 +211,9 @@ def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "roof":
         kind = ctx.get("roof_kind")
         if kind == "combles perdus":
-            return "Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec pare-vapeur côté chauffé."
+            return ("Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec "
+                    + ("frein-vapeur hygrovariable côté chauffé (pas de pare-vapeur étanche sur un bâti ancien)."
+                       if ctx.get("pre_1948") else "pare-vapeur côté chauffé."))
         if kind == "combles aménagés":
             return ("Combles aménagés : isolation des rampants, 20 à 24 cm en deux couches croisées entre et sous chevrons "
                     "(laine minérale ou fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.")
@@ -236,7 +238,9 @@ def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
         return ("Pompe à chaleur air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse "
                 f"température) ou ≥ 111 % (moyenne et haute) ; {sizing}.{service}")
     if work_id == "ecs":
-        return "Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non chauffé."
+        surface = ctx.get("surface") or 80
+        volume = "100 à 150 L" if surface < 40 else "150 à 200 L" if surface < 80 else "200 à 270 L"
+        return f"Chauffe-eau thermodynamique de {volume}, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non chauffé."
     if work_id == "heating":
         return ("Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et détection d'ouverture de fenêtre, "
                 "label NF Électricité Performance 3 étoiles.")
@@ -271,7 +275,7 @@ def floor_of(address: Optional[str], dpe_floor: Optional[str]) -> Optional[str]:
     text = (address or "").lower()
     if re.search(r"\brez[- ]de[- ]chauss|\brdc\b", text):
         return "0"
-    m = re.search(r"\b(\d{1,2})\s*(?:er|ere|ère|e|eme|ème)?\s*étage", text)
+    m = re.search(r"\b(\d{1,2})\s*(?:er|ere|ère|e|eme|ème|°)?\s*[ée]tage", text)
     if m:
         return m.group(1)
     return dpe_floor
@@ -294,6 +298,10 @@ def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "windows":
         return "Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation."
     if work_id == "vmc":
+        if ctx.get("natural_draft_gas"):
+            return ("Appareil au gaz raccordé à un conduit de fumée (tirage naturel) : une VMC classique peut faire refouler les "
+                    "fumées (monoxyde de carbone). Prévoir une VMC gaz avec dispositif de sécurité collective, ou le "
+                    "remplacement de l'appareil par un modèle étanche ; vérification par un professionnel qualifié.")
         return "Le passage des gaines se prévoit avant les finitions de l'isolation."
     if work_id == "heating" and ctx["energy"] in FOSSIL_ENERGIES:
         return (f"La facture de chauffage augmente : le kWh d'électricité coûte plus cher que le {ENERGY_NAMES[ctx['energy']]}. "
@@ -470,6 +478,11 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
         "heat_pump_kw": heat_pump_kw(prop, env, energy, list(sim_input.works)),
+        "surface": prop.surface,
+        # Gas boiler or water heater on a flue: a fan may draw the fumes back
+        "natural_draft_gas": any(k in f"{prop.heating_generator or ''} {prop.hot_water_system or ''}".lower()
+                                 for k in ("classique", "instantané", "instantane", "standard", "atmosph"))
+                             and energy in ("gas", "lpg"),
         "insulated": bool(set(sim_input.works) & {"iti", "ite", "roof", "floor_ceiling", "windows"}),
         "double_service": "ecs" not in sim_input.works and boiler_makes_hot_water(
             prop, energy, equipment(prop)["hot_water_energy"] or energy),

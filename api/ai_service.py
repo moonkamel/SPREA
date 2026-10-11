@@ -160,7 +160,7 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
                   f"{'supérieur' if gap > 0 else 'inférieur'} d'environ {eur(abs(gap))}"
                   + (f" ; {alt['contrainte']}" if alt.get("contrainte") else "") + ". ")
     if not works:
-        strat = "Aucun travaux n'est retenu dans ce scénario : choisissez des travaux pour obtenir une estimation."
+        strat = "Ce rapport ne retient pas de travaux pour ce logement."
     elif after["gain_classes"]:
         strat += (f"Ensemble, ces travaux amènent le logement en classe {after['classe_dpe']} "
                   f"({after['consommation_kwh_ep_m2_an']} kWh/m²/an) et la facture à environ {eur(after['facture_estimee_eur_an'])} par an.")
@@ -211,7 +211,7 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
         vigilance.append("Le DPE est valable dix ans : il reste la référence pour louer ou vendre ce logement.")
 
     if not works:
-        verdict = f"Logement classé {now['classe_dpe']}, facture estimée à {eur(now['facture_estimee_eur_an'])} par an. Aucun travaux retenu."
+        verdict = f"Logement classé {now['classe_dpe']}, facture estimée à {eur(now['facture_estimee_eur_an'])} par an. Pas de travaux retenus."
     elif after["gain_classes"]:
         verdict = (f"Passer de {now['classe_dpe']} à {after['classe_dpe']} coûte entre {eur(rest_low)} et {eur(rest_high)} "
                    f"après aides, pour environ {eur(after['economies_eur_an'])} d'économie par an.")
