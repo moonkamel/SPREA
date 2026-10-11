@@ -1,0 +1,243 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+28, rue Justin Longue
+65110 Cauterets
+Maison · 188,4 m² · 1975-1977
+DPE du 30/09/2026 · n° 2665E2492922I
+Synthèse
++3 classes
+G → D
+535 → 247 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 78 200 € − 18 000 € ≈ 60 200 € 6 970 € / an
+entre 65 600 € et 100 600 €
+entre 47 600 € et 82 600 €
+Retour sur investissement environ 9 ans
+Valeur verte du bien + 106 500 € (52 000 € à 202 500 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 47 600 € et 82 600 € après aides, pour environ 6 970 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cette maison de 188,4 m², construite entre 1975 et 1977, est classée G, avec 535 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (26 %), puis renouvellement d'air (23 %). La facture d'énergie est
+estimée à 12 950 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'extérieur), fenêtres double
+vitrage, ventilation mécanique (VMC) et chauffe-eau thermodynamique, dans l'ordre du tableau des
+travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins
+réduits. Pris isolément, le geste le plus efficace est : isolation des murs (par l'extérieur), avec environ 3 480
+€ d'économie par an. Préconisations : Combles aménagés : isolation des rampants, 20 à 24 cm en deux
+couches croisées entre et sous chevrons (laine minérale ou fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W
+28, rue Justin Longue, 65110 Cauterets Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+exigée pour les aides. Isolant de 14 à 16 cm (polystyrène graphité ou fibre de bois) sous enduit ou bardage
+ventilé, R ≥ 3,7 m².K/W exigée pour les aides ; retours d'isolant en tableaux de fenêtres et en
+soubassement. Autre solution pour les murs : isolation des murs (par l'intérieur), pour un reste à charge
+inférieur d'environ 15 800 €. Ensemble, ces travaux amènent le logement en classe D (247 kWh/m²/an) et
+la facture à environ 5 980 € par an.
+Financement
+Le coût des travaux se situe entre 65 600 € et 100 600 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 47 600 € et 82 600 €. Un éco-prêt à taux zéro de 50 000 € sur 20 ans
+représente environ 208 € par mois, à comparer à 581 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 6 970 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 9 ans environ.
+Points de vigilance
+– Déclaration préalable de travaux en mairie (aspect des façades, règles du PLU) ; prévoir les appuis de
+fenêtres, descentes d'eau et débords de toit.
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 535 kWh/m²/an
+Émissions de gaz à effet de serre 20 kg CO₂/m²/an
+Chauffage Électricité · Autres émetteurs à effet joule
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation naturelle par conduit
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 12 950 € / an
+Coût annuel indiqué par le DPE (prix 2021) 9 139 € / an
+28, rue Justin Longue, 65110 Cauterets Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 26 %
+Renouvellement d'air 23 %
+Fenêtres 21 %
+Ponts thermiques et portes 15 %
+Toiture ou plafond 11 %
+Plancher bas 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 12 290 € 5 700 €
+Eau chaude 580 € 210 €
+Autres usages (éclairage, auxiliaires) 70 € 70 €
+Total par an 12 950 € 5 980 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 30/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+28, rue Justin Longue, 65110 Cauterets Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 12 400 € à 18 200 €
+La toiture représente 11 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 41 kWh/m²/an · − 1 000 €/an sur la facture
+Préconisation : Combles aménagés : isolation des rampants, 20 à 24 cm en deux
+couches croisées entre et sous chevrons (laine minérale ou fibre de bois) avec
+frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.
+2. Isolation des murs (par l'extérieur) RECOMMANDÉ 35 500 € à 54 300 €
+Les murs représentent 26 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante », et les ponts thermiques 15 % : l'isolation par l'extérieur traite les
+deux.
+Effet seul : − 144 kWh/m²/an · − 3 480 €/an sur la facture
+Préconisation : Isolant de 14 à 16 cm (polystyrène graphité ou fibre de bois) sous
+enduit ou bardage ventilé, R ≥ 3,7 m².K/W exigée pour les aides ; retours d'isolant en
+tableaux de fenêtres et en soubassement.
+À prévoir : Déclaration préalable de travaux en mairie (aspect des façades, règles du
+PLU) ; prévoir les appuis de fenêtres, descentes d'eau et débords de toit.
+3. Fenêtres double vitrage RECOMMANDÉ 13 500 € à 21 900 €
+Les fenêtres représentent 21 % des pertes de chaleur (environ 19 fenêtres) ; le
+DPE juge leur isolation « insuffisante ».
+Effet seul : − 58 kWh/m²/an · − 1 410 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+4. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 23 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 29 kWh/m²/an · − 700 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+5. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 4 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 15 kWh/m²/an · − 370 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+28, rue Justin Longue, 65110 Cauterets Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Travaux Fourchette TTC
+Total des travaux TTC 65 600 € à 100 600 €
+Durée indicative du chantier : 23 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse.
+Fourchettes fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Autre solution pour les murs : isolation des murs (par l'intérieur)
+Moins cher et sans formalité en mairie. En contrepartie : perte de surface habitable, ponts thermiques en partie
+conservés, pièces à libérer pendant le chantier. Résultat : classe E, facture d'environ 7 210 € par an, reste à
+charge inférieur d'environ 15 800 €.
+Isolation des murs (par l'intérieur) 18 300 € à 26 900 €
+Coût total du programme 48 400 € à 73 200 €
+Aides estimées − 13 500 €
+Reste à charge 34 900 € à 59 700 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 12 950 € → 5 980 € par an.
+28, rue Justin Longue, 65110 Cauterets Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 65 600 € à 100 600 €
+MaPrimeRénov' rénovation d'ampleur − 18 000 €
+Reste à charge 47 600 € à 82 600 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 50 000 €
+Durée 20 ans
+Mensualité 208 € / mois
+Économie sur la facture − 581 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 9 ans
+Prix de marché local 3 611 €/m²
+Valeur verte estimée + 106 500 €
+Fourchette 52 000 € à 202 500 €
+Prix local : prix médian DVF de 40 ventes de maisons à Cauterets (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 28 % mesuré entre les classes G et D sur les ventes du département (2 442 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+28, rue Justin Longue, 65110 Cauterets Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 50 000 € sans intérêts.
+6 Travaux Environ 23 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 28 % mesuré entre les classes G et D sur les ventes du département (2 442
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (3 611 €/m², prix médian DVF de 40 ventes de maisons à Cauterets (2022-2025, actualisées au
+dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité
+de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+28, rue Justin Longue, 65110 Cauterets Page 7 / 7

@@ -1,0 +1,194 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+8 impasse Jacques Pelletier du Mans
+56880 Ploeren
+Immeuble · 203,8 m² · 2006-2012
+DPE du 02/10/2026 · n° 2656E2525729U
+Synthèse
++1 classe
+D → C
+215 → 170 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 3 800 € − 100 € ≈ 3 700 € 970 € / an
+entre 3 200 € et 4 600 €
+entre 3 100 € et 4 500 €
+Retour sur investissement environ 4 ans
+Valeur verte du bien + 22 000 € (10 000 € à 42 500 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 3 100 € et 4 500 € après aides, pour environ 970 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet immeuble de 203,8 m², construit entre 2006 et 2012, est classé D, avec 215 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (34 %), puis ponts thermiques et portes (31 %). La
+facture d'énergie est estimée à 4 610 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne chauffe-eau thermodynamique, dans l'ordre du tableau des travaux :
+l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris
+isolément, le geste le plus efficace est : chauffe-eau thermodynamique, avec environ 970 € d'économie
+par an. Préconisations : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur
+air extérieur ou air d'un local non chauffé. Ensemble, ces travaux amènent le logement en classe C (170
+kWh/m²/an) et la facture à environ 3 640 € par an.
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financement
+Le coût des travaux se situe entre 3 200 € et 4 600 €. Avec primes CEE, le reste à charge est estimé entre
+3 100 € et 4 500 €. Un éco-prêt à taux zéro de 3 700 € sur 15 ans représente environ 21 € par mois, à
+comparer à 81 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 970 € d'économie par an. Le reste à charge
+est remboursé par les économies en 4 ans environ.
+Points de vigilance
+– Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie en façade demande
+l'accord de la copropriété.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / B)
+Consommation d'énergie primaire 215 kWh/m²/an
+Émissions de gaz à effet de serre 8 kg CO₂/m²/an
+Électricité · Convecteur électrique NFC, NF** et NF***
+Chauffage
+· individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable de 2001 à 2012
+Isolation des murs Bonne (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 4 610 € / an
+Coût annuel indiqué par le DPE (prix 2021) 5 019 € / an
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 34 %
+Ponts thermiques et portes 31 %
+Murs 17 %
+Fenêtres 7 %
+Plancher bas 6 %
+Toiture ou plafond 6 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 770 € 2 770 €
+Eau chaude 1 510 € 540 €
+Autres usages (éclairage, auxiliaires) 320 € 320 €
+Total par an 4 610 € 3 640 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire à partir du 01/01/2034
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 33 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 45 kWh/m²/an · − 970 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie
+en façade demande l'accord de la copropriété.
+Total des travaux TTC 3 200 € à 4 600 €
+Durée indicative du chantier : 1 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 4 610 € → 3 640 € par an.
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 3 200 € à 4 600 €
+Primes CEE (estimation) − 100 €
+Reste à charge 3 100 € à 4 500 €
+Aides par travaux Montant estimé
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 3 700 €
+Durée 15 ans
+Mensualité 21 € / mois
+Économie sur la facture − 81 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 4 ans
+Prix de marché local 3 445 €/m²
+Valeur verte estimée + 22 000 €
+Fourchette 10 000 € à 42 500 €
+Prix local : prix médian DVF de 110 ventes d’appartements à Ploeren (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 4 % mesuré entre les classes D et C sur les ventes du département (6 200 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 3 700 € sans intérêts.
+5 Travaux Environ 1 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 4 % mesuré entre les classes D et C sur les ventes du département (6 200
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (3 445 €/m², prix médian DVF de 110 ventes d’appartements à Ploeren (2022-2025, actualisées
+au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la
+totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+8 impasse Jacques Pelletier du Mans, 56880 Ploeren Page 6 / 6

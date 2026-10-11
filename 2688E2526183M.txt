@@ -1,0 +1,223 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Route Royale
+88480 Étival-Clairefontaine
+Appartement · 28,9 m² · 1948-1974 · étage 0
+DPE du 02/10/2026 · n° 2688E2526183M
+Synthèse
++1 classe
+E → D
+324 → 251 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 1 500 € − 110 € ≈ 1 400 € 220 € / an
+entre 1 300 € et 1 900 €
+entre 1 200 € et 1 800 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 1 500 € (500 € à 3 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à D coûte entre 1 200 € et 1 800 € après aides, pour environ 220 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet appartement de 28,9 m², construit entre 1948 et 1974, est classé E, avec 324 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : murs (39 %), puis renouvellement d'air (26 %). La facture d'énergie est
+estimée à 990 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), dans l'ordre du tableau des travaux :
+l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris
+isolément, le geste le plus efficace est : isolation des murs (par l'intérieur), avec environ 220 € d'économie
+par an. Préconisations : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec
+membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Ensemble, ces travaux
+amènent le logement en classe D (251 kWh/m²/an) et la facture à environ 770 € par an.
+6 Route Royale, 88480 Étival-Clairefontaine Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financement
+Le coût des travaux se situe entre 1 300 € et 1 900 €. Avec primes CEE, le reste à charge est estimé entre 1
+200 € et 1 800 €. La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit
+pas. Un éco-prêt à taux zéro de 1 400 € sur 15 ans représente environ 8 € par mois, à comparer à 19 €
+d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 220 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 0,7 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / C)
+Consommation d'énergie primaire 324 kWh/m²/an
+Émissions de gaz à effet de serre 12 kg CO₂/m²/an
+Électricité · radiateur électrique NFC, NF** et NF*** ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 990 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 094 € / an
+6 Route Royale, 88480 Étival-Clairefontaine Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 39 %
+Renouvellement d'air 26 %
+Fenêtres 14 %
+Ponts thermiques et portes 12 %
+Plancher bas 10 %
+Toiture ou plafond 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 660 € 430 €
+Eau chaude 300 € 300 €
+Autres usages (éclairage, auxiliaires) 30 € 30 €
+Total par an 990 € 770 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+6 Route Royale, 88480 Étival-Clairefontaine Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 1 300 € à 1 900 €
+Les murs représentent 39 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 73 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 0,7 m².
+Total des travaux TTC 1 300 € à 1 900 €
+Durée indicative du chantier : 5 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 73
+B 74 à 114
+C 115 à 187
+D 188 à 260 Après travaux
+E 261 à 343 Aujourd'hui
+F 344 à 437
+G > 437
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 990 € → 770 € par an.
+6 Route Royale, 88480 Étival-Clairefontaine Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 1 300 € à 1 900 €
+Primes CEE (estimation) − 110 €
+Reste à charge 1 200 € à 1 800 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 110 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 1 400 €
+Durée 15 ans
+Mensualité 8 € / mois
+Économie sur la facture − 19 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 1 092 €/m²
+Valeur verte estimée + 1 500 €
+Fourchette 500 € à 3 500 €
+Prix local : prix médian DVF de 70 ventes d’appartements à moins de 5 km, communes voisines incluses (2022-2025, actualisées au
+dernier trimestre).
+Valeur verte : écart de prix de 7 % mesuré entre les classes E et D sur les ventes du département (2 477 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+6 Route Royale, 88480 Étival-Clairefontaine Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Construction 1948-1974
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 2 600 € à 4 300 €
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 200 € à 400 €
+parking)
+Total 2 800 € à 4 700 €
+Quote-part de l'appartement (environ 100,0 % de la surface) : 2 800 € à 4 700 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+1 600 € à 3 400 €.
+Ordres de grandeur déduits du DPE de l'appartement (29 m² habitables estimés, 4 niveaux, 1 logement). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+6 Route Royale, 88480 Étival-Clairefontaine Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 1 400 € sans intérêts.
+5 Travaux Environ 5 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 7 % mesuré entre les classes E et D sur les ventes du département (2 477
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 092 €/m², prix médian DVF de 70 ventes d’appartements à moins de 5 km, communes voisines
+incluses (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de
+confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+6 Route Royale, 88480 Étival-Clairefontaine Page 7 / 7

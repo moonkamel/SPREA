@@ -1,0 +1,273 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+54 Place Docteur Thévenet
+38340 Voreppe
+Appartement · 53 m² · avant 1948 · étage 0
+DPE du 02/10/2026 · n° 2638E2518625W
+Synthèse
++3 classes
+F → C
+347 → 169 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 12 300 € − 570 € ≈ 11 700 € 1 000 € / an
+entre 10 400 € et 15 100 €
+entre 9 800 € et 14 500 €
+Retour sur investissement environ 12 ans
+Valeur verte du bien + 13 000 € (7 500 € à 22 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 9 800 € et 14 500 € après aides, pour environ 1 000 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet appartement de 53 m², construit avant 1948, est classé F, avec 347 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (42 %), puis renouvellement d'air (32 %). La facture d'énergie est estimée à 1
+940 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), ventilation mécanique (VMC), radiateurs
+électriques à inertie et chauffe-eau thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe
+d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément,
+le geste le plus efficace est : isolation des murs (par l'intérieur), avec environ 560 € d'économie par an.
+Préconisations : Mur ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14
+cm (fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de
+54 Place Docteur Thévenet, 38340 Voreppe Page 1 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides. VMC simple flux hygroréglable type B ;
+double flux si le logement est rendu étanche à l'air. Ensemble, ces travaux amènent le logement en classe
+C (169 kWh/m²/an) et la facture à environ 940 € par an.
+Financement
+Le coût des travaux se situe entre 10 400 € et 15 100 €. Avec primes CEE, le reste à charge est estimé entre
+9 800 € et 14 500 €. La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture,
+plancher ou fenêtres). Ajouter le remplacement des fenêtres ouvrirait la rénovation d'ampleur : environ 7
+100 € d'aide, pour un reste à charge entre 8 000 € et 12 000 €, avec un Accompagnateur Rénov'
+obligatoire. Un éco-prêt à taux zéro de 11 700 € sur 15 ans représente environ 65 € par mois, à comparer à
+83 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 000 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 12 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,1 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie en façade demande
+l'accord de la copropriété.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (F / C)
+Consommation d'énergie primaire 347 kWh/m²/an
+Émissions de gaz à effet de serre 13 kg CO₂/m²/an
+Électricité · radiateur électrique NFC, NF** et NF*** ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 1 940 € / an
+54 Place Docteur Thévenet, 38340 Voreppe Page 2 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Coût annuel indiqué par le DPE (prix 2021) 2 032 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 42 %
+Renouvellement d'air 32 %
+Ponts thermiques et portes 9 %
+Plancher bas 8 %
+Fenêtres 8 %
+Toiture ou plafond 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 570 € 800 €
+Eau chaude 350 € 130 €
+Autres usages (éclairage, auxiliaires) 20 € 20 €
+Total par an 1 940 € 940 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+54 Place Docteur Thévenet, 38340 Voreppe Page 3 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 700 € à 5 500 €
+Les murs représentent 42 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 101 kWh/m²/an · − 560 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,1 m².
+2. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 32 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 22 kWh/m²/an · − 130 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+3. Radiateurs électriques à inertie RECOMMANDÉ 2 400 € à 3 400 €
+Le logement est chauffé par des radiateurs électriques directs : des radiateurs à
+inertie bien régulés consomment environ 10 % de moins.
+Effet seul : − 25 kWh/m²/an · − 140 €/an sur la facture
+Préconisation : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et
+détection d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles.
+4. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 18 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 40 kWh/m²/an · − 230 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie
+en façade demande l'accord de la copropriété.
+Total des travaux TTC 10 400 € à 15 100 €
+Durée indicative du chantier : 9 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+54 Place Docteur Thévenet, 38340 Voreppe Page 4 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 940 € → 940 € par an.
+Le plan de financement
+4
+Coût des travaux 10 400 € à 15 100 €
+Primes CEE (estimation) − 570 €
+Reste à charge 9 800 € à 14 500 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 320 €
+Ventilation mécanique (VMC) 150 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+54 Place Docteur Thévenet, 38340 Voreppe Page 5 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Variante : ajouter le remplacement des fenêtres ouvre la rénovation d'ampleur
+Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation d'ampleur, qui
+finance une part de l'ensemble des travaux. Pour environ 2 100 € de moins à votre charge, le logement est
+mieux isolé (classe C, facture d'environ 910 € par an).
++ Fenêtres double vitrage 3 500 € à 5 800 €
+Coût total des travaux 13 900 € à 20 900 €
+MaPrimeRénov' rénovation d'ampleur − 7 100 €
+Reste à charge 8 000 € à 12 000 €
+Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) et audit énergétique
+confirmant un gain d'au moins deux classes. Primes CEE non cumulables.
+Financer le reste à charge
+Éco-prêt à taux zéro 11 700 €
+Durée 15 ans
+Mensualité 65 € / mois
+Économie sur la facture − 83 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 12 ans
+Prix de marché local 2 726 €/m²
+Valeur verte estimée + 13 000 €
+Fourchette 7 500 € à 22 500 €
+Prix local : prix médian DVF de 169 ventes d’appartements de surface comparable à Voreppe (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 14 % mesuré entre les classes F et C sur les ventes du département (17 816 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+54 Place Docteur Thévenet, 38340 Voreppe Page 6 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+L'immeuble et ses travaux à venir
+6
+Construction avant 1948
+DPE des appartements 5 publiés : 3 en D, 1 en E, 1 en F
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades (par l'extérieur si
+l'Architecte des Bâtiments de France Isolation des murs insuffisante 4 800 € à 7 900 €
+l'accepte)
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 400 € à 800 €
+parking)
+Ventilation actuelle : Ventilation par
+Ventilation mécanique collective 1 500 € à 3 000 €
+ouverture des fenêtres
+Total 6 700 € à 11 700 €
+Quote-part de l'appartement (environ 100,0 % de la surface) : 6 700 € à 11 700 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+3 800 € à 8 400 €.
+Ordres de grandeur déduits du DPE de l'appartement (53 m² habitables estimés, 4 niveaux, 1 logement). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+54 Place Docteur Thévenet, 38340 Voreppe Page 7 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 11 700 € sans intérêts.
+5 Travaux Environ 9 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 14 % mesuré entre les classes F et C sur les ventes du département (17 816
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 726 €/m², prix médian DVF de 169 ventes d’appartements de surface comparable à Voreppe
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+54 Place Docteur Thévenet, 38340 Voreppe Page 8 / 8

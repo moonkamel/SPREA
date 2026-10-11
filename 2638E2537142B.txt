@@ -1,0 +1,242 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+161 Route du Coulet
+38750 Huez
+Appartement · 45,6 m² · 1948-1974 · étage 3
+DPE du 05/10/2026 · n° 2638E2537142B
+Synthèse
++2 classes
+E → C
+330 → 151 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 5 600 € − 300 € ≈ 5 300 € 860 € / an
+entre 4 800 € et 6 800 €
+entre 4 500 € et 6 500 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 21 500 € (12 500 € à 36 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à C coûte entre 4 500 € et 6 500 € après aides, pour environ 860 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet appartement de 45,6 m², construit entre 1948 et 1974, est classé E, avec 330 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : toiture ou plafond (58 %), puis renouvellement d'air (20 %). La facture
+d'énergie est estimée à 1 580 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture et chauffe-eau thermodynamique, dans l'ordre du
+tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur
+des besoins réduits. Pris isolément, le geste le plus efficace est : isolation de la toiture, avec environ 610 €
+d'économie par an. Préconisations : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec pare-vapeur côté chauffé. Chauffe-eau
+thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non
+161 Route du Coulet, 38750 Huez Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+chauffé. Ensemble, ces travaux amènent le logement en classe C (151 kWh/m²/an) et la facture à environ
+720 € par an.
+Financement
+Le coût des travaux se situe entre 4 800 € et 6 800 €. Avec primes CEE, le reste à charge est estimé entre
+4 500 € et 6 500 €. La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture,
+plancher ou fenêtres). Ajouter l'isolation des murs ouvrirait la rénovation d'ampleur : environ 2 700 €
+d'aide, pour un reste à charge entre 3 100 € et 4 500 €, avec un Accompagnateur Rénov' obligatoire. Un
+éco-prêt à taux zéro de 5 300 € sur 15 ans représente environ 29 € par mois, à comparer à 72 €
+d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 860 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie en façade demande
+l'accord de la copropriété.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / C)
+Consommation d'énergie primaire 330 kWh/m²/an
+Émissions de gaz à effet de serre 13 kg CO₂/m²/an
+Électricité · radiateur électrique NFC, NF** et NF*** ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 1 580 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 680 € / an
+161 Route du Coulet, 38750 Huez Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 58 %
+Renouvellement d'air 20 %
+Fenêtres 14 %
+Ponts thermiques et portes 4 %
+Murs 3 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 130 € 520 €
+Eau chaude 390 € 140 €
+Autres usages (éclairage, auxiliaires) 70 € 70 €
+Total par an 1 580 € 720 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+161 Route du Coulet, 38750 Huez Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 1 500 € à 2 200 €
+La toiture représente 58 % des pertes de chaleur.
+Effet seul : − 127 kWh/m²/an · − 610 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec pare-vapeur côté
+chauffé.
+2. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 25 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 52 kWh/m²/an · − 250 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie
+en façade demande l'accord de la copropriété.
+Total des travaux TTC 4 800 € à 6 800 €
+Durée indicative du chantier : 8 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330 Aujourd'hui
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 580 € → 720 € par an.
+161 Route du Coulet, 38750 Huez Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 4 800 € à 6 800 €
+Primes CEE (estimation) − 300 €
+Reste à charge 4 500 € à 6 500 €
+Aides par travaux Montant estimé
+Isolation de la toiture 200 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Variante : ajouter l'isolation des murs ouvre la rénovation d'ampleur
+Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation d'ampleur, qui
+finance une part de l'ensemble des travaux. Pour environ 1 600 € de moins à votre charge, le logement est
+mieux isolé (classe C, facture d'environ 690 € par an).
++ Isolation des murs (par l'intérieur) 700 € à 1 000 €
+Coût total des travaux 5 500 € à 7 900 €
+MaPrimeRénov' rénovation d'ampleur − 2 700 €
+Reste à charge 3 100 € à 4 500 €
+Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) et audit énergétique
+confirmant un gain d'au moins deux classes. Primes CEE non cumulables.
+Financer le reste à charge
+Éco-prêt à taux zéro 5 300 €
+Durée 15 ans
+Mensualité 29 € / mois
+Économie sur la facture − 72 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+161 Route du Coulet, 38750 Huez Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 7 307 €/m²
+Valeur verte estimée + 21 500 €
+Fourchette 12 500 € à 36 000 €
+Prix local : prix médian DVF de 178 ventes d’appartements de surface comparable à Huez (2024-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 10 % mesuré entre les classes E et C sur les ventes du département (17 816 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Copropriété L'IGLOO
+Taille 11 lots principaux dont 8 logements
+Syndic Non connu
+Construction 1975 – 1993
+DPE des appartements 2 publiés : 2 en E
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 32 800 € à 54 700 €
+Total 32 800 € à 54 700 €
+Quote-part de l'appartement (environ 12,5 % de la surface) : 4 100 € à 6 800 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+2 400 € à 4 900 €.
+161 Route du Coulet, 38750 Huez Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Ordres de grandeur déduits du DPE de l'appartement (365 m² habitables estimés, 4 niveaux, 8 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 5 300 € sans intérêts.
+5 Travaux Environ 8 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 10 % mesuré entre les classes E et C sur les ventes du département (17 816
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (7 307 €/m², prix médian DVF de 178 ventes d’appartements de surface comparable à Huez
+(2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+161 Route du Coulet, 38750 Huez Page 7 / 7

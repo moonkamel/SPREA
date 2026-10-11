@@ -1,0 +1,243 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+13 le Breuil
+44270 La Marne
+Maison · 53 m² · avant 1948
+DPE du 05/10/2026 · n° 2644E2541958N
+Synthèse
++3 classes
+F → C
+314 → 152 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 18 300 € − 5 800 € ≈ 12 500 € 1 100 € / an
+entre 15 600 € et 22 900 €
+entre 9 800 € et 17 100 €
+Retour sur investissement environ 11 ans
+Valeur verte du bien + 15 000 € (9 000 € à 24 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 9 800 € et 17 100 € après aides, pour environ 1 100 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cette maison de 53 m², construite avant 1948, est classée F, avec 314 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (39 %), puis renouvellement d'air (26 %). La facture d'énergie est estimée à 1
+980 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur) et pompe à chaleur air/eau, dans l'ordre
+du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur
+des besoins réduits. Pris isolément, le geste le plus efficace est : pompe à chaleur air/eau, avec environ
+860 € d'économie par an. Préconisations : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur
+hygrovariable, pas de pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides. Pompe à chaleur
+13 le Breuil, 44270 La Marne Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111
+% (moyenne et haute) ; puissance indicative d'environ 3 à 5 kW après isolation, à confirmer par l'étude de
+l'installateur. Autre solution pour les murs : isolation des murs (par l'extérieur), pour un reste à charge
+supérieur d'environ 2 700 € ; façade ancienne souvent refusée en secteur protégé (accord de l'Architecte
+des Bâtiments de France) : à vérifier en mairie avant d'y compter. Ensemble, ces travaux amènent le
+logement en classe C (152 kWh/m²/an) et la facture à environ 880 € par an.
+Financement
+Le coût des travaux se situe entre 15 600 € et 22 900 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 9 800 € et 17 100 €. La rénovation d'ampleur exige au moins deux travaux
+d'isolation (murs, toiture, plancher ou fenêtres). Ajouter l'isolation du plancher bas ouvrirait la rénovation
+d'ampleur : environ 8 600 € d'aide, pour un reste à charge entre 9 800 € et 14 400 €, avec un
+Accompagnateur Rénov' obligatoire. Un éco-prêt à taux zéro de 12 500 € sur 15 ans représente environ 70
+€ par mois, à comparer à 92 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 100 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 11 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,0 m².
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (E / F)
+Consommation d'énergie primaire 314 kWh/m²/an
+Émissions de gaz à effet de serre 71 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul standard 1991-2015
+Eau chaude Chaudière fioul standard 1991-2015
+Ventilation VMC SF Auto réglable de 2001 à 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 1 980 € / an
+13 le Breuil, 44270 La Marne Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Coût annuel indiqué par le DPE (prix 2021) 2 122 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 39 %
+Renouvellement d'air 26 %
+Ponts thermiques et portes 14 %
+Plancher bas 13 %
+Fenêtres 5 %
+Toiture ou plafond 3 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 590 € 490 € (électricité)
+Eau chaude 210 € 210 €
+Autres usages (éclairage, auxiliaires) 170 € 170 €
+Total par an 1 980 € 880 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+13 le Breuil, 44270 La Marne Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 500 € à 5 200 €
+Les murs représentent 39 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 82 kWh/m²/an · − 520 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,0 m².
+2. Pompe à chaleur air/eau RECOMMANDÉ 12 100 € à 17 700 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 119 kWh/m²/an · − 860 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 3 à 5 kW après isolation, à confirmer par l'étude de
+l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 15 600 € à 22 900 €
+Durée indicative du chantier : 8 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 810 €
+par an, reste à charge supérieur d'environ 2 700 €. À noter : façade ancienne souvent refusée en secteur
+protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 5 800 € à 8 900 €
+Coût total du programme 17 900 € à 26 600 €
+Aides estimées − 5 800 €
+Reste à charge 12 100 € à 20 800 €
+13 le Breuil, 44270 La Marne Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 980 € → 880 € par an.
+Le plan de financement
+4
+Coût des travaux 15 600 € à 22 900 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 2 800 €
+Reste à charge 9 800 € à 17 100 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 300 €
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+13 le Breuil, 44270 La Marne Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Variante : ajouter l'isolation du plancher bas ouvre la rénovation d'ampleur
+Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation d'ampleur, qui
+finance une part de l'ensemble des travaux. Pour environ 1 000 € de moins à votre charge, le logement est
+mieux isolé (classe C, facture d'environ 790 € par an).
++ Isolation du plancher bas 1 500 € à 2 300 €
+Coût total des travaux 17 100 € à 25 200 €
+MaPrimeRénov' rénovation d'ampleur − 8 600 €
+Reste à charge 9 800 € à 14 400 €
+À vérifier : Possible seulement si le plancher est accessible par en dessous (cave, garage ou vide sanitaire) : une maison sur
+terre-plein ne s'y prête pas.
+Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) et audit énergétique
+confirmant un gain d'au moins deux classes. Primes CEE non cumulables.
+Financer le reste à charge
+Éco-prêt à taux zéro 12 500 €
+Durée 15 ans
+Mensualité 70 € / mois
+Économie sur la facture − 92 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 11 ans
+Prix de marché local 2 372 €/m²
+Valeur verte estimée + 15 000 €
+Fourchette 9 000 € à 24 000 €
+Prix local : prix médian DVF de 19 ventes de maisons de surface comparable à La Marne (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 19 % mesuré entre les classes F et C sur les ventes du département (19 779 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+13 le Breuil, 44270 La Marne Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 12 500 € sans intérêts.
+6 Travaux Environ 8 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 19 % mesuré entre les classes F et C sur les ventes du département (19 779
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 372 €/m², prix médian DVF de 19 ventes de maisons de surface comparable à La Marne
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+13 le Breuil, 44270 La Marne Page 7 / 7

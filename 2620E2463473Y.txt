@@ -1,0 +1,253 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Lieu Dit Gabella
+20117 Cauro
+Maison · 148 m² · avant 1948
+DPE du 27/09/2026 · n° 2620E2463473Y
+Synthèse
++3 classes
+F → C
+319 → 139 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 35 400 € − 7 100 € ≈ 28 300 € 3 430 € / an
+entre 30 000 € et 44 400 €
+entre 22 900 € et 37 300 €
+Retour sur investissement environ 8 ans
+Valeur verte du bien + 79 500 € (55 500 € à 116 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 22 900 € et 37 300 € après aides, pour environ 3 430 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cette maison de 148 m², construite avant 1948, est classée F, avec 319 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (31 %), puis toiture ou plafond (26 %). La facture d'énergie est estimée à 5 600
+€ par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), ventilation mécanique (VMC) et pompe
+à chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour
+dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est : pompe à
+chaleur air/eau, avec environ 2 710 € d'économie par an. Préconisations : Mur ancien (avant 1948) qui doit
+rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée
+Lieu Dit Gabella, 20117 Cauro Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+pour les aides. VMC simple flux hygroréglable type B ; double flux si le logement est rendu étanche à l'air.
+Autre solution pour les murs : isolation des murs (par l'extérieur), pour un reste à charge supérieur
+d'environ 13 000 € ; façade ancienne souvent refusée en secteur protégé (accord de l'Architecte des
+Bâtiments de France) : à vérifier en mairie avant d'y compter. Ensemble, ces travaux amènent le logement
+en classe C (139 kWh/m²/an) et la facture à environ 2 170 € par an.
+Financement
+Le coût des travaux se situe entre 30 000 € et 44 400 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 22 900 € et 37 300 €. La rénovation d'ampleur exige au moins deux
+travaux d'isolation (murs, toiture, plancher ou fenêtres). Ajouter l'isolation du plancher bas ouvrirait la
+rénovation d'ampleur : environ 16 700 € d'aide, pour un reste à charge entre 19 100 € et 31 300 €, avec un
+Accompagnateur Rénov' obligatoire. Un éco-prêt à taux zéro de 25 000 € sur 15 ans représente environ
+139 € par mois, à comparer à 286 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 3 430 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 8 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 9,5 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (E / F)
+Consommation d'énergie primaire 319 kWh/m²/an
+Émissions de gaz à effet de serre 92 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul standard 1991-2015
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Lieu Dit Gabella, 20117 Cauro Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Facture d'énergie estimée 5 600 € / an
+Coût annuel indiqué par le DPE (prix 2021) 6 905 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 31 %
+Toiture ou plafond 26 %
+Renouvellement d'air 18 %
+Ponts thermiques et portes 14 %
+Fenêtres 7 %
+Plancher bas 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 5 020 € 1 590 € (électricité)
+Eau chaude 460 € 460 €
+Autres usages (éclairage, auxiliaires) 120 € 120 €
+Total par an 5 600 € 2 170 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 27/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+Lieu Dit Gabella, 20117 Cauro Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 17 000 € à 25 000 €
+Les murs représentent 31 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 75 kWh/m²/an · − 1 340 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 9,5 m².
+2. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 18 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 12 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+3. Pompe à chaleur air/eau RECOMMANDÉ 12 100 € à 17 700 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 134 kWh/m²/an · − 2 710 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 11 à 13 kW après isolation, à confirmer par l'étude de
+l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 30 000 € à 44 400 €
+Durée indicative du chantier : 9 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Lieu Dit Gabella, 20117 Cauro Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 1 960 €
+par an, reste à charge supérieur d'environ 13 000 €. À noter : façade ancienne souvent refusée en secteur
+protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 28 100 € à 43 000 €
+Coût total du programme 41 100 € à 62 300 €
+Aides estimées − 7 100 €
+Reste à charge 34 000 € à 55 200 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 5 600 € → 2 170 € par an.
+Le plan de financement
+4
+Coût des travaux 30 000 € à 44 400 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 4 100 €
+Reste à charge 22 900 € à 37 300 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 1 470 €
+Ventilation mécanique (VMC) 150 €
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Lieu Dit Gabella, 20117 Cauro Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Variante : ajouter l'isolation du plancher bas ouvre la rénovation d'ampleur
+Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation d'ampleur, qui
+finance une part de l'ensemble des travaux. Pour environ 5 800 € de moins à votre charge, le logement est
+mieux isolé (classe C, facture d'environ 2 070 € par an).
++ Isolation du plancher bas 3 200 € à 4 900 €
+Coût total des travaux 33 200 € à 49 300 €
+MaPrimeRénov' rénovation d'ampleur − 16 700 €
+Reste à charge 19 100 € à 31 300 €
+À vérifier : Possible seulement si le plancher est accessible par en dessous (cave, garage ou vide sanitaire) : une maison sur
+terre-plein ne s'y prête pas.
+Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) et audit énergétique
+confirmant un gain d'au moins deux classes. Primes CEE non cumulables.
+Financer le reste à charge
+Éco-prêt à taux zéro 25 000 €
+Durée 15 ans
+Mensualité 139 € / mois
+Économie sur la facture − 286 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 8 ans
+Prix de marché local 4 211 €/m²
+Valeur verte estimée + 79 500 €
+Fourchette 55 500 € à 116 000 €
+Prix local : prix médian DVF de 21 ventes de maisons de surface comparable à Cauro (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 22 % mesuré entre les classes F et C sur les ventes nationales (570 002 ventes rapprochées de leur DPE,
+2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements vendus
+(cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Lieu Dit Gabella, 20117 Cauro Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 25 000 € sans intérêts.
+6 Travaux Environ 9 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 22 % mesuré entre les classes F et C sur les ventes nationales (570 002
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (4 211 €/m², prix médian DVF de 21 ventes de maisons de surface comparable à Cauro
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+Lieu Dit Gabella, 20117 Cauro Page 7 / 7

@@ -1,0 +1,190 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+37 Rue Monseigneur Desprez
+52000 Chaumont
+Appartement · 34,3 m² · avant 1948 · étage 0
+DPE du 20/09/2026 · n° 2652E2400743M
+Synthèse
+Pas de changement de classe
+E → E
+333 → 311 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 2 100 € − 0 € ≈ 2 100 € 80 € / an
+entre 1 800 € et 2 600 €
+entre 1 800 € et 2 600 €
+Retour sur investissement environ 27 ans
+Valeur verte du bien –
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable jusqu'au 01/01/2034
+L'essentiel
+Ces travaux coûtent entre 1 800 € et 2 600 € après aides, sans changer la classe E, pour environ 80 €
+d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet appartement de 34,3 m², construit avant 1948, est classé E, avec 333 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (33 %), puis ponts thermiques et portes (25 %). La
+facture d'énergie est estimée à 1 200 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne radiateurs électriques à inertie, dans l'ordre du tableau des travaux :
+l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris
+isolément, le geste le plus efficace est : radiateurs électriques à inertie, avec environ 80 € d'économie par
+an. Préconisations : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et détection
+d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles. Ces travaux ne changent pas la classe
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+(E) mais ramènent la consommation à 311 kWh/m²/an et la facture à environ 1 130 € par an.
+Financement
+Le coût des travaux se situe entre 1 800 € et 2 600 €. Avec aucune aide, le reste à charge est estimé entre
+1 800 € et 2 600 €. La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y
+suffit pas.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 80 € d'économie par an. Le reste à charge
+est remboursé par les économies en 27 ans environ.
+Points de vigilance
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / C)
+Consommation d'énergie primaire 333 kWh/m²/an
+Émissions de gaz à effet de serre 13 kg CO₂/m²/an
+Électricité · Radiateur électrique à accumulation ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Bonne (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 1 200 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 307 € / an
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 33 %
+Ponts thermiques et portes 25 %
+Murs 24 %
+Plancher bas 11 %
+Fenêtres 7 %
+Toiture ou plafond 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 860 € 780 €
+Eau chaude 310 € 310 €
+Autres usages (éclairage, auxiliaires) 30 € 30 €
+Total par an 1 200 € 1 130 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable jusqu'au 01/01/2034
+Validité du DPE Jusqu'au 20/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Radiateurs électriques à inertie RECOMMANDÉ 1 800 € à 2 600 €
+Le logement est chauffé par des radiateurs électriques directs : des radiateurs à
+inertie bien régulés consomment environ 10 % de moins.
+Effet seul : − 22 kWh/m²/an · − 80 €/an sur la facture
+Préconisation : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et
+détection d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles.
+Total des travaux TTC 1 800 € à 2 600 €
+Durée indicative du chantier : 2 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 71
+B 72 à 112
+C 113 à 184
+D 185 à 255
+Aujourd'hui · Après
+E 256 à 337
+travaux
+F 338 à 428
+G > 428
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 200 € → 1 130 € par an.
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 1 800 € à 2 600 €
+Aides –
+Reste à charge 1 800 € à 2 600 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Valeur du bien
+5
+Retour sur investissement environ 27 ans
+Valeur verte estimée –
+Prix local : prix médian DVF de 50 ventes d’appartements de surface comparable à Chaumont (2023-2025, actualisées au dernier
+trimestre).
+L'immeuble et ses travaux à venir
+6
+Construction avant 1948
+DPE des appartements 3 publiés : 3 en E
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 300 € à 500 €
+parking)
+Total 300 € à 500 €
+Quote-part de l'appartement (environ 100,0 % de la surface) : 300 € à 500 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ 200 €
+à 400 €.
+Ordres de grandeur déduits du DPE de l'appartement (34 m² habitables estimés, 4 niveaux, 1 logement). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il vérifie aussi les aides locales (région, département,
+commune).
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. Comparez les fourchettes de ce rapport aux devis reçus.
+3 Travaux Environ 2 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Prix local retenu : 1 328 €/m², prix médian DVF de 50 ventes d’appartements de surface comparable à
+Chaumont (2023-2025, actualisées au dernier trimestre).
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+37 Rue Monseigneur Desprez, 52000 Chaumont Page 6 / 6

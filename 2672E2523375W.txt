@@ -1,0 +1,201 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+5 Place de L Eglise
+72600 Louvigny
+Maison · 69,8 m² · avant 1948
+DPE du 02/10/2026 · n° 2672E2523375W
+Synthèse
++3 classes
+G → D
+377 → 224 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 14 200 € − 5 500 € ≈ 8 700 € 1 420 € / an
+entre 12 100 € et 17 700 €
+entre 6 600 € et 12 200 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 17 000 € (10 500 € à 28 000 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 6 600 € et 12 200 € après aides, pour environ 1 420 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cette maison de 69,8 m², construite avant 1948, est classée G, avec 377 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (32 %), puis renouvellement d'air (23 %). La facture d'énergie est estimée à 3
+020 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne pompe à chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe
+d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément,
+le geste le plus efficace est : pompe à chaleur air/eau, avec environ 1 420 € d'économie par an.
+Préconisations : Pompe à chaleur air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥
+126 % (basse température) ou ≥ 111 % (moyenne et haute) ; puissance indicative d'environ 8 à 10 kW après
+isolation, à confirmer par l'étude de l'installateur. Ensemble, ces travaux amènent le logement en classe D
+5 Place de L Eglise, 72600 Louvigny Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+(224 kWh/m²/an) et la facture à environ 1 600 € par an.
+Financement
+Le coût des travaux se situe entre 12 100 € et 17 700 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 6 600 € et 12 200 €. La rénovation d'ampleur exige au moins deux travaux
+d'isolation (murs, toiture, plancher ou fenêtres). Un éco-prêt à taux zéro de 8 700 € sur 15 ans représente
+environ 48 € par mois, à comparer à 118 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 420 € d'économie par an. Le reste à charge
+est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (F / F)
+Consommation d'énergie primaire 377 kWh/m²/an
+Émissions de gaz à effet de serre 100 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul standard 1991-2015
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 3 020 € / an
+Coût annuel indiqué par le DPE (prix 2021) 3 806 € / an
+5 Place de L Eglise, 72600 Louvigny Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 32 %
+Renouvellement d'air 23 %
+Toiture ou plafond 17 %
+Ponts thermiques et portes 14 %
+Plancher bas 8 %
+Fenêtres 6 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 630 € 1 210 € (électricité)
+Eau chaude 320 € 320 €
+Autres usages (éclairage, auxiliaires) 70 € 70 €
+Total par an 3 020 € 1 600 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+5 Place de L Eglise, 72600 Louvigny Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Pompe à chaleur air/eau RECOMMANDÉ 12 100 € à 17 700 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 153 kWh/m²/an · − 1 420 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 8 à 10 kW après isolation, à confirmer par l'étude de
+l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 12 100 € à 17 700 €
+Durée indicative du chantier : 3 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 020 € → 1 600 € par an.
+5 Place de L Eglise, 72600 Louvigny Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 12 100 € à 17 700 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 2 500 €
+Reste à charge 6 600 € à 12 200 €
+Aides par travaux Montant estimé
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 8 700 €
+Durée 15 ans
+Mensualité 48 € / mois
+Économie sur la facture − 118 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 1 198 €/m²
+Valeur verte estimée + 17 000 €
+Fourchette 10 500 € à 28 000 €
+Prix local : prix médian DVF de 13 ventes de maisons à Louvigny (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 40 % mesuré entre les classes G et D sur les ventes du département (8 935 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+5 Place de L Eglise, 72600 Louvigny Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 8 700 € sans intérêts.
+6 Travaux Environ 3 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 40 % mesuré entre les classes G et D sur les ventes du département (8 935
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 198 €/m², prix médian DVF de 13 ventes de maisons à Louvigny (2022-2025, actualisées au
+dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité
+de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+5 Place de L Eglise, 72600 Louvigny Page 6 / 6

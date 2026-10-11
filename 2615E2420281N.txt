@@ -1,0 +1,236 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+2 route de Sarran
+15270 Champs-sur-Tarentaine-Marchal
+Maison · 31,5 m² · avant 1948
+DPE du 22/09/2026 · n° 2615E2420281N
+Synthèse
++2 classes
+E → C
+279 → 185 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 4 900 € − 220 € ≈ 4 700 € 310 € / an
+entre 4 200 € et 6 000 €
+entre 4 000 € et 5 800 €
+Retour sur investissement environ 15 ans
+Valeur verte du bien + 2 500 € (500 € à 7 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à C coûte entre 4 000 € et 5 800 € après aides, pour environ 310 € d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cette maison de 31,5 m², construite avant 1948, est classée E, avec 279 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : renouvellement d'air (41 %), puis murs (32 %). La facture d'énergie est estimée à
+930 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur) et chauffe-eau thermodynamique, dans
+l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces
+derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est : isolation des murs (par
+l'intérieur), avec environ 170 € d'économie par an. Préconisations : Mur ancien (avant 1948) qui doit rester
+perméable à la vapeur : isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+pour les aides. Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air
+extérieur ou air d'un local non chauffé. Autre solution pour les murs : isolation des murs (par l'extérieur),
+pour un reste à charge supérieur d'environ 1 000 € ; façade ancienne souvent refusée en secteur protégé
+(accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter. Ensemble, ces
+travaux amènent le logement en classe C (185 kWh/m²/an) et la facture à environ 610 € par an.
+Financement
+Le coût des travaux se situe entre 4 200 € et 6 000 €. Avec primes CEE, le reste à charge est estimé entre
+4 000 € et 5 800 €. La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture,
+plancher ou fenêtres). Ajouter l'isolation de la toiture ouvrirait la rénovation d'ampleur : environ 2 400 €
+d'aide, pour un reste à charge entre 2 700 € et 3 900 €, avec un Accompagnateur Rénov' obligatoire. Un
+éco-prêt à taux zéro de 4 700 € sur 15 ans représente environ 26 € par mois, à comparer à 26 €
+d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 310 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 15 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 0,8 m².
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / B)
+Consommation d'énergie primaire 279 kWh/m²/an
+Émissions de gaz à effet de serre 10 kg CO₂/m²/an
+Électricité · Panneau rayonnant électrique NFC, NF**
+Chauffage
+et NF***
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation du plancher bas Bonne (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 930 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 252 € / an
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 41 %
+Murs 32 %
+Plancher bas 12 %
+Fenêtres 6 %
+Ponts thermiques et portes 6 %
+Toiture ou plafond 3 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 630 € 460 €
+Eau chaude 220 € 80 €
+Autres usages (éclairage, auxiliaires) 70 € 70 €
+Total par an 930 € 610 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 22/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 1 300 € à 1 900 €
+Les murs représentent 32 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 52 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 0,8 m².
+2. Chauffe-eau thermodynamique RECOMMANDÉ 2 900 € à 4 100 €
+L'eau chaude représente 24 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 43 kWh/m²/an · − 140 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 4 200 € à 6 000 €
+Durée indicative du chantier : 6 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 590 €
+par an, reste à charge supérieur d'environ 1 000 €. À noter : façade ancienne souvent refusée en secteur
+protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 2 100 € à 3 200 €
+Coût total du programme 5 000 € à 7 300 €
+Aides estimées − 200 €
+Reste à charge 4 800 € à 7 100 €
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 72
+B 73 à 113
+C 114 à 185 Après travaux
+D 186 à 258
+E 259 à 340 Aujourd'hui
+F 341 à 433
+G > 433
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 930 € → 610 € par an.
+Le plan de financement
+4
+Coût des travaux 4 200 € à 6 000 €
+Primes CEE (estimation) − 220 €
+Reste à charge 4 000 € à 5 800 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 120 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Variante : ajouter l'isolation de la toiture ouvre la rénovation d'ampleur
+Avec un deuxième travail d'isolation, le programme devient éligible à MaPrimeRénov' rénovation d'ampleur, qui
+finance une part de l'ensemble des travaux. Pour environ 1 500 € de moins à votre charge, le logement est
+mieux isolé (classe C, facture d'environ 590 € par an).
++ Isolation de la toiture 500 € à 800 €
+Coût total des travaux 4 700 € à 6 700 €
+MaPrimeRénov' rénovation d'ampleur − 2 400 €
+Reste à charge 2 700 € à 3 900 €
+À vérifier : Combles accessibles ou rampants à isoler : à vérifier sur place.
+Conditions : accompagnement obligatoire par un Accompagnateur Rénov' (en partie pris en charge par l'Anah) et audit énergétique
+confirmant un gain d'au moins deux classes. Primes CEE non cumulables.
+Financer le reste à charge
+Éco-prêt à taux zéro 4 700 €
+Durée 15 ans
+Mensualité 26 € / mois
+Économie sur la facture − 26 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 15 ans
+Prix de marché local 809 €/m²
+Valeur verte estimée + 2 500 €
+Fourchette 500 € à 7 500 €
+Prix local : prix médian DVF de 63 ventes de maisons à Champs-sur-Tarentaine-Marchal (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 14 % mesuré entre les classes E et C sur les ventes du département (915 ventes rapprochées de leur DPE,
+2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements vendus
+(cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 4 700 € sans intérêts.
+5 Travaux Environ 6 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 14 % mesuré entre les classes E et C sur les ventes du département (915
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (809 €/m², prix médian DVF de 63 ventes de maisons à Champs-sur-Tarentaine-Marchal
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+2 route de Sarran, 15270 Champs-sur-Tarentaine-Marchal Page 7 / 7

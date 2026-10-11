@@ -1,0 +1,179 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+41 Route des Grands Cols
+05320 La Grave
+Appartement · 28,2 m² · avant 1948 · étage 0
+DPE du 04/10/2026 · n° 2605E2531403B
+Synthèse
+Pas de changement de classe
+E → E
+333 → 314 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 1 400 € − 0 € ≈ 1 400 € 60 € / an
+entre 1 200 € et 1 700 €
+entre 1 200 € et 1 700 €
+Retour sur investissement environ 25 ans
+Valeur verte du bien –
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable jusqu'au 01/01/2034
+L'essentiel
+Ces travaux coûtent entre 1 200 € et 1 700 € après aides, sans changer la classe E, pour environ 60 €
+d'économie par an.
+Notre analyse
+1
+Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres de ce rapport, à
+relire avec votre conseiller.
+Diagnostic
+Cet appartement de 28,2 m², construit avant 1948, est classé E, avec 333 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : ponts thermiques et portes (37 %), puis renouvellement d'air (35 %). La
+facture d'énergie est estimée à 990 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne radiateurs électriques à inertie, dans l'ordre du tableau des travaux :
+l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris
+isolément, le geste le plus efficace est : radiateurs électriques à inertie, avec environ 60 € d'économie par
+an. Préconisations : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et détection
+d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles. Ces travaux ne changent pas la classe
+41 Route des Grands Cols, 05320 La Grave Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+(E) mais ramènent la consommation à 314 kWh/m²/an et la facture à environ 930 € par an.
+Financement
+Le coût des travaux se situe entre 1 200 € et 1 700 €. Avec aucune aide, le reste à charge est estimé entre 1
+200 € et 1 700 €. La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit
+pas.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 60 € d'économie par an. Le reste à charge
+est remboursé par les économies en 25 ans environ.
+Points de vigilance
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / C)
+Consommation d'énergie primaire 333 kWh/m²/an
+Émissions de gaz à effet de serre 12 kg CO₂/m²/an
+Électricité · Radiateur électrique à accumulation ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation VMC SF Auto réglable de 2001 à 2012
+Isolation des murs Bonne (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 990 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 124 € / an
+41 Route des Grands Cols, 05320 La Grave Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Ponts thermiques et portes 37 %
+Renouvellement d'air 35 %
+Murs 17 %
+Fenêtres 11 %
+Toiture ou plafond 0 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 620 € 570 €
+Eau chaude 320 € 320 €
+Autres usages (éclairage, auxiliaires) 40 € 40 €
+Total par an 990 € 930 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable jusqu'au 01/01/2034
+Validité du DPE Jusqu'au 04/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+41 Route des Grands Cols, 05320 La Grave Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Radiateurs électriques à inertie RECOMMANDÉ 1 200 € à 1 700 €
+Le logement est chauffé par des radiateurs électriques directs : des radiateurs à
+inertie bien régulés consomment environ 10 % de moins.
+Effet seul : − 19 kWh/m²/an · − 60 €/an sur la facture
+Préconisation : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et
+détection d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles.
+Total des travaux TTC 1 200 € à 1 700 €
+Durée indicative du chantier : 2 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 74
+B 75 à 116
+C 117 à 189
+D 190 à 262
+Aujourd'hui · Après
+E 263 à 346
+travaux
+F 347 à 441
+G > 441
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 990 € → 930 € par an.
+41 Route des Grands Cols, 05320 La Grave Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 1 200 € à 1 700 €
+Aides –
+Reste à charge 1 200 € à 1 700 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Valeur du bien
+5
+Retour sur investissement environ 25 ans
+Valeur verte estimée –
+Prix local : prix médian DVF de 17 ventes d’appartements de surface comparable à La Grave (2022-2025, actualisées au dernier
+trimestre).
+L'immeuble et ses travaux à venir
+6
+Construction avant 1948
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs
+Le DPE ne fait pas ressortir de travaux énergétiques collectifs importants.
+41 Route des Grands Cols, 05320 La Grave Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il vérifie aussi les aides locales (région, département,
+commune).
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. Comparez les fourchettes de ce rapport aux devis reçus.
+3 Travaux Environ 2 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Prix local retenu : 2 978 €/m², prix médian DVF de 17 ventes d’appartements de surface comparable à La
+Grave (2022-2025, actualisées au dernier trimestre).
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+41 Route des Grands Cols, 05320 La Grave Page 6 / 6
