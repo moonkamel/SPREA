@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
 try:
-    from api.figures import display_figures, r
+    from api.figures import display_figures, green_range_shown, r
 except ImportError:
-    from figures import display_figures, r
+    from figures import display_figures, green_range_shown, r
 
 LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
@@ -329,10 +329,9 @@ def aid_amount(d: Dict[str, Any], value: float) -> str:
 def green_range(sim: Dict[str, Any]) -> str:
     """The 95 % range of the green value, unless so wide (few comparable
     sales) that it says nothing: "0 € à 134 000 €" for a value of 20 000 €."""
-    value, low, high = sim['latent_gain'] or 0, sim['latent_gain_low'] or 0, sim['latent_gain_high'] or 0
-    if low < value * 0.3 or high > value * 3:
+    if not green_range_shown(sim):
         return "fourchette large : peu de ventes comparables"
-    return f"{eur_r(low, 500)} à {eur_r(high, 500)}"
+    return f"{eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)}"
 
 
 def figures(report: Dict[str, Any]) -> Dict[str, int]:
@@ -638,7 +637,7 @@ class PDFReportGenerator:
             text(ident['building_type']),
             f"{ident['surface']:g}".replace('.', ',') + f"{NBSP}m²" if ident.get('surface') else '',
             text(ident['period']) if ident.get('period') else '',
-            f"étage {text(ident['floor'])}" if ident.get('floor') else '',
+            ("rez-de-chaussée" if str(ident['floor']) == "0" else f"étage {text(ident['floor'])}") if ident.get('floor') else '',
         ] if x)
         dpe_ref = ' · '.join(x for x in [
             f"DPE du {text(ident['dpe_date'])}" if ident.get('dpe_date') else 'DPE',
@@ -829,7 +828,10 @@ class PDFReportGenerator:
         notes.append("TVA à 5,5 % incluse. Fourchettes fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.")
         if sim.get('new_ban_date'):
             notes.append(f"Attention : après ces travaux, le logement reste concerné par l'interdiction de louer "
-                         f"({text(sim['new_rental_status']).lower()}) ; viser une classe de plus le met à l'abri plus longtemps.")
+                         f"({text(sim['new_rental_status']).lower()}) ; "
+                         + ("viser une classe de plus le met à l'abri plus longtemps." if report.get('better_label_reachable') else
+                            "aucun des autres travaux étudiés ne permet de gagner une classe de plus : un audit énergétique "
+                            "sur place peut identifier d'autres leviers."))
         out += [Spacer(1, 6), Paragraph(' '.join(notes), S['muted'])]
 
         alt = report.get('wall_alternative')
@@ -924,7 +926,7 @@ class PDFReportGenerator:
 
         if sim['eco_ptz_amount']:
             loan = [
-                kv('Éco-prêt à taux zéro', eur_r(sim['eco_ptz_amount'])),
+                kv('Éco-prêt à taux zéro', eur(figures(report)['eco_ptz'])),
                 kv('Durée', f"{fin['eco_ptz_years']}{NBSP}ans"),
                 kv('Mensualité', f"{eur(fin['eco_ptz_monthly'])} / mois"),
                 kv('Économie sur la facture', f"<font color='#3E8E63'>−{NBSP}{eur(fin['monthly_saving'])} / mois</font>"),
@@ -1049,7 +1051,7 @@ class PDFReportGenerator:
         rows = [
             kv('Prix médian au m² des ventes comparables', f"<b>{eur(market['price_per_m2'])}</b>"),
             kv('Moitié des ventes entre', f"{eur(market['q25'])} et {eur(market['q75'])} /m²"),
-            kv('Ventes retenues', f"{market['sales']} ventes {text(market['scope'])} ({text(market['period'])})"),
+            kv('Ventes retenues', f"{num(market['sales'])} ventes {text(market['scope'])} ({text(market['period'])})"),
             kv(f"Prix au m² pour ce bien (classe {v['current_label']})", f"<b>{eur(v['price_m2_now'])}</b>"),
         ]
         story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le marché local'), Spacer(1, 8),

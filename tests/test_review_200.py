@@ -130,3 +130,46 @@ def test_analysis_and_tables_show_the_same_figures():
     assert fin["cout_total_fourchette_eur"] == [fig["cost_low"], fig["cost_high"]]
     assert fin["reste_a_charge_fourchette_eur"] == [fig["rest_low"], fig["rest_high"]]
     assert fig["cost_low"] - fig["aids_low"] == fig["rest_low"]
+
+
+def test_studio_rue_de_dinan():
+    """Live case (49 rue de Dinan, Rennes, 26.2 m² G, electric panels, old
+    VMC): the walls alone give E; no other work gains a class, so the report
+    does not tell to aim higher; DPE floor 0 with no floor loss is not shown
+    as a ground floor; the loan does not exceed the rest to pay; a sale at a
+    third of the median is not shown as comparable; the analysis gets no
+    green value range when the PDF calls it too wide."""
+    from api.dvf import comparables
+    from api.figures import display_figures
+    from api.report_content import build_report, facts_for_writer
+    p = {"surface": 26.2, "initial_cep": 494, "ges_value": 19, "official_label": "G", "building_type": "appartement",
+         "postcode": "35000", "construction_period": "avant 1948", "heating_energy": "Électricité",
+         "heating_generator": "Panneau rayonnant électrique NFC, NF** et NF***",
+         "hot_water_system": "Ballon électrique à accumulation horizontal", "hot_water_energy": "Électricité",
+         "ventilation": "VMC SF Auto réglable avant 1982",
+         "insulation_quality": {"walls": "insuffisante", "roof": "très bonne", "floor": "très bonne", "windows": "moyenne"},
+         "dpe_losses": {"walls": 53, "air": 31, "windows": 9, "bridges": 7, "roof": 0, "floor": 0},
+         "price_per_m2": 4299, "price_source": "DVF"}
+    from api.simulation import SimulationProperty
+    sp = SimulationProperty(**p)
+    works = suggest_works(sp, "G")["preselected"]
+    meta = {"address": "49 rue de Dinan", "postcode": "35000", "city": "Rennes", "dpe_date": "2026-10-05",
+            "details": {"floor": "0"}}
+    content = build_report(meta, SimulationInput(property=sp, works=works))
+    assert content["identity"]["floor"] is None
+    fig = display_figures(content["sim"], content["works"], content["extra_costs"])
+    assert fig["eco_ptz"] <= fig["rest"]
+    if content["sim"].get("new_ban_date") and not content["better_label_reachable"]:
+        from api.pdf_service import pdf_service
+        from api.ai_service import fallback_analysis
+        from tests.test_pdf import pdf_text
+        text = pdf_text(pdf_service.generate(content, fallback_analysis(facts_for_writer(content))))
+        assert "viser une classe de plus" not in text
+    sales = [{"date": "2025-12-01", "street": "Rue X", "surface": 28, "price": 37345, "price_m2": 1334},
+             {"date": "2025-12-01", "street": "Rue Y", "surface": 30, "price": 120000, "price_m2": 4000}]
+    assert [c["street"] for c in comparables(sales, median=4299)] == ["Rue Y"]
+    content["sim"].update(latent_gain=6500, latent_gain_low=1500, latent_gain_high=15500)
+    facts = facts_for_writer(content)
+    found = [facts] + [v for v in facts.values() if isinstance(v, dict)]
+    found = [v for v in found if "valeur_verte_fourchette_eur" in v]
+    assert found and found[0]["valeur_verte_fourchette_eur"] is None

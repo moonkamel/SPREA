@@ -163,17 +163,21 @@ def _result(sales: List[Dict], kind: str, scope: str, similar: str, adjusted: bo
         "scope": scope,
         "period": period,
         "kind": "maisons" if kind == "Maison" else "appartements",
-        "source": (f"prix médian DVF de {n} ventes {what} {similar}{scope} ({period}"
+        "source": (f"prix médian DVF de {format(n, ',').replace(',', chr(160))} ventes {what} {similar}{scope} ({period}"
                    + (", actualisées au dernier trimestre)" if adjusted else ")")),
-        "comparables": comparables(sales),
+        "comparables": comparables(sales, median=statistics.median(prices)),
         "surface_matched": bool(similar),
         "adjusted": adjusted,
     }
 
 
-def comparables(sales: List[Dict], limit: int = 8) -> List[Dict]:
+def comparables(sales: List[Dict], limit: int = 8, median: Optional[float] = None) -> List[Dict]:
     """Closest and most recent sales, for the valuation report. The street is
-    shown without the house number."""
+    shown without the house number. Sales far from the median (a 28 m² flat
+    sold 1 334 €/m² in Rennes: a life annuity, a share, a ruin) are not shown
+    as comparables; they stay in the median, which they barely move."""
+    if median:
+        sales = [s for s in sales if 0.5 * median <= s.get("adjusted_m2", s["price_m2"]) <= 2 * median] or sales
     ranked = sorted(sales, key=lambda s: (round(s.get("distance", 1e9) / 250), -int(s["date"].replace("-", "") or 0)))
     return [{
         "date": s["date"], "street": s["street"].title() if s["street"].isupper() else s["street"],

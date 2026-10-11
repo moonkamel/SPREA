@@ -26,6 +26,16 @@ def display_figures(sim: Dict[str, Any], works: List[Dict[str, Any]],
         cee = max(0, per_work - mpr) if per_work else r(sim["cee_est"], 10)
         aids = aids_low = aids_high = mpr + cee
     cost = r(sim["cost"])
-    return {"cost": cost, "cost_low": low, "cost_high": high, "mpr": mpr, "cee": cee, "aids": aids,
+    rest = max(0, cost - aids)
+    # The loan never exceeds the rest to pay it finances, once both are rounded
+    eco_ptz = min(r(sim.get("eco_ptz_amount")), rest // 100 * 100) if sim.get("eco_ptz_amount") else 0
+    return {"eco_ptz": eco_ptz, "cost": cost, "cost_low": low, "cost_high": high, "mpr": mpr, "cee": cee, "aids": aids,
             "aids_low": aids_low, "aids_high": aids_high, "rest": max(0, cost - aids),
             "rest_low": max(0, low - aids_low), "rest_high": max(0, high - aids_high)}
+
+
+def green_range_shown(sim: Dict[str, Any]) -> bool:
+    """The 95 % range of the green value, unless so wide (few comparable
+    sales) that it says nothing: "0 € à 134 000 €" for a value of 20 000 €."""
+    value, low, high = sim.get("latent_gain") or 0, sim.get("latent_gain_low") or 0, sim.get("latent_gain_high") or 0
+    return not (low < value * 0.3 or high > value * 3)
