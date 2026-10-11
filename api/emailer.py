@@ -6,7 +6,7 @@ e.g. "SPREA <alertes@mondomaine.fr>" (domain verified in Resend).
 """
 import logging
 import os
-from typing import Optional
+from typing import Dict, Optional
 
 import httpx
 
@@ -20,14 +20,16 @@ def email_configured() -> bool:
 
 
 async def send_email(to: str, subject: str, html: str, text: str,
-                     transport: Optional[httpx.AsyncBaseTransport] = None) -> bool:
+                     transport: Optional[httpx.AsyncBaseTransport] = None,
+                     headers: Optional[Dict[str, str]] = None) -> bool:
+    """headers: extra email headers (List-Unsubscribe...)."""
     if not email_configured():
         return False
     try:
         async with httpx.AsyncClient(timeout=15, transport=transport) as client:
             res = await client.post(RESEND_URL, headers={"Authorization": f"Bearer {os.environ['RESEND_API_KEY'].strip()}"},
                                     json={"from": os.environ["ALERTS_FROM"].strip(), "to": [to], "subject": subject,
-                                          "html": html, "text": text})
+                                          "html": html, "text": text, **({"headers": headers} if headers else {})})
         if res.status_code >= 300:
             logger.error(f"Resend error {res.status_code}: {res.text[:200]}")
             return False

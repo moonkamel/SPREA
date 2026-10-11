@@ -239,7 +239,7 @@ async def owner_signal(store: SupabaseStore, siren: str) -> Optional[Dict[str, A
             "can_explain": claude.configured()}
 
 
-@router.post("/monopro/{building_id}/signal/explain")
+@router.post("/monopro/{building_id}/signal/explain", dependencies=[Depends(ai_limiter.per_user)])
 async def explain_signal(building_id: str, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     """What the BODACC events of the owner mean for this building, by Claude.
     Written once per set of events, then read from the table."""

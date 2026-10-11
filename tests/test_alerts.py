@@ -46,23 +46,71 @@ def test_check_zone_queries_new_dpe_and_ignores_duplicates():
 
 
 def test_run_alerts_emails_pro_users_only(monkeypatch):
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-key")
     store, seen, sent = FakeStore(), [], []
     store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
     store.profiles[BOB.id] = {"id": BOB.id, "email": BOB.email, "subscription_status": "canceled"}
     store.zones["z1"] = zone()
     store.zones["z2"] = zone(id="z2", user_id=BOB.id)
 
-    async def fake_send(to, subject, html, text):
-        sent.append((to, subject, html))
+    async def fake_send(to, subject, html, text, headers=None):
+        sent.append((to, subject, html, text, headers))
         return True
 
     monkeypatch.setattr(alerts, "send_email", fake_send)
     res = asyncio.run(alerts.run_alerts(store, date(2026, 10, 8), ademe(seen)))
-    assert res == {"zones_checked": 1, "users_notified": 1, "new_hits": 2, "errors": 0}
+    assert res == {"zones_checked": 1, "users_notified": 1, "new_hits": 2, "errors": 0, "skipped": 0}
     assert sent[0][0] == ALICE.email and sent[0][1] == "2 nouveaux DPE dans vos secteurs"
     assert "3 Rue Doudin" in sent[0][2] and "<script" not in sent[0][2]
+    # One-click unsubscribe: link in both versions, and the headers
+    url = alerts.unsubscribe_url(ALICE.id)
+    assert url in sent[0][3] and url in sent[0][2]
+    assert sent[0][4] == {"List-Unsubscribe": f"<{url}>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
     # Already checked today: nothing more
     assert asyncio.run(alerts.run_alerts(store, date(2026, 10, 8), ademe(seen)))["zones_checked"] == 0
+
+
+def test_failing_zone_does_not_stop_the_others_and_time_budget(monkeypatch):
+    store = FakeStore()
+    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "subscription_status": "active"}
+    store.zones["z1"] = zone()
+    store.zones["z2"] = zone(id="z2")
+    calls = []
+
+    async def check(store_, zone_, today, transport=None):
+        calls.append(zone_["id"])
+        if zone_["id"] == "z1":
+            raise KeyError("unexpected row")
+        return []
+    monkeypatch.setattr(alerts, "check_zone", check)
+    res = asyncio.run(alerts.run_alerts(store, date(2026, 10, 8)))
+    assert sorted(calls) == ["z1", "z2"] and res["errors"] == 1 and res["zones_checked"] == 2
+    # Budget spent: no new zone started, left for the next run
+    calls.clear()
+    res = asyncio.run(alerts.run_alerts(store, date(2026, 10, 8), budget=-1))
+    assert calls == [] and res["skipped"] == 2 and res["zones_checked"] == 0
+
+
+def test_signed_unsubscribe_link(env, monkeypatch):
+    client, store, billing, state = env
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-key")
+    store.zones["z1"] = zone()
+    store.zones["z2"] = zone(id="z2", user_id=BOB.id)
+    anonymous = TestClient(main.app)
+    token = alerts.unsubscribe_token(ALICE.id)
+    # Forged or someone else's id with this signature: refused
+    for bad in ("", "x", f"{BOB.id}.{token.split('.')[1]}", token[:-1] + ("0" if token[-1] != "0" else "1")):
+        assert anonymous.post(f"/api/alerts/unsubscribe?token={bad}").status_code == 400
+    assert store.zones["z1"]["email"] is True
+    # The link opens a page (mail scanners follow links), the click or the one-click POST unsubscribes
+    page = anonymous.get(f"/api/alerts/unsubscribe?token={token}")
+    assert page.status_code == 200 and "Me désabonner" in page.text and store.zones["z1"]["email"] is True
+    res = anonymous.post(f"/api/alerts/unsubscribe?token={token}", data={"List-Unsubscribe": "One-Click"})
+    assert res.status_code == 200 and "plus les emails" in res.text
+    assert store.zones["z1"]["email"] is False and store.zones["z2"]["email"] is True
+    # Another secret: old links no longer work
+    monkeypatch.setenv("ALERTS_UNSUBSCRIBE_SECRET", "other")
+    assert anonymous.post(f"/api/alerts/unsubscribe?token={token}").status_code == 400
 
 
 def test_email_content_escapes_external_text():
@@ -116,3 +164,7 @@ def test_resend_email_payload(monkeypatch):
     monkeypatch.setenv("ALERTS_FROM", "SPREA <alertes@sprea.fr>")
     assert asyncio.run(emailer.send_email("a@b.fr", "s", "<p>h</p>", "t", httpx.MockTransport(handler))) is True
     assert seen["auth"] == "Bearer re_test" and seen["body"]["to"] == ["a@b.fr"]
+    assert "headers" not in seen["body"]
+    asyncio.run(emailer.send_email("a@b.fr", "s", "<p>h</p>", "t", httpx.MockTransport(handler),
+                                   headers={"List-Unsubscribe": "<https://x>"}))
+    assert seen["body"]["headers"] == {"List-Unsubscribe": "<https://x>"}
