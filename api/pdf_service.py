@@ -321,6 +321,46 @@ def aid_amount(d: Dict[str, Any], value: float) -> str:
     return f"<font color='#3E8E63'>−{NBSP}{eur_aid(value)}</font>"
 
 
+def green_range(sim: Dict[str, Any]) -> str:
+    """The 95 % range of the green value, unless so wide (few comparable
+    sales) that it says nothing: "0 € à 134 000 €" for a value of 20 000 €."""
+    value, low, high = sim['latent_gain'] or 0, sim['latent_gain_low'] or 0, sim['latent_gain_high'] or 0
+    if low < value * 0.3 or high > value * 3:
+        return "fourchette large : peu de ventes comparables"
+    return f"{eur_r(low, 500)} à {eur_r(high, 500)}"
+
+
+def r(value: Optional[float], step: int = 100) -> int:
+    return int(round((value or 0) / step) * step)
+
+
+def figures(report: Dict[str, Any]) -> Dict[str, int]:
+    """Costs, aids and rest to pay as shown, rounded once so that every sum
+    in the report holds: total = sum of the lines, cost - aids = rest."""
+    sim = report['sim']
+    extras = [r(x['cost'], 10) for x in report.get('extra_costs') or []]
+    low = sum(r(w['cost_low']) for w in report['works']) + sum(extras)
+    high = sum(r(w['cost_high']) for w in report['works']) + sum(extras)
+    cost = r(sim['cost'])
+    if sim['aid_pathway'] == 'accompagne':
+        mpr, cee = r(sim['subsidies']), 0
+        aids_low, aids_high = r(sim.get('aids_low', sim['subsidies'])), r(sim.get('aids_high', sim['subsidies']))
+    else:
+        per_work = sum(r(w['aid'], 10) for w in report['works'] if w.get('aid'))
+        mpr = r(sim['subsidies'], 10)
+        # The CEE line closes the sum of the amounts per work
+        cee = max(0, per_work - mpr) if per_work else r(sim['cee_est'], 10)
+        aids_low = aids_high = mpr + cee
+    aids = mpr + cee if sim['aid_pathway'] != 'accompagne' else r(sim['subsidies'])
+    return {"cost": cost, "cost_low": low, "cost_high": high, "mpr": mpr, "cee": cee, "aids": aids,
+            "aids_low": aids_low, "aids_high": aids_high, "rest": max(0, cost - aids),
+            "rest_low": max(0, low - aids_low), "rest_high": max(0, high - aids_high)}
+
+
+def eur_span(low: float, high: float) -> str:
+    return eur(low) if low == high else f"{eur(low)} à {eur(high)}"
+
+
 def days(n: Any) -> str:
     n = int(n or 0)
     return f"{n} jour ouvré" if n <= 1 else f"{n} jours ouvrés"
@@ -330,13 +370,16 @@ def no_works_text(sim: Dict[str, Any]) -> str:
     """Why a report has no programme: a dwelling already efficient, or no
     work that improves it among those the simulation covers."""
     label = sim['current_label']
-    if label in ('A', 'B', 'C'):
-        return (f"Logement déjà performant (classe {label}) : aucun travaux n'est nécessaire, ni pour louer, ni pour vendre. "
+    if label in ('A', 'B'):
+        return (f"Logement déjà performant (classe {label}) : pas de travaux nécessaires, ni pour louer, ni pour vendre. "
                 "Des améliorations de confort restent possibles au cas par cas, sur devis.")
+    if label == 'C':
+        return ("Logement classé C : pas de travaux nécessaires pour louer ou pour vendre, sans limite de date. "
+                "Des améliorations restent possibles au cas par cas, sur devis.")
     if label == 'D':
-        return ("Logement classé D : il reste louable sans limite de date et aucun travaux n'a été retenu. Pour viser C ou mieux, "
-                "sélectionnez des travaux dans le simulateur ou faites établir un audit énergétique.")
-    return ("Aucun des travaux étudiés par ce simulateur n'améliore la classe de ce logement. Un audit énergétique réalisé "
+        return ("Logement classé D : il reste louable sans limite de date, et ce rapport ne retient pas de travaux. Pour viser "
+                "C ou mieux, un programme peut être chiffré sur demande, ou établi par un audit énergétique.")
+    return ("Aucun des travaux étudiés dans ce rapport n'améliore la classe de ce logement. Un audit énergétique réalisé "
             "sur place, avec un Accompagnateur Rénov', permet d'identifier les travaux adaptés.")
 
 
@@ -637,17 +680,18 @@ class PDFReportGenerator:
         ]], colWidths=[1.6 * cm, 1.0 * cm, 1.6 * cm, CONTENT_W - 4.2 * cm - 24])
         labels.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
 
-        aids = sim['subsidies'] + sim['cee_est']
+        fig = figures(report)
+        aids = fig['aids']
         small = style('kpi_small', fontSize=7.5, leading=10, textColor=MUTED)
         kpi_w = (CONTENT_W - 24) / 4
         kpis = Table([[
-            [*kpi_cell('Coût des travaux', f"≈{NBSP}{eur_r(sim['cost'])}"),
-             Paragraph(f"entre {eur_r(sim['cost_low'])} et {eur_r(sim['cost_high'])}", small)],
-            [*kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_aid(aids)}</font>"),
-             *([Paragraph(f"entre {eur_r(sim['aids_low'])} et {eur_r(sim['aids_high'])}", small)]
-               if round(sim.get('aids_high', 0) / 100) != round(sim.get('aids_low', 0) / 100) else [])],
-            [*kpi_cell('Reste à charge', f"≈{NBSP}{eur_r(sim['rest_to_pay'])}", big=True),
-             Paragraph(f"entre {eur_r(sim['rest_to_pay_low'])} et {eur_r(sim['rest_to_pay_high'])}", small)],
+            [*kpi_cell('Coût des travaux', f"≈{NBSP}{eur(fig['cost'])}"),
+             Paragraph(f"entre {eur(fig['cost_low'])} et {eur(fig['cost_high'])}", small)],
+            [*kpi_cell('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur(aids)}</font>"),
+             *([Paragraph(f"entre {eur(fig['aids_low'])} et {eur(fig['aids_high'])}", small)]
+               if fig['aids_low'] != fig['aids_high'] else [])],
+            [*kpi_cell('Reste à charge', f"≈{NBSP}{eur(fig['rest'])}", big=True),
+             Paragraph(f"entre {eur(fig['rest_low'])} et {eur(fig['rest_high'])}", small)],
             kpi_cell("Économies d'énergie", f"<font color='#3E8E63'>{eur_r(sim['annual_savings'], 10)}</font>"
                                              f"<font size='9' color='#5B6577'> / an</font>"),
         ]], colWidths=[kpi_w] * 4)
@@ -666,7 +710,7 @@ class PDFReportGenerator:
         # Below 250 €: no measurable gap between the two classes, not "+0 €"
         measurable = round((sim['latent_gain'] or 0) / 500) > 0
         green = (f"+{NBSP}{eur_r(sim['latent_gain'], 500)} <font size='7.5' color='#8A93A3'>"
-                 f"({eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)})</font>") if measurable else \
+                 f"({green_range(sim)})</font>") if measurable else \
             ("Pas d'écart de prix mesuré" if sim['new_label'] != sim['current_label'] else '–')
         after_color = '#3E8E63' if sim['new_ban_date'] is None else '#C4553A'
         rows = [
@@ -734,8 +778,8 @@ class PDFReportGenerator:
             usage_rows.append([Paragraph(text(u['name']), S['body']), Paragraph(eur_r(u['eur_before'], 10), S['right']),
                                Paragraph(after, S['right'])])
         usage_rows.append([Paragraph('<b>Total par an</b>', S['body']),
-                           Paragraph(f"<b>{eur_r(sum(u['eur_before'] for u in report['usages']), 10)}</b>", S['right']),
-                           Paragraph(f"<font color='#3E8E63'><b>{eur_r(sum(u['eur_after'] for u in report['usages']), 10)}</b></font>", S['right'])])
+                           Paragraph(f"<b>{eur(sum(r(u['eur_before'], 10) for u in report['usages']))}</b>", S['right']),
+                           Paragraph(f"<font color='#3E8E63'><b>{eur(sum(r(u['eur_after'], 10) for u in report['usages']))}</b></font>", S['right'])])
         widths = [CONTENT_W * 0.5, CONTENT_W * 0.25, CONTENT_W * 0.25]
         if not report['works']:
             # Nothing changes without works: no "after" column
@@ -793,7 +837,7 @@ class PDFReportGenerator:
         for extra in report['extra_costs']:
             rows.append([Paragraph(text(extra['name']), S['body']), Paragraph(eur_r(extra['cost'], 10), S['right'])])
         rows.append([Paragraph('<b>Total des travaux TTC</b>', S['body']),
-                     Paragraph(f"<b>{eur_range(sim['cost_low'], sim['cost_high'])}</b>", S['right'])])
+                     Paragraph(f"<b>{eur_span(figures(report)['cost_low'], figures(report)['cost_high'])}</b>", S['right'])])
         table = grid(rows, [CONTENT_W * 0.7, CONTENT_W * 0.3], bold_last=True)
         table.setStyle(TableStyle([('VALIGN', (0, 1), (-1, -2), 'TOP')]))
         out.append(table)
@@ -801,6 +845,9 @@ class PDFReportGenerator:
         if sim.get('duration_days'):
             notes.append(f"Durée indicative du chantier : {days(sim['duration_days'])}, hors délais d'approvisionnement.")
         notes.append("TVA à 5,5 % incluse. Fourchettes fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.")
+        if sim.get('new_ban_date'):
+            notes.append(f"Attention : après ces travaux, le logement reste concerné par l'interdiction de louer "
+                         f"({text(sim['new_rental_status']).lower()}) ; viser une classe de plus le met à l'abri plus longtemps.")
         out += [Spacer(1, 6), Paragraph(' '.join(notes), S['muted'])]
 
         alt = report.get('wall_alternative')
@@ -842,17 +889,19 @@ class PDFReportGenerator:
         sim = report['sim']
         fin = report['financing']
         pathway = sim['aid_pathway']
-        rows = [kv('Coût des travaux', eur_range(sim['cost_low'], sim['cost_high']))]
+        fig = figures(report)
+        rows = [kv('Coût des travaux', eur_span(fig['cost_low'], fig['cost_high']))]
         if pathway == 'accompagne':
-            rows.append(kv("MaPrimeRénov' rénovation d'ampleur", aid_amount(sim, sim['subsidies'])))
+            rows.append(kv("MaPrimeRénov' rénovation d'ampleur",
+                           f"<font color='#3E8E63'>−{NBSP}{eur_span(fig['aids_low'], fig['aids_high'])}</font>"))
         else:
-            if sim['subsidies']:
-                rows.append(kv("MaPrimeRénov' par geste", f"<font color='#3E8E63'>−{NBSP}{eur_aid(sim['subsidies'])}</font>"))
-            if sim['cee_est']:
-                rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur_aid(sim['cee_est'])}</font>"))
-            if not sim['subsidies'] and not sim['cee_est']:
+            if fig['mpr']:
+                rows.append(kv("MaPrimeRénov' par geste", f"<font color='#3E8E63'>−{NBSP}{eur(fig['mpr'])}</font>"))
+            if fig['cee']:
+                rows.append(kv('Primes CEE (estimation)', f"<font color='#3E8E63'>−{NBSP}{eur(fig['cee'])}</font>"))
+            if not fig['mpr'] and not fig['cee']:
                 rows.append(kv('Aides', '–'))
-        rows.append(kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_range(sim['rest_to_pay_low'], sim['rest_to_pay_high'])}</b></font>"))
+        rows.append(kv('<b>Reste à charge</b>', f"<font color='#A8853F'><b>{eur_span(fig['rest_low'], fig['rest_high'])}</b></font>"))
         out: List[Any] = [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True)]
 
         per_work = [w for w in report['works'] if w['aid']]
@@ -921,7 +970,7 @@ class PDFReportGenerator:
             rows += [
                 kv('Prix de marché local', f"{eur(report['price_per_m2'])}/m²" + (" <font size='7.5' color='#8A93A3'>(par défaut)</font>" if report['price_is_default'] else '')),
                 kv('Valeur verte estimée', f"<b>+{NBSP}{eur_r(sim['latent_gain'], 500)}</b>"),
-                kv('Fourchette', f"{eur_r(sim['latent_gain_low'], 500)} à {eur_r(sim['latent_gain_high'], 500)}"),
+                kv('Fourchette', green_range(sim)),
             ]
         elif sim['new_label'] != sim['current_label']:
             rows.append(kv('Valeur verte estimée', "Pas d'écart de prix mesuré entre ces classes"))

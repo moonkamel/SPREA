@@ -129,5 +129,7 @@ def estimate(current: str, target: str, surface: float, price_m2: float, kind: s
         "basis": (f"écart de prix de {format(premium, '.0f')} % mesuré entre les classes {current} et {target} sur les ventes "
                   f"{scope} ({format(m['n'], ',').replace(',', ' ')} ventes rapprochées de leur DPE, {period}), dont "
                   f"{round(WORKS_SHARE * 100)} % retenus pour les seuls travaux énergétiques : le reste de l'écart tient "
-                  "à l'état général des logements vendus (cuisine, salle de bains, finitions)"),
+                  "à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart s'applique à la "
+                  f"valeur du logement en classe {current}, estimée à {format(round(value_now, -3), ',.0f').replace(',', ' ')} € "
+                  "(le prix médian local mêle toutes les classes)"),
     }

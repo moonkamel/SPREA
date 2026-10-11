@@ -514,7 +514,9 @@ def simulate(data: SimulationInput) -> Dict:
         "m2_floor": env.areas["floor"],
         "window": env.window_count,
         "radiator": math.ceil(surface / 15),
-        "flat": 1,
+        # One ventilation unit or heat pump per dwelling: a whole building
+        # counts its dwellings (about 65 m² each when unknown)
+        "flat": max(1, round(surface / 65)) if "immeuble" in (prop.building_type or "").lower() else 1,
     }
 
     detailed_costs = []
@@ -566,6 +568,9 @@ def simulate(data: SimulationInput) -> Dict:
         current["label"] = official
     target = get_labels(new_cep, new_ges, thresholds)
     target["label"] = not_worse(target["label"], official, new_cep, new_ges, prop.initial_cep, ges)
+    if not work_ids:
+        # No works, no change: recomputed thresholds must not move an official label
+        target = {**current}
     steps = max(0, LABELS.index(current["label"]) - LABELS.index(target["label"]))
 
     # Aids
@@ -732,33 +737,48 @@ def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
     prop = data.property
     house = is_house(prop.building_type)
     shares = build_envelope(prop).shares()
-    best = None
+    # Only a wall the DPE calls poor and that weighs in the losses: windows
+    # already "très bonnes" replaced for 10 € a year to unlock the aid is what
+    # an adviser would refuse
+    qualities = {k: (v or "").lower() for k, v in (prop.insulation_quality or {}).items()}
+    key = {"roof": "roof", "floor_ceiling": "floor", "windows": "windows", "iti": "walls"}
+    candidates = []
     for work in VARIANT_CANDIDATES:
-        if work in data.works:
+        if work in data.works or ("ite" in data.works and work == "iti"):
             continue
         if work == "roof" and not (house or shares["roof"] >= 0.35):
             continue
         if work == "floor_ceiling" and not house:
             continue
-        alt = simulate(data.model_copy(update={"works": [*data.works, work]}))
+        quality = qualities.get(key[work], "")
+        if quality in ("bonne", "très bonne") or (shares.get(key[work], 0) < 0.05 and "insuffisante" not in quality):
+            continue
+        candidates.append(work)
+    insulation = {"iti", "ite", "roof", "floor_ceiling", "windows"}
+    missing = max(1, 2 - len(insulation & set(data.works)))
+    best = None
+    for added in itertools.combinations(candidates, missing):
+        alt = simulate(data.model_copy(update={"works": [*data.works, *added]}))
         if alt["aid_pathway"] != "accompagne":
             continue
         net = alt["rest_to_pay"] - 10 * alt["annual_savings"]
         if best is None or net < best[2]:
-            best = (work, alt, net)
+            best = (added, alt, net)
     if best is None or best[1]["rest_to_pay"] >= sim["rest_to_pay"]:
         return None
-    work, alt, _ = best
-    added = next(d for d in alt["detailed_costs"] if d["id"] == work)
+    works, alt, _ = best
+    costs = [d for d in alt["detailed_costs"] if d["id"] in works]
+    work = works[0]
     return {
         "work": work,
-        "work_name": WORKS_BY_ID[work]["name"],
-        "work_phrase": VARIANT_PHRASES[work],
-        "check": VARIANT_CHECKS.get(work),
-        "work_cost": added["cost"],
-        "work_cost_low": added["cost_low"],
-        "work_cost_high": added["cost_high"],
-        "loss_share": shares.get({"roof": "roof", "floor_ceiling": "floor", "windows": "windows", "iti": "walls"}[work]),
+        "works": list(works),
+        "work_name": " + ".join(WORKS_BY_ID[w]["name"] for w in works),
+        "work_phrase": " et ".join(VARIANT_PHRASES[w] for w in works),
+        "check": " ".join(VARIANT_CHECKS[w] for w in works if VARIANT_CHECKS.get(w)) or None,
+        "work_cost": sum(d["cost"] for d in costs),
+        "work_cost_low": sum(d["cost_low"] for d in costs),
+        "work_cost_high": sum(d["cost_high"] for d in costs),
+        "loss_share": sum(shares.get(key[w], 0) for w in works),
         "cost_low": alt["cost_low"],
         "cost_high": alt["cost_high"],
         "subsidies": alt["subsidies"],
@@ -797,8 +817,10 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
         water = eq["hydronic"] or (energy in FOSSIL_ENERGIES and not (prop.heating_generator or "").strip())
         if house and water and (energy in FOSSIL_ENERGIES or energy == "electricity"):
             systems.add("pac_air_eau")
-        # Inertia radiators only replace electric convectors
-        if energy == "electricity" and not eq["hydronic"]:
+        # Inertia radiators only replace electric convectors and panels, not
+        # an electric floor or ceiling heating
+        rayonnant_built_in = any(k in (prop.heating_generator or "").lower() for k in ("plancher", "plafond"))
+        if energy == "electricity" and not eq["hydronic"] and not rayonnant_built_in:
             systems.add("heating")
     # Thermodynamic water heater: not when hot water is already thermodynamic,
     # solar or collective; a small flat rarely has room for it
@@ -831,6 +853,12 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     if (not house and energy in FOSSIL_ENERGIES and not eq["collective_heating"]
             and not eq["heat_pump"] and energy_known(prop)):
         works.add("heating")
+    # A wall the DPE calls well insulated is not redone (windows already
+    # "très bonnes" replaced for 10 € a year)
+    good = {k for k, v in (prop.insulation_quality or {}).items() if (v or "").lower() in ("bonne", "très bonne")}
+    for element, ids in (("walls", ("iti", "ite")), ("windows", ("windows",)), ("roof", ("roof",)), ("floor", ("floor_ceiling",))):
+        if element in good:
+            works -= set(ids)
     return {"systems": systems, "works": works, "equipment": eq}
 
 
@@ -1043,8 +1071,12 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             sim = simulate(data)
             variant = ampleur_variant(data, sim)
             if variant and LABELS.index(variant["new_label"]) <= LABELS.index(sim["new_label"]):
-                preselected.append(variant["work"])
-                suggested.add(variant["work"])
+                preselected.extend(variant["works"])
+                suggested.update(variant["works"])
+                # The insulation added needs its ventilation too
+                if "vmc" not in preselected and "vmc" in avail["works"] and not eq["mechanical_ventilation"]:
+                    preselected.append("vmc")
+                    suggested.add("vmc")
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],

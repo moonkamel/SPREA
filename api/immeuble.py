@@ -281,8 +281,9 @@ def collective_works(source: Dict, shab: float, levels: int, dwellings: int,
     if floor in poor:
         add("floor", f"Plancher bas : isolation {floor}", roof_area * COSTS["floor"][0], roof_area * COSTS["floor"][1])
     collective = "collectif" in (source.get("type_installation_chauffage") or "").lower()
-    if collective and source.get("etiquette_dpe") in ("E", "F", "G"):
-        energy = (source.get("type_energie_principale_chauffage") or "").lower()
+    energy = (source.get("type_energie_principale_chauffage") or "").lower()
+    # A district heating substation has no boiler to replace
+    if collective and source.get("etiquette_dpe") in ("E", "F", "G") and "seau" not in energy:
         add("heating", f"Chauffage collectif{(' ' + energy) if energy else ''}, classe {source['etiquette_dpe']}",
             dwellings * COSTS["heating"][0], dwellings * COSTS["heating"][1])
     ventilation = (source.get("type_ventilation") or "").lower()
