@@ -1,0 +1,201 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+8 rue Emile Dufaur
+34310 Quarante
+Maison · 132 m² · avant 1948
+DPE du 02/10/2026 · n° 2634E2519332X
+Synthèse
++3 classes
+F → C
+252 → 150 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 14 200 € − 5 500 € ≈ 8 700 € 1 830 € / an
+entre 12 100 € et 17 700 €
+entre 6 600 € et 12 200 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 13 000 € (4 500 € à 29 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 6 600 € et 12 200 € après aides, pour environ 1 830 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 132 m², construite avant 1948, est classée F, avec 252 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (51 %), puis renouvellement d'air (25 %). La facture d'énergie est estimée à 3
+920 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : pompe à chaleur air/eau. Préconisations : Pompe à chaleur
+air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111
+% (moyenne et haute) ; puissance indicative d'environ 10 à 12 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur. Ensemble, ces travaux amènent le logement en classe C (150
+kWh/m²/an) et la facture à environ 2 090 € par an.
+Financement
+8 rue Emile Dufaur, 34310 Quarante Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 12 100 € et 17 700 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 6 600 € et 12 200 €. La rénovation d'ampleur exige au moins deux travaux
+d'isolation (murs, toiture, plancher ou fenêtres). Un éco-prêt à taux zéro de 8 700 € sur 15 ans représente
+environ 48 € par mois, à comparer à 153 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 830 € d'économie par an. Le reste à charge
+est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une isolation est prévue plus
+tard, la faire avant : la pompe à chaleur sera plus petite et moins chère.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (E / F)
+Consommation d'énergie primaire 252 kWh/m²/an
+Émissions de gaz à effet de serre 71 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul standard après 2015
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation Ventilation naturelle par conduit
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Moyenne (selon le DPE)
+Fenêtres Très bonne (selon le DPE)
+Facture d'énergie estimée 3 920 € / an
+Coût annuel indiqué par le DPE (prix 2021) 4 849 € / an
+8 rue Emile Dufaur, 34310 Quarante Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 51 %
+Renouvellement d'air 25 %
+Ponts thermiques et portes 12 %
+Plancher bas 6 %
+Fenêtres 4 %
+Toiture ou plafond 1 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 3 390 € 1 560 € (électricité)
+Eau chaude 440 € 440 €
+Autres usages (éclairage, auxiliaires) 90 € 90 €
+Total par an 3 920 € 2 090 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+8 rue Emile Dufaur, 34310 Quarante Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Pompe à chaleur air/eau RECOMMANDÉ 12 100 € à 17 700 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 102 kWh/m²/an · − 1 830 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 10 à 12 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une
+isolation est prévue plus tard, la faire avant : la pompe à chaleur sera plus petite et
+moins chère.
+Total des travaux TTC 12 100 € à 17 700 €
+Durée indicative du chantier : 3 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Aujourd'hui, la consommation correspond à la classe E, mais les émissions de gaz à effet de serre (71 kg CO₂/m²/an) classent le
+logement en F : l'étiquette retient la moins bonne des deux classes.
+Facture d'énergie estimée : 3 920 € → 2 090 € par an.
+8 rue Emile Dufaur, 34310 Quarante Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 12 100 € à 17 700 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 2 500 €
+Reste à charge 6 600 € à 12 200 €
+Aides par travaux Montant estimé
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 8 700 €
+Durée 15 ans
+Mensualité 48 € / mois
+Économie sur la facture − 153 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 1 536 €/m²
+Valeur verte estimée + 13 000 €
+Fourchette 4 500 € à 29 000 €
+Prix local : prix médian DVF de 72 ventes de maisons de surface comparable à Quarante (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 10 % mesuré entre les classes F et C sur les ventes du département (12 951 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+8 rue Emile Dufaur, 34310 Quarante Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 8 700 € sans intérêts.
+6 Travaux Environ 3 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 10 % mesuré entre les classes F et C sur les ventes du département (12 951
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 536 €/m², prix médian DVF de 72 ventes de maisons de surface comparable à Quarante
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+8 rue Emile Dufaur, 34310 Quarante Page 6 / 6

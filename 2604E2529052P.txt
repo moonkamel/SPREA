@@ -1,0 +1,195 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+16 Ch des Oulettes le Thor
+04200 Sisteron
+Maison · 200,2 m² · 1975-1977
+DPE du 03/10/2026 · n° 2604E2529052P
+Synthèse
++1 classe
+D → C
+182 → 144 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 18 900 € − 1 600 € ≈ 17 300 € 710 € / an
+entre 16 100 € et 23 600 €
+entre 14 400 € et 22 000 €
+Retour sur investissement environ 24 ans
+Valeur verte du bien + 20 500 € (4 500 € à 51 000 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 14 400 € et 22 000 € après aides, pour environ 710 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 200,2 m², construite entre 1975 et 1977, est classée D, avec 182 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (38 %), puis renouvellement d'air (29 %). La facture d'énergie est
+estimée à 3 400 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : isolation des murs (par l'intérieur). Préconisations :
+Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur,
+résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Autre solution pour les murs : isolation des
+murs (par l'extérieur), pour un reste à charge supérieur d'environ 17 800 €. Ensemble, ces travaux amènent
+le logement en classe C (144 kWh/m²/an) et la facture à environ 2 690 € par an.
+Financement
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 16 100 € et 23 600 €. Avec primes CEE, le reste à charge est estimé
+entre 14 400 € et 22 000 €. Un éco-prêt à taux zéro de 15 000 € sur 15 ans représente environ 83 € par
+mois, à comparer à 59 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 710 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 24 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 10,6 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / D)
+Consommation d'énergie primaire 182 kWh/m²/an
+Émissions de gaz à effet de serre 32 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul à condensation après 2015
+Eau chaude Chaudière fioul à condensation après 2015
+Ventilation VMC SF Hygro A avant 2001
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 3 400 € / an
+Coût annuel indiqué par le DPE (prix 2021) 4 701 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 38 %
+Renouvellement d'air 29 %
+Ponts thermiques et portes 10 %
+Plancher bas 10 %
+Toiture ou plafond 7 %
+Fenêtres 7 %
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 690 € 1 980 €
+Eau chaude 500 € 500 €
+Autres usages (éclairage, auxiliaires) 210 € 210 €
+Total par an 3 400 € 2 690 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire à partir du 01/01/2034
+Validité du DPE Jusqu'au 03/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 16 100 € à 23 600 €
+Les murs représentent 38 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 38 kWh/m²/an · − 710 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 10,6 m².
+Total des travaux TTC 16 100 € à 23 600 €
+Durée indicative du chantier : 5 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ
+2 480 € par an, reste à charge supérieur d'environ 17 800 €.
+Isolation des murs (par l'extérieur) 31 200 € à 47 700 €
+Coût total du programme 31 200 € à 47 700 €
+Aides estimées − 1 600 €
+Reste à charge 29 600 € à 46 100 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 400 € → 2 690 € par an.
+Le plan de financement
+4
+Coût des travaux 16 100 € à 23 600 €
+Primes CEE (estimation) − 1 600 €
+Reste à charge 14 400 € à 22 000 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 1 630 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 15 000 €
+Durée 15 ans
+Mensualité 83 € / mois
+Économie sur la facture − 59 € / mois
+Effort mensuel net 24 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 24 ans
+Prix de marché local 1 808 €/m²
+Valeur verte estimée + 20 500 €
+Fourchette 4 500 € à 51 000 €
+Prix local : prix médian DVF de 34 ventes de maisons de surface comparable à Sisteron (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 8 % mesuré entre les classes D et C sur les ventes du département (942 ventes rapprochées de leur DPE,
+2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements vendus
+(cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 15 000 € sans intérêts.
+5 Travaux Environ 5 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 8 % mesuré entre les classes D et C sur les ventes du département (942
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 808 €/m², prix médian DVF de 34 ventes de maisons de surface comparable à Sisteron
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+16 Ch des Oulettes le Thor, 04200 Sisteron Page 6 / 6

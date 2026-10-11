@@ -1,0 +1,206 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+136 Rue d'Anjou (T4)
+44600 Saint-Nazaire
+Appartement · 86,5 m² · 1948-1974 · étage 0
+DPE du 05/10/2026 · n° 2644E2542208D
+Synthèse
++1 classe
+D → C
+165 → 144 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 8 000 € − 320 € ≈ 7 700 € 200 € / an
+entre 6 400 € et 10 400 €
+entre 6 100 € et 10 100 €
+Retour sur investissement environ 38 ans
+Valeur verte du bien + 4 500 € (2 000 € à 9 000 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 6 100 € et 10 100 € après aides, pour environ 200 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 86,5 m², construit entre 1948 et 1974, est classé D, avec 165 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : fenêtres (24 %), puis plancher bas (21 %). La facture d'énergie est estimée à
+1 570 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : fenêtres double vitrage. Préconisations : Double vitrage à
+isolation renforcée avec gaz argon : Uw ≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries
+PVC, bois ou aluminium à rupture de pont thermique, pose en rénovation ou en dépose totale. Ensemble,
+ces travaux amènent le logement en classe C (144 kWh/m²/an) et la facture à environ 1 360 € par an.
+Financement
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 6 400 € et 10 400 €. Avec primes CEE, le reste à charge est estimé entre
+6 100 € et 10 100 €. Un éco-prêt à taux zéro de 7 000 € sur 15 ans représente environ 39 € par mois, à
+comparer à 17 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 200 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 38 ans environ.
+Points de vigilance
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (C / D)
+Consommation d'énergie primaire 165 kWh/m²/an
+Émissions de gaz à effet de serre 34 kg CO₂/m²/an
+Gaz · Chaudière gaz à condensation après 2015 ·
+Chauffage
+individuel
+Eau chaude Chaudière gaz à condensation après 2015
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 1 570 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 641 € / an
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Fenêtres 24 %
+Plancher bas 21 %
+Renouvellement d'air 18 %
+Murs 17 %
+Ponts thermiques et portes 14 %
+Toiture ou plafond 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 230 € 1 020 €
+Eau chaude 220 € 220 €
+Autres usages (éclairage, auxiliaires) 120 € 120 €
+Total par an 1 570 € 1 360 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Fenêtres double vitrage RECOMMANDÉ 6 400 € à 10 400 €
+Les fenêtres représentent 24 % des pertes de chaleur (environ 9 fenêtres) ; le
+DPE juge leur isolation « insuffisante ».
+Effet seul : − 21 kWh/m²/an · − 200 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+Total des travaux TTC 6 400 € à 10 400 €
+Durée indicative du chantier : 2 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Aujourd'hui, la consommation correspond à la classe C, mais les émissions de gaz à effet de serre (34 kg CO₂/m²/an) classent le
+logement en D : l'étiquette retient la moins bonne des deux classes.
+Facture d'énergie estimée : 1 570 € → 1 360 € par an.
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 6 400 € à 10 400 €
+Primes CEE (estimation) − 320 €
+Reste à charge 6 100 € à 10 100 €
+Aides par travaux Montant estimé
+Fenêtres double vitrage 320 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 7 000 €
+Durée 15 ans
+Mensualité 39 € / mois
+Économie sur la facture − 17 € / mois
+Effort mensuel net 22 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 38 ans
+Prix de marché local 2 600 €/m²
+Valeur verte estimée + 4 500 €
+Fourchette 2 000 € à 9 000 €
+Prix local : prix médian DVF de 583 ventes d’appartements de surface comparable à Saint-Nazaire (2024-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 3 % mesuré entre les classes D et C sur les ventes du département (18 636 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+L'immeuble et ses travaux à venir
+6
+Construction 1948-1974
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) : Obligatoire pour les copropriétés de plus de 15 ans : il liste les
+travaux des 10 prochaines années et le syndic doit le présenter en assemblée générale. Il alimente le fonds
+travaux.
+– DPE collectif de l'immeuble : Aucun DPE de l'immeuble n'est publié à cette adresse dans la base de
+l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs
+Nombre de logements inconnu : les travaux collectifs ne sont pas chiffrés.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 7 000 € sans intérêts.
+5 Travaux Environ 2 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 3 % mesuré entre les classes D et C sur les ventes du département (18 636
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 600 €/m², prix médian DVF de 583 ventes d’appartements de surface comparable à
+Saint-Nazaire (2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle
+de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+136 Rue d'Anjou (T4), 44600 Saint-Nazaire Page 7 / 7

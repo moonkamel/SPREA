@@ -1,0 +1,242 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+58 Route de la Garenne
+92140 Clamart
+Maison · 26 m² · 1948-1974
+DPE du 01/10/2026 · n° 2692E2510891M
+Synthèse
++3 classes
+G → D
+812 → 232 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 18 000 € − 7 700 € ≈ 10 300 € 1 590 € / an
+entre 15 200 € et 22 400 € entre 6 500 € et 9 500 €
+entre 8 700 € et 12 800 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 8 500 € (3 000 € à 18 500 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 8 700 € et 12 800 € après aides, pour environ 1 590 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 26 m², construite entre 1948 et 1974, est classée G, avec 812 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (44 %), puis toiture ou plafond (25 %). La facture d'énergie est estimée
+à 2 220 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), isolation du
+plancher bas, ventilation mécanique (VMC), radiateurs électriques à inertie et chauffe-eau
+thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+isolation des murs (par l'intérieur), avec environ 770 € d'économie par an. Préconisations : Combles
+aménagés : isolation des rampants, 20 à 24 cm en deux couches croisées entre et sous chevrons (laine
+minérale ou fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W exigée pour les aides. Doublage isolant de 12 à
+58 Route de la Garenne, 92140 Clamart Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance thermique R ≥
+3,7 m².K/W exigée pour les aides. Autre solution pour les murs : isolation des murs (par l'extérieur), pour un
+reste à charge supérieur d'environ 2 200 €. Ensemble, ces travaux amènent le logement en classe D (232
+kWh/m²/an) et la facture à environ 630 € par an.
+Financement
+Le coût des travaux se situe entre 15 200 € et 22 400 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 8 700 € et 12 800 €. Un éco-prêt à taux zéro de 10 300 € sur 20 ans
+représente environ 43 € par mois, à comparer à 132 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 590 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,4 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / D)
+Consommation d'énergie primaire 812 kWh/m²/an
+Émissions de gaz à effet de serre 33 kg CO₂/m²/an
+Chauffage Électricité · Convecteur électrique NFC, NF** et NF***
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 2 220 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 310 € / an
+58 Route de la Garenne, 92140 Clamart Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 44 %
+Toiture ou plafond 25 %
+Renouvellement d'air 12 %
+Ponts thermiques et portes 8 %
+Plancher bas 6 %
+Fenêtres 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 000 € 550 €
+Eau chaude 210 € 80 €
+Autres usages (éclairage, auxiliaires) 10 € 10 €
+Total par an 2 220 € 630 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 01/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+58 Route de la Garenne, 92140 Clamart Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 2 700 € à 4 000 €
+La toiture représente 25 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 170 kWh/m²/an · − 460 €/an sur la facture
+Préconisation : Combles aménagés : isolation des rampants, 20 à 24 cm en deux
+couches croisées entre et sous chevrons (laine minérale ou fibre de bois) avec
+frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 5 100 € à 7 500 €
+Les murs représentent 44 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 280 kWh/m²/an · − 770 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,4 m².
+3. Isolation du plancher bas RECOMMANDÉ 1 100 € à 1 700 €
+Le plancher bas représente 6 % des pertes de chaleur ; le DPE juge son
+isolation « insuffisante ».
+Effet seul : − 38 kWh/m²/an · − 100 €/an sur la facture
+Préconisation : Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W.
+4. Ventilation mécanique (VMC) RECOMMANDÉ 1 200 € à 1 900 €
+Le renouvellement d'air pèse 12 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 23 kWh/m²/an · − 60 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+5. Radiateurs électriques à inertie RECOMMANDÉ 1 200 € à 1 700 €
+Le logement est chauffé par des convecteurs électriques : des radiateurs à
+inertie bien régulés consomment environ 10 % de moins.
+Effet seul : − 66 kWh/m²/an · − 180 €/an sur la facture
+Préconisation : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et
+détection d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles.
+58 Route de la Garenne, 92140 Clamart Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Travaux Fourchette TTC
+6. Chauffe-eau thermodynamique RECOMMANDÉ 3 900 € à 5 500 €
+L'eau chaude représente 9 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 49 kWh/m²/an · − 130 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 15 200 € à 22 400 €
+Durée indicative du chantier : 19 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe D, facture d'environ 530 €
+par an, reste à charge supérieur d'environ 2 200 €.
+Isolation des murs (par l'extérieur) 8 400 € à 12 900 €
+Coût total du programme 18 500 € à 27 700 €
+Aides estimées − 7 900 € à 11 800 €
+Reste à charge 10 600 € à 15 900 €
+Effet sur l'étiquette énergie
+A ≤ 74
+B 75 à 117
+C 118 à 191
+D 192 à 265 Après travaux
+E 266 à 350
+F 351 à 445
+G > 445 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 220 € → 630 € par an.
+58 Route de la Garenne, 92140 Clamart Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 15 200 € à 22 400 €
+MaPrimeRénov' rénovation d'ampleur − 6 500 € à 9 500 €
+Reste à charge 8 700 € à 12 800 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 10 300 €
+Durée 20 ans
+Mensualité 43 € / mois
+Économie sur la facture − 132 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 7 045 €/m²
+Valeur verte estimée + 8 500 €
+Fourchette 3 000 € à 18 500 €
+Prix local : prix médian DVF de 297 ventes de maisons à Clamart (2024-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 7 % mesuré entre les classes G et D sur les ventes du département (2 947 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+58 Route de la Garenne, 92140 Clamart Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 10 300 € sans intérêts.
+6 Travaux Environ 19 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 7 % mesuré entre les classes G et D sur les ventes du département (2 947
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (7 045 €/m², prix médian DVF de 297 ventes de maisons à Clamart (2024-2025, actualisées au
+dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité
+de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+58 Route de la Garenne, 92140 Clamart Page 7 / 7

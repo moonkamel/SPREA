@@ -1,0 +1,229 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+9 Rue Robert Schuman
+50220 Ducey-Les Chéris
+Maison · 106,7 m² · 1989-2000
+DPE du 05/10/2026 · n° 2650E2542682P
+Synthèse
++2 classes
+D → B
+199 → 101 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 30 700 € − 7 300 € ≈ 23 400 € 1 200 € / an
+entre 26 100 € et 38 600 €
+entre 18 800 € et 31 300 €
+Retour sur investissement environ 20 ans
+Valeur verte du bien + 16 000 € (6 500 € à 32 500 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à B coûte entre 18 800 € et 31 300 € après aides, pour environ 1 200 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 106,7 m², construite entre 1989 et 2000, est classée D, avec 199 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : plancher bas (28 %), puis renouvellement d'air (26 %). La facture
+d'énergie est estimée à 2 330 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), isolation du plancher bas et pompe à
+chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour
+dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est : pompe à
+chaleur air/eau, avec environ 960 € d'économie par an. Préconisations : Doublage isolant de 12 à 14 cm
+(laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7
+m².K/W exigée pour les aides. Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W. Autre solution pour les murs : isolation des murs (par
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+l'extérieur), pour un reste à charge supérieur d'environ 11 000 €. Ensemble, ces travaux amènent le
+logement en classe B (101 kWh/m²/an) et la facture à environ 1 130 € par an.
+Financement
+Le coût des travaux se situe entre 26 100 € et 38 600 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 18 800 € et 31 300 €. Un éco-prêt à taux zéro de 23 400 € sur 15 ans
+représente environ 130 € par mois, à comparer à 100 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 200 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 20 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 6,5 m².
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / D)
+Consommation d'énergie primaire 199 kWh/m²/an
+Émissions de gaz à effet de serre 41 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz à condensation après 2015
+Eau chaude Chaudière gaz à condensation après 2015
+Ventilation VMC SF Auto réglable de 2001 à 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 2 330 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 368 € / an
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Plancher bas 28 %
+Renouvellement d'air 26 %
+Murs 21 %
+Ponts thermiques et portes 13 %
+Toiture ou plafond 7 %
+Fenêtres 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 860 € 750 € (électricité)
+Eau chaude 270 € 180 € (électricité)
+Autres usages (éclairage, auxiliaires) 200 € 200 €
+Total par an 2 330 € 1 130 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire à partir du 01/01/2034
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 9 900 € à 14 600 €
+Les murs représentent 21 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 17 kWh/m²/an · − 200 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 6,5 m².
+2. Isolation du plancher bas RECOMMANDÉ 4 100 € à 6 200 €
+Le plancher bas représente 28 % des pertes de chaleur ; le DPE juge son
+isolation « insuffisante ».
+Effet seul : − 22 kWh/m²/an · − 260 €/an sur la facture
+Préconisation : Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W.
+3. Pompe à chaleur air/eau RECOMMANDÉ 12 100 € à 17 700 €
+Remplace le chauffage au gaz : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 77 kWh/m²/an · − 960 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 4 à 6 kW après isolation, à confirmer par l'étude de
+l'installateur. Modèle double service (chauffage et eau chaude) : la chaudière
+remplacée produisait aussi l'eau chaude.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 26 100 € à 38 600 €
+Durée indicative du chantier : 11 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe B, facture d'environ 1 040 €
+par an, reste à charge supérieur d'environ 11 000 €.
+Isolation des murs (par l'extérieur) 19 300 € à 29 500 €
+Coût total du programme 35 400 € à 53 500 €
+Aides estimées − 7 300 €
+Reste à charge 28 100 € à 46 100 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110 Après travaux
+C 111 à 180
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 330 € → 1 130 € par an.
+Le plan de financement
+4
+Coût des travaux 26 100 € à 38 600 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 4 300 €
+Reste à charge 18 800 € à 31 300 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 1 010 €
+Isolation du plancher bas 800 €
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 23 400 €
+Durée 15 ans
+Mensualité 130 € / mois
+Économie sur la facture − 100 € / mois
+Effort mensuel net 30 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 20 ans
+Prix de marché local 1 847 €/m²
+Valeur verte estimée + 16 000 €
+Fourchette 6 500 € à 32 500 €
+Prix local : prix médian DVF de 84 ventes de maisons de surface comparable à Ducey-Les Chéris (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 11 % mesuré entre les classes D et B sur les ventes du département (6 383 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 23 400 € sans intérêts.
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Travaux Environ 11 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 11 % mesuré entre les classes D et B sur les ventes du département (6 383
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 847 €/m², prix médian DVF de 84 ventes de maisons de surface comparable à Ducey-Les
+Chéris (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de
+confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+9 Rue Robert Schuman, 50220 Ducey-Les Chéris Page 7 / 7

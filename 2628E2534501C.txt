@@ -1,0 +1,218 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+2 Allée Paul Verlaine
+28200 Châteaudun
+Maison · 111,3 m² · 1948-1974
+DPE du 05/10/2026 · n° 2628E2534501C
+Synthèse
++1 classe
+D → C
+206 → 126 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 12 400 € − 1 400 € ≈ 11 000 € 980 € / an
+entre 10 500 € et 15 900 €
+entre 9 000 € et 14 400 €
+Retour sur investissement environ 11 ans
+Valeur verte du bien + 3 000 € (500 € à 7 500 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 9 000 € et 14 400 € après aides, pour environ 980 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 111,3 m², construite entre 1948 et 1974, est classée D, avec 206 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (32 %), puis renouvellement d'air (31 %). La facture d'énergie est
+estimée à 2 520 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), isolation du plancher bas et ventilation
+mécanique (VMC), dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+isolation des murs (par l'intérieur), avec environ 630 € d'économie par an. Préconisations : Doublage
+isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance
+thermique R ≥ 3,7 m².K/W exigée pour les aides. Panneaux isolants de 10 à 12 cm fixés en sous-face
+(polystyrène, polyuréthane ou laine minérale), R ≥ 3 m².K/W. Autre solution pour les murs : isolation des
+2 Allée Paul Verlaine, 28200 Châteaudun Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+murs (par l'extérieur), pour un reste à charge supérieur d'environ 4 000 €. Ensemble, ces travaux amènent
+le logement en classe C (126 kWh/m²/an) et la facture à environ 1 540 € par an.
+Financement
+Le coût des travaux se situe entre 10 500 € et 15 900 €. Avec primes CEE, le reste à charge est estimé
+entre 9 000 € et 14 400 €. Un éco-prêt à taux zéro de 11 000 € sur 15 ans représente environ 61 € par mois,
+à comparer à 82 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 980 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 11 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,9 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / D)
+Consommation d'énergie primaire 206 kWh/m²/an
+Émissions de gaz à effet de serre 44 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz à condensation après 2015
+Eau chaude Chaudière gaz à condensation après 2015
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Insuffisante (selon le DPE)
+Isolation du plancher bas Moyenne (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 2 520 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 525 € / an
+2 Allée Paul Verlaine, 28200 Châteaudun Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 32 %
+Renouvellement d'air 31 %
+Plancher bas 13 %
+Fenêtres 10 %
+Toiture ou plafond 9 %
+Ponts thermiques et portes 4 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 210 € 1 230 €
+Eau chaude 190 € 190 €
+Autres usages (éclairage, auxiliaires) 120 € 120 €
+Total par an 2 520 € 1 540 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire à partir du 01/01/2034
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+2 Allée Paul Verlaine, 28200 Châteaudun Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 5 200 € à 7 700 €
+Les murs représentent 32 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 51 kWh/m²/an · − 630 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,9 m².
+2. Isolation du plancher bas RECOMMANDÉ 4 300 € à 6 500 €
+Le plancher bas représente 13 % des pertes de chaleur ; le DPE juge son
+isolation « moyenne ».
+Effet seul : − 15 kWh/m²/an · − 180 €/an sur la facture
+Préconisation : Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W.
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 31 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 14 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+Total des travaux TTC 10 500 € à 15 900 €
+Durée indicative du chantier : 9 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 1 470 €
+par an, reste à charge supérieur d'environ 4 000 €.
+Isolation des murs (par l'extérieur) 8 700 € à 13 200 €
+Coût total du programme 13 900 € à 21 400 €
+Aides estimées − 1 400 €
+Reste à charge 12 400 € à 19 900 €
+2 Allée Paul Verlaine, 28200 Châteaudun Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 520 € → 1 540 € par an.
+Le plan de financement
+4
+Coût des travaux 10 500 € à 15 900 €
+Primes CEE (estimation) − 1 400 €
+Reste à charge 9 000 € à 14 400 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 450 €
+Isolation du plancher bas 830 €
+Ventilation mécanique (VMC) 150 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 11 000 €
+Durée 15 ans
+Mensualité 61 € / mois
+Économie sur la facture − 82 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+2 Allée Paul Verlaine, 28200 Châteaudun Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur du bien
+5
+Retour sur investissement environ 11 ans
+Prix de marché local 1 255 €/m²
+Valeur verte estimée + 3 000 €
+Fourchette 500 € à 7 500 €
+Prix local : prix médian DVF de 159 ventes de maisons de surface comparable à Châteaudun (2024-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 3 % mesuré entre les classes D et C sur les ventes du département (6 832 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 11 000 € sans intérêts.
+5 Travaux Environ 9 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+2 Allée Paul Verlaine, 28200 Châteaudun Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 3 % mesuré entre les classes D et C sur les ventes du département (6 832
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 255 €/m², prix médian DVF de 159 ventes de maisons de surface comparable à Châteaudun
+(2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+2 Allée Paul Verlaine, 28200 Châteaudun Page 7 / 7

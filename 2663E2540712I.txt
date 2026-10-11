@@ -1,0 +1,238 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+1230 Avenue Du marechal leclerc
+63150 La Bourboule
+Appartement · 25,2 m² · 1948-1974 · étage 0
+DPE du 05/10/2026 · n° 2663E2540712I
+Synthèse
++1 classe
+G → F
+408 → 284 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 2 900 € − 270 € ≈ 2 600 € 370 € / an
+entre 2 400 € et 3 700 €
+entre 2 100 € et 3 500 €
+Retour sur investissement environ 7 ans
+Valeur verte du bien + 1 500 € (0 € à 4 000 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable jusqu'au 01/01/2028
+L'essentiel
+Passer de G à F coûte entre 2 100 € et 3 500 € après aides, pour environ 370 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 25,2 m², construit entre 1948 et 1974, est classé G, avec 408 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : murs (41 %), puis renouvellement d'air (24 %). La facture d'énergie est
+estimée à 1 230 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur) et ventilation mécanique (VMC), dans
+l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces
+derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est : isolation des murs (par
+l'intérieur), avec environ 320 € d'économie par an. Préconisations : Doublage isolant de 12 à 14 cm (laine
+minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W
+exigée pour les aides. VMC simple flux hygroréglable type B ; double flux si le logement est rendu étanche
+à l'air. Ensemble, ces travaux amènent le logement en classe F (284 kWh/m²/an) et la facture à environ 850
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+€ par an.
+Financement
+Le coût des travaux se situe entre 2 400 € et 3 700 €. Avec primes CEE, le reste à charge est estimé entre
+2 100 € et 3 500 €. La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y
+suffit pas. Un éco-prêt à taux zéro de 2 600 € sur 15 ans représente environ 15 € par mois, à comparer à 31
+€ d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 370 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 7 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 0,8 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (F / G)
+Consommation d'énergie primaire 408 kWh/m²/an
+Émissions de gaz à effet de serre 126 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul standard 1991-2015 · collectif
+Eau chaude Chaudière fioul standard 1991-2015
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation du plancher bas Bonne (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 1 230 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 541 € / an
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 41 %
+Renouvellement d'air 24 %
+Fenêtres 14 %
+Plancher bas 10 %
+Toiture ou plafond 7 %
+Ponts thermiques et portes 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 900 € 520 €
+Eau chaude 280 € 280 €
+Autres usages (éclairage, auxiliaires) 50 € 50 €
+Total par an 1 230 € 850 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable jusqu'au 01/01/2028
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 1 400 € à 2 100 €
+Les murs représentent 41 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 106 kWh/m²/an · − 320 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 0,8 m².
+2. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 24 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 18 kWh/m²/an · − 50 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+Total des travaux TTC 2 400 € à 3 700 €
+Durée indicative du chantier : 6 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 74
+B 75 à 117
+C 118 à 191
+D 192 à 265
+E 266 à 350
+F 351 à 445 Après travaux
+G > 445 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Aujourd'hui, la consommation correspond à la classe F, mais les émissions de gaz à effet de serre (126 kg CO₂/m²/an) classent le
+logement en G ; Après travaux, la consommation correspond à la classe E, mais les émissions de gaz à effet de serre (86 kg CO₂/m²/an)
+classent le logement en F : l'étiquette retient la moins bonne des deux classes.
+Facture d'énergie estimée : 1 230 € → 850 € par an.
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 2 400 € à 3 700 €
+Primes CEE (estimation) − 270 €
+Reste à charge 2 100 € à 3 500 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 120 €
+Ventilation mécanique (VMC) 150 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 2 600 €
+Durée 15 ans
+Mensualité 15 € / mois
+Économie sur la facture − 31 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 7 ans
+Prix de marché local 1 884 €/m²
+Valeur verte estimée + 1 500 €
+Fourchette 0 € à 4 000 €
+Prix local : prix médian DVF de 144 ventes d’appartements de surface comparable à La Bourboule (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 4 % mesuré entre les classes G et F sur les ventes du département (6 776 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Construction 1948-1974
+DPE des appartements 7 publiés : 1 en E, 2 en F, 4 en G
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 36 500 € à 60 900 €
+Remplacement de la chaufferie Chauffage collectif fioul domestique,
+21 000 € à 49 000 €
+collective classe G
+Ventilation actuelle : Ventilation par
+Ventilation mécanique collective 10 500 € à 21 000 €
+ouverture des fenêtres
+Total 68 000 € à 130 900 €
+Quote-part de l'appartement (environ 6,2 % de la surface) : 4 200 € à 8 100 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+2 400 € à 5 800 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades ;
+une ventilation individuelle fait double emploi avec une ventilation collective. Demandez au syndic si ces travaux
+sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (406 m² habitables estimés, 4 niveaux, 7 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 2 600 € sans intérêts.
+5 Travaux Environ 6 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 4 % mesuré entre les classes G et F sur les ventes du département (6 776
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 884 €/m², prix médian DVF de 144 ventes d’appartements de surface comparable à La
+Bourboule (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de
+confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+1230 Avenue Du marechal leclerc, 63150 La Bourboule Page 7 / 7

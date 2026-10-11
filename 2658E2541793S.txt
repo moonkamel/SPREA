@@ -1,0 +1,210 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+11 Rue Saint Trohé
+58000 Nevers
+Appartement · 77,2 m² · 1975-1977 · étage 0
+DPE du 05/10/2026 · n° 2658E2541793S
+Synthèse
+Pas de changement de classe
+D → D
+208 → 182 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 4 100 € − 350 € ≈ 3 700 € 220 € / an
+entre 3 500 € et 5 100 €
+entre 3 100 € et 4 800 €
+Retour sur investissement environ 17 ans
+Valeur verte du bien –
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Ces travaux coûtent entre 3 100 € et 4 800 € après aides, sans changer la classe D, pour environ 220 €
+d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 77,2 m², construit entre 1975 et 1977, est classé D, avec 208 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : plancher bas (32 %), puis renouvellement d'air (31 %). La facture d'énergie
+est estimée à 1 760 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : isolation des murs (par l'intérieur). Préconisations :
+Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur,
+résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Ces travaux ne changent pas la classe (D) mais
+ramènent la consommation à 182 kWh/m²/an et la facture à environ 1 540 € par an.
+Financement
+11 Rue Saint Trohé, 58000 Nevers Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 3 500 € et 5 100 €. Avec primes CEE, le reste à charge est estimé entre 3
+100 € et 4 800 €. Un éco-prêt à taux zéro de 3 700 € sur 15 ans représente environ 21 € par mois, à
+comparer à 18 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 220 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 17 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,3 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / D)
+Consommation d'énergie primaire 208 kWh/m²/an
+Émissions de gaz à effet de serre 42 kg CO₂/m²/an
+Gaz · Chaudière gaz basse température 2001-2015 ·
+Chauffage
+collectif
+Eau chaude Chaudière gaz basse température 2001-2015
+Ventilation VMC SF Auto réglable avant 1982
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Très bonne (selon le DPE)
+Facture d'énergie estimée 1 760 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 539 € / an
+11 Rue Saint Trohé, 58000 Nevers Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Plancher bas 32 %
+Renouvellement d'air 31 %
+Murs 26 %
+Fenêtres 6 %
+Ponts thermiques et portes 4 %
+Toiture ou plafond 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 220 € 1 010 €
+Eau chaude 350 € 350 €
+Autres usages (éclairage, auxiliaires) 190 € 190 €
+Total par an 1 760 € 1 540 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+11 Rue Saint Trohé, 58000 Nevers Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 500 € à 5 100 €
+Les murs représentent 26 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 26 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,3 m².
+Total des travaux TTC 3 500 € à 5 100 €
+Durée indicative du chantier : 5 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+Aujourd'hui · Après
+D 181 à 250
+travaux
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 760 € → 1 540 € par an.
+11 Rue Saint Trohé, 58000 Nevers Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 3 500 € à 5 100 €
+Primes CEE (estimation) − 350 €
+Reste à charge 3 100 € à 4 800 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 350 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 3 700 €
+Durée 15 ans
+Mensualité 21 € / mois
+Économie sur la facture − 18 € / mois
+Effort mensuel net 3 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 17 ans
+Valeur verte estimée –
+Prix local : prix médian DVF de 466 ventes d’appartements de surface comparable à Nevers (2024-2025, actualisées au dernier
+trimestre).
+11 Rue Saint Trohé, 58000 Nevers Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+L'immeuble et ses travaux à venir
+6
+Copropriété LE MANCINI
+Taille 78 lots principaux dont 78 logements
+Syndic GB IMMOBILIER
+Construction 1961 – 1974
+DPE des appartements 11 publiés : 10 en D, 1 en E
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2024) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2025) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 433 800 € à 723 000 €
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 36 200 € à 72 300 €
+parking)
+Total 470 000 € à 795 300 €
+Quote-part de l'appartement (environ 1,6 % de la surface) : 7 500 € à 12 700 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+4 300 € à 9 100 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (4 820 m² habitables estimés, 4 niveaux, 78 logements). Le montant réel dépend
+du plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+11 Rue Saint Trohé, 58000 Nevers Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 3 700 € sans intérêts.
+5 Travaux Environ 5 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Prix local retenu : 1 015 €/m², prix médian DVF de 466 ventes d’appartements de surface comparable à
+Nevers (2024-2025, actualisées au dernier trimestre).
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+11 Rue Saint Trohé, 58000 Nevers Page 7 / 7
