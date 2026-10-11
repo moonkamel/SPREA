@@ -161,7 +161,12 @@ def report_checks(case, sp, content: Dict[str, Any], market_value: Optional[floa
     dpe_cost = content["identity"].get("dpe_annual_cost")
     if dpe_cost:
         ratio = sim["annual_bill_before"] / float(dpe_cost) if float(dpe_cost) else 1
-        case.check(0.33 <= ratio <= 3, f"facture estimée {sim['annual_bill_before']:.0f} € pour {dpe_cost} € au DPE")
+        # The DPE's own costs use 2021 prices: far below today's for coal and wood
+        if sim.get("heating_energy") in ("coal", "wood"):
+            if not 0.33 <= ratio <= 3:
+                case.note(f"facture {ratio:.1f} × coût DPE (prix 2021 du combustible)")
+        else:
+            case.check(0.33 <= ratio <= 3, f"facture estimée {sim['annual_bill_before']:.0f} € pour {dpe_cost} € au DPE")
         if not 0.5 <= ratio <= 1.8:
             case.note(f"facture {ratio:.1f} × coût DPE")
 

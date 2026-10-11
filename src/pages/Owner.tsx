@@ -30,6 +30,8 @@ export default function OwnerPage({ code }: { code: string }) {
     const [sim, setSim] = useState<Simulation | null>(null);
     const [works, setWorks] = useState<string[]>([]);
     const [notFound, setNotFound] = useState(false);
+    // DPE or simulation unavailable: the page stays, without the estimate
+    const [simFailed, setSimFailed] = useState(false);
     const [form, setForm] = useState({ name: '', phone: '', email: '', message: '', consent: false, website: '' });
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -40,14 +42,21 @@ export default function OwnerPage({ code }: { code: string }) {
     const link = { 'X-Link-Code': code };
     useEffect(() => {
         (async () => {
+            let data: PageData;
             try {
                 const res = await fetch(`/api/l/${code}`);
                 if (!res.ok) { setNotFound(true); return; }
-                const data: PageData = await res.json();
-                setPage(data);
-                document.title = `Votre logement · ${data.agency.agency_name}`;
-                const dpe = await (await fetch(`/api/search-dpe/${encodeURIComponent(data.dpe_number)}`, { headers: link })).json();
-                if (!dpe.results?.length) return;
+                data = await res.json();
+            } catch {
+                setNotFound(true);
+                return;
+            }
+            setPage(data);
+            document.title = `Votre logement · ${data.agency.agency_name}`;
+            try {
+                const dpeRes = await fetch(`/api/search-dpe/${encodeURIComponent(data.dpe_number)}`, { headers: link });
+                const dpe = dpeRes.ok ? await dpeRes.json() : null;
+                if (!dpe?.results?.length) { setSimFailed(true); return; }
                 let p = toProperty(dpe.results[0]);
                 if (p.inseeCode) {
                     const params = new URLSearchParams({ insee: p.inseeCode, building_type: p.buildingType || '', surface: String(p.surface || '') });
@@ -63,9 +72,10 @@ export default function OwnerPage({ code }: { code: string }) {
                     headers: { 'Content-Type': 'application/json', ...link },
                     body: JSON.stringify({ property: propertyInput(p), works: selected, suggested_works: selected }),
                 });
-                if (simRes.ok) setSim(toSimulation(await simRes.json()));
+                if (!simRes.ok) { setSimFailed(true); return; }
+                setSim(toSimulation(await simRes.json()));
             } catch {
-                setNotFound(true);
+                setSimFailed(true);
             }
         })();
     }, [code]);
@@ -138,8 +148,12 @@ export default function OwnerPage({ code }: { code: string }) {
                     <div className="mt-5 flex items-center gap-4">
                         <DpeBadge label={label} size="lg" />
                         <p className="text-ink-soft">
-                            D'après son diagnostic de performance énergétique (DPE n° {page.dpe_number}), ce logement est classé{' '}
-                            <b className="text-ink">{label}</b>.
+                            {label ? (
+                                <>D'après son diagnostic de performance énergétique (DPE n° {page.dpe_number}), ce logement est classé{' '}
+                                <b className="text-ink">{label}</b>.</>
+                            ) : (
+                                <>Diagnostic de performance énergétique n° {page.dpe_number}.</>
+                            )}
                         </p>
                     </div>
                     {label && LAW[label] && <p className="mt-4 rounded-xl border border-coral/40 bg-coral/10 p-4 text-sm text-ink-soft">{LAW[label]}</p>}
@@ -147,10 +161,12 @@ export default function OwnerPage({ code }: { code: string }) {
 
                 <Card className="p-5 sm:p-6">
                     <h2 className="text-xl text-ink">Ce que pourrait changer une rénovation</h2>
-                    {!sim ? (
+                    {!sim && simFailed ? (
+                        <p className="mt-3 text-sm text-muted">L'estimation n'est pas disponible pour le moment. {agency.agent_name || agency.agency_name} pourra la réaliser avec vous.</p>
+                    ) : !sim ? (
                         <p className="mt-3 text-sm text-muted flex items-center gap-2"><Loader2 size={14} className="animate-spin" />Calcul en cours…</p>
                     ) : sim.cost === 0 ? (
-                        <p className="mt-3 text-sm text-muted">Aucun travaux prioritaire n'a été identifié pour ce logement.</p>
+                        <p className="mt-3 text-sm text-muted">Aucun travail prioritaire n'a été identifié pour ce logement.</p>
                     ) : (
                         <>
                             <div className="mt-4 flex items-center gap-3">

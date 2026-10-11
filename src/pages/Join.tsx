@@ -1,35 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Loader2, Users } from 'lucide-react';
 import { Button, Card } from '../ui';
 import { saveJoinToken, useAccount } from '../account';
-import { navigate } from '../router';
+import { Link } from '../router';
 import { PageShell } from './site';
 import { useSeo } from '../seo';
 
 // Invitation link: /rejoindre?token=...
+// The join itself is done by the account (joinTeam), once per token.
 export default function JoinPage() {
     useSeo({ title: 'Équipe · SPREA', noindex: true });
-    const { session, openLogin, authedFetch, refreshMe } = useAccount();
+    const { session, openLogin, joinTeam } = useAccount();
     const [token] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
-    const [status, setStatus] = useState<'idle' | 'joining' | 'error'>('idle');
+    const [accepted, setAccepted] = useState(false);
+    const [joining, setJoining] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!token || !session || status !== 'idle') return;
-        setStatus('joining');
-        (async () => {
-            const res = await authedFetch('/api/team/join', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
-            });
-            if (!res.ok) {
-                try { setError((await res.json()).detail); } catch { setError("L'invitation n'a pas pu être acceptée."); }
-                setStatus('error');
-                return;
-            }
-            await refreshMe();
-            navigate('/');
-        })();
-    }, [token, session, status, authedFetch, refreshMe]);
+    const join = async () => {
+        if (!accepted || joining) return;
+        setJoining(true);
+        setError(null);
+        const err = await joinTeam(token);
+        // On success, joinTeam navigates to the simulator
+        if (err) { setError(err); setJoining(false); }
+    };
 
     return (
         <PageShell>
@@ -38,16 +32,27 @@ export default function JoinPage() {
                 <h1 className="mt-4 text-2xl text-ink">Rejoindre votre agence sur SPREA</h1>
                 {!token ? (
                     <p className="mt-3 text-muted">Ce lien d'invitation est incomplet : ouvrez le lien reçu par email.</p>
-                ) : status === 'error' ? (
-                    <p role="alert" className="mt-3 text-coral">{error}</p>
-                ) : session ? (
-                    <Loader2 className="mt-6 mx-auto animate-spin text-faint" />
                 ) : (
                     <>
-                        <p className="mt-3 text-muted">Connectez-vous avec l'adresse email à laquelle l'invitation a été envoyée : votre accès sera activé aussitôt.</p>
-                        <Button className="mt-6" onClick={() => { saveJoinToken(token); openLogin('Connectez-vous avec l’adresse email invitée.'); }}>
-                            Se connecter
-                        </Button>
+                        <p className="mt-3 text-muted">
+                            {session
+                                ? 'Acceptez les conditions générales de vente pour activer votre accès.'
+                                : "Connectez-vous avec l'adresse email à laquelle l'invitation a été envoyée : votre accès sera activé aussitôt."}
+                        </p>
+                        <label className="mt-6 flex items-start gap-3 text-left text-sm text-ink-soft">
+                            <input type="checkbox" required checked={accepted} onChange={e => setAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 accent-brass shrink-0" />
+                            <span>J'accepte les <Link to="/cgv" className="text-brass underline">conditions générales de vente (CGV)</Link>.</span>
+                        </label>
+                        {error && <p role="alert" className="mt-4 text-sm text-coral">{error}</p>}
+                        {session ? (
+                            <Button className="mt-6" disabled={!accepted || joining} onClick={join}>
+                                {joining && <Loader2 className="animate-spin" size={16} />} Rejoindre l'agence
+                            </Button>
+                        ) : (
+                            <Button className="mt-6" disabled={!accepted} onClick={() => { saveJoinToken(token); openLogin('Connectez-vous avec l’adresse email invitée.'); }}>
+                                Se connecter
+                            </Button>
+                        )}
                     </>
                 )}
             </Card>

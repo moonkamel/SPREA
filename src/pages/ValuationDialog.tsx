@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Download, Loader2, X } from 'lucide-react';
 import { useAccount } from '../account';
-import { Button, Card, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
-import { AgentPageForm, errorDetail, type AgentPageData } from './Contacts';
+import { Button, Card, DpeBadge, errorDetail, eur, eurRange, type DPEClass } from '../ui';
+import { AgentPageForm, type AgentPageData } from './Contacts';
 
 interface Range { value: number; low: number; high: number }
 

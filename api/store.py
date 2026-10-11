@@ -187,6 +187,9 @@ class SupabaseStore:
             params["user_id"] = f"eq.{user_id}"
         return await self._request("PATCH", "alert_zones", params=params, json=fields, prefer="return=representation")
 
+    async def disable_zone_emails(self, user_id: str) -> None:
+        await self._request("PATCH", "alert_zones", params={"user_id": f"eq.{user_id}"}, json={"email": False})
+
     async def delete_zone(self, user_id: str, zone_id: str) -> List[Dict[str, Any]]:
         return await self._request("DELETE", "alert_zones", params={"id": f"eq.{zone_id}", "user_id": f"eq.{user_id}"},
                                    prefer="return=representation")
@@ -377,12 +380,20 @@ class SupabaseStore:
             params["created_at"] = f"gte.{since}"
         return await self._request("GET", "copro_doc_analyses", params=params)
 
+    async def claim_doc_analysis(self, analysis_id: str) -> bool:
+        """uploading -> analyzing, in one statement: False when another request
+        already took it."""
+        rows = await self._request("PATCH", "copro_doc_analyses",
+                                   params={"id": f"eq.{analysis_id}", "status": "eq.uploading"},
+                                   json={"status": "analyzing"}, prefer="return=representation")
+        return bool(rows)
+
     async def delete_doc_analysis(self, analysis_id: str) -> None:
         await self._request("DELETE", "copro_doc_analyses", params={"id": f"eq.{analysis_id}"})
 
     async def stale_doc_uploads(self, before: str) -> List[Dict[str, Any]]:
         return await self._request("GET", "copro_doc_analyses", params={
-            "status": "eq.uploading", "created_at": f"lt.{before}", "select": "id,files", "limit": "200"})
+            "status": "in.(uploading,analyzing)", "created_at": f"lt.{before}", "select": "id,files", "limit": "200"})
 
     # --- Storage (private bucket copro-docs) ---
 
@@ -400,6 +411,25 @@ class SupabaseStore:
                 return None
             res.raise_for_status()
             return res.content
+
+    async def list_objects(self, bucket: str, prefix: str) -> List[str]:
+        """Paths of the files under a folder (prefix ending with /), subfolders included."""
+        paths: List[str] = []
+        async with httpx.AsyncClient(timeout=self.timeout, transport=self.transport) as client:
+            folders = [prefix.rstrip("/")]
+            while folders:
+                folder = folders.pop()
+                res = await client.post(f"{self.storage_base}/object/list/{bucket}", headers=self.headers,
+                                        json={"prefix": folder, "limit": 1000, "offset": 0})
+                res.raise_for_status()
+                for item in res.json():
+                    path = f"{folder}/{item['name']}"
+                    # Folders have no id
+                    if item.get("id"):
+                        paths.append(path)
+                    else:
+                        folders.append(path)
+        return paths
 
     async def delete_objects(self, bucket: str, paths: List[str]) -> None:
         if not paths:

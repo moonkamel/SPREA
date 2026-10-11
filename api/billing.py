@@ -2,8 +2,8 @@
 Customer Portal, webhook signature verification.
 
 Prices are created in the Stripe dashboard. The subscription plans are found
-by their lookup key (solo_monthly, solo_yearly), prices excluding VAT; the
-former STRIPE_PRICE_PRO is the fallback. STRIPE_PRICE_REPORT (one-time) is
+by their lookup key (solo_monthly, solo_yearly...), prices excluding VAT; the
+former STRIPE_PRICE_PRO is the fallback for solo_monthly only. STRIPE_PRICE_REPORT (one-time) is
 kept for the reports bought before the subscription-only offer.
 """
 import calendar
@@ -70,6 +70,17 @@ def add_months(timestamp: int, months: int) -> int:
     return int(d.replace(year=year, month=month, day=day).timestamp())
 
 
+class PlanUnavailable(Exception):
+    """No Stripe price found for a plan (missing lookup key, or Stripe error)."""
+
+
+class SeatsLocked(Exception):
+    """Fewer agents asked during the commitment."""
+    def __init__(self, end: Optional[int]):
+        super().__init__("seats locked")
+        self.end = end
+
+
 def commitment_end(subscription: Dict[str, Any]) -> Optional[int]:
     """End of the minimum duration of a subscription, None without commitment."""
     try:
@@ -111,21 +122,30 @@ class Billing:
         return self._price_labels[price_id]
 
     async def plan_price(self, plan: str) -> str:
-        """Price id of a plan, from its lookup key (falls back to STRIPE_PRICE_PRO)."""
+        """Price id of a plan, from its lookup key. Only solo_monthly falls back
+        to STRIPE_PRICE_PRO: another plan must never be billed at that price."""
         if plan not in self._plan_prices:
             try:
                 prices = as_dict(await self.client.v1.prices.list_async(params={"lookup_keys": [plan], "active": True}))
                 found = prices.get("data") or []
-                if not found:
-                    return self.price_pro
-                self._plan_prices[plan] = found[0]["id"]
             except Exception as e:
                 logger.error(f"Cannot load Stripe plan {plan}: {e}")
-                return self.price_pro
+                found = []
+            if not found:
+                if plan == "solo_monthly":
+                    return self.price_pro
+                raise PlanUnavailable(plan)
+            self._plan_prices[plan] = found[0]["id"]
         return self._plan_prices[plan]
 
     async def plan_labels(self) -> Dict[str, Optional[str]]:
-        return {plan: await self.price_label(await self.plan_price(plan)) for plan in PLANS}
+        labels: Dict[str, Optional[str]] = {}
+        for plan in PLANS:
+            try:
+                labels[plan] = await self.price_label(await self.plan_price(plan))
+            except PlanUnavailable:
+                labels[plan] = None
+        return labels
 
     async def vat_rate(self) -> Optional[str]:
         """20 % VAT rate included in the prices, shown on the invoice, when Stripe
@@ -266,9 +286,12 @@ class Billing:
             "cancel_at": end, "proration_behavior": "none"}))
 
     async def update_seats(self, subscription_id: str, seats: int) -> None:
-        """Changes the number of agents of an agency subscription, prorated."""
+        """Changes the number of agents of an agency subscription, prorated. Fewer
+        agents only once the commitment is over (CGV art. 9)."""
         sub = as_dict(await self.client.v1.subscriptions.retrieve_async(subscription_id))
         item = sub["items"]["data"][0]
+        if seats < (item.get("quantity") or 0) and committed(sub):
+            raise SeatsLocked(commitment_end(sub))
         await self.client.v1.subscriptions.update_async(subscription_id, params={
             "items": [{"id": item["id"], "quantity": seats}],
             "proration_behavior": "create_prorations",

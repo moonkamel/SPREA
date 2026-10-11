@@ -3,7 +3,7 @@ import { Bell, Loader2, MapPin, QrCode, Trash2 } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
-import { Button, Card, DpeBadge, Switch, type DPEClass } from '../ui';
+import { Button, Card, DpeBadge, errorDetail, Switch, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { SiteFooter, SiteHeader } from './site';
 
@@ -45,6 +45,9 @@ export default function AlertsPage() {
     const [emailEnabled, setEmailEnabled] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // 402: the account has no subscription
+    const [subscribersOnly, setSubscribersOnly] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
     const [zoneFilter, setZoneFilter] = useState('');
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
 
@@ -53,14 +56,15 @@ export default function AlertsPage() {
         setLoading(true);
         try {
             const res = await authedFetch('/api/alerts');
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.detail || 'Le chargement a échoué.');
+            setSubscribersOnly(res.status === 402);
+            if (!res.ok) throw new Error(await errorDetail(res, 'Le chargement a échoué.'));
+            const data = await res.json();
             setZones(data.zones);
             setHits(data.hits);
             setEmailEnabled(data.email_enabled);
             setError(null);
         } catch (e) {
-            setError((e as Error).message);
+            setError(e instanceof TypeError ? 'Le chargement a échoué. Vérifiez votre connexion et réessayez.' : (e as Error).message);
         } finally {
             setLoading(false);
         }
@@ -69,18 +73,28 @@ export default function AlertsPage() {
     useEffect(() => { load(); }, [load]);
 
     const updateZone = async (zone: Zone, fields: Partial<Zone>) => {
-        const res = await authedFetch(`/api/alerts/zones/${zone.id}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
-        });
-        if (res.ok) setZones(zs => zs.map(z => (z.id === zone.id ? { ...z, ...fields } : z)));
+        setActionError(null);
+        try {
+            const res = await authedFetch(`/api/alerts/zones/${zone.id}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
+            });
+            if (!res.ok) { setActionError(await errorDetail(res, "L'alerte n'a pas pu être modifiée.")); return; }
+            setZones(zs => zs.map(z => (z.id === zone.id ? { ...z, ...fields } : z)));
+        } catch {
+            setActionError("L'alerte n'a pas pu être modifiée. Vérifiez votre connexion et réessayez.");
+        }
     };
 
     const deleteZone = async (zone: Zone) => {
         if (!window.confirm(`Supprimer l'alerte « ${zone.name} » et ses résultats ?`)) return;
-        const res = await authedFetch(`/api/alerts/zones/${zone.id}`, { method: 'DELETE' });
-        if (res.ok) {
+        setActionError(null);
+        try {
+            const res = await authedFetch(`/api/alerts/zones/${zone.id}`, { method: 'DELETE' });
+            if (!res.ok) { setActionError(await errorDetail(res, "L'alerte n'a pas pu être supprimée.")); return; }
             setZones(zs => zs.filter(z => z.id !== zone.id));
             setHits(hs => hs.filter(h => h.zone_id !== zone.id));
+        } catch {
+            setActionError("L'alerte n'a pas pu être supprimée. Vérifiez votre connexion et réessayez.");
         }
     };
 
@@ -96,7 +110,7 @@ export default function AlertsPage() {
     }, [hits, zoneFilter]);
 
     const zoneName = (id: string) => zones.find(z => z.id === id)?.name || '';
-    const locked = error?.includes('Pro') || (me && !me.is_pro);
+    const locked = subscribersOnly || (me && !me.is_pro);
 
     return (
         <div className="min-h-screen flex flex-col bg-canvas">
@@ -127,6 +141,7 @@ export default function AlertsPage() {
                         {error && <Card className="p-4 text-sm text-coral">{error}</Card>}
                         <Card className="p-5 sm:p-6">
                             <h2 className="text-xl text-ink">Vos zones</h2>
+                            {actionError && <p role="alert" className="mt-2 text-sm text-coral">{actionError}</p>}
                             {zones.length === 0 ? (
                                 <p className="mt-3 text-sm text-muted">
                                     Aucune zone. Sur la <Link to="/prospection" className="underline text-brass-light">carte de prospection</Link>,

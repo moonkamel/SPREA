@@ -15,7 +15,9 @@ Flow (the files never go through this function's request body, limited to
 Documents may name private persons (co-owners in arrears, council members):
 Claude is told never to repeat their names, and the files are not kept.
 """
+import asyncio
 import base64
+import hmac
 import logging
 import os
 from datetime import date, datetime, timedelta, timezone
@@ -49,6 +51,21 @@ MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_TOTAL_BYTES = 22 * 1024 * 1024
 TYPES = {"application/pdf": "document", "image/jpeg": "image", "image/png": "image", "image/webp": "image"}
 MONTHLY_QUOTA = int(os.getenv("COPRO_DOCS_PER_MONTH", "20"))
+# Claude must answer before Vercel stops the function (300 s)
+CLAUDE_DEADLINE = 250
+
+
+def sniff_type(data: bytes) -> Optional[str]:
+    """Media type from the first bytes of the file: the declared one is not trusted."""
+    if data.startswith(b"%PDF"):
+        return "application/pdf"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if data.startswith(b"\x89PNG"):
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
 
 
 # --- What Claude returns ---
@@ -260,26 +277,47 @@ async def analyze(analysis_id: UUID, user: User = Depends(current_user), store: 
     row = await owned(store, analysis_id, user)
     if row["status"] == "done":
         return {**summary(row), "result": row["result"]}
+    if row["status"] == "analyzing":
+        raise HTTPException(status_code=409, detail="Analyse déjà en cours.")
     if row["status"] != "uploading":
         raise HTTPException(status_code=409, detail="Cette analyse a échoué : recommencez avec les documents.")
-    files = row["files"]
+    await require_subscriber(store, user)
+    files = [dict(f) for f in row["files"]]
     paths = [f["path"] for f in files]
+
+    async def refuse(error: str, detail: str) -> None:
+        await store.delete_objects(BUCKET, paths)
+        await store.update_doc_analysis(row["id"], {"status": "failed", "error": error})
+        raise HTTPException(status_code=400, detail=detail)
+
     blobs = []
     for f in files:
         data = await store.download_object(BUCKET, f["path"])
         if data is None:
             raise HTTPException(status_code=400, detail=f"« {f['name']} » n'a pas été reçu : renvoyez les documents.")
         if len(data) > MAX_FILE_BYTES:
-            await store.delete_objects(BUCKET, paths)
-            await store.update_doc_analysis(row["id"], {"status": "failed", "error": "file too large"})
-            raise HTTPException(status_code=400, detail=f"« {f['name']} » dépasse 20 Mo.")
+            await refuse("file too large", f"« {f['name']} » dépasse 20 Mo.")
+        f["type"] = sniff_type(data)
+        if f["type"] not in TYPES:
+            await refuse("unsupported file", f"« {f['name']} » : seuls les PDF et les photos (JPEG, PNG, WebP) sont acceptés.")
         blobs.append(data)
+    # Sizes actually uploaded, not those announced
+    if sum(len(b) for b in blobs) > MAX_TOTAL_BYTES:
+        await refuse("too large", "22 Mo au total au maximum : envoyez les documents en deux fois.")
+    # One Claude call per analysis, even if the button is clicked twice
+    if not await store.claim_doc_analysis(row["id"]):
+        raise HTTPException(status_code=409, detail="Analyse déjà en cours.")
 
     try:
-        result = await claude.json_call(SYSTEM, build_content(files, blobs, row.get("address"), date.today()), SCHEMA,
-                                        effort="medium", max_tokens=16000, timeout=240)
+        result = await asyncio.wait_for(
+            claude.json_call(SYSTEM, build_content(files, blobs, row.get("address"), date.today()), SCHEMA,
+                             effort="medium", max_tokens=16000, timeout=240, max_retries=0),
+            CLAUDE_DEADLINE)
     except claude.ClaudeUnavailable as e:
         result, error = None, str(e)
+    except asyncio.TimeoutError:
+        logger.error("Copro documents: Claude did not answer in time")
+        result, error = None, "timeout"
     finally:
         # The documents are never kept
         try:
@@ -337,7 +375,8 @@ async def delete_analysis(analysis_id: UUID, user: User = Depends(current_user),
 
 
 async def purge_stale_uploads(store: SupabaseStore, now: Optional[datetime] = None) -> int:
-    """Files uploaded but never analysed: deleted after a day (daily cron)."""
+    """Files uploaded but never analysed (or whose analysis was cut off):
+    deleted after a day (daily cron)."""
     before = ((now or datetime.now(timezone.utc)) - timedelta(days=1)).isoformat()
     rows = await store.stale_doc_uploads(before)
     for r in rows:
@@ -349,6 +388,6 @@ async def purge_stale_uploads(store: SupabaseStore, now: Optional[datetime] = No
 @router.get("/cron/copro-docs")
 async def cron_purge(authorization: Optional[str] = Header(None)):
     secret = os.getenv("CRON_SECRET", "").strip()
-    if not secret or authorization != f"Bearer {secret}":
+    if not secret or not hmac.compare_digest((authorization or "").encode(), f"Bearer {secret}".encode()):
         raise HTTPException(status_code=401, detail="Non autorisé.")
     return {"purged": await purge_stale_uploads(get_store())}

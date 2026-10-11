@@ -1,6 +1,6 @@
 import { ArrowRight, Bell, Calculator, FileText, MapPinned, Scale, ShieldCheck } from 'lucide-react';
 import { Button, Card } from '../ui';
-import { navigate, Link } from '../router';
+import { navigate, Link, usePath } from '../router';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { Screen } from '../pages/Screen';
 import { useSeo } from '../seo';
@@ -10,7 +10,7 @@ const PILLARS = [
     {
         icon: MapPinned,
         title: 'Prospecter',
-        text: "Toutes les passoires E, F, G de votre secteur sur une carte, et chaque matin les nouveaux DPE publiés : un DPE précède presque toujours une vente ou une location.",
+        text: "Toutes les passoires E, F, G de votre secteur sur une carte, et chaque matin les nouveaux DPE publiés : un DPE est obligatoire avant toute vente ou location.",
         anchor: 'prospecter',
     },
     {
@@ -38,6 +38,8 @@ export default function Home() {
         title: "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte, avis de valeur",
         description: "Repérez les passoires thermiques de votre secteur, recevez chaque matin les nouveaux DPE et remettez à vos vendeurs un avis de valeur avant / après travaux fondé sur les ventes DVF.",
         path: '/',
+        // Kept mounted (hidden) under the other routes: only the home page sets these
+        active: usePath() === '/',
     });
     return (
         <div className="min-h-screen flex flex-col">
@@ -93,11 +95,11 @@ export default function Home() {
                     <div className="mt-6 grid gap-5 md:grid-cols-2">
                         <Card className="p-7 flex gap-4 items-start">
                             <Bell size={22} className="text-brass shrink-0" />
-                            <p className="text-sm text-muted leading-relaxed"><span className="text-ink">Alertes quotidiennes.</span> Définissez vos secteurs : chaque matin, les DPE publiés la veille, avant que le bien n'arrive sur les portails.</p>
+                            <p className="text-sm text-muted leading-relaxed"><span className="text-ink">Alertes quotidiennes.</span> Définissez vos secteurs : chaque matin, les DPE nouvellement publiés par l'ADEME (quelques jours après leur réalisation), souvent avant que le bien n'arrive sur les portails.</p>
                         </Card>
                         <Card className="p-7 flex gap-4 items-start">
                             <Calculator size={22} className="text-brass shrink-0" />
-                            <p className="text-sm text-muted leading-relaxed"><span className="text-ink">Des chiffres opposables.</span> DPE officiels de l'ADEME, ventes DVF de la DGFiP, barèmes d'aides en vigueur : chaque montant cite sa source.</p>
+                            <p className="text-sm text-muted leading-relaxed"><span className="text-ink">Des chiffres sourcés.</span> DPE publiés par l'ADEME, ventes DVF de la DGFiP, barèmes d'aides en vigueur : chaque montant cite sa source.</p>
                         </Card>
                     </div>
                 </section>

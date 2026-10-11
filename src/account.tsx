@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
-import { Button } from './ui';
+import { Button, errorDetail } from './ui';
 import { navigate } from './router';
 import { KeyRound, Loader2, LogOut, Mail, Sparkles, Trash2, User as UserIcon, X } from 'lucide-react';
 
@@ -13,7 +13,7 @@ interface PublicConfig {
     billing_enabled: boolean;
     report_price: string | null;
     pro_price: string | null;
-    // Subscription plans, prices excluding VAT
+    // Subscription plans, prices including VAT (TTC)
     plans?: Partial<Record<Plan, string | null>>;
 }
 
@@ -79,6 +79,7 @@ interface AccountContextValue {
     openLogin: (reason?: string) => void;
     openAccount: () => void;
     authedFetch: (url: string, init?: RequestInit) => Promise<Response>;
+    joinTeam: (token: string) => Promise<string | null>;
 }
 
 // A report asked for before signing in: kept across the magic link round trip
@@ -94,7 +95,8 @@ const clearPending = () => {
     try { localStorage.removeItem(PENDING_KEY); } catch { /* storage unavailable */ }
 };
 
-// Invitation link opened before signing in (the magic link comes back to "/")
+// Invitation link opened before signing in (the magic link comes back to "/"),
+// saved once the CGV are accepted on the invitation page
 const JOIN_KEY = 'sprea_join_token';
 export const saveJoinToken = (token: string) => {
     try { localStorage.setItem(JOIN_KEY, token); } catch { /* storage unavailable */ }
@@ -141,9 +143,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         return fetch(url, { ...init, headers });
     }, []);
 
-    const errorMessage = async (res: Response) => {
-        try { return (await res.json()).detail || `Erreur ${res.status}`; } catch { return `Erreur ${res.status}`; }
-    };
+    const errorMessage = (res: Response) => errorDetail(res, `Erreur ${res.status}`);
 
     const refreshMe = useCallback(async (): Promise<Me | null> => {
         if (!supabase.current) return null;
@@ -158,7 +158,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         const res = await authedFetch(`/api/reports/${id}/pdf`);
         if (!res.ok) { setNotice(await errorMessage(res)); return; }
         const disposition = res.headers.get('content-disposition') || '';
-        const filename = disposition.match(/filename=([^;]+)/)?.[1] || 'Rapport_SPREA.pdf';
+        const filename = disposition.match(/filename="?([^";]+)/)?.[1] || 'Rapport_SPREA.pdf';
         const url = URL.createObjectURL(await res.blob());
         const a = document.createElement('a');
         a.href = url;
@@ -211,22 +211,42 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         setPurchase({ plan, order });
     }, [config, session, me]);
 
+    // Joins an agency (the CGV were accepted on the invitation page). Single
+    // path for the invitation page and the pending invitation below: a token
+    // is sent once, again only after a failure. Resolves to an error message.
+    const joining = useRef<{ token: string; promise: Promise<string | null> } | null>(null);
+    const joinTeam = useCallback((token: string) => {
+        if (joining.current?.token === token) return joining.current.promise;
+        const promise = (async (): Promise<string | null> => {
+            try {
+                const res = await authedFetch('/api/team/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, accept_terms: true }),
+                });
+                if (!res.ok) return await errorDetail(res, "L'invitation n'a pas pu être acceptée.");
+                const data = await res.json();
+                await refreshMe();
+                setNotice(`Bienvenue dans l'équipe ${data.team?.name || ''} : tous les outils SPREA sont débloqués.`);
+                navigate('/');
+                return null;
+            } catch {
+                return "L'invitation n'a pas pu être acceptée. Vérifiez votre connexion et réessayez.";
+            }
+        })();
+        joining.current = { token, promise };
+        promise.then(err => { if (err && joining.current?.promise === promise) joining.current = null; });
+        return promise;
+    }, [authedFetch, refreshMe]);
+
     // Invitation to an agency opened before signing in: accepted once signed in
     const acceptPendingInvitation = useCallback(async () => {
         const token = loadJoinToken();
         if (!token) return;
         clearJoinToken();
-        const res = await authedFetch('/api/team/join', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-        });
-        if (!res.ok) { setNotice(await errorMessage(res)); return; }
-        const data = await res.json();
-        await refreshMe();
-        setNotice(`Bienvenue dans l'équipe ${data.team?.name || ''} : tous les outils SPREA sont débloqués.`);
-        navigate('/');
-    }, [authedFetch, refreshMe]);
+        const err = await joinTeam(token);
+        if (err) setNotice(err);
+    }, [joinTeam]);
 
     // Back from Stripe Checkout: wait until the payment is confirmed
     const handleCheckoutReturn = useCallback(async () => {
@@ -309,7 +329,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, [config]);
 
     const value: AccountContextValue = {
-        config, session, me, requestReport, startSubscription, authedFetch, refreshMe,
+        config, session, me, requestReport, startSubscription, authedFetch, refreshMe, joinTeam,
         openLogin: (reason?: string) => setLoginReason(reason || ''),
         openAccount: () => { setShowAccount(true); refreshMe(); },
     };
@@ -745,8 +765,8 @@ function PurchaseModal({ plan, order, price, onClose, onConfirm }: {
                 {order && <p className="text-sm text-ink-soft mt-1">{order.agency_name} · {order.seats} agents × {price}</p>}
                 <p className="text-sm text-muted mt-2">
                     {order
-                        ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajustez le nombre d'agents à tout moment."
-                        : 'Tous les outils SPREA, sans limite.'} <b className="text-ink-soft">Engagement de 12 mois</b>, puis résiliable à tout moment
+                        ? "Tous les outils SPREA pour chaque agent. Vous invitez votre équipe juste après le paiement, et ajoutez des agents à tout moment (réduction possible à la fin de l'engagement)."
+                        : 'Tous les outils SPREA (analyse des PV d\'AG dans une limite mensuelle).'} <b className="text-ink-soft">Engagement de 12 mois</b>, puis résiliable à tout moment
                     depuis votre compte. Facture avec TVA.
                 </p>
             </div>

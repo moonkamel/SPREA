@@ -19,6 +19,7 @@ try:
     from api.dvf import market_price
     from api.green_value import LABELS, WORKS_SHARE, department, kind_of, model
     from api.pdf_service import pdf_service
+    from api.ratelimit import search_limiter
     from api.report_content import display_address
     from api.simulation import SimulationInput, simulate
     from api.store import SupabaseStore
@@ -28,6 +29,7 @@ except ImportError:
     from dvf import market_price
     from green_value import LABELS, WORKS_SHARE, department, kind_of, model
     from pdf_service import pdf_service
+    from ratelimit import search_limiter
     from report_content import display_address
     from simulation import SimulationInput, simulate
     from store import SupabaseStore
@@ -115,7 +117,7 @@ async def build(data: ValuationRequest, user: User, store: SupabaseStore) -> Dic
     return {**result, "market": market, "sim": sim}
 
 
-@router.post("/valuation")
+@router.post("/valuation", dependencies=[Depends(search_limiter.per_user)])
 async def valuation(data: ValuationRequest, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     result = await build(data, user, store)
     sim = result.pop("sim")
@@ -123,7 +125,7 @@ async def valuation(data: ValuationRequest, user: User = Depends(current_user), 
     return result
 
 
-@router.post("/valuation/pdf")
+@router.post("/valuation/pdf", dependencies=[Depends(search_limiter.per_user)])
 async def valuation_pdf(data: ValuationRequest, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     result = await build(data, user, store)
     agency = await store.get_agent_page(user.id)

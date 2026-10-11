@@ -35,14 +35,14 @@ def configured() -> bool:
 
 async def json_call(system: str, content: Union[str, List[Dict[str, Any]]], schema: Dict[str, Any], *,
                     model: str = MODEL, effort: str = "medium", max_tokens: int = 16000,
-                    timeout: float = 240) -> Dict[str, Any]:
+                    timeout: float = 240, max_retries: int = 1) -> Dict[str, Any]:
     """One request, the answer parsed as JSON. Streamed, so that a long
     answer on long documents is not cut by the HTTP timeout."""
     key = os.getenv("ANTHROPIC_API_KEY", "").strip()
     if not key:
         raise ClaudeUnavailable("ANTHROPIC_API_KEY not set")
     client = anthropic.AsyncAnthropic(
-        api_key=key, timeout=timeout, max_retries=1,
+        api_key=key, timeout=timeout, max_retries=max_retries,
         **({"http_client": anthropic.DefaultAsyncHttpxClient(transport=TRANSPORT)} if TRANSPORT else {}))
     try:
         async with client.beta.messages.stream(

@@ -23,6 +23,9 @@ on:
       seed:
         description: "Random seed (empty = today)"
         default: ""
+      numbers:
+        description: "Only these DPE numbers, comma separated, with their data printed"
+        default: ""
   push:
     paths:
       - "scripts/audit/**"
@@ -64,7 +67,7 @@ jobs:
         run: |
           PER=$(( (DWELLINGS + SHARDS - 1) / SHARDS ))
           if [ "${{ matrix.shard }}" = "0" ]; then EXTRA="--buildings ${{ inputs.buildings || '40' }}"; else EXTRA="--buildings 0 --no-map"; fi
-          python scripts/audit/audit.py --dwellings $PER --shard ${{ matrix.shard }} --shards $SHARDS $EXTRA ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }}
+          python scripts/audit/audit.py --dwellings $PER --shard ${{ matrix.shard }} --shards $SHARDS $EXTRA ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }} ${{ inputs.numbers && format('--numbers {0}', inputs.numbers) || '' }}
       - uses: actions/checkout@v4
         if: inputs.base_ref != ''
         with:

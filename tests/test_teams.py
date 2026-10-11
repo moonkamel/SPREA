@@ -30,7 +30,7 @@ def invite_and_join(client, state, email, user):
     assert res.status_code == 200, res.text
     token = re.search(r"token=([\w-]+)", res.json()["link"]).group(1)
     state["user"] = user
-    return client.post("/api/team/join", json={"token": token})
+    return client.post("/api/team/join", json={"accept_terms": True, "token": token})
 
 
 def test_agency_subscription_gives_access_and_replaces_solo(env):
@@ -59,16 +59,16 @@ def test_invitations_join_and_seats(env):
     res = invite_and_join(client, state, BOB.email, CAROL)
     assert res.status_code == 403
     state["user"] = BOB
-    token_res = client.post("/api/team/join", json={"token": "x" * 20})
+    token_res = client.post("/api/team/join", json={"accept_terms": True, "token": "x" * 20})
     assert token_res.status_code == 404
     # Accepted with the invited email
     state["user"] = ALICE
     link = client.post("/api/team/invitations", json={"email": "Bob@Example.com"}).json()["link"]
     state["user"] = BOB
-    assert client.post("/api/team/join", json={"token": link.split("token=")[1]}).json()["joined"] is True
+    assert client.post("/api/team/join", json={"accept_terms": True, "token": link.split("token=")[1]}).json()["joined"] is True
     assert client.get("/api/me").json()["is_pro"] is True
     # The link works once
-    assert client.post("/api/team/join", json={"token": link.split("token=")[1]}).status_code in (200, 404)
+    assert client.post("/api/team/join", json={"accept_terms": True, "token": link.split("token=")[1]}).status_code in (200, 404)
     # 2 seats, 2 members: no more invitations
     state["user"] = ALICE
     assert client.post("/api/team/invitations", json={"email": CAROL.email}).status_code == 409
@@ -158,3 +158,37 @@ def test_network_gives_access_and_console(env):
     state["user"] = ALICE
     agencies = client.get("/api/team/network").json()["agencies"]
     assert agencies == [{"id": child["id"], "name": "Agence de Lille", "seats": 5, "members": 1, "leads": 0, "leads_open": 0}]
+
+
+def test_joining_requires_and_records_the_terms(env):
+    client, store, billing, state = env
+    agency(client, store, billing)
+    state["user"] = ALICE
+    token = re.search(r"token=([\w-]+)", client.post("/api/team/invitations", json={"email": BOB.email}).json()["link"]).group(1)
+    state["user"] = BOB
+    res = client.post("/api/team/join", json={"token": token})
+    assert res.status_code == 400 and res.json()["detail"] == "Acceptez les CGV pour rejoindre l'agence."
+    assert BOB.id not in store.memberships
+    assert client.post("/api/team/join", json={"token": token, "accept_terms": True}).json()["joined"] is True
+    assert store.profiles[BOB.id]["terms_version"] == accounts.TERMS_VERSION and store.profiles[BOB.id]["terms_accepted_at"]
+
+
+def test_invitation_email_is_escaped_and_rate_limited(env, monkeypatch):
+    from api import ratelimit, teams
+    client, store, billing, state = env
+    org_id = agency(client, store, billing, seats=50)
+    store.orgs[org_id]["name"] = "<script>x</script> & Cie"
+    sent = []
+
+    async def fake_send(to, subject, html, text):
+        sent.append(html)
+        return True
+    monkeypatch.setattr(teams, "send_email", fake_send)
+    state["user"] = ALICE
+    assert client.post("/api/team/invitations", json={"email": BOB.email}).status_code == 200
+    assert "<script>" not in sent[0] and "&lt;script&gt;x&lt;/script&gt; &amp; Cie" in sent[0]
+    # Counted per user, not per IP
+    assert list(ratelimit.invite_limiter.calls) == [f"user:{ALICE.id}"]
+    statuses = [client.post("/api/team/invitations", json={"email": f"agent{i}@example.com"}).status_code
+                for i in range(ratelimit.invite_limiter.max_calls)]
+    assert statuses[-1] == 429 and all(s == 200 for s in statuses[:-1])

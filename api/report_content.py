@@ -27,6 +27,7 @@ ENERGY_NAMES = {
     "oil": "fioul",
     "wood": "bois",
     "district_heating": "réseau de chaleur",
+    "coal": "charbon",
 }
 
 LOSS_NAMES = {
@@ -166,13 +167,13 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
         return (f"Le renouvellement d'air pèse {fr_pct(shares['air'])} des pertes. Une ventilation contrôlée évite "
                 "l'humidité et les moisissures une fois le logement isolé.")
     if work_id == "pac_air_eau":
-        if energy in ("gas", "oil"):
+        if energy in ("gas", "oil", "coal"):
             return (f"Remplace le chauffage au {ENERGY_NAMES[energy]} : pour la même chaleur, la pompe à chaleur "
                     f"consomme environ {fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'énergie.")
         return (f"Remplace la chaudière électrique : pour la même chaleur, la pompe à chaleur consomme environ "
                 f"{fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'électricité.")
     if work_id == "heating":
-        if energy in ("gas", "oil"):
+        if energy in ("gas", "oil", "coal"):
             return (f"Le chauffage au {ENERGY_NAMES[energy]} fait l'essentiel des émissions de CO₂ du logement : des radiateurs "
                     "électriques à inertie améliorent son étiquette climat.")
         generator = (ctx.get("heating_generator") or "").lower()
@@ -291,7 +292,7 @@ def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
         return "Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation."
     if work_id == "vmc":
         return "Le passage des gaines se prévoit avant les finitions de l'isolation."
-    if work_id == "heating" and ctx["energy"] in ("gas", "oil"):
+    if work_id == "heating" and ctx["energy"] in ("gas", "oil", "coal"):
         return (f"La facture de chauffage augmente : le kWh d'électricité coûte plus cher que le {ENERGY_NAMES[ctx['energy']]}. "
                 "À retenir surtout si l'étiquette compte (location, vente).")
     if work_id == "ecs":
@@ -419,7 +420,7 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
     prices = ", ".join(f"{ENERGY_NAMES[e]} {fr_dec(p, 2)} €" for e, p in ENERGY_PRICES_EUR_KWH.items()
                        if e in (energy, "electricity"))
     out = [
-        "Point de départ : les consommations du DPE officiel (base ADEME), "
+        "Point de départ : les consommations du DPE publié par l'ADEME, "
         + ("par usage (chauffage, eau chaude, autres usages) comme le DPE les détaille."
            if (sim_input.property.usage_consumption or {}).get("heating")
            else "réparties entre chauffage, eau chaude et autres usages selon l'époque du logement."),

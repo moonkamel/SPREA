@@ -4,8 +4,8 @@ import { Link, navigate } from '../router';
 import { departmentSlug, useSeo } from '../seo';
 // Figures exported monthly with the green value (scripts/seo/export_observatoire.py)
 import OBSERVATOIRE from '../data/observatoire.json';
-import { Button, Card, DpeBadge, type DPEClass } from '../ui';
-import { SiteFooter, SiteHeader } from './site';
+import { Card, DpeBadge, type DPEClass } from '../ui';
+import { NotFound, SiteFooter, SiteHeader } from './site';
 
 type Kind = 'maisons' | 'appartements';
 interface Series { sales: number; premium: Record<DPEClass, number>; mix: Record<DPEClass, number> }
@@ -101,6 +101,11 @@ function summary(d: Department, national: Data['national']): string {
 
 export default function ObservatoirePage({ slug }: { slug?: string }) {
     const data = OBSERVATOIRE as unknown as Data;
+    if (slug && !data.departments.some(d => departmentSlug(d.name, d.code) === slug)) return <NotFound />;
+    return <Observatoire data={data} slug={slug} />;
+}
+
+function Observatoire({ data, slug }: { data: Data; slug?: string }) {
     const dep = data.departments.find(d => departmentSlug(d.name, d.code) === slug)?.code || '';
     const setDep = (code: string) => {
         const d = data.departments.find(x => x.code === code);
@@ -252,7 +257,7 @@ export default function ObservatoirePage({ slug }: { slug?: string }) {
                         <h2 className="text-xl text-ink">Vous êtes agent immobilier ?</h2>
                         <p className="mt-1 text-sm text-muted">Avec SPREA, chiffrez en rendez-vous les travaux, les aides et la valeur d'un bien avant et après rénovation, et repérez les passoires de votre secteur.</p>
                     </div>
-                    <Link to="/demo"><Button>Faire la visite guidée</Button></Link>
+                    <Link to="/demo" className="inline-flex items-center justify-center gap-2 rounded-xl px-5 h-12 font-semibold text-sm transition-colors bg-brass text-canvas hover:bg-brass-light">Faire la visite guidée</Link>
                 </Card>
 
                 <section className="text-sm text-muted space-y-2 max-w-4xl">

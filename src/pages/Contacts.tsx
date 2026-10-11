@@ -3,7 +3,7 @@ import { Loader2, Mail, Phone, Trash2 } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
-import { Button, Card } from '../ui';
+import { Button, Card, errorDetail as apiErrorDetail } from '../ui';
 import { SiteFooter, SiteHeader } from './site';
 
 export interface AgentPageData {
@@ -46,11 +46,9 @@ const STATUS = [
 const fieldClass = 'w-full rounded-xl border border-line bg-raised px-3.5 h-11 text-ink outline-none focus:border-brass/70';
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '–');
 
-export async function errorDetail(res: Response, fallback: string) {
-    const body = await res.json().catch(() => ({}));
-    if (Array.isArray(body.detail)) return 'Vérifiez le téléphone et l\'email saisis.';
-    return body.detail || fallback;
-}
+// Agency form errors: validation errors concern the phone or the email
+export const errorDetail = (res: Response, fallback: string) =>
+    apiErrorDetail(res, fallback, 'Vérifiez le téléphone et l\'email saisis.');
 
 // Agency shown on the owners' pages; reused by the letter dialog of the map
 export function AgentPageForm({ initial, onSaved }: { initial: AgentPageData; onSaved: (p: AgentPageData) => void }) {

@@ -37,6 +37,7 @@ class FakeStore:
         self.orgs = {}
         self.memberships = {}
         self.invitations = {}
+        self.objects = {}
 
     def _with_org(self, profile):
         m = self.memberships.get(profile["id"])
@@ -236,6 +237,11 @@ class FakeStore:
         z.update(fields)
         return [dict(z)]
 
+    async def disable_zone_emails(self, user_id):
+        for z in self.zones.values():
+            if z["user_id"] == user_id:
+                z["email"] = False
+
     async def delete_zone(self, user_id, zone_id):
         z = self.zones.get(zone_id)
         if not z or z["user_id"] != user_id:
@@ -251,6 +257,13 @@ class FakeStore:
 
     async def list_hits(self, user_id, limit=300):
         return [dict(h) for h in self.hits if h["user_id"] == user_id][:limit]
+
+    async def list_objects(self, bucket, prefix):
+        return [p for (b, p) in self.objects if b == bucket and p.startswith(prefix)]
+
+    async def delete_objects(self, bucket, paths):
+        for p in paths:
+            self.objects.pop((bucket, p), None)
 
     async def delete_user(self, user_id):
         # Cascade of the real schema
@@ -333,10 +346,16 @@ def env(monkeypatch):
     main.app.dependency_overrides[accounts.billing_dep] = lambda: billing
     main.app.dependency_overrides[accounts.optional_billing_dep] = lambda: billing
     main.app.dependency_overrides[current_user] = lambda: state["user"]
-    main.ai_limiter.calls.clear()
+    clear_limiters()
     yield TestClient(main.app), store, billing, state
     main.app.dependency_overrides.clear()
-    main.ai_limiter.calls.clear()
+    clear_limiters()
+
+
+def clear_limiters():
+    from api import ratelimit
+    for limiter in (ratelimit.search_limiter, ratelimit.ai_limiter, ratelimit.invite_limiter):
+        limiter.calls.clear()
 
 
 def make_pro(store, user=ALICE):
@@ -405,6 +424,36 @@ def test_owner_link_opens_the_tools(env):
     assert client.post("/api/simulate", json=sim, headers={"X-Link-Code": "Ab3dEf7h"}).status_code == 200
 
 
+def test_owner_link_opens_only_what_the_owner_page_calls(env, monkeypatch):
+    client, store, billing, state = env
+    main.app.dependency_overrides.pop(current_user)
+    main.search_limiter.calls.clear()
+    asyncio.run(store.create_link({"code": "Ab3dEf7h", "user_id": ALICE.id, "dpe_number": "2259E0123456X"}))
+    link = {"X-Link-Code": "Ab3dEf7h"}
+
+    async def no_dpe(number):
+        return None
+
+    async def no_price(*a):
+        return None
+
+    async def no_address(q):
+        return []
+
+    monkeypatch.setattr(main.ademe, "search_by_dpe_number", no_dpe)
+    monkeypatch.setattr(main.ademe, "search_by_address", no_address)
+    monkeypatch.setattr(main, "market_price", no_price)
+    # The link's own DPE (any case), the local price and the simulation
+    assert client.get("/api/search-dpe/2259e0123456x", headers=link).status_code == 200
+    assert client.get("/api/market-price?insee=59350", headers=link).status_code == 200
+    # Another DPE, or the other tools: a subscription is needed
+    assert client.get("/api/search-dpe/2259E0999999X", headers=link).status_code == 401
+    assert client.get("/api/search-address?q=1 rue de Lille", headers=link).status_code == 401
+    assert client.get("/api/immeuble?dpe=2259E0123456X", headers=link).status_code == 401
+    assert client.get("/api/rge?lat=50.6&lon=3.0&works=iti", headers=link).status_code == 401
+    main.search_limiter.calls.clear()
+
+
 def webhook(client, event, signature="valid"):
     return client.post("/api/stripe/webhook", content=json.dumps(event), headers={"stripe-signature": signature})
 
@@ -415,10 +464,8 @@ def test_report_requires_login():
     assert client.get("/api/me").status_code == 401
 
 
-def test_dpe_pdf_analysis_requires_login():
-    client = TestClient(main.app)
-    res = client.post("/api/analyze-dpe", files={"file": ("dpe.pdf", b"%PDF-1.4", "application/pdf")})
-    assert res.status_code == 401
+def test_dpe_pdf_analysis_is_gone():
+    assert TestClient(main.app).post("/api/analyze-dpe", files={"file": ("dpe.pdf", b"%PDF-1.4", "application/pdf")}).status_code in (404, 405)
 
 
 def test_reports_are_private(env):
@@ -557,11 +604,14 @@ def test_account_deletion_removes_data_and_keeps_minimal_proof(env):
     make_pro(store, BOB)
     client.post("/api/reports", json=REPORT_REQUEST)  # Someone else's report
     state["user"] = ALICE
+    store.objects = {("copro-docs", f"{ALICE.id}/a1/0-pv.pdf"): b"%PDF", ("copro-docs", f"{BOB.id}/a2/0-pv.pdf"): b"%PDF"}
 
     assert delete_account(client).json() == {"deleted": True}
     assert store.deleted_users == [ALICE.id]
     assert ALICE.id not in store.profiles
     assert all(r["user_id"] == BOB.id for r in store.reports.values())
+    # Documents left in storage go too, not someone else's
+    assert list(store.objects) == [("copro-docs", f"{BOB.id}/a2/0-pv.pdf")]
     # Proof of purchase: references only, no email, address or simulation
     [record] = store.archive
     assert record["kind"] == "report"

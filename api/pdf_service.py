@@ -477,7 +477,9 @@ class PDFReportGenerator:
             return section(n, title)
 
         # 1. Analysis
-        block: List[Any] = [next_section('Notre analyse'), Spacer(1, 8)]
+        block: List[Any] = [next_section('Notre analyse'), Spacer(1, 4),
+                            Paragraph("Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres "
+                                      "de ce rapport, à relire avec votre conseiller.", S['muted']), Spacer(1, 8)]
         for key, title in ANALYSIS_TITLES:
             block += [Paragraph(title, S['narrative_h']), Spacer(1, 2), Paragraph(text(analysis[key]), S['narrative']), Spacer(1, 6)]
         block += [Paragraph('Pour un bailleur' if report['is_investor'] else 'Pour vous, propriétaire occupant', S['narrative_h']),

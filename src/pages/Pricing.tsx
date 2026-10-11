@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Loader2, ShieldCheck, X } from 'lucide-react';
-import { Button, Segmented } from '../ui';
+import { Button, errorDetail, Segmented } from '../ui';
 import { useAccount, type AgencyOrder, type Plan } from '../account';
 import { Link } from '../router';
 import { PageShell } from './site';
@@ -10,7 +10,7 @@ type Billing = 'monthly' | 'yearly';
 
 const INCLUDED = [
     'Simulateur : travaux, nouvelle étiquette, aides, reste à charge',
-    'Rapports PDF illimités, rédigés pour vos clients',
+    'Rapports PDF sans limite, rédigés pour vos clients',
     'Avis de valeur avant / après travaux (ventes DVF)',
     'Carte de prospection des passoires E, F, G',
     'Alertes quotidiennes sur les nouveaux DPE',
@@ -38,7 +38,7 @@ const FAQ = [
     },
     {
         q: 'Comment équiper toute mon agence ?',
-        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Après le paiement, invitez vos agents par email depuis la page Équipe : chacun a son propre accès. Vous ajustez le nombre d'agents à tout moment, facturé au prorata.",
+        a: "Avec la formule Agence, vous payez par agent (2 agents minimum). Après le paiement, invitez vos agents par email depuis la page Équipe : chacun a son propre accès. Vous ajoutez des agents à tout moment, au prorata ; le nombre d'agents peut être réduit à la fin de l'engagement.",
     },
     {
         q: "D'où viennent les données ?",
@@ -76,7 +76,7 @@ export default function PricingPage() {
         {
             id: 'agence',
             name: 'Agence',
-            tagline: 'Pour équiper une équipe de 2 à 15 agents.',
+            tagline: 'Pour équiper une équipe de 2 à 50 agents.',
             price: billing === 'monthly' ? '59 €' : '590 €',
             unit: `par agent, ${per} · TTC`,
             note: '2 agents minimum · engagement 12 mois',
@@ -97,7 +97,7 @@ export default function PricingPage() {
         },
     ];
     const extras: Record<string, string[]> = {
-        solo: ['Tout SPREA, sans limite'],
+        solo: ['Tout SPREA ; analyse des PV d\'AG dans la limite mensuelle indiquée'],
         agence: ['Tout SPREA pour chaque agent', 'Contacts et alertes partagés dans l\'agence', 'Une facture unique'],
         reseau: ['Console du siège : toutes les agences', 'Courriers et rapports aux couleurs du réseau', 'Accompagnement au démarrage'],
     };
@@ -193,10 +193,14 @@ function QuoteDialog({ offer, onClose }: { offer: 'agence' | 'reseau'; onClose: 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, offer, agents: Number(form.agents) || 1 }),
             });
-            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || "L'envoi a échoué.");
+            if (!res.ok) {
+                throw new Error(await errorDetail(res, "L'envoi a échoué.",
+                    'Vérifiez les informations saisies : nom et société (2 caractères minimum), email et téléphone.'));
+            }
             setStatus('sent');
         } catch (err) {
-            setError((err as Error).message);
+            // A network failure (TypeError) has no French message
+            setError(err instanceof TypeError ? "L'envoi a échoué. Vérifiez votre connexion et réessayez." : (err as Error).message);
             setStatus('idle');
         }
     };
@@ -211,16 +215,16 @@ function QuoteDialog({ offer, onClose }: { offer: 'agence' | 'reseau'; onClose: 
                 ) : (
                     <form onSubmit={send} className="mt-6 space-y-3">
                         <div className="grid sm:grid-cols-2 gap-3">
-                            <input required placeholder="Nom et prénom" value={form.name} onChange={set('name')} className={FIELD} aria-label="Nom et prénom" />
-                            <input required placeholder={offer === 'agence' ? 'Agence' : 'Réseau'} value={form.company} onChange={set('company')} className={FIELD} aria-label="Société" />
+                            <input required minLength={2} maxLength={80} placeholder="Nom et prénom" value={form.name} onChange={set('name')} className={FIELD} aria-label="Nom et prénom" />
+                            <input required minLength={2} maxLength={120} placeholder={offer === 'agence' ? 'Agence' : 'Réseau'} value={form.company} onChange={set('company')} className={FIELD} aria-label="Société" />
                             <input required type="email" placeholder="Email professionnel" value={form.email} onChange={set('email')} className={FIELD} aria-label="Email" />
-                            <input placeholder="Téléphone" value={form.phone} onChange={set('phone')} className={FIELD} aria-label="Téléphone" />
+                            <input type="tel" maxLength={25} placeholder="Téléphone" value={form.phone} onChange={set('phone')} className={FIELD} aria-label="Téléphone" />
                         </div>
                         <label className="flex items-center gap-3 text-sm text-ink-soft">
                             Nombre d'agents
                             <input type="number" min={1} max={5000} value={form.agents} onChange={set('agents')} className={`${FIELD} w-28`} aria-label="Nombre d'agents" />
                         </label>
-                        <textarea placeholder="Votre besoin (facultatif)" value={form.message} onChange={set('message')} rows={3}
+                        <textarea maxLength={2000} placeholder="Votre besoin (facultatif)" value={form.message} onChange={set('message')} rows={3}
                             className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-ink placeholder:text-faint outline-none focus:border-brass/70" aria-label="Message" />
                         {/* Honeypot */}
                         <input tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} className="hidden" aria-hidden="true" />

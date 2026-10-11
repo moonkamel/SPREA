@@ -1,5 +1,4 @@
 import os
-import io
 import logging
 import json
 from dotenv import load_dotenv
@@ -7,14 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import re
 from typing import Any, Dict, Optional
-from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Response, Depends
-try:
-    import pytesseract
-    from PIL import Image
-    OCR_AVAILABLE = True
-except ImportError:
-    OCR_AVAILABLE = False
-
+from fastapi import FastAPI, HTTPException, APIRouter, Response, Depends
 try:
     from api.ademe_client import AdemeConnector, PropertySchema
     from api.dvf import market_price
@@ -25,20 +17,6 @@ except ImportError:
     from dvf import market_price
     from simulation import (WORKS_CATALOG, SimulationInput, SimulationProperty, build_envelope,
                             suggest_works, simulate as run_simulation)
-
-# LLM Client setup (OpenAI style)
-api_key = os.getenv("OPENAI_API_KEY")
-if api_key:
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key)
-        LLM_AVAILABLE = True
-    except ImportError:
-        LLM_AVAILABLE = False
-        client = None
-else:
-    LLM_AVAILABLE = False
-    client = None
 
 # Initialize Connector & Engine
 ademe = AdemeConnector()
@@ -63,7 +41,7 @@ if ALLOWED_ORIGINS:
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
-    logger.error(f"Global Error on {request.url}: {exc}", exc_info=True)
+    logger.error(f"Global Error on {request.url.path}: {exc}", exc_info=True)
     return Response(
         content=json.dumps({"detail": "Erreur interne du serveur.", "path": request.url.path}),
         status_code=500,
@@ -73,7 +51,7 @@ async def global_exception_handler(request, exc):
 try:
     from api.ratelimit import search_limiter, simulate_limiter, ai_limiter
     from api.auth import current_user
-    from api.accounts import router as accounts_router, subscriber_access
+    from api.accounts import router as accounts_router, subscriber_access, subscriber_or_link
     from api.contacts import router as contacts_router
     from api.alerts import router as alerts_router
     from api.valuation import router as valuation_router
@@ -87,7 +65,7 @@ try:
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
-    from accounts import router as accounts_router, subscriber_access
+    from accounts import router as accounts_router, subscriber_access, subscriber_or_link
     from contacts import router as contacts_router
     from alerts import router as alerts_router
     from valuation import router as valuation_router
@@ -102,88 +80,6 @@ except ImportError:
 @app.get("/")
 async def root():
     return {"status": "online", "message": "SPREA API is running. Use /docs for API documentation."}
-
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-
-# --- Core Logic ---
-
-def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extracts text using pdfplumber with OCR fallback."""
-    import pdfplumber
-    text = ""
-    try:
-        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-                elif OCR_AVAILABLE:
-                    # Fallback to OCR if page has no selectable text
-                    logger.info("No text found on page, attempting OCR fallback.")
-                    img = page.to_image(resolution=300).original
-                    text += pytesseract.image_to_string(img) + "\n"
-    except Exception as e:
-        logger.error(f"Error during text extraction: {e}")
-        raise HTTPException(status_code=500, detail="Could not extract text from PDF.")
-    
-    return text.strip()
-
-def analyze_text_with_llm(raw_text: str) -> Dict[str, Any]:
-    """Sends raw text to LLM for structured extraction."""
-    if not LLM_AVAILABLE:
-        logger.warning("OpenAI client not installed. Returning empty structure.")
-        return {}
-
-    prompt = f"""
-    You are a French Energetic Performance (DPE) expert. 
-    Analyze the following raw text extracted from a French DPE 2021 PDF.
-    Extract the following data in a strict JSON format. 
-    If a value is missing or unreadable, return null.
-
-    RULES:
-    - numero_dpe: 13 characters.
-    - date_visite: YYYY-MM-DD.
-    - etiquette_actuelle: A, B, C, D, E, F, or G.
-    - consommation_primaire: integer in kWh/m2/an.
-    - surface_habitable: float.
-    - isolation: u-values in W/m2.K.
-
-    TEXT:
-    {raw_text[:8000]}  # Limit text to avoid token overflow for simple demo
-
-    JSON STRUCTURE:
-    {{
-      "numero_dpe": "string",
-      "date_visite": "YYYY-MM-DD",
-      "etiquette_actuelle": "char",
-      "consommation_primaire": "int",
-      "surface_habitable": "float",
-      "altitude": "int",
-      "chauffage": {{
-        "type_generateur": "string",
-        "annee_installation": "int"
-      }},
-      "isolation": {{
-        "mur_u_value": "float",
-        "toiture_u_value": "float",
-        "vitrage_type": "string"
-      }}
-    }}
-    """
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-2024-08-06", # Using a highly capable model for table parsing
-            messages=[
-                {"role": "system", "content": "You are a specialized data extractor."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        logger.error(f"Error during LLM analysis: {e}")
-        return {"error": "LLM analysis failed"}
 
 router = APIRouter(prefix="/api")
 
@@ -246,7 +142,7 @@ async def search_address(q: str):
         logger.error(f"Address search crash: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter), Depends(subscriber_access)])
+@router.get("/search-dpe/{dpe_number}", dependencies=[Depends(search_limiter), Depends(subscriber_or_link("dpe"))])
 async def search_dpe(dpe_number: str):
     """Search for a property by DPE number."""
     try:
@@ -263,7 +159,7 @@ async def search_dpe(dpe_number: str):
         logger.error(f"DPE search failed: {e}", exc_info=True)
         return {"count": 0, "results": [], "error": "La recherche a échoué."}
 
-@router.get("/market-price", dependencies=[Depends(search_limiter), Depends(subscriber_access)])
+@router.get("/market-price", dependencies=[Depends(search_limiter), Depends(subscriber_or_link("tools"))])
 async def get_market_price(insee: str, building_type: str = "", lat: Optional[float] = None, lon: Optional[float] = None,
                            surface: Optional[float] = None):
     """Local price per m2 of comparable DVF sales, for the green value. None when unknown."""
@@ -282,7 +178,7 @@ async def works_catalog():
         for w in WORKS_CATALOG
     ]}
 
-@router.post("/simulate", dependencies=[Depends(simulate_limiter), Depends(subscriber_access)])
+@router.post("/simulate", dependencies=[Depends(simulate_limiter), Depends(subscriber_or_link("tools"))])
 async def simulate(data: SimulationInput):
     """Run the technical-economic simulation for a set of works."""
     try:
@@ -290,38 +186,6 @@ async def simulate(data: SimulationInput):
     except Exception as e:
         logger.error(f"Simulation failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="La simulation a échoué.")
-
-@router.post("/analyze-dpe", dependencies=[Depends(ai_limiter), Depends(subscriber_access)])
-async def analyze_dpe(file: UploadFile = File(...)):
-    # 1. Validation
-    logger.info("Received DPE PDF upload")
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid file type. Only PDFs are allowed.")
-    
-    file_bytes = await file.read()
-    if len(file_bytes) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB.")
-
-    # 2. Text Extraction
-    try:
-        raw_text = extract_text_from_pdf(file_bytes)
-        logger.info(f"Extracted {len(raw_text)} chars from PDF.")
-    except Exception as e:
-        logger.error(f"Text extraction failed: {e}")
-        raise HTTPException(status_code=500, detail="Could not extract text from PDF.")
-
-    if not raw_text:
-        raise HTTPException(status_code=422, detail="PDF seems empty or unreadable.")
-
-    # 3. LLM Analysis
-    extracted_data = analyze_text_with_llm(raw_text)
-    logger.info("LLM extraction complete.")
-
-    return {
-        "filename": file.filename,
-        "raw_text_length": len(raw_text),
-        "data": extracted_data
-    }
 
 app.include_router(router)
 app.include_router(accounts_router)

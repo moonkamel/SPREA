@@ -4,14 +4,18 @@ is required before the listing). Results go to the /alertes page and, when
 email is configured, to a morning email.
 """
 import asyncio
+import hashlib
+import hmac
 import logging
 import os
+import time
 from datetime import date, timedelta
 from html import escape
 from typing import Any, Dict, List, Optional
 
 import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 try:
@@ -19,12 +23,14 @@ try:
     from api.auth import User, current_user
     from api.emailer import email_configured, send_email
     from api.prospection import dwelling_detail
+    from api.ratelimit import search_limiter
     from api.store import SupabaseStore, get_store
 except ImportError:
     from accounts import is_pro, store_dep
     from auth import User, current_user
     from emailer import email_configured, send_email
     from prospection import dwelling_detail
+    from ratelimit import search_limiter
     from store import SupabaseStore, get_store
 
 logger = logging.getLogger(__name__)
@@ -40,10 +46,37 @@ MAX_ZONES = 10
 # over this window and only DPE not already recorded for the zone are new.
 LOOKBACK_DAYS = 14
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
+# The daily job stops starting new zones after this many seconds, to return
+# before Vercel stops the function (300 s); the others are checked next run
+TIME_BUDGET = 240
 
 
 def app_url() -> str:
     return os.getenv("PUBLIC_APP_URL", "https://sprea.app").rstrip("/")
+
+
+# --- One-click unsubscribe from the alert emails ---
+
+def unsubscribe_secret() -> str:
+    # The service role key is set wherever the alerts run
+    return (os.getenv("ALERTS_UNSUBSCRIBE_SECRET") or os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
+
+
+def unsubscribe_token(user_id: str) -> str:
+    sig = hmac.new(unsubscribe_secret().encode(), f"alerts-unsubscribe:{user_id}".encode(), hashlib.sha256).hexdigest()
+    return f"{user_id}.{sig[:32]}"
+
+
+def unsubscribe_user(token: str) -> Optional[str]:
+    """User id of a valid token, None otherwise."""
+    user_id, _, sig = token.partition(".")
+    if not user_id or not sig or not unsubscribe_secret():
+        return None
+    return user_id if hmac.compare_digest(unsubscribe_token(user_id), token) else None
+
+
+def unsubscribe_url(user_id: str) -> str:
+    return f"{app_url()}/api/alerts/unsubscribe?token={unsubscribe_token(user_id)}"
 
 
 async def fetch_new_dpe(zone: Dict[str, Any], since: date,
@@ -87,7 +120,8 @@ async def check_zone(store: SupabaseStore, zone: Dict[str, Any], today: date,
     return new
 
 
-def email_content(zones: Dict[str, Dict[str, Any]], hits: List[Dict[str, Any]]) -> Dict[str, str]:
+def email_content(zones: Dict[str, Dict[str, Any]], hits: List[Dict[str, Any]],
+                  unsubscribe: Optional[str] = None) -> Dict[str, str]:
     by_zone: Dict[str, List[Dict[str, Any]]] = {}
     for h in hits:
         by_zone.setdefault(h["zone_id"], []).append(h)
@@ -109,10 +143,14 @@ def email_content(zones: Dict[str, Dict[str, Any]], hits: List[Dict[str, Any]]) 
         html.append("</ul>")
         text.append("")
     link = f"{app_url()}/alertes"
+    stop = (f"<a href='{escape(unsubscribe)}'>Se désabonner de ces emails</a> ou gérer l'envoi par secteur sur <a href='{link}'>{link}</a>."
+            if unsubscribe else f"Pour ne plus recevoir ces emails, désactivez l'envoi sur <a href='{link}'>{link}</a>.")
     html.append(f"<p><a href='{link}'>Voir les alertes, simuler et préparer les courriers</a></p>"
                 "<p style='color:#777;font-size:12px'>Données publiques des DPE (ADEME). Utilisation soumise à l'article 14 des CGV de SPREA. "
-                f"Pour ne plus recevoir ces emails, désactivez l'envoi sur <a href='{link}'>{link}</a>.</p>")
+                f"{stop}</p>")
     text.append(f"Voir les alertes : {link}")
+    if unsubscribe:
+        text.append(f"Se désabonner de ces emails : {unsubscribe}")
     return {"subject": subject, "html": "".join(html), "text": "\n".join(text)}
 
 
@@ -155,7 +193,7 @@ async def list_alerts(user: User = Depends(current_user), store: SupabaseStore =
     return {"zones": zones, "hits": hits, "email_enabled": email_configured()}
 
 
-@router.post("/alerts/zones")
+@router.post("/alerts/zones", dependencies=[Depends(search_limiter.per_user)])
 async def create_zone(data: ZoneCreate, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     await require_pro_map(store, user)
     if len(await store.list_zones(user.id)) >= MAX_ZONES:
@@ -187,23 +225,59 @@ async def delete_zone(zone_id: str, user: User = Depends(current_user), store: S
     return {"deleted": True}
 
 
+def unsubscribe_page(message: str, status_code: int = 200, form: str = "") -> HTMLResponse:
+    return HTMLResponse(status_code=status_code, content=(
+        "<!doctype html><html lang='fr'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'>"
+        "<title>Alertes DPE · SPREA</title></head><body style='font-family:system-ui,sans-serif;max-width:480px;margin:48px auto;padding:0 16px'>"
+        f"<h1 style='font-size:20px'>Alertes DPE</h1><p>{message}</p>{form}"
+        f"<p><a href='{app_url()}/alertes'>Gérer mes alertes</a></p></body></html>"))
+
+
+@router.get("/alerts/unsubscribe")
+async def unsubscribe_confirm(token: str = ""):
+    """Link in the email: asks for a click first, as mail scanners open links."""
+    if not unsubscribe_user(token):
+        return unsubscribe_page("Ce lien de désabonnement n'est pas valide.", 400)
+    return unsubscribe_page(
+        "Ne plus recevoir les emails d'alertes DPE ? Les alertes restent visibles dans SPREA.",
+        form=f"<form method='post' action='?token={escape(token)}'><button type='submit'>Me désabonner</button></form>")
+
+
+@router.post("/alerts/unsubscribe")
+async def unsubscribe(token: str = "", store: SupabaseStore = Depends(store_dep)):
+    """One click (List-Unsubscribe-Post, RFC 8058) or the button of the page:
+    emails off for every zone of the user."""
+    user_id = unsubscribe_user(token)
+    if not user_id:
+        return unsubscribe_page("Ce lien de désabonnement n'est pas valide.", 400)
+    await store.disable_zone_emails(user_id)
+    logger.info("Alert emails unsubscribed")
+    return unsubscribe_page("C'est fait : vous ne recevrez plus les emails d'alertes DPE. "
+                            "Vous pouvez les réactiver secteur par secteur dans SPREA.")
+
+
 # --- Daily job (Vercel Cron) ---
 
-async def run_alerts(store: SupabaseStore, today: date, transport: Optional[httpx.AsyncBaseTransport] = None) -> Dict[str, int]:
+async def run_alerts(store: SupabaseStore, today: date, transport: Optional[httpx.AsyncBaseTransport] = None,
+                     budget: float = TIME_BUDGET) -> Dict[str, int]:
     zones = await store.active_zones()
     # Zones of users whose Pro subscription ended are kept but not checked
     profiles = {uid: await store.get_profile(uid) for uid in {z["user_id"] for z in zones}}
     todo = [z for z in zones if is_pro(profiles.get(z["user_id"])) and z.get("last_checked_on") != today.isoformat()]
     semaphore = asyncio.Semaphore(5)
     new_by_user: Dict[str, List[Dict[str, Any]]] = {}
-    errors = 0
+    errors = skipped = 0
+    started = time.monotonic()
 
     async def process(zone: Dict[str, Any]) -> None:
-        nonlocal errors
+        nonlocal errors, skipped
         async with semaphore:
+            if time.monotonic() - started > budget:
+                skipped += 1
+                return
             try:
                 new = await check_zone(store, zone, today, transport)
-            except httpx.HTTPError as e:
+            except Exception as e:  # One zone never stops the others
                 errors += 1
                 logger.error(f"Alert zone check failed: {type(e).__name__}")
                 return
@@ -217,16 +291,19 @@ async def run_alerts(store: SupabaseStore, today: date, transport: Optional[http
     for uid, hits in new_by_user.items():
         email = (profiles.get(uid) or {}).get("email")
         if email:
-            content = email_content(zone_index, hits)
-            sent += await send_email(email, content["subject"], content["html"], content["text"])
-    return {"zones_checked": len(todo), "users_notified": sent,
-            "new_hits": sum(len(h) for h in new_by_user.values()), "errors": errors}
+            url = unsubscribe_url(uid)
+            content = email_content(zone_index, hits, url)
+            sent += await send_email(email, content["subject"], content["html"], content["text"],
+                                     headers={"List-Unsubscribe": f"<{url}>",
+                                              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"})
+    return {"zones_checked": len(todo) - skipped, "users_notified": sent,
+            "new_hits": sum(len(h) for h in new_by_user.values()), "errors": errors, "skipped": skipped}
 
 
 @router.get("/cron/alerts")
 async def cron_alerts(authorization: Optional[str] = Header(None)):
     secret = os.getenv("CRON_SECRET", "").strip()
-    if not secret or authorization != f"Bearer {secret}":
+    if not secret or not hmac.compare_digest((authorization or "").encode(), f"Bearer {secret}".encode()):
         raise HTTPException(status_code=401, detail="Non autorisé.")
     result = await run_alerts(get_store(), date.today())
     logger.info(f"Alerts: {result}")

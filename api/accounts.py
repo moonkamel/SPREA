@@ -28,7 +28,8 @@ try:
     from api.ai_service import ai_service, parse_stored
     from api.auth import User, current_user
     from api.dvf import market_price
-    from api.billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, commitment_end, get_billing, subscription_period_end
+    from api.billing import (AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, PlanUnavailable, billing_configured, commitment_end,
+                             get_billing, subscription_period_end)
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
     from api.ratelimit import ai_limiter, search_limiter
@@ -39,7 +40,8 @@ except ImportError:
     from ai_service import ai_service, parse_stored
     from auth import User, current_user
     from dvf import market_price
-    from billing import AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, billing_configured, commitment_end, get_billing, subscription_period_end
+    from billing import (AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, PlanUnavailable, billing_configured, commitment_end,
+                         get_billing, subscription_period_end)
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
     from ratelimit import ai_limiter, search_limiter
@@ -53,7 +55,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-10.2"
+TERMS_VERSION = "2026-10-10.3"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -115,28 +117,36 @@ def team_summary(profile: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 SUBSCRIBERS_ONLY = "Réservé aux abonnés SPREA."
 
 
-async def subscriber_access(request: Request, authorization: Optional[str] = Header(None),
-                            x_link_code: Optional[str] = Header(None)) -> None:
-    """The tools are for subscribers. Exception: the owner page reached from a
-    letter's QR code (its link code is sent in X-Link-Code)."""
+async def subscriber_access(request: Request, authorization: Optional[str] = Header(None)) -> None:
+    """The tools are for subscribers."""
     # Dependencies resolved by hand, so that this check runs only when needed
     # (and still honours the overrides used in tests)
     overrides = request.app.dependency_overrides
-
-    async def user() -> User:
-        override = overrides.get(current_user)
-        return override() if override else await current_user(authorization)
-
-    if x_link_code:
-        store = overrides.get(store_dep, store_dep)()
-        if re.fullmatch(r"[A-Za-z0-9]{8}", x_link_code) and await store.get_link(x_link_code):
-            return
-        u = await user()
-    else:
-        u = await user()  # 401 before touching the database
-        store = overrides.get(store_dep, store_dep)()
+    override = overrides.get(current_user)
+    u = override() if override else await current_user(authorization)  # 401 before touching the database
+    store = overrides.get(store_dep, store_dep)()
     if not is_pro(await store.ensure_profile(u.id, u.email)):
         raise HTTPException(status_code=402, detail=SUBSCRIBERS_ONLY)
+
+
+def subscriber_or_link(scope: Literal["dpe", "tools"]):
+    """Subscribers, or the owner page reached from a letter's QR code (its link
+    code is sent in X-Link-Code), limited to what that page calls: "dpe" opens
+    the search of the link's own DPE (path parameter dpe_number), "tools" the
+    simulation and the local price."""
+    async def access(request: Request, authorization: Optional[str] = Header(None),
+                     x_link_code: Optional[str] = Header(None)) -> None:
+        overrides = request.app.dependency_overrides
+        if x_link_code and re.fullmatch(r"[A-Za-z0-9]{8}", x_link_code):
+            link = await overrides.get(store_dep, store_dep)().get_link(x_link_code)
+            if link and (scope == "tools" or
+                         str(request.path_params.get("dpe_number", "")).upper() == str(link.get("dpe_number") or "").upper()):
+                return
+        override = overrides.get(subscriber_access)
+        if override:
+            return override()
+        await subscriber_access(request, authorization)
+    return access
 
 
 def safe_filename(text: str) -> str:
@@ -464,7 +474,17 @@ async def delete_account(data: DeleteAccountRequest, user: User = Depends(curren
     if archive:
         await store.archive_purchases(archive)
 
-    # 3. Delete the user: profile and reports are removed by cascade (and the
+    # 3. Copropriété documents still in storage (normally deleted once read)
+    try:
+        from api.copro_docs import BUCKET
+    except ImportError:
+        from copro_docs import BUCKET
+    try:
+        await store.delete_objects(BUCKET, await store.list_objects(BUCKET, f"{user.id}/"))
+    except httpx.HTTPError as e:  # Purged by the daily job anyway
+        logger.error(f"Documents not deleted with the account: {type(e).__name__}")
+
+    # 4. Delete the user: profile and reports are removed by cascade (and the
     # agency of an owner without members)
     if org and profile.get("org_role") == "owner":
         await store.delete_org(org["id"])
@@ -553,6 +573,11 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
     )
 
 
+# Subscription not paid: the customer must update their payment method
+UNPAID_STATUSES = {"past_due", "unpaid", "incomplete"}
+UNPAID_DETAIL = "Le dernier paiement de votre abonnement n'a pas abouti : mettez à jour votre moyen de paiement dans « Factures et abonnement »."
+
+
 @router.post("/billing/subscribe")
 async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
                     store: SupabaseStore = Depends(store_dep), billing: Billing = Depends(billing_dep)):
@@ -563,6 +588,14 @@ async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
     org = profile.get("org")
     if org_active(profile):
         raise HTTPException(status_code=400, detail="Votre accès est déjà fourni par votre agence.")
+    # A payment failed on the running subscription: the card is updated in the
+    # portal, not with a second subscription
+    owned_org = org if profile.get("org_role") == "owner" else None
+    if any((h or {}).get("subscription_status") in UNPAID_STATUSES for h in (profile, owned_org)):
+        if not profile.get("stripe_customer_id"):
+            raise HTTPException(status_code=409, detail=UNPAID_DETAIL)
+        url = await billing.portal_url(profile["stripe_customer_id"], can_cancel=not commitment_running(profile))
+        return {"checkout_url": url, "portal": True}
     org_id = None
     if agency:
         name = (data.agency_name or "").strip()
@@ -583,8 +616,11 @@ async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
         raise HTTPException(status_code=400, detail="Votre abonnement est déjà actif.")
     await store.update_profile(user.id, terms_acceptance())
     customer_id = await ensure_customer(store, billing, user, profile)
-    url = await billing.subscription_checkout(user.id, customer_id, data.plan,
-                                              quantity=data.seats if agency else 1, org_id=org_id)
+    try:
+        url = await billing.subscription_checkout(user.id, customer_id, data.plan,
+                                                  quantity=data.seats if agency else 1, org_id=org_id)
+    except PlanUnavailable:
+        raise HTTPException(status_code=503, detail="Cette formule n'est pas disponible pour le moment, réessayez plus tard.")
     return {"checkout_url": url}
 
 

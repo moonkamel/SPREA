@@ -20,7 +20,7 @@ export const HELP = {
     },
     labelRecomputed: {
         title: "Pourquoi deux étiquettes ?",
-        text: "Ce DPE date d'avant juillet 2024 : nous recalculons l'étiquette avec les seuils en vigueur aujourd'hui, plus favorables pour les logements de moins de 40 m². L'étiquette peut donc s'améliorer sans travaux. Une attestation gratuite peut être téléchargée sur le site de l'Observatoire DPE de l'ADEME.",
+        text: "Nous recalculons l'étiquette avec les règles en vigueur aujourd'hui : seuils plus favorables pour les logements de moins de 40 m² depuis juillet 2024, et coefficient de l'électricité abaissé à 1,9 depuis le 1er janvier 2026, qui améliore les logements chauffés à l'électricité. L'étiquette peut donc s'améliorer sans travaux. Une attestation gratuite peut être téléchargée sur le site de l'Observatoire DPE de l'ADEME.",
     },
     consumption: {
         title: 'Consommation (kWh/m²/an)',
@@ -88,7 +88,7 @@ export const HELP = {
     },
     ecoPtz: {
         title: 'Éco-prêt à taux zéro',
-        text: "Prêt bancaire sans intérêts pour financer le reste à charge : jusqu'à 15 000 € pour un type de travaux, 25 000 € pour deux, 30 000 € pour trois ou plus, remboursable jusqu'à 15 ans (20 ans pour une rénovation d'ampleur).",
+        text: "Prêt bancaire sans intérêts pour financer le reste à charge : jusqu'à 15 000 € pour un type de travaux, 25 000 € pour deux, 30 000 € pour trois ou plus, et jusqu'à 50 000 € pour une rénovation d'ampleur ; remboursable jusqu'à 15 ans (20 ans pour une rénovation d'ampleur).",
     },
     savings: {
         title: 'Économies annuelles',
@@ -112,7 +112,7 @@ export const HELP = {
     },
     taxBenefit: {
         title: "Économie d'impôt",
-        text: "Pour un bailleur, les travaux d'amélioration sont déductibles des revenus fonciers. Estimation : reste à charge × (votre taux d'imposition + 17,2 % de prélèvements sociaux).",
+        text: "Pour un bailleur, les travaux d'amélioration sont déductibles des revenus fonciers (régime réel). Estimation : reste à charge × (votre taux d'imposition + 17,2 % de prélèvements sociaux).",
     },
     report: {
         title: 'Le rapport PDF',

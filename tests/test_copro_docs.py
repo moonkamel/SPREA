@@ -7,6 +7,7 @@ from tests import claude_mock
 from tests.test_accounts import ALICE, BOB, env, make_pro  # noqa: F401 (fixture)
 
 PDF = b"%PDF-1.4 fake minutes"
+JPEG = b"\xff\xd8\xff\xe0 fake photo"
 RESULT = {
     "copropriete": {"nom": "Résidence du Beffroi", "adresse": "12 Rue Nationale 59000 Lille", "syndic": "Foncia Lille", "lots": "24"},
     "documents": [{"fichier": "PV_AG_2025.pdf", "nature": "PV d'assemblée générale", "date": "12/05/2025", "lisible": True}],
@@ -46,6 +47,12 @@ def add_docs(store):
                 for r in store.analyses.values() if r["user_id"] == user_id and (not since or r["created_at"] >= since)]
         return sorted(rows, key=lambda r: r["created_at"], reverse=True)
 
+    async def claim(aid):
+        if store.analyses[aid]["status"] != "uploading":
+            return False
+        store.analyses[aid]["status"] = "analyzing"
+        return True
+
     async def delete(aid):
         store.analyses.pop(aid, None)
 
@@ -65,7 +72,7 @@ def add_docs(store):
 
     (store.create_doc_analysis, store.get_doc_analysis, store.update_doc_analysis, store.list_doc_analyses,
      store.delete_doc_analysis, store.stale_doc_uploads, store.signed_upload_url, store.download_object,
-     store.delete_objects) = create, get, update, list_, delete, stale, signed, download, delete_objects
+     store.delete_objects, store.claim_doc_analysis) = create, get, update, list_, delete, stale, signed, download, delete_objects, claim
 
 
 FILES = {"files": [{"name": "PV AG 2025.pdf", "size": len(PDF), "type": "application/pdf"},
@@ -74,7 +81,7 @@ FILES = {"files": [{"name": "PV AG 2025.pdf", "size": len(PDF), "type": "applica
 
 def upload_all(store, res):
     for path in store.signed[-len(res["uploads"]):]:
-        store.objects[path] = PDF if path.endswith(".pdf") or "pdf" in path.lower() else b"jpg"
+        store.objects[path] = PDF if path.endswith(".pdf") or "pdf" in path.lower() else JPEG
 
 
 def test_documents_read_by_claude_then_deleted(env, monkeypatch):
@@ -149,6 +156,70 @@ def test_failed_analysis_deletes_the_files(env, monkeypatch):
     assert client.get("/api/copro-docs").json()["quota"]["used"] == 0
 
 
+def test_analysis_checks_the_files_actually_uploaded(env, monkeypatch):
+    client, store, _, _ = env
+    add_docs(store)
+    make_pro(store)
+    mock = claude_mock.install(monkeypatch, lambda body: RESULT)
+    # Declared as a photo, but not one: refused, files deleted
+    res = client.post("/api/copro-docs/uploads", json=FILES).json()
+    upload_all(store, res)
+    store.objects[store.signed[-1]] = b"MZ\x90\x00 not a photo"
+    assert "PDF" in client.post(f"/api/copro-docs/{res['id']}/analyze").json()["detail"]
+    assert not store.objects and store.analyses[res["id"]]["status"] == "failed"
+    # Small sizes announced, bigger files uploaded
+    monkeypatch.setattr(copro_docs, "MAX_TOTAL_BYTES", 30)
+    res = client.post("/api/copro-docs/uploads", json=FILES).json()
+    upload_all(store, res)
+    store.objects[store.signed[-2]] = PDF + b"0" * 30
+    assert "22 Mo" in client.post(f"/api/copro-docs/{res['id']}/analyze").json()["detail"]
+    assert store.analyses[res["id"]]["status"] == "failed"
+    assert not mock.requests
+
+
+def test_analysis_runs_once_and_for_subscribers(env, monkeypatch):
+    client, store, _, _ = env
+    add_docs(store)
+    make_pro(store)
+    mock = claude_mock.install(monkeypatch, lambda body: RESULT)
+    res = client.post("/api/copro-docs/uploads", json=FILES).json()
+    upload_all(store, res)
+    # Subscription ended between the upload and the analysis
+    store.profiles[ALICE.id]["subscription_status"] = "canceled"
+    assert client.post(f"/api/copro-docs/{res['id']}/analyze").status_code == 402
+    store.profiles[ALICE.id]["subscription_status"] = "active"
+    # Taken by a concurrent request after this one read the row
+    real_claim = store.claim_doc_analysis
+
+    async def raced(aid):
+        await real_claim(aid)
+        return False
+    store.claim_doc_analysis = raced
+    assert client.post(f"/api/copro-docs/{res['id']}/analyze").status_code == 409
+    assert client.post(f"/api/copro-docs/{res['id']}/analyze").json()["detail"] == "Analyse déjà en cours."
+    assert not mock.requests
+
+
+def test_slow_claude_call_ends_before_the_platform_limit(env, monkeypatch):
+    client, store, _, _ = env
+    add_docs(store)
+    make_pro(store)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    seen = {}
+
+    async def slow(*args, **kwargs):
+        seen.update(kwargs)
+        await asyncio.sleep(1)
+    monkeypatch.setattr(copro_docs.claude, "json_call", slow)
+    monkeypatch.setattr(copro_docs, "CLAUDE_DEADLINE", 0.05)
+    res = client.post("/api/copro-docs/uploads", json=FILES).json()
+    upload_all(store, res)
+    assert client.post(f"/api/copro-docs/{res['id']}/analyze").status_code == 502
+    assert seen["max_retries"] == 0
+    assert store.analyses[res["id"]]["status"] == "failed" and store.analyses[res["id"]]["error"] == "timeout"
+    assert not store.objects
+
+
 def test_stale_uploads_are_purged(env):
     _, store, _, _ = env
     add_docs(store)
@@ -209,6 +280,31 @@ def test_storage_calls():
     assert asyncio.run(store.download_object("copro-docs", "u/a/0-x")) is None
     asyncio.run(store.delete_objects("copro-docs", ["u/a/0-x"]))
     assert seen[-1].method == "DELETE" and b"prefixes" in seen[-1].content
+
+
+def test_storage_listing_and_atomic_claim():
+    import json
+
+    import httpx
+    from api.store import SupabaseStore
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        if "/object/list/" in request.url.path:
+            prefix = json.loads(request.content)["prefix"]
+            # A folder (no id) per analysis, then its files
+            return httpx.Response(200, json=[{"name": "a1", "id": None}] if prefix == "u" else [{"name": "0-x.pdf", "id": "f1"}])
+        if request.method == "PATCH":
+            return httpx.Response(200, json=[] if "uploading" not in str(request.url) else [{"id": "a"}])
+        return httpx.Response(404, json={})
+
+    store = SupabaseStore("https://p.supabase.co", "sb_secret_x", transport=httpx.MockTransport(handler))
+    assert asyncio.run(store.list_objects("copro-docs", "u/")) == ["u/a1/0-x.pdf"]
+    assert asyncio.run(store.claim_doc_analysis("a")) is True
+    patch = seen[-1]
+    assert patch.url.params["status"] == "eq.uploading" and json.loads(patch.content) == {"status": "analyzing"}
+    assert patch.headers["prefer"] == "return=representation"
 
 
 def test_schema_fits_structured_outputs_limits():

@@ -40,8 +40,8 @@ const SOFTWARE = {
     operatingSystem: 'Web', url: SITE, publisher: ORG,
     description: "Logiciel pour agents immobiliers : prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux.",
     offers: [
-        { '@type': 'Offer', name: 'Solo', price: '79', priceCurrency: 'EUR', category: 'subscription', description: 'Par mois, hors taxes' },
-        { '@type': 'Offer', name: 'Agence', price: '59', priceCurrency: 'EUR', category: 'subscription', description: 'Par agent et par mois, hors taxes' },
+        { '@type': 'Offer', name: 'Solo', price: '79', priceCurrency: 'EUR', category: 'subscription', description: 'Par mois, TTC' },
+        { '@type': 'Offer', name: 'Agence', price: '59', priceCurrency: 'EUR', category: 'subscription', description: 'Par agent et par mois, TTC' },
     ],
 };
 const DATASET = (name, description, path, sales) => ({
@@ -151,7 +151,7 @@ const FAQ = [
     ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous."],
     ["Y a-t-il un engagement ?", "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte »."],
     ['Les prix sont-ils TTC ?', "Oui, tous les prix affichés incluent la TVA à 20 %. La facture détaille le montant hors taxes et la TVA, avec votre raison sociale et votre numéro de TVA."],
-    ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Le nombre d'agents s'ajuste à tout moment, au prorata."],
+    ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Vous ajoutez des agents à tout moment, au prorata ; le nombre d'agents peut être réduit à la fin de l'engagement."],
     ["D'où viennent les données ?", "Des bases publiques officielles : DPE de l'ADEME, ventes immobilières DVF de la DGFiP, Base Adresse Nationale."],
 ];
 pages.push(page({

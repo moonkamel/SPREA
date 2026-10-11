@@ -8,6 +8,7 @@ letters' links and requests go to the owner (the agency is the controller).
 A network sees its agencies and their figures, not their contacts.
 """
 import hashlib
+import html
 import logging
 import os
 import secrets
@@ -19,19 +20,21 @@ from pydantic import BaseModel, Field, field_validator
 
 try:
     from api.accounts import (MAX_AGENCY_SEATS, MIN_AGENCY_SEATS, billing_dep, optional_billing_dep,
-                              org_active, store_dep, team_summary)
+                              org_active, store_dep, team_summary, terms_acceptance)
     from api.auth import User, current_user
-    from api.billing import PRO_ACTIVE_STATUSES, Billing
+    from api.billing import PRO_ACTIVE_STATUSES, Billing, SeatsLocked
     from api.contacts import valid_email
     from api.emailer import send_email
+    from api.ratelimit import invite_limiter
     from api.store import SupabaseStore
 except ImportError:
     from accounts import (MAX_AGENCY_SEATS, MIN_AGENCY_SEATS, billing_dep, optional_billing_dep,
-                          org_active, store_dep, team_summary)
+                          org_active, store_dep, team_summary, terms_acceptance)
     from auth import User, current_user
-    from billing import PRO_ACTIVE_STATUSES, Billing
+    from billing import PRO_ACTIVE_STATUSES, Billing, SeatsLocked
     from contacts import valid_email
     from emailer import send_email
+    from ratelimit import invite_limiter
     from store import SupabaseStore
 
 logger = logging.getLogger(__name__)
@@ -115,7 +118,7 @@ class InvitationRequest(BaseModel):
         return email
 
 
-@router.post("/invitations")
+@router.post("/invitations", dependencies=[Depends(invite_limiter.per_user)])
 async def invite(data: InvitationRequest, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     profile = await require_team(store, user, manager=True)
     org = profile["org"]
@@ -136,7 +139,8 @@ async def invite(data: InvitationRequest, user: User = Depends(current_user), st
     link = join_url(token)
     sent = await send_email(
         data.email, f"Rejoignez {org['name']} sur SPREA",
-        f"<p>{user.email} vous invite à rejoindre <b>{org['name']}</b> sur SPREA, l'outil DPE des professionnels de l'immobilier.</p>"
+        f"<p>{html.escape(user.email or '')} vous invite à rejoindre <b>{html.escape(org['name'])}</b> sur SPREA, "
+        "l'outil DPE des professionnels de l'immobilier.</p>"
         f"<p><a href=\"{link}\">Accepter l'invitation</a> (valable {INVITATION_DAYS} jours)</p>",
         f"{user.email} vous invite à rejoindre {org['name']} sur SPREA.\nAccepter l'invitation : {link}\n"
         f"(valable {INVITATION_DAYS} jours)")
@@ -154,11 +158,15 @@ async def revoke_invitation(invitation_id: str, user: User = Depends(current_use
 
 class JoinRequest(BaseModel):
     token: str = Field(..., min_length=10, max_length=100)
+    # CGV accepted on the invitation page
+    accept_terms: bool = False
 
 
 @router.post("/join")
 async def join(data: JoinRequest, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep),
                billing: Optional[Billing] = Depends(optional_billing_dep)):
+    if not data.accept_terms:
+        raise HTTPException(status_code=400, detail="Acceptez les CGV pour rejoindre l'agence.")
     invitation = await store.get_invitation(token_hash(data.token))
     now = datetime.now(timezone.utc).isoformat()
     if not invitation or invitation.get("accepted_at") or invitation["expires_at"] < now:
@@ -176,6 +184,8 @@ async def join(data: JoinRequest, user: User = Depends(current_user), store: Sup
         raise HTTPException(status_code=409, detail="Toutes les places de l'agence sont prises : contactez votre responsable.")
     await store.add_member(org["id"], user.id, invitation["role"])
     await store.accept_invitation(invitation["id"])
+    # Same record as a subscriber's acceptance at checkout
+    await store.update_profile(user.id, terms_acceptance())
     # A Solo plan of the new member is now useless: stopped, unused time credited
     if profile.get("subscription_status") in PRO_ACTIVE_STATUSES and profile.get("subscription_id") and billing:
         await billing.cancel_subscription(profile["subscription_id"], prorate=True)
@@ -253,7 +263,11 @@ async def change_seats(data: SeatsRequest, user: User = Depends(current_user), s
     used = len(await store.list_members(org["id"])) + len(await pending_invitations(store, org["id"]))
     if data.seats < used:
         raise HTTPException(status_code=400, detail=f"{used} places sont utilisées ou réservées par une invitation : retirez d'abord un membre.")
-    await billing.update_seats(org["stripe_subscription_id"], data.seats)
+    try:
+        await billing.update_seats(org["stripe_subscription_id"], data.seats)
+    except SeatsLocked as e:
+        end = datetime.fromtimestamp(e.end, timezone.utc).strftime("%d/%m/%Y") if e.end else "la fin de l'engagement"
+        raise HTTPException(status_code=400, detail=f"Le nombre de places pourra être réduit à partir du {end}, fin de l'engagement de 12 mois.")
     await store.update_org(org["id"], {"seats": data.seats})
     return {"seats": data.seats}
 
