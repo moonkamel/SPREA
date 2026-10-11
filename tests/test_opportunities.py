@@ -83,14 +83,19 @@ def test_investment_figures_by_profile():
     sim = {"cost": 30000, "cost_low": 26000, "cost_high": 38000, "subsidies": 9000, "cee_est": 1000}
     dealer = investment(v, sim, "marchand", 90, None)
     assert dealer["notary"] == 6000 and dealer["aids"] == 0 and dealer["total"] == 236000 and dealer["margin"] == 24000
-    landlord = investment(v, sim, "bailleur", 90, {"rent_m2": 14, "low": 12, "high": 16})
+    landlord = investment(v, sim, "bailleur", 92, {"rent_m2": 14, "low": 12, "high": 16}, "maison")
     assert landlord["aids"] == 10000 and landlord["total"] == 236000
     # Shown lines add up to the budget and the margin
     odd = investment({"value_now": {"value": 153049}, "value_after": {"value": 187020, "low": 1, "high": 2}},
                      {**sim, "cost": 26437, "subsidies": 10270, "cee_est": 1003}, "bailleur", 96, None)
     assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 100 == 0
     assert odd["margin"] == odd["resale"] - odd["total"]
-    assert landlord["rent_month"] == 1260 and landlord["gross_yield"] == round(100 * 1260 * 12 / 236000, 1)
+    assert landlord["rent_month"] == 1290 and landlord["gross_yield"] == round(100 * 14 * 92 * 12 / 236000, 1)
+    # 47 rue de Bourgogne, Lille: a 328 m2 house does not let at the commune's rent per m2
+    big = investment(v, sim, "bailleur", 328.1, {"rent_m2": 12.7, "low": 8.9, "high": 18.1}, "maison")
+    assert big["rent_m2"] == 9.5 and big["rent_m2_commune"] == 12.7 and big["rent_month"] == 3130
+    studio = investment(v, sim, "bailleur", 20, {"rent_m2": 14, "low": 12, "high": 16}, "appartement")
+    assert studio["rent_m2"] == 17.5
 
 
 def test_scan_ranks_and_dossier_pdf():

@@ -1279,12 +1279,15 @@ class PDFReportGenerator:
             story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Le scénario locatif'), Spacer(1, 8), rows_table([
                 kv('Loyer de marché (charges comprises)', f"{eur(d['rent_month'])} / mois"),
                 kv('Fourchette de la commune', f"{eur(d['rent_month_low'])} à {eur(d['rent_month_high'])} / mois"),
-                kv('Loyer au m²', f"{str(d['rent_m2']).replace('.', ',')}{NBSP}€/m²"),
+                kv('Loyer au m²', f"{str(d['rent_m2']).replace('.', ',')}{NBSP}€/m²"
+                   + (f" <font size='7.5' color='#8A93A3'>(commune : {str(d['rent_m2_commune']).replace('.', ',')}{NBSP}€/m²)</font>"
+                      if d.get('rent_m2_commune') and d['rent_m2_commune'] != d['rent_m2'] else '')),
                 kv('<b>Rendement brut sur le budget total</b>', f"<b>{str(d['gross_yield']).replace('.', ',')}{NBSP}%</b>"),
                 kv('Location aujourd\'hui', text(d['rental_now'])),
                 kv('Location après travaux', text(d['rental_after'])),
             ], [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 3), Paragraph(
-                "Loyer d'annonce prédit pour la commune (« Carte des loyers », ANIL et ministère du Logement), charges comprises. "
+                "Loyer d'annonce prédit pour la commune (« Carte des loyers », ANIL et ministère du Logement), charges comprises, "
+                "ramené à la surface du logement : un grand logement se loue moins cher au m², un petit plus cher. "
                 "Dans les communes en zone tendue, l'encadrement ou le plafonnement des loyers peut s'appliquer.", S['small'])]
 
         # Works programme
