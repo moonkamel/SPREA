@@ -43,7 +43,7 @@ export default function DemoPage() {
 
     useSeo({
         title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
-        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
+        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, opportunités investisseurs avec dossier d'investissement, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
         path: '/demo',
     });
     useEffect(() => {
@@ -66,8 +66,8 @@ export default function DemoPage() {
                         <p className="mt-6 text-lg text-muted">
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
-                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-left">
-                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre']].map(([h, t, a]) => (
+                        <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 lg:-mx-28 gap-3 text-left">
+                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['16 h', 'Les investisseurs', 'investisseurs']].map(([h, t, a]) => (
                                 <li key={a}>
                                     <a href={`#${a}`} className="block rounded-xl border border-line bg-panel px-4 py-3 hover:border-brass/50 transition-colors">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
@@ -188,7 +188,24 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux" reverse
+                <Step id="investisseurs" kicker="16 h · Investisseurs" title="Les passoires les plus rentables pour vos clients investisseurs" reverse
+                    points={['Jusqu\'à 150 DPE récents de la zone simulés et valorisés', 'Classement par marge (marchand de biens) ou rendement brut (bailleur)', 'Prix d\'achat sur les ventes DVF, frais de notaire, travaux, aides selon le profil', 'Loyer de marché de la commune (Carte des loyers)', 'Dossier d\'investissement en PDF à votre nom, rédigé avec l\'IA']}
+                    media={
+                        <div className="grid gap-4 sm:grid-cols-5 items-start">
+                            <div className="sm:col-span-2"><Screen src="/demo/invest_liste.webp" alt="Classement des opportunités : marge, rendement brut, budget, revente et loyer de chaque logement" width={760} height={1250} /></div>
+                            <div className="sm:col-span-3 grid grid-cols-2 gap-3">
+                                <Screen src="/demo/invest_dossier_1.webp" alt="Dossier d'investissement, page 1 : synthèse, loyer, location avant et après travaux, l'opportunité en bref" width={900} height={1273} chrome={false} />
+                                <Screen src="/demo/invest_dossier_2.webp" alt="Dossier d'investissement, page 2 : arguments de négociation, plan financier, scénario locatif" width={900} height={1273} chrome={false} />
+                            </div>
+                        </div>
+                    }>
+                    <p>Vos clients investisseurs et marchands de biens cherchent tous la même chose : la passoire dont la valeur après travaux dépasse largement ce qu'elle coûte. Dans l'onglet « Opportunités investisseurs » de la carte, SPREA chiffre chaque logement classé E, F ou G du secteur et les classe du plus rentable au moins rentable.</p>
+                    <p>Pour chacun, un dossier d'investissement à vos couleurs : plan financier, scénario locatif, programme de travaux, marché local et arguments de négociation. Avec le prix affiché de l'annonce, il recalcule budget, marge et rendement.</p>
+                    <p className="text-xs text-faint">Captures réalisées avec des données d'exemple. Estimations avant frais financiers et fiscalité, réservées à la formule Pro.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux"
                     points={['Ventes DVF comparables à moins de 500 m, 1 km, 2 km', 'Écart de prix par classe DPE mesuré sur 1,27 million de ventes', 'Ajustement du conseiller (état, étage, extérieur…)', 'PDF à votre nom, à remettre au client']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-5 items-start">
@@ -200,7 +217,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui"
+                <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui" reverse
                     points={['Synthèse, analyse rédigée, plan de travaux et de financement', 'Valeur verte et calendrier de la loi Climat', 'Fiche immeuble pour les appartements en copropriété', 'Artisans RGE proches pour chaque travail', 'Inclus sans limite dans l\'abonnement']}
                     media={
                         <div className="grid grid-cols-3 gap-3">
@@ -213,14 +230,14 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte" reverse
+                <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte"
                     points={['Mis à jour chaque mois', 'France entière et 90 départements', 'Des chiffres à citer en rendez-vous et sur vos réseaux']}
                     media={<Screen src="/demo/observatoire.webp" alt="Observatoire : écart de prix par classe DPE, maisons et appartements" width={1600} height={1000} />}>
                     <p>En moyenne, d'après nos calculs sur les ventes DVF rapprochées de leur DPE (2022 à 2025), une maison classée G s'est vendue 18 % moins cher qu'une maison classée D comparable. Montrez-le à vos vendeurs.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil"
+                <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil" reverse
                     points={['Un abonnement, autant de places que d\'agents, une seule facture', 'Invitation par lien, rôles titulaire, responsable et agent', 'Contacts et alertes partagés : aucun propriétaire ne se perd', 'Console réseau pour suivre toutes les agences']}
                     media={<Screen src="/demo/team.webp" alt="Page Équipe : membres de l'agence, rôles, invitations et nombre de places" width={1400} height={1281} />}>
                     <p>Chaque agent prospecte son secteur, et le responsable voit qui rappelle qui. Quand un agent part, ses contacts restent à l'agence.</p>

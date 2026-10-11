@@ -1138,4 +1138,158 @@ class PDFReportGenerator:
         return buffer.getvalue()
 
 
+    # --- Dossier d'investissement (Pro, agency branding) ---
+
+    def generate_investment(self, d: Dict[str, Any]) -> bytes:
+        buffer = BytesIO()
+        agency = d.get('agency') or {}
+        address = d['address']
+        v, sim, market, thesis = d['valuation'], d['sim'], d['market'], d['thesis']
+        brand = agency.get('agency_name') or 'SPREA'
+        doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,
+                                topMargin=HEADER_H + 1.0 * cm, bottomMargin=2.0 * cm,
+                                title=f"Dossier d'investissement – {address['full']}", author=brand)
+        story: List[Any] = [Paragraph(f"Dossier d'investissement · {text(d['profile_name'])}", style('kicker', fontSize=9, textColor=BRASS)),
+                            Paragraph(text(address['street']), S['address'])]
+        if address['locality']:
+            story.append(Paragraph(text(address['locality']), style('loc', fontName='Serif', fontSize=13, leading=17, textColor=MUTED)))
+        facts = ' · '.join(x for x in [
+            text(d['kind'] or 'Logement'), f"{d['surface']:g}".replace('.', ',') + f"{NBSP}m²", text(d.get('period') or ''),
+            f"DPE {text(d['label'])} du {text(date.fromisoformat(d['dpe_date']).strftime('%d/%m/%Y'))}" if d.get('dpe_date') else f"DPE {text(d['label'])}",
+            f"n° {text(d['number'])}",
+        ] if x)
+        story += [Spacer(1, 4), Paragraph(facts, S['meta'])]
+        if d.get('client_name'):
+            story.append(Paragraph(f"Établi pour {text(d['client_name'])}", S['meta']))
+        story.append(Spacer(1, 14))
+
+        # Synthesis
+        margin = d['margin']
+        good = margin > 0
+        color = '#3E8E63' if good else '#C4553A'
+        small = style('ks', fontSize=7.5, leading=10, textColor=MUTED)
+        w = (CONTENT_W - 24) / 4
+        cells = [
+            [*kpi_cell('Prix d\'acquisition' + (' demandé' if d.get('price_is_asked') else ' estimé'), f"{eur(d['price'])}"),
+             Paragraph(f"classe {text(d['label'])}, {eur(round(d['price'] / d['surface']))}/m²", small)],
+            [*kpi_cell('Budget total', f"{eur(d['total'])}"),
+             Paragraph("achat, notaire et travaux" + (", aides déduites" if d['aids'] else ""), small)],
+            [*kpi_cell(f"Valeur après travaux (classe {text(d['new_label'])})", f"{eur(d['resale'])}"),
+             Paragraph(f"entre {eur(d['resale_low'])} et {eur(d['resale_high'])}" if d['resale_low'] != d['resale_high'] else '', small)],
+            [*kpi_cell('Marge brute' if good else 'Bilan', f"<font color='{color}'>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</font>", big=True),
+             Paragraph((f"{str(d['margin_pct']).replace('.', ',').replace('-', '−')}{NBSP}% du budget" if d.get('margin_pct') is not None else '')
+                       + ", avant frais financiers et impôts", small)],
+        ]
+        kpis = Table([cells], colWidths=[w] * 4)
+        kpis.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                                  ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                                  ('BACKGROUND', (3, 0), (3, 0), TINT), ('LINEAFTER', (0, 0), (-2, 0), 0.5, LINE)]))
+        secondary = [kv('Programme', f"{text(d['label'])} → <b>{text(d['new_label'])}</b> : " + text(', '.join(n[:1].lower() + n[1:] for n in d['works_names'])))]
+        if d.get('rent_month'):
+            secondary.append(kv('Loyer de marché estimé', f"{eur(d['rent_month'])} / mois · rendement brut "
+                                f"<b>{str(d['gross_yield']).replace('.', ',')}{NBSP}%</b>"))
+        secondary += [kv('Location aujourd\'hui', text(d['rental_now'])), kv('Location après travaux', text(d['rental_after']))]
+        story += [KeepTogether([Paragraph('Synthèse', S['h2']), Spacer(1, 8),
+                                boxed([kpis, Spacer(1, 8), rows_table(secondary, [CONTENT_W * 0.35 - 24, CONTENT_W * 0.65])])])]
+
+        n = 0
+
+        def next_section(title: str) -> Table:
+            nonlocal n
+            n += 1
+            return section(n, title)
+
+        # Thesis
+        source_note = ("Note rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des seuls chiffres de ce dossier, "
+                       "à relire avec votre conseiller." if thesis.get('source') == 'claude'
+                       else "Note établie automatiquement à partir des chiffres de ce dossier.")
+        story += [CondPageBreak(8 * cm), Spacer(1, 18), next_section("L'opportunité en bref"), Spacer(1, 4),
+                  Paragraph(source_note, S['muted']), Spacer(1, 6),
+                  boxed([Paragraph(text(thesis['these']), S['narrative'])], rule=BRASS_LIGHT, padding=10), Spacer(1, 8),
+                  Paragraph('Points forts', S['narrative_h']), Spacer(1, 2), *bullet_list(thesis['points_forts']), Spacer(1, 6),
+                  Paragraph('Risques et vérifications avant offre', S['narrative_h']), Spacer(1, 2), *bullet_list(thesis['risques']),
+                  Spacer(1, 6), Paragraph('Stratégie conseillée', S['narrative_h']), Spacer(1, 2), Paragraph(text(thesis['strategie']), S['narrative']),
+                  Spacer(1, 6), Paragraph('Arguments de négociation', S['narrative_h']), Spacer(1, 2), Paragraph(text(thesis['negociation']), S['narrative'])]
+
+        # Financial plan
+        rows = [kv("Prix d'acquisition" + (" (demandé)" if d.get('price_is_asked') else " (estimé)"), eur(d['price'])),
+                kv(f"Frais de notaire (environ {round(d['notary_rate'] * 100)}{NBSP}%)", eur(d['notary'])),
+                kv('Travaux TTC', eur(d['works']) + f" <font size='7.5' color='#8A93A3'>({eur(d['works_low'])} à {eur(d['works_high'])})</font>")]
+        if d['aids']:
+            rows.append(kv('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur(d['aids'])}</font>"))
+        rows += [kv('<b>Budget total</b>', f"<b>{eur(d['total'])}</b>"),
+                 kv('Valeur estimée après travaux', eur(d['resale'])),
+                 kv('<b>Marge brute</b>', f"<font color='{color}'><b>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</b></font>")]
+        notes = []
+        if d['profile'] == 'marchand':
+            notes.append("Marchand de biens : frais de notaire réduits sous engagement de revendre dans les cinq ans ; une société n'a pas accès "
+                         "à MaPrimeRénov', aucune aide n'est comptée. TVA sur marge, impôt sur les sociétés et frais de revente non déduits.")
+        else:
+            notes.append("Investisseur bailleur : aides de l'Anah et primes CEE comptées selon le barème en vigueur, catégorie de revenus "
+                         "par défaut, à confirmer par France Rénov'. Fiscalité des loyers non comprise.")
+        notes.append("Frais financiers (prêt, intérêts intercalaires), taxe foncière et charges non compris.")
+        story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le plan financier'), Spacer(1, 8),
+                  rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True), Spacer(1, 4)] + \
+                 [Paragraph(text(x), S['small']) for x in notes]
+
+        # Rental scenario
+        if d.get('rent_month'):
+            story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Le scénario locatif'), Spacer(1, 8), rows_table([
+                kv('Loyer de marché (charges comprises)', f"{eur(d['rent_month'])} / mois"),
+                kv('Fourchette de la commune', f"{eur(d['rent_month_low'])} à {eur(d['rent_month_high'])} / mois"),
+                kv('Loyer au m²', f"{str(d['rent_m2']).replace('.', ',')}{NBSP}€/m²"),
+                kv('<b>Rendement brut sur le budget total</b>', f"<b>{str(d['gross_yield']).replace('.', ',')}{NBSP}%</b>"),
+                kv('Location aujourd\'hui', text(d['rental_now'])),
+                kv('Location après travaux', text(d['rental_after'])),
+            ], [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 3), Paragraph(
+                "Loyer d'annonce prédit pour la commune (« Carte des loyers », ANIL et ministère du Logement), charges comprises. "
+                "Dans les communes en zone tendue, l'encadrement ou le plafonnement des loyers peut s'appliquer.", S['small'])]
+
+        # Works programme
+        works = [[head('Travaux'), head('Fourchette TTC', 2)]]
+        for c in sim['detailed_costs']:
+            works.append([Paragraph(text(c['name']), S['body']), Paragraph(eur_range(c['cost_low'], c['cost_high']), S['right'])])
+        works.append([Paragraph('<b>Total</b>', S['body']), Paragraph(f"<b>{eur_range(sim['cost_low'], sim['cost_high'])}</b>", S['right'])])
+        story += [CondPageBreak(6 * cm), Spacer(1, 18), next_section('Le programme de travaux'), Spacer(1, 8),
+                  Paragraph(f"Programme simulé à partir du DPE pour passer de la classe {text(d['label'])} à la classe {text(d['new_label'])} "
+                            f"({num(sim['initial_cep'])} → {num(sim['new_cep'])}{NBSP}kWh/m²/an). Durée indicative : {days(sim.get('duration_days'))}.",
+                            S['muted']), Spacer(1, 6),
+                  grid(works, [CONTENT_W * 0.7, CONTENT_W * 0.3], bold_last=True), Spacer(1, 3),
+                  Paragraph("Prix moyens du marché, TVA à 5,5 % : seuls des devis d'artisans RGE fixent le prix réel.", S['small'])]
+
+        # Market and DPE effect
+        rows = [kv('Prix médian au m² des ventes comparables', f"<b>{eur(market['price_per_m2'])}</b>"),
+                kv('Moitié des ventes entre', f"{eur(market['q25'])} et {eur(market['q75'])} /m²"),
+                kv('Ventes retenues', f"{num(market['sales'])} ventes {text(market['scope'])} ({text(market['period'])})"),
+                kv(f"Prix au m² en classe {text(d['label'])}", eur(v['price_m2_now']))]
+        story += [CondPageBreak(6 * cm), Spacer(1, 18), next_section('Le marché local'), Spacer(1, 8),
+                  rows_table(rows, [CONTENT_W * 0.55, CONTENT_W * 0.45]), Spacer(1, 3),
+                  Paragraph(f"Source : {text(market['source'])} (données DVF, DGFiP).", S['small'])]
+        if v.get('class_premium'):
+            prem = v['class_premium']
+            cls_rows = [[head('Classe DPE'), *[head(c, 1) for c in LABELS]],
+                        [Paragraph("Écart de prix vs D", S['body']),
+                         *[Paragraph(("<b>" if c in (d['label'], d['new_label']) else '') + f"{prem[c]:+.0f}{NBSP}%".replace('+0', '0')
+                                     + ("</b>" if c in (d['label'], d['new_label']) else ''), style(f'ip{c}', alignment=1)) for c in LABELS]]]
+            story += [Spacer(1, 10), grid(cls_rows, [CONTENT_W * 0.30] + [CONTENT_W * 0.10] * 7), Spacer(1, 3),
+                      Paragraph(f"Écarts de prix entre classes mesurés sur {num(v.get('class_sample') or 0)} ventes rapprochées de leur DPE. "
+                                "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus.", S['small'])]
+
+        # Method
+        contact = ' · '.join(x for x in [text(agency.get('agent_name') or ''), text(agency.get('phone') or ''), text(agency.get('email') or '')] if x)
+        story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
+            "Valeur actuelle : prix au m² des ventes comparables (DVF), corrigé de l'écart de prix mesuré pour la classe DPE du bien.",
+            "Valeur après travaux : même méthode à la classe atteinte, en ne retenant que 70 % de l'écart entre classes.",
+            "Travaux et aides : moteur de simulation SPREA à partir du DPE publié par l'ADEME ; barème des aides en vigueur.",
+            "Ce dossier est une estimation indicative : il ne constitue ni une expertise immobilière, ni un audit énergétique, ni un conseil en "
+            "investissement. Visite, diagnostics, devis et étude de financement restent indispensables avant toute offre.",
+        ], 'muted')]
+        if agency.get('agency_name'):
+            story += [Spacer(1, 14), boxed([Paragraph(f"<b>{text(agency['agency_name'])}</b>", S['body'])] + ([Paragraph(contact, S['muted'])] if contact else []),
+                                           rule=BRASS_LIGHT, padding=10)]
+
+        doc.build(story, onFirstPage=_paper, onLaterPages=_paper,
+                  canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address['full'], brand=brand, subtitle="Dossier d'investissement", **k))
+        return buffer.getvalue()
+
 pdf_service = PDFReportGenerator()

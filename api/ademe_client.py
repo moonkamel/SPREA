@@ -314,6 +314,9 @@ class AdemeConnector:
 
         # Geopoint handling if present ([lat, lon])
         geopoint = raw.get("_geopoint")
+        # The lines API writes it "lat,lon"
+        if isinstance(geopoint, str) and "," in geopoint:
+            geopoint = geopoint.split(",")[:2]
         if geopoint and isinstance(geopoint, list) and len(geopoint) == 2:
             prop.latitude = self._safe_float(geopoint[0])
             prop.longitude = self._safe_float(geopoint[1])

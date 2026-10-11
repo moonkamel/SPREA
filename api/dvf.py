@@ -188,7 +188,22 @@ def comparables(sales: List[Dict], limit: int = 8, median: Optional[float] = Non
     } for s in ranked[:limit]]
 
 
+_sales_cache: Dict[Tuple, Tuple[float, List[Dict]]] = {}
+
+
 async def commune_sales(client: httpx.AsyncClient, insee: str, kind: str, today: date) -> List[Dict]:
+    """Same, kept a day per commune: an area scan values many dwellings of
+    the same commune. Copies, since the caller adds fields to each sale."""
+    key = (insee, kind, today.isoformat())
+    cached = _sales_cache.get(key)
+    if cached and time.time() - cached[0] < CACHE_TTL:
+        return [dict(s) for s in cached[1]]
+    sales = await _commune_sales(client, insee, kind, today)
+    _sales_cache[key] = (time.time(), sales)
+    return [dict(s) for s in sales]
+
+
+async def _commune_sales(client: httpx.AsyncClient, insee: str, kind: str, today: date) -> List[Dict]:
     """Sales of the commune, most recent years first; the current year is
     usually not published yet."""
     sales: List[Dict] = []

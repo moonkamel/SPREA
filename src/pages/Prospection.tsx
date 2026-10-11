@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search } from 'lucide-react';
+import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, TrendingUp } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
@@ -9,7 +9,8 @@ import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
-import LoadingSequence, { BUILDING_STEPS, PROSPECTION_STEPS } from '../views/LoadingSequence';
+import LoadingSequence, { BUILDING_STEPS, INVEST_STEPS, PROSPECTION_STEPS } from '../views/LoadingSequence';
+import { BUDGETS, DossierDialog, OpportunityList, PROFILE_LABELS, marginColor, type InvestorProfile, type Opportunity, type OpportunityScan } from './Opportunities';
 
 interface Dpe {
     number: string;
@@ -129,7 +130,13 @@ export default function ProspectionPage() {
     const [locating, setLocating] = useState(false);
     const [framed, setFramed] = useState(false);
     // 'immeubles': whole buildings held by a single owner (BDNB)
-    const [mode, setMode] = useState<'dpe' | 'immeubles'>('dpe');
+    const [mode, setMode] = useState<'dpe' | 'immeubles' | 'investir'>('dpe');
+    // 'investir': renovation opportunities ranked for an investor (Pro)
+    const [profile, setProfile] = useState<InvestorProfile>('marchand');
+    const [budget, setBudget] = useState('');
+    const [invest, setInvest] = useState<OpportunityScan | null>(null);
+    const [investArea, setInvestArea] = useState<string | null>(null);
+    const [dossierFor, setDossierFor] = useState<Opportunity | null>(null);
     const [minLog, setMinLog] = useState('3');
     const [monoDpe, setMonoDpe] = useState<'all' | 'fg'>('all');
     const [monoSignal, setMonoSignal] = useState<'all' | 'any' | 'strong'>('all');
@@ -307,11 +314,34 @@ export default function ProspectionPage() {
         return () => { clearTimeout(timer); controller.abort(); };
     }, [mode, session, ready, zoomOk, areaKey, minLog, monoDpe, monoSignal, authedFetch]);
 
+    // Investor scan of the visible area, on request: each dwelling is simulated and valued
+    const runInvest = useCallback(async () => {
+        if (!areaKey || !zoomOk) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams({ bbox: areaKey, labels: labels.filter(l => ['E', 'F', 'G'].includes(l)).join(',') || 'F,G', profile });
+            if (kind && kind !== 'immeuble') params.set('kind', kind);
+            if (budget) params.set('max_budget', budget);
+            const res = await authedFetch(`/api/opportunities?${params}`);
+            if (!res.ok) {
+                const detail = await res.json().catch(() => ({}));
+                throw new Error(res.status === 402 ? 'Réservé aux abonnés Pro.' : res.status === 429 ? 'Trop de recherches : patientez une minute.' : detail.detail || "L'analyse a échoué.");
+            }
+            setInvest(await res.json());
+            setInvestArea(areaKey);
+        } catch (e) {
+            setError((e as Error).message);
+        } finally {
+            setLoading(false);
+        }
+    }, [areaKey, zoomOk, labels, kind, profile, budget, authedFetch]);
+
     const showDetails = !!result && !result.locked;
 
     // Analysis screen over the map on the first load of each mode only (not on every move)
-    const [intro, setIntro] = useState<{ dpe: boolean; immeubles: boolean }>({ dpe: true, immeubles: true });
-    const [introFor, setIntroFor] = useState<'dpe' | 'immeubles' | null>(null);
+    const [intro, setIntro] = useState<{ dpe: boolean; immeubles: boolean; investir: boolean }>({ dpe: true, immeubles: true, investir: true });
+    const [introFor, setIntroFor] = useState<'dpe' | 'immeubles' | 'investir' | null>(null);
     useEffect(() => { if (loading && intro[mode] && !introFor) setIntroFor(mode); }, [loading, intro, mode, introFor]);
     const endIntro = useCallback(() => {
         if (introFor) setIntro(i => ({ ...i, [introFor]: false }));
@@ -320,7 +350,7 @@ export default function ProspectionPage() {
     // Switching mode drops the other mode's screen (it runs again on that mode's next first load)
     useEffect(() => { setIntroFor(m => (m && m !== mode ? null : m)); }, [mode]);
     useEffect(() => { if (error || !zoomOk) endIntro(); }, [error, zoomOk, endIntro]);
-    const introDone = !loading && (introFor === 'dpe' ? !!result : !!mono);
+    const introDone = !loading && (introFor === 'dpe' ? !!result : introFor === 'investir' ? !!invest : !!mono);
 
     // Markers
     useEffect(() => {
@@ -328,6 +358,20 @@ export default function ProspectionPage() {
         if (!layer) return;
         layer.clearLayers();
         markers.current.clear();
+        if (mode === 'investir') {
+            if (!invest || !zoomOk) return;
+            invest.items.forEach((o, i) => {
+                if (o.lat == null || o.lon == null) return;
+                const marker = L.circleMarker([o.lat, o.lon], {
+                    radius: Math.min(15, 5 + Math.sqrt(Math.max(0, o.margin) / 2000)),
+                    color: i < 3 ? '#E3C98F' : '#0A0F1A', weight: i < 3 ? 3 : 1.5, opacity: 0.95, fillColor: marginColor(o), fillOpacity: 0.95,
+                });
+                marker.bindTooltip(`${i + 1}. ${escapeHtml(o.address)}<br>${o.label} → ${o.new_label} · marge ${o.margin > 0 ? '+' : '−'}${Math.abs(o.margin).toLocaleString('fr-FR')} €`);
+                marker.on('click', () => setDossierFor(o));
+                marker.addTo(layer);
+            });
+            return;
+        }
         if (mode === 'immeubles') {
             if (!mono || !zoomOk) return;
             for (const b of mono.buildings) {
@@ -374,7 +418,7 @@ export default function ProspectionPage() {
             }
             marker.addTo(layer);
         }
-    }, [mode, mono, result, showDetails, zoomOk]);
+    }, [mode, mono, result, invest, showDetails, zoomOk]);
 
     const locate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -452,13 +496,20 @@ export default function ProspectionPage() {
                         location. Contactez ces propriétaires les premiers, avec une estimation et un plan de rénovation chiffré.
                     </p>
                     <div className="mt-5 inline-flex rounded-xl border border-line bg-raised p-1" role="tablist" aria-label="Que chercher">
-                        {([['dpe', 'Logements à rénover'], ['immeubles', 'Immeubles entiers']] as const).map(([m, label]) => (
+                        {([['dpe', 'Logements à rénover'], ['immeubles', 'Immeubles entiers'], ['investir', 'Opportunités investisseurs']] as const).map(([m, label]) => (
                             <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
                                 className={`h-9 px-4 rounded-lg text-sm transition-colors ${mode === m ? 'bg-brass text-canvas font-medium' : 'text-muted hover:text-ink'}`}>
                                 {label}
                             </button>
                         ))}
                     </div>
+                    {mode === 'investir' && (
+                        <p className="mt-3 text-sm text-muted max-w-3xl">
+                            Les passoires du secteur classées par ce que la rénovation rapporte à un investisseur : prix d'achat estimé sur les ventes
+                            réelles, frais de notaire, programme de travaux et aides, valeur après travaux et loyer de marché. Pour chacune, un dossier
+                            d'investissement à votre nom, rédigé avec l'IA, à transmettre à vos clients investisseurs et marchands de biens.
+                        </p>
+                    )}
                     {mode === 'immeubles' && (
                         <p className="mt-3 text-sm text-muted max-w-3xl">
                             Les immeubles de 3 logements ou plus détenus en entier par une SCI ou une autre société privée, hors copropriété,
@@ -480,7 +531,27 @@ export default function ProspectionPage() {
                             <span className="hidden sm:inline">Autour de moi</span>
                         </button>
                     </form>
-                    {mode === 'immeubles' ? (
+                    {mode === 'investir' ? (
+                        <>
+                            <div className="flex gap-2" role="group" aria-label="Classes DPE">
+                                {(['E', 'F', 'G'] as DPEClass[]).map(l => (
+                                    <button key={l} type="button" onClick={() => toggleLabel(l)} aria-pressed={labels.includes(l)}
+                                        className={`h-11 w-11 rounded-xl font-bold border-2 transition-opacity ${labels.includes(l) ? 'opacity-100' : 'opacity-30'}`}
+                                        style={{ backgroundColor: DPE_COLORS[l].bg, color: DPE_COLORS[l].fg, borderColor: labels.includes(l) ? '#E3C98F' : 'transparent' }}>
+                                        {l}
+                                    </button>
+                                ))}
+                            </div>
+                            <select value={profile} onChange={e => setProfile(e.target.value as InvestorProfile)} aria-label="Profil d'investisseur"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                {(Object.keys(PROFILE_LABELS) as InvestorProfile[]).map(p => <option key={p} value={p}>{PROFILE_LABELS[p]}</option>)}
+                            </select>
+                            <select value={budget} onChange={e => setBudget(e.target.value)} aria-label="Budget"
+                                className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+                            </select>
+                        </>
+                    ) : mode === 'immeubles' ? (
                         <>
                             <select value={minLog} onChange={e => setMinLog(e.target.value)} aria-label="Nombre de logements"
                                 className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
@@ -527,9 +598,9 @@ export default function ProspectionPage() {
                         {introFor === mode && (
                             <LoadingSequence
                                 variant="panel"
-                                steps={mode === 'dpe' ? PROSPECTION_STEPS : BUILDING_STEPS}
-                                title={mode === 'dpe' ? 'Analyse du secteur' : 'Recherche des immeubles'}
-                                sources={mode === 'dpe' ? 'ADEME, Base Adresse Nationale' : 'BDNB, fichiers fonciers, ADEME, BODACC'}
+                                steps={mode === 'dpe' ? PROSPECTION_STEPS : mode === 'investir' ? INVEST_STEPS : BUILDING_STEPS}
+                                title={mode === 'dpe' ? 'Analyse du secteur' : mode === 'investir' ? 'Recherche des opportunités' : 'Recherche des immeubles'}
+                                sources={mode === 'dpe' ? 'ADEME, Base Adresse Nationale' : mode === 'investir' ? 'ADEME, DVF, Carte des loyers' : 'BDNB, fichiers fonciers, ADEME, BODACC'}
                                 done={introDone}
                                 onFinished={endIntro}
                             />
@@ -585,6 +656,33 @@ export default function ProspectionPage() {
                                 <Button className="mt-4 w-full" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
                             </Card>
                         ) : null}
+
+                        {mode === 'investir' && session && (
+                            me && !me.is_pro ? (
+                                <Card className="p-5">
+                                    <p className="text-ink font-medium flex items-center gap-2"><Lock size={16} className="text-brass" />Réservé aux abonnés Pro</p>
+                                    <p className="mt-2 text-sm text-muted">Le classement des opportunités et les dossiers d'investissement font partie de la formule Pro.</p>
+                                    <Button className="mt-4 w-full" onClick={() => navigate('/tarifs')}>Voir les formules</Button>
+                                </Card>
+                            ) : (
+                                <Card className="p-4">
+                                    <Button className="h-11 w-full" onClick={runInvest} disabled={loading || !zoomOk || !areaKey}>
+                                        {loading ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
+                                        {invest && investArea === areaKey ? 'Relancer l\'analyse' : 'Analyser cette zone'}
+                                    </Button>
+                                    <p className="mt-2 text-xs text-faint">
+                                        Jusqu'à 150 DPE récents de la zone visible, chacun simulé et valorisé : comptez de 10 à 40 secondes.
+                                        {invest && investArea !== areaKey ? ' La carte a bougé : relancez pour cette zone.' : ''}
+                                    </p>
+                                </Card>
+                            )
+                        )}
+
+                        {mode === 'investir' && invest && (
+                            <OpportunityList scan={invest}
+                                onFocus={o => mapRef.current?.setView([o.lat, o.lon], Math.max(mapRef.current.getZoom(), 17))}
+                                onDossier={o => setDossierFor(o)} />
+                        )}
 
                         {mode === 'immeubles' && mono && (
                             <Card className="p-0 overflow-hidden">
@@ -670,6 +768,7 @@ export default function ProspectionPage() {
             </main>
             <SiteFooter />
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
+            {dossierFor && <DossierDialog opportunity={dossierFor} profile={invest?.profile || profile} onClose={() => setDossierFor(null)} />}
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
         </div>

@@ -32,6 +32,9 @@ on:
       budget:
         description: "Report review: dollars of Claude spend, all shards together (0 = no AI, reports pushed to a branch)"
         default: "0"
+      opportunities:
+        description: "Live investor scan of this area (bbox ouest,sud,est,nord) instead of the audit"
+        default: ""
   push:
     paths:
       - "scripts/audit/**"
@@ -77,8 +80,16 @@ jobs:
           BUDGET=$(python3 -c "print(float('${{ inputs.budget || '0' }}') / $SHARDS)")
           if [ "$BUDGET" = "0.0" ]; then AI=""; else AI="--ai --budget $BUDGET"; fi
           python scripts/audit/review_pdfs.py --count $PER $AI --shard ${{ matrix.shard }} --shards $SHARDS ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }} ${{ inputs.numbers && format('--numbers {0}', inputs.numbers) || '' }}
+      - name: Opportunities
+        if: inputs.opportunities != '' && matrix.shard == 0
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          python scripts/audit/opportunities_live.py "${{ inputs.opportunities }}" marchand
+          python scripts/audit/opportunities_live.py "${{ inputs.opportunities }}" bailleur
       - name: Audit
-        if: ${{ !inputs.review || inputs.review == '0' }}
+        if: ${{ (!inputs.review || inputs.review == '0') && inputs.opportunities == '' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -128,10 +139,10 @@ jobs:
       - run: python scripts/audit/aggregate.py shards
       - run: python scripts/audit/review_aggregate.py shards
       - name: Reports to a branch
-        if: inputs.review && inputs.review != '0'
+        if: (inputs.review && inputs.review != '0') || inputs.opportunities != ''
         run: |
           mkdir -p /tmp/out && cp shards/*/reports/* /tmp/out/ 2>/dev/null || true
-          for f in shards/*/reviews.json; do cp "$f" "/tmp/out/reviews-$(basename $(dirname $f)).json"; done
+          for f in shards/*/reviews.json; do [ -f "$f" ] && cp "$f" "/tmp/out/reviews-$(basename $(dirname $f)).json"; done; true
           cd /tmp/out && ls | head -3 && git init -q -b reports && git add -A
           git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Reports of run ${{ github.run_id }}"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" reports:audit-reports/${{ github.run_id }}

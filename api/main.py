@@ -62,6 +62,7 @@ try:
     from api.immeuble import router as immeuble_router
     from api.monopro import router as monopro_router
     from api.copro_docs import router as copro_docs_router
+    from api.opportunities import router as opportunities_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
@@ -76,6 +77,7 @@ except ImportError:
     from immeuble import router as immeuble_router
     from monopro import router as monopro_router
     from copro_docs import router as copro_docs_router
+    from opportunities import router as opportunities_router
 
 @app.get("/")
 async def root():
@@ -199,6 +201,7 @@ app.include_router(rge_router)
 app.include_router(immeuble_router)
 app.include_router(monopro_router)
 app.include_router(copro_docs_router)
+app.include_router(opportunities_router)
 
 if __name__ == "__main__":
     import uvicorn
