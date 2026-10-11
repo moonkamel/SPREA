@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
+    from api.figures import display_figures
     from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
                                 FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
@@ -16,6 +17,7 @@ try:
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
+    from figures import display_figures
     from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
                             FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
@@ -220,7 +222,9 @@ def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
         if kind == "toit terrasse":
             return "Toit terrasse : isolant de 14 à 18 cm sur l'étanchéité refaite (polyuréthane ou laine de roche), R ≥ 4,5 m².K/W exigée pour les aides."
         return ("Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou toiture : 20 à 24 cm, R ≥ 6 "
-                "(valeurs exigées pour les aides), avec pare-vapeur côté chauffé.")
+                "(valeurs exigées pour les aides), avec "
+                + ("frein-vapeur hygrovariable côté chauffé (pas de pare-vapeur étanche sur un bâti ancien)."
+                   if ctx.get("pre_1948") else "pare-vapeur côté chauffé."))
     if work_id == "floor_ceiling":
         return "Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène, polyuréthane ou laine minérale), R ≥ 3 m².K/W."
     if work_id == "windows":
@@ -600,6 +604,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
     sim = report["sim"]
     ident = report["identity"]
     fin = report["financing"]
+    fig = display_figures(sim, report["works"], report.get("extra_costs"))
     return {
         "logement": {
             "type": ident["building_type"],
@@ -641,11 +646,14 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             "duree_chantier_jours_ouvres": sim["duration_days"],
         },
         "financement": {
-            "cout_total_fourchette_eur": [r100(sim["cost_low"]), r100(sim["cost_high"])],
+            # The figures of the report's tables, rounded the same way
+            "cout_total_fourchette_eur": [fig["cost_low"], fig["cost_high"]],
             "parcours_aide": pathway_label(sim),
-            "maprimerenov_eur": r100(sim["subsidies"]),
-            "primes_cee_eur": r100(sim["cee_est"]),
-            "reste_a_charge_fourchette_eur": [r100(sim["rest_to_pay_low"]), r100(sim["rest_to_pay_high"])],
+            "maprimerenov_eur": fig["mpr"],
+            # Rénovation d'ampleur: the aid follows the cost
+            "maprimerenov_fourchette_eur": [fig["aids_low"], fig["aids_high"]] if sim["aid_pathway"] == "accompagne" else None,
+            "primes_cee_eur": fig["cee"],
+            "reste_a_charge_fourchette_eur": [fig["rest_low"], fig["rest_high"]],
             # Same condition as the PDF: only for dwellings rated E, F or G
             "pourquoi_pas_la_renovation_d_ampleur": (sim["aid_blockers"] or None) if sim["current_label"] in AMPLEUR_LABELS else None,
             "categorie_revenus": sim["income_profile"],

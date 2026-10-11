@@ -9,6 +9,11 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
+try:
+    from api.figures import display_figures, r
+except ImportError:
+    from figures import display_figures, r
+
 LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
 from reportlab.lib import colors
@@ -330,31 +335,8 @@ def green_range(sim: Dict[str, Any]) -> str:
     return f"{eur_r(low, 500)} à {eur_r(high, 500)}"
 
 
-def r(value: Optional[float], step: int = 100) -> int:
-    return int(round((value or 0) / step) * step)
-
-
 def figures(report: Dict[str, Any]) -> Dict[str, int]:
-    """Costs, aids and rest to pay as shown, rounded once so that every sum
-    in the report holds: total = sum of the lines, cost - aids = rest."""
-    sim = report['sim']
-    extras = [r(x['cost'], 10) for x in report.get('extra_costs') or []]
-    low = sum(r(w['cost_low']) for w in report['works']) + sum(extras)
-    high = sum(r(w['cost_high']) for w in report['works']) + sum(extras)
-    cost = r(sim['cost'])
-    if sim['aid_pathway'] == 'accompagne':
-        mpr, cee = r(sim['subsidies']), 0
-        aids_low, aids_high = r(sim.get('aids_low', sim['subsidies'])), r(sim.get('aids_high', sim['subsidies']))
-    else:
-        per_work = sum(r(w['aid'], 10) for w in report['works'] if w.get('aid'))
-        mpr = r(sim['subsidies'], 10)
-        # The CEE line closes the sum of the amounts per work
-        cee = max(0, per_work - mpr) if per_work else r(sim['cee_est'], 10)
-        aids_low = aids_high = mpr + cee
-    aids = mpr + cee if sim['aid_pathway'] != 'accompagne' else r(sim['subsidies'])
-    return {"cost": cost, "cost_low": low, "cost_high": high, "mpr": mpr, "cee": cee, "aids": aids,
-            "aids_low": aids_low, "aids_high": aids_high, "rest": max(0, cost - aids),
-            "rest_low": max(0, low - aids_low), "rest_high": max(0, high - aids_high)}
+    return display_figures(report['sim'], report['works'], report.get('extra_costs'))
 
 
 def eur_span(low: float, high: float) -> str:
@@ -1076,9 +1058,11 @@ class PDFReportGenerator:
                             "(données DVF, DGFiP), hors ventes atypiques.", S['small'])]
         if market.get('comparables'):
             # The median is computed on prices brought to the last quarter: show them next to the raw ones
+            # Distance only when known (sales located by their street alone have none)
+            with_distance = any(c.get('distance') is not None for c in market['comparables'])
             head_row = [head('Date'), head('Rue'), head('Surface', 2), head('Prix', 2),
                         head('Prix /m² à la vente' if adjusted else 'Prix /m²', 2),
-                        *([head('Prix /m² actualisé', 2)] if adjusted else []), head('Distance', 2)]
+                        *([head('Prix /m² actualisé', 2)] if adjusted else []), *([head('Distance', 2)] if with_distance else [])]
             comp_rows = [head_row]
             for c in market['comparables']:
                 comp_rows.append([
@@ -1088,9 +1072,12 @@ class PDFReportGenerator:
                     Paragraph(eur(c['price']), S['right']),
                     Paragraph(eur(c['price_m2']), S['right']),
                     *([Paragraph(eur(c.get('adjusted_m2') or c['price_m2']), S['right'])] if adjusted else []),
-                    Paragraph(distance_text(c.get('distance')), S['right']),
+                    *([Paragraph(distance_text(c.get('distance')), S['right'])] if with_distance else []),
                 ])
             widths = [0.10, 0.27, 0.11, 0.13, 0.13, 0.13, 0.13] if adjusted else [0.12, 0.34, 0.13, 0.15, 0.13, 0.13]
+            if not with_distance:
+                # The street takes the room of the missing column
+                widths = [widths[0], widths[1] + widths[-1], *widths[2:-1]]
             story += [Spacer(1, 10), Paragraph('Ventes comparables les plus proches', S['h3']), Spacer(1, 4),
                       grid(comp_rows, [CONTENT_W * w for w in widths])]
 
@@ -1111,11 +1098,15 @@ class PDFReportGenerator:
         # Renovation scenario
         if after:
             sim = v['sim']
-            work_rows = [kv(text(d['name']), eur_range(d['cost_low'], d['cost_high'])) for d in sim['detailed_costs']]
+            lines = [d for d in sim['detailed_costs'] if d['id'] != 'parking']
+            extras = [d for d in sim['detailed_costs'] if d['id'] == 'parking']
+            fig = display_figures(sim, lines, extras)
+            work_rows = [kv(text(d['name']), eur_range(d['cost_low'], d['cost_high'])) for d in lines]
+            work_rows += [kv(text(d['name']), eur_r(d['cost'], 10)) for d in extras]
             work_rows += [
-                kv('<b>Coût des travaux</b>', f"<b>{eur_range(v['cost']['low'], v['cost']['high'])}</b>"),
-                kv('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_r(v['aids'])}</font>"),
-                kv('<b>Reste à charge</b>', f"<b>{eur_range(v['rest']['low'], v['rest']['high'])}</b>"),
+                kv('<b>Coût des travaux</b>', f"<b>{eur_span(fig['cost_low'], fig['cost_high'])}</b>"),
+                kv('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur_span(fig['aids_low'], fig['aids_high'])}</font>"),
+                kv('<b>Reste à charge</b>', f"<b>{eur_span(fig['rest_low'], fig['rest_high'])}</b>"),
             ]
             story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le scénario de rénovation'), Spacer(1, 8),
                       Paragraph(f"Travaux permettant de passer de la classe {v['current_label']} à la classe {v['target_label']}"

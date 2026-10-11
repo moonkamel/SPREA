@@ -19,7 +19,8 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "claude-sonnet-5-5"
-NARRATIVE_VERSION = 2
+# 3: programmes and rounded figures changed (reviews of 200 reports): texts written before are redone
+NARRATIVE_VERSION = 3
 TIMEOUT_SECONDS = 50
 
 SECTIONS = ("verdict", "diagnostic", "strategie", "financement", "profil")

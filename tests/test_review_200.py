@@ -113,3 +113,20 @@ def test_second_review_round():
     assert f["cost_low"] == sum(round(w["cost_low"] / 100) * 100 for w in content["works"]) + \
         sum(round(x["cost"] / 10) * 10 for x in content["extra_costs"])
     assert "fourchette large" in green_range({"latent_gain": 20000, "latent_gain_low": 0, "latent_gain_high": 134000})
+
+
+def test_analysis_and_tables_show_the_same_figures():
+    """192 rue de la Chasse: the written analysis and the avis de valeur gave
+    17 600 - 26 100 € and an aid of 8 900 € where the tables gave 17 700 -
+    26 000 € and an aid of 7 500 - 11 100 €."""
+    from api.figures import display_figures
+    from api.report_content import build_report, facts_for_writer
+    from tests.test_pdf import META, PROP
+    p = {**PROP, "initial_cep": 410, "ges_value": 117, "heating_energy": "Fioul domestique",
+         "construction_period": "avant 1948"}
+    content = build_report(META, SimulationInput(property=p, works=["roof", "iti", "vmc", "pac_air_eau"]))
+    fig = display_figures(content["sim"], content["works"], content["extra_costs"])
+    fin = facts_for_writer(content)["financement"]
+    assert fin["cout_total_fourchette_eur"] == [fig["cost_low"], fig["cost_high"]]
+    assert fin["reste_a_charge_fourchette_eur"] == [fig["rest_low"], fig["rest_high"]]
+    assert fig["cost_low"] - fig["aids_low"] == fig["rest_low"]
