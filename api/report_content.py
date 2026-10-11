@@ -300,8 +300,13 @@ def shown_floor(address: Optional[str], dpe_floor: Optional[str], losses: Option
     """The floor for the header. A DPE "0" with no loss through the floor is
     a flat between two heated floors, not a ground floor: not shown."""
     floor = floor_of(address, dpe_floor)
-    if floor == "0" and floor_of(address, None) is None and losses and not losses.get("floor"):
-        return None
+    if floor == "0" and floor_of(address, None) is None and losses:
+        total = sum(v or 0 for v in losses.values()) or 1
+        # No loss through the floor: between two heated floors. Large losses
+        # through the roof: top floor or single-storey building. Either way
+        # the DPE "0" is not a ground floor to print
+        if not losses.get("floor") or (losses.get("roof") or 0) / total >= 0.10:
+            return None
     return floor
 
 
