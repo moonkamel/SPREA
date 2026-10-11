@@ -135,7 +135,7 @@ async def review_one(number: str, store) -> None:
             analysis = await ai_service.write_analysis(facts_for_writer(content))
         else:
             analysis = {"source": "rules", "sections": fallback_analysis(facts_for_writer(content))}
-        pdf = pdf_service.generate(content, analysis["sections"])
+        pdf = pdf_service.generate(content, analysis["sections"], by_ai=analysis["source"] == "claude")
         text = pdf_text(pdf)
         out.update({"kind": prop.building_type, "surface": prop.shab, "label": content["sim"]["current_label"],
                     "new_label": content["sim"]["new_label"], "works": works, "analysis_source": analysis["source"],

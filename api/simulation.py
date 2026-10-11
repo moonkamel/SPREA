@@ -46,6 +46,7 @@ ENERGY_CONVERSION = {
     "wood": 1.0,
     "district_heating": 1.0,
     "coal": 1.0,
+    "lpg": 1.0,
 }
 
 # Average 2025-2026 prices per kWh of final energy, TTC, excluding subscription.
@@ -57,6 +58,7 @@ ENERGY_PRICES_EUR_KWH = {
     "wood": 0.09,
     "district_heating": 0.12,
     "coal": 0.09,
+    "lpg": 0.18,  # Propane or butane in a tank, dearer than mains gas
 }
 
 # GHG emission factors, kgCO2e per kWh of final energy (DPE 3CL-2021 method)
@@ -67,7 +69,11 @@ EMISSION_FACTORS = {
     "wood": 0.030,
     "district_heating": 0.150,
     "coal": 0.385,
+    "lpg": 0.272,
 }
+
+# Fuels a house may not keep with MaPrimeRénov', and that a heat pump replaces
+FOSSIL_ENERGIES = {"gas", "lpg", "oil", "coal"}
 
 # Seasonal efficiency of the heating system being replaced
 CURRENT_HEATING_EFFICIENCY = {
@@ -77,6 +83,7 @@ CURRENT_HEATING_EFFICIENCY = {
     "wood": 0.70,
     "district_heating": 1.0,
     "coal": 0.65,
+    "lpg": 0.85,
 }
 
 # Works that replace the heating system: new energy and seasonal efficiency
@@ -94,6 +101,7 @@ CURRENT_HOT_WATER_EFFICIENCY = {
     "wood": 0.60,
     "district_heating": 0.9,
     "coal": 0.60,
+    "lpg": 0.75,
 }
 HEAT_PUMP_WATER_HEATER_COP = 2.5
 
@@ -294,7 +302,8 @@ def _energy_of(label: str) -> Optional[str]:
     if s.startswith("charbon") or s == "anthracite": return "coal"
     if "lectri" in s or "pac " in f"{s} " or "pompe" in s or "convecteur" in s or "joule" in s or "panneau rayonnant" in s:
         return "electricity"
-    if "gaz" in s or "gpl" in s or "propane" in s or "butane" in s: return "gas"
+    if "gpl" in s or "propane" in s or "butane" in s: return "lpg"
+    if "gaz" in s: return "gas"
     if "fioul" in s: return "oil"
     if "bois" in s or "granul" in s or "bûche" in s or "buche" in s: return "wood"
     if "seau" in s: return "district_heating"
@@ -731,7 +740,7 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     if not eq["collective_heating"] and energy_known(prop) and not eq["heat_pump"]:
         # Air/water heat pump: houses with a boiler (gas, oil, electric boiler);
         # not district heating (often mandatory, low-carbon), nor wood
-        if house and (energy in ("gas", "oil", "coal") or (energy == "electricity" and eq["hydronic"])):
+        if house and (energy in FOSSIL_ENERGIES or (energy == "electricity" and eq["hydronic"])):
             systems.add("pac_air_eau")
         # Inertia radiators only replace electric convectors
         if energy == "electricity" and not eq["hydronic"]:
@@ -762,7 +771,7 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     # Individual gas or oil heating in a flat: electric radiators, only kept
     # by the default selection when they improve the label (emissions often
     # make it), even though the bill goes up
-    if (not house and energy in ("gas", "oil", "coal") and not eq["collective_heating"]
+    if (not house and energy in FOSSIL_ENERGIES and not eq["collective_heating"]
             and not eq["heat_pump"] and energy_known(prop)):
         works.add("heating")
     return {"systems": systems, "works": works, "equipment": eq}

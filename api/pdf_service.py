@@ -248,6 +248,20 @@ def boxed(flowables: List[Any], background=WHITE, rule=None, padding: float = 12
     return t
 
 
+def ges_note(sim: Dict[str, Any]) -> List[Any]:
+    """The label is the worse of energy and climate: says so when the climate
+    class, not the consumption shown on the scale, sets it."""
+    notes = []
+    for when, label, cep_label, ges in (("Aujourd'hui", sim.get('current_label'), sim.get('current_cep_label'), sim.get('initial_ges')),
+                                        ("Après travaux", sim.get('new_label'), sim.get('new_cep_label'), sim.get('new_ges'))):
+        if label and cep_label and label != cep_label and ges is not None:
+            notes.append(f"{when}, la consommation correspond à la classe {cep_label}, mais les émissions de gaz à effet "
+                         f"de serre ({num(ges)}{NBSP}kg CO₂/m²/an) classent le logement en {label}")
+    if not notes:
+        return []
+    return [Spacer(1, 3), Paragraph(" ; ".join(notes) + " : l'étiquette retient la moins bonne des deux classes.", S['small'])]
+
+
 def dpe_scale(thresholds: List[Dict], current: str, target: str) -> List[Any]:
     rows = []
     n = len(thresholds)
@@ -461,7 +475,7 @@ class PDFReportGenerator:
             out.append(KeepTogether(block))
         return out
 
-    def generate(self, report: Dict[str, Any], analysis: Dict[str, Any]) -> bytes:
+    def generate(self, report: Dict[str, Any], analysis: Dict[str, Any], by_ai: bool = False) -> bytes:
         buffer = BytesIO()
         sim = report['sim']
         ident = report['identity']
@@ -483,9 +497,11 @@ class PDFReportGenerator:
             return section(n, title)
 
         # 1. Analysis
-        block: List[Any] = [next_section('Notre analyse'), Spacer(1, 4),
-                            Paragraph("Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres "
-                                      "de ce rapport, à relire avec votre conseiller.", S['muted']), Spacer(1, 8)]
+        # The AI notice only on a text Claude wrote, not on the rule-based one
+        note = ("Analyse rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des chiffres "
+                "de ce rapport, à relire avec votre conseiller." if by_ai else
+                "Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.")
+        block: List[Any] = [next_section('Notre analyse'), Spacer(1, 4), Paragraph(note, S['muted']), Spacer(1, 8)]
         for key, title in ANALYSIS_TITLES:
             block += [Paragraph(title, S['narrative_h']), Spacer(1, 2), Paragraph(text(analysis[key]), S['narrative']), Spacer(1, 6)]
         block += [Paragraph('Pour un bailleur' if report['is_investor'] else 'Pour vous, propriétaire occupant', S['narrative_h']),
@@ -747,6 +763,7 @@ class PDFReportGenerator:
             out += [Spacer(1, 14), KeepTogether([
                 Paragraph("Effet sur l'étiquette énergie", S['h3']), Spacer(1, 6),
                 *dpe_scale(sim['thresholds'], sim['current_label'], sim['new_label']),
+                *ges_note(sim),
                 Spacer(1, 6),
                 Paragraph(f"Facture d'énergie estimée : {eur_r(sim['annual_bill_before'], 10)} → "
                           f"<font color='#3E8E63'><b>{eur_r(sim['annual_bill_after'], 10)}</b></font> par an.", S['body']),

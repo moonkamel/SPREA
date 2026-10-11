@@ -10,14 +10,14 @@ try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
     from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                                HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                                FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
     from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                            HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                            FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
 
@@ -28,6 +28,7 @@ ENERGY_NAMES = {
     "wood": "bois",
     "district_heating": "réseau de chaleur",
     "coal": "charbon",
+    "lpg": "GPL",
 }
 
 LOSS_NAMES = {
@@ -167,13 +168,13 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
         return (f"Le renouvellement d'air pèse {fr_pct(shares['air'])} des pertes. Une ventilation contrôlée évite "
                 "l'humidité et les moisissures une fois le logement isolé.")
     if work_id == "pac_air_eau":
-        if energy in ("gas", "oil", "coal"):
+        if energy in FOSSIL_ENERGIES:
             return (f"Remplace le chauffage au {ENERGY_NAMES[energy]} : pour la même chaleur, la pompe à chaleur "
                     f"consomme environ {fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'énergie.")
         return (f"Remplace la chaudière électrique : pour la même chaleur, la pompe à chaleur consomme environ "
                 f"{fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'électricité.")
     if work_id == "heating":
-        if energy in ("gas", "oil", "coal"):
+        if energy in FOSSIL_ENERGIES:
             return (f"Le chauffage au {ENERGY_NAMES[energy]} fait l'essentiel des émissions de CO₂ du logement : des radiateurs "
                     "électriques à inertie améliorent son étiquette climat.")
         generator = (ctx.get("heating_generator") or "").lower()
@@ -304,7 +305,7 @@ def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
         return "Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation."
     if work_id == "vmc":
         return "Le passage des gaines se prévoit avant les finitions de l'isolation."
-    if work_id == "heating" and ctx["energy"] in ("gas", "oil", "coal"):
+    if work_id == "heating" and ctx["energy"] in FOSSIL_ENERGIES:
         return (f"La facture de chauffage augmente : le kWh d'électricité coûte plus cher que le {ENERGY_NAMES[ctx['energy']]}. "
                 "À retenir surtout si l'étiquette compte (location, vente).")
     if work_id == "ecs":
@@ -519,7 +520,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             # The DPE gives a floor for houses too (0): meaningless, and it
             # led the text to call any house "de plain-pied"
             "floor": None if house else floor_of(meta.get("address"), details.get("floor")),
-            "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "").capitalize(), details.get("heating_system"),
+            "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "")[:1].upper() + ENERGY_NAMES.get(energy, "")[1:], details.get("heating_system"),
                                                 details.get("heating_installation")] if x) or None,
             "hot_water": details.get("hot_water_system"),
             "ventilation": details.get("ventilation"),

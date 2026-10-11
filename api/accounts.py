@@ -565,7 +565,7 @@ async def download_report(report_id: UUID, user: User = Depends(current_user),
         if analysis["source"] == "claude":
             await store.update_report(report["id"], {"narrative": json.dumps(analysis, ensure_ascii=False)})
 
-    pdf_bytes = pdf_service.generate(content, analysis["sections"])
+    pdf_bytes = pdf_service.generate(content, analysis["sections"], by_ai=analysis.get("source") == "claude")
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
