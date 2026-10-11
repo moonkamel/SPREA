@@ -750,7 +750,8 @@ def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
             continue
         if work == "floor_ceiling" and not house:
             continue
-        if qualities.get(key[work]) in ("bonne", "très bonne") or shares.get(key[work], 0) < 0.08:
+        quality = qualities.get(key[work], "")
+        if quality in ("bonne", "très bonne") or (shares.get(key[work], 0) < 0.05 and "insuffisante" not in quality):
             continue
         candidates.append(work)
     insulation = {"iti", "ite", "roof", "floor_ceiling", "windows"}
@@ -1072,6 +1073,10 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             if variant and LABELS.index(variant["new_label"]) <= LABELS.index(sim["new_label"]):
                 preselected.extend(variant["works"])
                 suggested.update(variant["works"])
+                # The insulation added needs its ventilation too
+                if "vmc" not in preselected and "vmc" in avail["works"] and not eq["mechanical_ventilation"]:
+                    preselected.append("vmc")
+                    suggested.add("vmc")
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],
