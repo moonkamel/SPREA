@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Menu, X } from 'lucide-react';
+import { HelpCircle, Menu, X } from 'lucide-react';
 import { AccountButton, useAccount } from '../account';
 import { isLegalIncomplete, LEGAL } from '../legal';
 import { Link, navigate, usePath } from '../router';
 import { useSeo } from '../seo';
+import { TOURS, startTour, type TourId } from '../tour';
 
 export function Logo({ onClick }: { onClick?: () => void }) {
     return (
@@ -82,6 +83,48 @@ function Nav() {
     );
 }
 
+// Subscribers start either journey of the guided tour again from here
+function GuideMenu() {
+    const { me } = useAccount();
+    const [open, setOpen] = useState(false);
+    const box = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!open) return;
+        const close = (e: Event) => {
+            if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Escape') return;
+            if (e.type === 'mousedown' && box.current?.contains(e.target as Node)) return;
+            setOpen(false);
+        };
+        document.addEventListener('mousedown', close);
+        document.addEventListener('keydown', close);
+        return () => {
+            document.removeEventListener('mousedown', close);
+            document.removeEventListener('keydown', close);
+        };
+    }, [open]);
+    if (!me?.is_pro) return null;
+    return (
+        <div ref={box} className="relative">
+            <button type="button" aria-expanded={open} aria-label="Visite guidée" title="Visite guidée" onClick={() => setOpen(o => !o)}
+                className="h-10 w-10 flex items-center justify-center rounded-xl text-muted hover:text-ink transition-colors">
+                <HelpCircle size={19} />
+            </button>
+            {open && (
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-line bg-panel p-2 shadow-2xl shadow-black/50 z-50">
+                    <p className="px-3 pt-1 pb-2 text-xs text-faint">Visite guidée</p>
+                    {(Object.keys(TOURS) as TourId[]).map(id => (
+                        <button key={id} type="button" onClick={() => { setOpen(false); startTour(id); }}
+                            className="block w-full text-left rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:text-ink hover:bg-raised">
+                            {TOURS[id].name}
+                            <span className="block text-xs text-faint">{id === 'vendre' ? 'Le dossier acheteur d\'un bien sous mandat' : 'Les biens à fort potentiel et leur suivi'}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function SiteHeader({ onHome }: { onHome?: () => void }) {
     return (
         <header className="border-b border-line/70 bg-canvas/90 backdrop-blur sticky top-0 z-40">
@@ -89,6 +132,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
                 <Logo onClick={onHome} />
                 <nav className="flex items-center gap-1 sm:gap-2">
                     <Nav />
+                    <GuideMenu />
                     <AccountButton />
                 </nav>
             </div>

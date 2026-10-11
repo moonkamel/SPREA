@@ -2,7 +2,7 @@ import { LEGAL } from '../legal';
 import { LegalPage, LegalSection } from './site';
 
 // Last update of this policy: change it whenever the data processing changes
-const UPDATED = '10 octobre 2026';
+const UPDATED = '11 octobre 2026';
 
 const th = 'text-left font-semibold text-ink p-3 align-top';
 const td = 'p-3 align-top border-t border-line text-ink-soft';
@@ -32,6 +32,12 @@ export default function ConfidentialitePage() {
                                 <td className={td}>Adresse, caractéristiques et étiquette du DPE, issues de la base publique des DPE de l'ADEME (Licence Ouverte), sans nom ni coordonnées des propriétaires ou occupants</td>
                                 <td className={td}>Permettre aux professionnels abonnés d'identifier les logements à rénover et de proposer leurs services</td>
                                 <td className={td}>Intérêt légitime. Vous pouvez demander le masquage d'une adresse en écrivant à {LEGAL.email}.</td>
+                            </tr>
+                            <tr>
+                                <td className={td}>Suivi de prospection (biens à fort potentiel)</td>
+                                <td className={td}>Numéro du DPE, adresse du logement, étape choisie par l'abonné (courrier, relance, rendez-vous, mandat, pas intéressé), date et agent qui l'a saisie ; aucun nom de propriétaire</td>
+                                <td className={td}>Permettre à l'abonné et à son agence de suivre leur prospection sans contacter deux fois le même propriétaire</td>
+                                <td className={td}>Exécution du contrat</td>
                             </tr>
                             <tr>
                                 <td className={td}>Alertes sur les nouveaux DPE (abonnés)</td>
@@ -123,6 +129,7 @@ export default function ConfidentialitePage() {
                 <ul className="list-disc pl-5 space-y-1">
                     <li>Compte et rapports : jusqu'à la suppression du compte, effacés immédiatement à ce moment.</li>
                     <li>Demandes de rappel laissées sur une page d'agence : jusqu'à leur suppression par l'agence, à la suppression de son compte ou au plus tard 3 ans après leur envoi. Pour exercer vos droits, adressez-vous à l'agence indiquée sur la page, ou à nous : nous transmettrons.</li>
+                    <li>Suivi de prospection : jusqu'à sa suppression par l'abonné, ou la suppression du compte de l'agent qui l'a saisi.</li>
                     <li>Invitations : elles expirent 7 jours après l'envoi et sont supprimées 30 jours après leur expiration.</li>
                     <li>Demandes de devis : 3 ans après la demande si elle n'aboutit pas à un contrat.</li>
                     <li>Factures et pièces comptables : 10 ans (Code de commerce, art. L123-22).</li>

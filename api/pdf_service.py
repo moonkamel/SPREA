@@ -129,8 +129,11 @@ S = {
 class NumberedCanvas(canvas.Canvas):
     """Draws header/footer on every page once the total page count is known."""
 
-    def __init__(self, *args, address: str = '', brand: str = 'SPREA', subtitle: str = 'Rapport de rénovation énergétique', **kwargs):
+    def __init__(self, *args, address: str = '', brand: str = 'SPREA', subtitle: str = 'Rapport de rénovation énergétique',
+                 notice: str = '', **kwargs):
         super().__init__(*args, **kwargs)
+        # Fixed line above the footer of every page
+        self.notice = notice
         self._pages: List[dict] = []
         self.address = address
         self.brand = brand
@@ -174,6 +177,9 @@ class NumberedCanvas(canvas.Canvas):
         address = self.address if len(self.address) < 90 else self.address[:87] + '…'
         self.drawString(MARGIN, 0.9 * cm, address)
         self.drawRightString(PAGE_W - MARGIN, 0.9 * cm, f"Page {self._pageNumber} / {total}")
+        if self.notice:
+            self.setFont('Inter', 7)
+            self.drawString(MARGIN, 1.55 * cm, self.notice)
         self.restoreState()
 
 
@@ -441,6 +447,46 @@ ANALYSIS_TITLES = [
 
 
 # --- Report ---
+
+# Investment file: one set of figures, three readers
+INVESTMENT_TITLES = {"investisseur": "Dossier d'investissement", "acheteur": "Dossier acheteur", "proprietaire": "Dossier propriétaire"}
+THESIS_HEADINGS = {
+    "investisseur": {"these": "L'opportunité en bref", "risques": "Risques et vérifications avant offre",
+                     "strategie": "Stratégie conseillée", "arguments": "Arguments de négociation"},
+    "acheteur": {"these": "Le projet en bref", "risques": "Points à vérifier avec votre conseiller",
+                 "strategie": "Le projet conseillé", "arguments": "Ce qui fait la valeur du projet"},
+    "proprietaire": {"these": "Votre bien en bref", "risques": "Points que les acquéreurs vérifieront",
+                     "strategie": "Notre recommandation", "arguments": "Comment le présenter aux acquéreurs"},
+}
+INVESTMENT_NOTICE = ("Estimations indicatives, à confirmer par devis d'artisans et diagnostics : "
+                     "ni expertise immobilière, ni conseil en investissement.")
+
+
+def comparables_table(market: Dict[str, Any], adjusted: bool) -> Table:
+    """The closest comparable DVF sales. The median is computed on prices
+    brought to the last quarter: they are shown next to the raw ones.
+    Distance only when known (sales located by their street alone have none)."""
+    with_distance = any(c.get('distance') is not None for c in market['comparables'])
+    head_row = [head('Date'), head('Rue'), head('Surface', 2), head('Prix', 2),
+                head('Prix /m² à la vente' if adjusted else 'Prix /m²', 2),
+                *([head('Prix /m² actualisé', 2)] if adjusted else []), *([head('Distance', 2)] if with_distance else [])]
+    comp_rows = [head_row]
+    for c in market['comparables']:
+        comp_rows.append([
+            Paragraph(text(date.fromisoformat(c['date']).strftime('%m/%Y')) if c.get('date') else '–', S['body']),
+            Paragraph(text(' · '.join(x for x in (c.get('street'), c.get('commune') if market.get('wide') else None) if x) or '–'), S['body']),
+            Paragraph(f"{c['surface']:g}".replace('.', ',') + f"{NBSP}m²", S['right']),
+            Paragraph(eur(c['price']), S['right']),
+            Paragraph(eur(c['price_m2']), S['right']),
+            *([Paragraph(eur(c.get('adjusted_m2') or c['price_m2']), S['right'])] if adjusted else []),
+            *([Paragraph(distance_text(c.get('distance')), S['right'])] if with_distance else []),
+        ])
+    widths = [0.10, 0.27, 0.11, 0.13, 0.13, 0.13, 0.13] if adjusted else [0.12, 0.34, 0.13, 0.15, 0.13, 0.13]
+    if not with_distance:
+        # The street takes the room of the missing column
+        widths = [widths[0], widths[1] + widths[-1], *widths[2:-1]]
+    return grid(comp_rows, [CONTENT_W * w for w in widths])
+
 
 class PDFReportGenerator:
     def _immeuble(self, report: Dict[str, Any], next_section) -> List[Any]:
@@ -1059,29 +1105,8 @@ class PDFReportGenerator:
                   Paragraph(f"Source : {text(market['source'])}. Ventes d'un seul logement du même type{similar} "
                             "(données DVF, DGFiP), hors ventes atypiques.", S['small'])]
         if market.get('comparables'):
-            # The median is computed on prices brought to the last quarter: show them next to the raw ones
-            # Distance only when known (sales located by their street alone have none)
-            with_distance = any(c.get('distance') is not None for c in market['comparables'])
-            head_row = [head('Date'), head('Rue'), head('Surface', 2), head('Prix', 2),
-                        head('Prix /m² à la vente' if adjusted else 'Prix /m²', 2),
-                        *([head('Prix /m² actualisé', 2)] if adjusted else []), *([head('Distance', 2)] if with_distance else [])]
-            comp_rows = [head_row]
-            for c in market['comparables']:
-                comp_rows.append([
-                    Paragraph(text(date.fromisoformat(c['date']).strftime('%m/%Y')) if c.get('date') else '–', S['body']),
-                    Paragraph(text(' · '.join(x for x in (c.get('street'), c.get('commune') if market.get('wide') else None) if x) or '–'), S['body']),
-                    Paragraph(f"{c['surface']:g}".replace('.', ',') + f"{NBSP}m²", S['right']),
-                    Paragraph(eur(c['price']), S['right']),
-                    Paragraph(eur(c['price_m2']), S['right']),
-                    *([Paragraph(eur(c.get('adjusted_m2') or c['price_m2']), S['right'])] if adjusted else []),
-                    *([Paragraph(distance_text(c.get('distance')), S['right'])] if with_distance else []),
-                ])
-            widths = [0.10, 0.27, 0.11, 0.13, 0.13, 0.13, 0.13] if adjusted else [0.12, 0.34, 0.13, 0.15, 0.13, 0.13]
-            if not with_distance:
-                # The street takes the room of the missing column
-                widths = [widths[0], widths[1] + widths[-1], *widths[2:-1]]
             story += [Spacer(1, 10), Paragraph('Ventes comparables les plus proches', S['h3']), Spacer(1, 4),
-                      grid(comp_rows, [CONTENT_W * w for w in widths])]
+                      comparables_table(market, adjusted)]
 
         # DPE effect
         if v.get('class_premium'):
@@ -1146,10 +1171,16 @@ class PDFReportGenerator:
         address = d['address']
         v, sim, market, thesis = d['valuation'], d['sim'], d['market'], d['thesis']
         brand = agency.get('agency_name') or 'SPREA'
+        # Same figures, told to whoever reads them: the investor client of the
+        # agency, the buyer of a dwelling under mandate, or its owner
+        audience = d.get('audience') or 'investisseur'
+        title = INVESTMENT_TITLES[audience]
+        investor = audience == 'investisseur'
         doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN,
-                                topMargin=HEADER_H + 1.0 * cm, bottomMargin=2.0 * cm,
-                                title=f"Dossier d'investissement – {address['full']}", author=brand)
-        story: List[Any] = [Paragraph(f"Dossier d'investissement · {text(d['profile_name'])}", style('kicker', fontSize=9, textColor=BRASS)),
+                                topMargin=HEADER_H + 1.0 * cm, bottomMargin=2.3 * cm,
+                                title=f"{title} – {address['full']}", author=brand)
+        kicker = f"{title} · {text(d['profile_name'])}" if investor else title
+        story: List[Any] = [Paragraph(kicker, style('kicker', fontSize=9, textColor=BRASS)),
                             Paragraph(text(address['street']), S['address'])]
         if address['locality']:
             story.append(Paragraph(text(address['locality']), style('loc', fontName='Serif', fontSize=13, leading=17, textColor=MUTED)))
@@ -1166,17 +1197,21 @@ class PDFReportGenerator:
         # Synthesis
         margin = d['margin']
         good = margin > 0
+        # "Marge" speaks to a dealer; a buyer or an owner reads a potential gain
+        gain_label = ('Marge brute' if good else 'Bilan') if investor else ('Plus-value potentielle' if good else 'Écart valeur / coût')
+        price_label = ("Prix d'acquisition" + (' demandé' if d.get('price_is_asked') else ' estimé')) if audience != 'proprietaire' \
+            else ('Prix de vente envisagé' if d.get('price_is_asked') else 'Valeur estimée aujourd\'hui')
         color = '#3E8E63' if good else '#C4553A'
         small = style('ks', fontSize=7.5, leading=10, textColor=MUTED)
         w = (CONTENT_W - 24) / 4
         cells = [
-            [*kpi_cell('Prix d\'acquisition' + (' demandé' if d.get('price_is_asked') else ' estimé'), f"{eur(d['price'])}"),
+            [*kpi_cell(price_label, f"{eur(d['price'])}"),
              Paragraph(f"classe {text(d['label'])}, {eur(round(d['price'] / d['surface']))}/m²", small)],
             [*kpi_cell('Budget total', f"{eur(d['total'])}"),
              Paragraph("achat, notaire et travaux" + (", aides déduites" if d['aids'] else ""), small)],
             [*kpi_cell(f"Valeur après travaux (classe {text(d['new_label'])})", f"{eur(d['resale'])}"),
              Paragraph(f"entre {eur(d['resale_low'])} et {eur(d['resale_high'])}" if d['resale_low'] != d['resale_high'] else '', small)],
-            [*kpi_cell('Marge brute' if good else 'Bilan', f"<font color='{color}'>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</font>", big=True),
+            [*kpi_cell(gain_label, f"<font color='{color}'>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</font>", big=True),
              Paragraph((f"{str(d['margin_pct']).replace('.', ',').replace('-', '−')}{NBSP}% du budget" if d.get('margin_pct') is not None else '')
                        + ", avant frais financiers et impôts", small)],
         ]
@@ -1203,13 +1238,15 @@ class PDFReportGenerator:
         source_note = ("Note rédigée avec l'aide d'une intelligence artificielle (Claude, Anthropic) à partir des seuls chiffres de ce dossier, "
                        "à relire avec votre conseiller." if thesis.get('source') == 'claude'
                        else "Note établie automatiquement à partir des chiffres de ce dossier.")
-        story += [CondPageBreak(8 * cm), Spacer(1, 18), next_section("L'opportunité en bref"), Spacer(1, 4),
+        headings = THESIS_HEADINGS[audience]
+        story += [CondPageBreak(8 * cm), Spacer(1, 18), next_section(headings['these']), Spacer(1, 4),
                   Paragraph(source_note, S['muted']), Spacer(1, 6),
                   boxed([Paragraph(text(thesis['these']), S['narrative'])], rule=BRASS_LIGHT, padding=10), Spacer(1, 8),
                   Paragraph('Points forts', S['narrative_h']), Spacer(1, 2), *bullet_list(thesis['points_forts']), Spacer(1, 6),
-                  Paragraph('Risques et vérifications avant offre', S['narrative_h']), Spacer(1, 2), *bullet_list(thesis['risques']),
-                  Spacer(1, 6), Paragraph('Stratégie conseillée', S['narrative_h']), Spacer(1, 2), Paragraph(text(thesis['strategie']), S['narrative']),
-                  Spacer(1, 6), Paragraph('Arguments de négociation', S['narrative_h']), Spacer(1, 2), Paragraph(text(thesis['negociation']), S['narrative'])]
+                  Paragraph(headings['risques'], S['narrative_h']), Spacer(1, 2), *bullet_list(thesis['risques']),
+                  Spacer(1, 6), Paragraph(headings['strategie'], S['narrative_h']), Spacer(1, 2), Paragraph(text(thesis['strategie']), S['narrative']),
+                  Spacer(1, 6), Paragraph(headings['arguments'], S['narrative_h']), Spacer(1, 2),
+                  Paragraph(text(thesis.get('arguments') or thesis.get('negociation') or ''), S['narrative'])]
 
         # Financial plan
         rows = [kv("Prix d'acquisition" + (" (demandé)" if d.get('price_is_asked') else " (estimé)"), eur(d['price'])),
@@ -1219,17 +1256,22 @@ class PDFReportGenerator:
             rows.append(kv('Aides estimées', f"<font color='#3E8E63'>−{NBSP}{eur(d['aids'])}</font>"))
         rows += [kv('<b>Budget total</b>', f"<b>{eur(d['total'])}</b>"),
                  kv('Valeur estimée après travaux', eur(d['resale'])),
-                 kv('<b>Marge brute</b>', f"<font color='{color}'><b>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</b></font>")]
+                 kv(f'<b>{gain_label}</b>', f"<font color='{color}'><b>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</b></font>")]
         notes = []
         if d['profile'] == 'marchand':
             notes.append("Marchand de biens : frais de notaire réduits sous engagement de revendre dans les cinq ans ; une société n'a pas accès "
                          "à MaPrimeRénov', aucune aide n'est comptée. TVA sur marge, impôt sur les sociétés et frais de revente non déduits.")
         else:
-            notes.append("Investisseur bailleur : aides de l'Anah et primes CEE comptées selon le barème en vigueur, catégorie de revenus "
+            notes.append(("Investisseur bailleur : " if investor else "Acquéreur particulier : ")
+                         + "aides de l'Anah et primes CEE comptées selon le barème en vigueur, catégorie de revenus "
                          "par défaut, à confirmer par France Rénov'. Fiscalité des loyers non comprise.")
         notes.append("Frais financiers (prêt, intérêts intercalaires), taxe foncière et charges non compris.")
-        story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le plan financier'), Spacer(1, 8),
-                  rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True), Spacer(1, 4)] + \
+        plan_intro = {"acheteur": "Ce que coûte le projet complet, achat et travaux, et ce que vaudra le bien une fois rénové.",
+                      "proprietaire": "Le calcul que fera un acquéreur : achat, frais, travaux et aides, face à la valeur du bien une fois rénové."}
+        story += [CondPageBreak(7 * cm), Spacer(1, 18), next_section('Le plan financier'), Spacer(1, 6)]
+        if audience in plan_intro:
+            story += [Paragraph(plan_intro[audience], S['muted']), Spacer(1, 6)]
+        story += [rows_table(rows, [CONTENT_W * 0.6, CONTENT_W * 0.4], bold_last=True), Spacer(1, 4)] + \
                  [Paragraph(text(x), S['small']) for x in notes]
 
         # Rental scenario
@@ -1265,6 +1307,10 @@ class PDFReportGenerator:
         story += [CondPageBreak(6 * cm), Spacer(1, 18), next_section('Le marché local'), Spacer(1, 8),
                   rows_table(rows, [CONTENT_W * 0.55, CONTENT_W * 0.45]), Spacer(1, 3),
                   Paragraph(f"Source : {text(market['source'])} (données DVF, DGFiP).", S['small'])]
+        if market.get('comparables'):
+            # What a buyer contests first is the value after works: the sales it rests on
+            story += [Spacer(1, 10), Paragraph('Ventes comparables les plus proches', S['h3']), Spacer(1, 4),
+                      comparables_table(market, market.get('adjusted', 'actualisées' in (market.get('source') or '')))]
         if v.get('class_premium'):
             prem = v['class_premium']
             cls_rows = [[head('Classe DPE'), *[head(c, 1) for c in LABELS]],
@@ -1289,7 +1335,7 @@ class PDFReportGenerator:
                                            rule=BRASS_LIGHT, padding=10)]
 
         doc.build(story, onFirstPage=_paper, onLaterPages=_paper,
-                  canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address['full'], brand=brand, subtitle="Dossier d'investissement", **k))
+                  canvasmaker=lambda *a, **k: NumberedCanvas(*a, address=address['full'], brand=brand, subtitle=title, notice=INVESTMENT_NOTICE, **k))
         return buffer.getvalue()
 
 pdf_service = PDFReportGenerator()

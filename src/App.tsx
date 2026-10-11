@@ -13,6 +13,7 @@ const OwnerPage = lazy(() => import('./pages/Owner'));
 const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
 const ValuationDialog = lazy(() => import('./pages/ValuationDialog'));
+const DossierDialog = lazy(() => import('./pages/Opportunities').then(m => ({ default: m.DossierDialog })));
 const ObservatoirePage = lazy(() => import('./pages/Observatoire'));
 const DemoPage = lazy(() => import('./pages/Demo'));
 const TeamPage = lazy(() => import('./pages/Team'));
@@ -24,6 +25,7 @@ import Results from './views/Results';
 import LoadingSequence, { SIMULATION_STEPS } from './views/LoadingSequence';
 import Dashboard, { type Scenario, type Settings } from './views/Dashboard';
 import { propertyInput, toProperty, toSimulation, type PropertyData, type RetrofitAction, type Simulation } from './model';
+import type { DPEClass } from './ui';
 
 export default function App() {
     return (
@@ -150,6 +152,7 @@ function Simulator() {
     const [attempts, setAttempts] = useState<Record<Scenario, number>>({ A: 0, B: 0 });
     const [downloading, setDownloading] = useState(false);
     const [showValuation, setShowValuation] = useState(false);
+    const [showDossier, setShowDossier] = useState(false);
     // Analysis screen, from the search until the first simulation is back
     const [analyzing, setAnalyzing] = useState(false);
     useEffect(() => { if (error) setAnalyzing(false); }, [error]);
@@ -332,6 +335,18 @@ function Simulator() {
                         <ValuationDialog meta={reportMeta()!} simulation={currentInput} onClose={() => setShowValuation(false)} />
                     </Suspense>
                 )}
+                {showDossier && currentInput && (
+                    <Suspense fallback={null}>
+                        <DossierDialog audience="acheteur"
+                            preview={{
+                                address: property.address, kind: (property.buildingType || 'logement').replace(/^./, c => c.toUpperCase()), surface: property.surface || 0,
+                                label: (sims[scenario]?.currentLabel || property.label) as DPEClass, new_label: (sims[scenario]?.newLabel || property.label) as DPEClass,
+                                works_names: actions[scenario].filter(a => a.active).map(a => a.name),
+                            }}
+                            request={{ url: '/api/opportunities/dossier/simulation', body: { meta: reportMeta(), simulation: currentInput } }}
+                            onClose={() => setShowDossier(false)} />
+                    </Suspense>
+                )}
                 <Dashboard
                     property={property}
                     scenario={scenario}
@@ -354,6 +369,7 @@ function Simulator() {
                         onDownload: downloadReport,
                     }}
                     valuation={me?.is_pro && property.inseeCode ? () => setShowValuation(true) : undefined}
+                    buyerDossier={me?.is_pro && property.inseeCode ? () => setShowDossier(true) : undefined}
                     onBack={goHome}
                 />
                 </>

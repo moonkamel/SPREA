@@ -20,7 +20,8 @@ import logging
 import math
 import re
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
@@ -29,7 +30,7 @@ from pydantic import BaseModel, Field
 
 try:
     from api import claude
-    from api.accounts import is_pro, safe_filename, store_dep
+    from api.accounts import ReportMeta, is_pro, safe_filename, store_dep
     from api.ademe_client import AdemeConnector
     from api.auth import User, current_user
     from api.dvf import market_price
@@ -44,7 +45,7 @@ try:
     from api.valuation import compute
 except ImportError:
     import claude
-    from accounts import is_pro, safe_filename, store_dep
+    from accounts import ReportMeta, is_pro, safe_filename, store_dep
     from ademe_client import AdemeConnector
     from auth import User, current_user
     from dvf import market_price
@@ -75,6 +76,11 @@ PROFILES = {
     "bailleur": {"notary": 0.08, "aids": True, "name": "Investisseur bailleur"},
 }
 MIN_SURFACE = 9
+# Who reads the file: an investor client of the agency, the buyer of a
+# dwelling the agency sells, or the owner the agency prospects
+AUDIENCES = {"investisseur": "client investisseur de l'agence", "acheteur": "acquéreur du bien mis en vente par l'agence",
+             "proprietaire": "propriétaire du bien, prospecté par l'agence"}
+AUDIENCE_PATTERN = "^(investisseur|acheteur|proprietaire)$"
 
 
 def latest_per_dwelling(rows: List[Dict]) -> List[Dict]:
@@ -185,30 +191,40 @@ async def analyse(raw: Dict[str, Any], profile: str, today: Optional[date] = Non
     if not market:
         return None
     sp.price_per_m2, sp.price_source, sp.insee_code = market["price_per_m2"], market["source"], prop.insee_code
-    sim = simulate(SimulationInput(property=sp, works=works))
-    kind = kind_of(prop.building_type)
-    v = compute(sim, market, prop.shab, kind, department(prop.insee_code, prop.postcode), 0)
-    if not v["works"] or not v["value_after"]:
-        return None
     rent = await rent_per_m2(prop.insee_code, prop.building_type, transport=rent_transport)
-    figures = investment(v, sim, profile, prop.shab, rent)
-    return {
+    return assemble(SimulationInput(property=sp, works=works), market, rent, profile, today, {
         "number": raw.get("numero_dpe"),
         # The BAN address carries its postcode and commune, shown on their own line
         "address": re.sub(r"\s+\d{5}\s.*$", "", raw.get("adresse_ban") or prop.address or ""),
         "lat": prop.latitude, "lon": prop.longitude,
         "insee": prop.insee_code, "postcode": prop.postcode, "city": prop.city,
-        "kind": (prop.building_type or "").capitalize(),
-        "surface": prop.shab,
-        "period": prop.construction_period,
+        "building_type": prop.building_type, "surface": prop.shab, "period": prop.construction_period,
         "dpe_date": str(prop.date_etablissement)[:10] if prop.date_etablissement else None,
+    })
+
+
+def assemble(simulation: SimulationInput, market: Dict[str, Any], rent: Optional[Dict[str, float]], profile: str,
+             today: date, info: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The dwelling's file once its programme, market and rent are known:
+    from a scanned DPE or from the simulator (the works the agent chose)."""
+    sim = simulate(simulation)
+    v = compute(sim, market, info["surface"], kind_of(info["building_type"]),
+                department(info.get("insee"), info.get("postcode")), 0)
+    if not v["works"] or not v["value_after"]:
+        return None
+    works = simulation.works
+    facts = SimpleNamespace(date_etablissement=info.get("dpe_date"), construction_period=info.get("period"),
+                            building_type=info.get("building_type"))
+    return {
+        **{k: info.get(k) for k in ("number", "address", "lat", "lon", "insee", "postcode", "city", "surface", "period", "dpe_date")},
+        "kind": (info.get("building_type") or "").capitalize(),
         "label": sim["current_label"], "new_label": sim["new_label"],
         "works_ids": works,
         "works_names": [WORKS_BY_ID[w]["name"] for w in works if w in WORKS_BY_ID],
         "rental_now": sim["rental_status"], "rental_after": sim["new_rental_status"],
-        **figures,
-        "risks": risks(prop, sim, v, market, today),
-        "_v": v, "_sim": sim, "_market": market, "_prop": prop,
+        **investment(v, sim, profile, info["surface"], rent),
+        "risks": risks(facts, sim, v, market, today),
+        "_v": v, "_sim": sim, "_market": market,
     }
 
 
@@ -216,8 +232,21 @@ def public(o: Dict[str, Any]) -> Dict[str, Any]:
     return {k: v for k, v in o.items() if not k.startswith("_")}
 
 
+SORTS = ("potentiel", "recent", "valeur", "rendement")
+
+
+def months_since(day: Optional[str], today: date) -> Optional[int]:
+    try:
+        d = date.fromisoformat(str(day)[:10])
+    except (TypeError, ValueError):
+        return None
+    return (today.year - d.year) * 12 + today.month - d.month
+
+
 async def scan(bbox: str, labels: List[str], kind: Optional[str], profile: str,
-               max_budget: Optional[float] = None, ademe_transport: Optional[httpx.AsyncBaseTransport] = None,
+               max_budget: Optional[float] = None, sort: Optional[str] = None,
+               max_value: Optional[float] = None, max_age_months: Optional[int] = None,
+               today: Optional[date] = None, ademe_transport: Optional[httpx.AsyncBaseTransport] = None,
                dvf_transport: Optional[httpx.AsyncBaseTransport] = None,
                rent_transport: Optional[httpx.AsyncBaseTransport] = None) -> Dict[str, Any]:
     wanted = sorted({l for l in labels if l in ("E", "F", "G")}) or ["F", "G"]
@@ -240,12 +269,24 @@ async def scan(bbox: str, labels: List[str], kind: Optional[str], profile: str,
         results = [o for o in await asyncio.gather(*(one(r) for r in rows)) if o]
         found = {"items": [public(o) for o in results], "analysed": len(rows), "total": total}
         _cache[key] = (time.time(), found)
-    items = [o for o in found["items"] if not max_budget or o["total"] <= max_budget]
-    sort_key = (lambda o: (o.get("gross_yield") or 0, o["margin"])) if profile == "bailleur" else (lambda o: o["margin"])
+    today = today or date.today()
+    items = [o for o in found["items"]
+             if (not max_budget or o["total"] <= max_budget) and (not max_value or o["price"] <= max_value)
+             and (not max_age_months or (months_since(o.get("dpe_date"), today) or 0) <= max_age_months)]
+    # The agent ranks by potential (what the renovation adds, the owner's
+    # argument), by freshness of the DPE or by value; an investor by yield
+    sort = sort if sort in SORTS else ("rendement" if profile == "bailleur" else "potentiel")
+    sort_key = {
+        "potentiel": lambda o: o["margin"],
+        "recent": lambda o: o.get("dpe_date") or "",
+        "valeur": lambda o: o["price"],
+        "rendement": lambda o: (o.get("gross_yield") or 0, o["margin"]),
+    }[sort]
     items.sort(key=sort_key, reverse=True)
     positive = [o for o in items if o["margin"] > 0]
     return {
         "profile": profile,
+        "sort": sort,
         "items": items[:SHOWN],
         "analysed": found["analysed"],
         "valued": len(found["items"]),
@@ -265,10 +306,13 @@ async def require_pro(user: User, store: SupabaseStore) -> None:
 async def opportunities(bbox: str, labels: str = "F,G", kind: Optional[str] = None,
                         profile: str = Query("marchand", pattern="^(marchand|bailleur)$"),
                         max_budget: Optional[float] = Query(None, ge=0),
+                        sort: Optional[str] = Query(None, pattern="^(potentiel|recent|valeur|rendement)$"),
+                        max_value: Optional[float] = Query(None, ge=0),
+                        max_age_months: Optional[int] = Query(None, ge=1, le=120),
                         user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     await require_pro(user, store)
     try:
-        return await scan(bbox, labels.split(","), kind, profile, max_budget)
+        return await scan(bbox, labels.split(","), kind, profile, max_budget, sort, max_value, max_age_months)
     except AreaTooLarge as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ValueError as e:
@@ -280,30 +324,45 @@ async def opportunities(bbox: str, labels: str = "F,G", kind: Optional[str] = No
 
 # --- Investment file ---
 
-THESIS_SYSTEM = """Tu es un analyste en investissement immobilier qui rédige, pour un agent immobilier, la note d'opportunité d'un logement à rénover destinée à un client investisseur (marchand de biens ou bailleur). Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement. Les montants sont des estimations avant frais financiers, fiscalité et frais de revente : rappelle-le quand c'est utile. Signale clairement quand l'opération n'est pas rentable selon les chiffres."""
+THESIS_COMMON = """Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement ou de plus-value. Les montants sont des estimations avant frais financiers et fiscalité : rappelle-le quand c'est utile."""
 
-THESIS_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "properties": {
-        "these": {"type": "string", "description": "2 à 3 phrases : l'opération, ce qu'elle rapporte et pourquoi."},
-        "points_forts": {"type": "array", "items": {"type": "string"}, "description": "3 à 5 points forts chiffrés."},
-        "risques": {"type": "array", "items": {"type": "string"}, "description": "3 à 5 risques et vérifications avant offre."},
-        "strategie": {"type": "string", "description": "Scénario conseillé (revente ou location), travaux, calendrier, en 3 à 5 phrases."},
-        "negociation": {"type": "string", "description": "Arguments de négociation du prix d'achat tirés du DPE et des travaux, en 2 à 4 phrases."},
-    },
-    "required": ["these", "points_forts", "risques", "strategie", "negociation"],
+THESIS_SYSTEM = {
+    "investisseur": "Tu es un analyste en investissement immobilier qui rédige, pour un agent immobilier, la note d'opportunité d'un logement à rénover destinée à un client investisseur (marchand de biens ou bailleur). " + THESIS_COMMON + " Signale clairement quand l'opération n'est pas rentable selon les chiffres.",
+    "acheteur": "Tu rédiges, pour un agent immobilier qui a ce logement en vente, la note qui accompagne le dossier remis à un acquéreur (investisseur ou acheteur prêt à rénover). Le but : que l'acquéreur voie un projet chiffré plutôt qu'une passoire. " + THESIS_COMMON + " Ne critique jamais le prix demandé et ne donne aucun argument pour le faire baisser : l'agent représente le vendeur. Reste honnête sur les points à vérifier.",
+    "proprietaire": "Tu rédiges, pour un agent immobilier, la note d'un dossier remis au propriétaire de ce logement lors d'un premier rendez-vous : ce que vaut son bien aujourd'hui, ce que les travaux changeraient, et comment le vendre malgré son DPE. " + THESIS_COMMON + " Ton respectueux, sans dramatiser la situation du propriétaire.",
+}
+
+THESIS_ARGUMENTS = {
+    "investisseur": "Arguments de négociation du prix d'achat tirés du DPE et des travaux, en 2 à 4 phrases.",
+    "acheteur": "Ce qui fait la valeur du projet pour l'acquéreur (classe atteinte, valeur après travaux, loyer, aides), en 2 à 4 phrases, sans critiquer le prix.",
+    "proprietaire": "Comment présenter le bien aux acquéreurs pour le vendre au bon prix malgré son DPE (projet chiffré, aides, valeur après travaux), en 2 à 4 phrases.",
 }
 
 
-def thesis_facts(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
+def thesis_schema(audience: str) -> Dict[str, Any]:
     return {
-        "profil_investisseur": PROFILES[profile]["name"],
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "these": {"type": "string", "description": "2 à 3 phrases : le logement, le projet de rénovation, ce qu'il change et ce qu'il vaut."},
+            "points_forts": {"type": "array", "items": {"type": "string"}, "description": "3 à 5 points forts chiffrés."},
+            "risques": {"type": "array", "items": {"type": "string"}, "description": "3 à 5 points à vérifier (travaux, copropriété, diagnostics)."},
+            "strategie": {"type": "string", "description": "Scénario conseillé (revente, location ou occupation), travaux, calendrier, en 3 à 5 phrases."},
+            "arguments": {"type": "string", "description": THESIS_ARGUMENTS[audience]},
+        },
+        "required": ["these", "points_forts", "risques", "strategie", "arguments"],
+    }
+
+
+def thesis_facts(o: Dict[str, Any], profile: str, audience: str = "investisseur") -> Dict[str, Any]:
+    return {
+        "destinataire": AUDIENCES[audience],
+        "profil_acquereur": PROFILES[profile]["name"],
         "logement": {"type": o["kind"], "surface_m2": o["surface"], "epoque": o["period"], "commune": o.get("city"),
                      "classe_dpe": o["label"], "date_dpe": o["dpe_date"]},
         "programme": {"travaux": o["works_names"], "classe_apres": o["new_label"],
                       "cout_eur": [o["works_low"], o["works_high"]], "aides_eur": o["aids"]},
-        "acquisition": {"prix_estime_eur": o["price"], "frais_notaire_eur": o["notary"], "budget_total_eur": o["total"]},
+        "acquisition": {("prix_demande_eur" if o.get("price_is_asked") else "prix_estime_eur"): o["price"], "frais_notaire_eur": o["notary"], "budget_total_eur": o["total"]},
         "sortie": {"valeur_apres_travaux_eur": o["resale"], "marge_brute_eur": o["margin"], "marge_pct": o["margin_pct"],
                    "loyer_mensuel_eur": o.get("rent_month"), "rendement_brut_pct": o.get("gross_yield")},
         "location": {"aujourd_hui": o["rental_now"], "apres_travaux": o["rental_after"]},
@@ -315,7 +374,7 @@ def lower_first(name: str) -> str:
     return name[:1].lower() + name[1:]
 
 
-def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
+def fallback_thesis(o: Dict[str, Any], profile: str, audience: str = "investisseur") -> Dict[str, Any]:
     def eur(v):
         return f"{round(v or 0):,}".replace(",", " ") + " €"
 
@@ -324,11 +383,17 @@ def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
     gained = "ABCDEFG".index(o["label"]) - "ABCDEFG".index(o["new_label"])
     good = o["margin"] > 0
     surface = f"{o['surface']:g}".replace(".", ",")
-    these = (f"{o['kind']} de {surface} m² classé {o['label']}, estimé {eur(o['price'])} : le programme proposé "
+    priced = f"proposé à {eur(o['price'])}" if o.get("price_is_asked") else f"estimé {eur(o['price'])}"
+    these = (f"{o['kind']} de {surface} m² classé {o['label']}, {priced} : le programme de travaux "
              f"({', '.join(lower_first(n) for n in o['works_names'])}) le porte en classe {o['new_label']} pour une valeur estimée "
              f"de {eur(o['resale'])}. ")
-    these += (f"La marge brute ressort à {eur(o['margin'])} ({pct(o['margin_pct'])} du budget), avant frais financiers et fiscalité."
-              if good else f"Aux prix estimés, l'opération ne dégage pas de marge (−{eur(abs(o['margin']))}) : le prix d'achat doit se négocier.")
+    if audience == "investisseur":
+        these += (f"La marge brute ressort à {eur(o['margin'])} ({pct(o['margin_pct'])} du budget), avant frais financiers et fiscalité."
+                  if good else f"Aux prix estimés, l'opération ne dégage pas de marge (−{eur(abs(o['margin']))}) : le prix d'achat doit se négocier.")
+    elif good:
+        these += f"Achat, frais et travaux compris, le projet coûte {eur(o['total'])}, soit {eur(o['margin'])} de moins que la valeur estimée après rénovation."
+    else:
+        these += f"Achat, frais et travaux compris, le projet coûte {eur(o['total'])}, pour une valeur estimée après rénovation de {eur(o['resale'])}."
     strengths = [f"Gain de {gained} classe{'s' if gained > 1 else ''} DPE ({o['label']} → {o['new_label']}).",
                  f"Budget total estimé : {eur(o['total'])}, travaux compris."]
     if o.get("gross_yield"):
@@ -338,11 +403,13 @@ def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
     return {
         "these": these,
         "points_forts": strengths,
-        "risques": o["risks"] + ["Faire chiffrer les travaux par des artisans RGE avant toute offre."],
-        "strategie": ("Acheter, réaliser le programme dans l'ordre conseillé (enveloppe puis équipements), puis "
+        "risques": o["risks"] + ["Faire chiffrer les travaux par des artisans RGE" + (" avant toute offre." if audience != "proprietaire" else ".")],
+        "strategie": ("Mettre en vente avec ce projet chiffré : l'acquéreur voit le coût des travaux, les aides et la valeur après "
+                      "rénovation, et peut faire son offre en connaissance de cause." if audience == "proprietaire" else
+                      "Acheter, réaliser le programme dans l'ordre conseillé (enveloppe puis équipements), puis "
                       + ("revendre une fois la nouvelle classe DPE établie." if profile == "marchand"
                          else "louer après le nouveau DPE, qui conditionne le droit de louer.")),
-        "negociation": (f"La classe {o['label']} et le coût des travaux ({eur(o['works_low'])} à {eur(o['works_high'])}) "
+        "arguments": arguments(o, audience, eur) if audience != "investisseur" else (f"La classe {o['label']} et le coût des travaux ({eur(o['works_low'])} à {eur(o['works_high'])}) "
                         "justifient une décote : "
                         + ("le logement ne peut déjà plus être loué en l'état." if "interdite" in (o.get("rental_now") or "").lower()
                            else f"{(o.get('rental_now') or '').lower().replace('louable', 'il reste louable')}, puis le vendeur devra financer ces travaux pour louer."
@@ -351,23 +418,37 @@ def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
     }
 
 
-async def write_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
+def arguments(o: Dict[str, Any], audience: str, eur) -> str:
+    """What makes the project worth it, for the buyer or told to the owner."""
+    parts = [f"Le programme fait passer le logement de la classe {o['label']} à la classe {o['new_label']}"
+             + (f", pour {eur(o['works_low'])} à {eur(o['works_high'])} de travaux" if o.get('works_low') else "")
+             + (f" dont environ {eur(o['aids'])} d'aides" if o.get("aids") else "") + "."]
+    if o.get("rent_month"):
+        parts.append(f"Une fois rénové, il se loue environ {eur(o['rent_month'])} par mois ({o['rental_after'].lower()}).")
+    parts.append(f"Sa valeur estimée après travaux, {eur(o['resale'])}, repose sur les ventes comparables du secteur listées dans ce dossier.")
+    if audience == "proprietaire":
+        parts.append("Présenter ce projet chiffré aux acquéreurs évite qu'ils imaginent un coût de travaux plus élevé qu'il n'est.")
+    return " ".join(parts)
+
+
+async def write_thesis(o: Dict[str, Any], profile: str, audience: str = "investisseur") -> Dict[str, Any]:
     if claude.configured():
         try:
             import json as _json
-            data = await claude.json_call(THESIS_SYSTEM, "Données de l'opportunité (JSON) :\n" + _json.dumps(
-                thesis_facts(o, profile), ensure_ascii=False, indent=1), THESIS_SCHEMA,
+            data = await claude.json_call(THESIS_SYSTEM[audience], "Données du dossier (JSON) :\n" + _json.dumps(
+                thesis_facts(o, profile, audience), ensure_ascii=False, indent=1), thesis_schema(audience),
                 model="claude-sonnet-5-5", effort="medium", max_tokens=4000, timeout=60)
             if data.get("these"):
                 return {**data, "source": "claude"}
         except claude.ClaudeUnavailable as e:
             logger.warning(f"Thesis by rules: {e}")
-    return {**fallback_thesis(o, profile), "source": "rules"}
+    return {**fallback_thesis(o, profile, audience), "source": "rules"}
 
 
 class DossierRequest(BaseModel):
     number: str = Field(..., pattern=r"^[0-9A-Za-z]{10,16}$")
     profile: str = Field("marchand", pattern="^(marchand|bailleur)$")
+    audience: str = Field("investisseur", pattern=AUDIENCE_PATTERN)
     purchase_price: Optional[float] = Field(None, ge=1000, le=20_000_000)
     client_name: Optional[str] = Field(None, max_length=100)
 
@@ -383,13 +464,25 @@ async def dossier_data(data: DossierRequest) -> Dict[str, Any]:
     if not o:
         raise HTTPException(status_code=422, detail="Ce logement ne peut pas être chiffré (pas de travaux ou pas de ventes comparables).")
     if data.purchase_price:
-        # The price actually asked replaces the estimate
-        o["_v"]["value_now"] = {**o["_v"]["value_now"], "value": data.purchase_price}
-        rent = {"rent_m2": o["rent_m2"], "low": o["rent_month_low"] / o["surface"], "high": o["rent_month_high"] / o["surface"]} \
-            if o.get("rent_m2") else None
-        o.update(investment(o["_v"], o["_sim"], data.profile, o["surface"], rent))
-        o["price_is_asked"] = True
+        o = with_price(o, data.purchase_price, data.profile)
     return o
+
+
+async def render_dossier(o: Dict[str, Any], profile: str, audience: str, client_name: Optional[str],
+                         user: User, store: SupabaseStore) -> Response:
+    thesis = await write_thesis(public(o), profile, audience)
+    agency = await store.get_agent_page(user.id) or {}
+    address = display_address(o["address"] or "", o.get("postcode"), o.get("city"))
+    pdf = pdf_service.generate_investment({
+        **public(o),
+        "profile": profile, "profile_name": PROFILES[profile]["name"], "audience": audience,
+        "notary_rate": PROFILES[profile]["notary"],
+        "thesis": thesis, "agency": agency, "address": address, "client_name": client_name,
+        "valuation": o["_v"], "sim": o["_sim"], "market": o["_market"],
+    })
+    name = {"investisseur": "Dossier_investissement", "acheteur": "Dossier_acheteur", "proprietaire": "Dossier_proprietaire"}[audience]
+    return Response(content=pdf, media_type="application/pdf", headers={
+        "Content-Disposition": f"attachment; filename={name}_{safe_filename(o['address'] or o.get('number') or 'logement')}.pdf"})
 
 
 @router.post("/opportunities/dossier", dependencies=[Depends(search_limiter.per_user)])
@@ -397,15 +490,114 @@ async def opportunity_dossier(data: DossierRequest, user: User = Depends(current
                               store: SupabaseStore = Depends(store_dep)):
     await require_pro(user, store)
     o = await dossier_data(data)
-    thesis = await write_thesis(public(o), data.profile)
-    agency = await store.get_agent_page(user.id) or {}
-    address = display_address(o["address"] or "", o.get("postcode"), o.get("city"))
-    pdf = pdf_service.generate_investment({
-        **public(o),
-        "profile": data.profile, "profile_name": PROFILES[data.profile]["name"],
-        "notary_rate": PROFILES[data.profile]["notary"],
-        "thesis": thesis, "agency": agency, "address": address, "client_name": data.client_name,
-        "valuation": o["_v"], "sim": o["_sim"], "market": o["_market"],
+    return await render_dossier(o, data.profile, data.audience, data.client_name, user, store)
+
+
+class SimulationDossierRequest(BaseModel):
+    """A dwelling opened in the simulator, with the works the agent chose:
+    typically the buyer's file of a dwelling under mandate."""
+    meta: ReportMeta
+    simulation: SimulationInput
+    profile: str = Field("bailleur", pattern="^(marchand|bailleur)$")
+    audience: str = Field("acheteur", pattern=AUDIENCE_PATTERN)
+    purchase_price: Optional[float] = Field(None, ge=1000, le=20_000_000)
+    client_name: Optional[str] = Field(None, max_length=100)
+
+
+async def simulation_dossier_data(data: SimulationDossierRequest,
+                                  dvf_transport: Optional[httpx.AsyncBaseTransport] = None,
+                                  rent_transport: Optional[httpx.AsyncBaseTransport] = None) -> Dict[str, Any]:
+    meta, prop = data.meta, data.simulation.property
+    insee = meta.insee_code or prop.insee_code
+    if not insee or not prop.surface:
+        raise HTTPException(status_code=400, detail="Commune ou surface inconnue : dossier impossible pour ce logement.")
+    if not data.simulation.works:
+        raise HTTPException(status_code=422, detail="Sélectionnez des travaux pour établir le dossier.")
+    market = await market_price(insee, prop.building_type, meta.latitude, meta.longitude, prop.surface, transport=dvf_transport)
+    if not market:
+        raise HTTPException(status_code=422, detail="Pas assez de ventes comparables connues autour de ce logement.")
+    prop.price_per_m2, prop.price_source, prop.insee_code = market["price_per_m2"], market["source"], insee
+    rent = await rent_per_m2(insee, prop.building_type, transport=rent_transport)
+    o = assemble(data.simulation, market, rent, data.profile, date.today(), {
+        "number": meta.ademe_dpe_number, "address": meta.address, "lat": meta.latitude, "lon": meta.longitude,
+        "insee": insee, "postcode": meta.postcode or prop.postcode, "city": meta.city,
+        "building_type": prop.building_type or meta.building_type, "surface": prop.surface,
+        "period": meta.construction_period or prop.construction_period, "dpe_date": meta.dpe_date,
     })
-    return Response(content=pdf, media_type="application/pdf", headers={
-        "Content-Disposition": f"attachment; filename=Dossier_investissement_{safe_filename(o['address'] or data.number)}.pdf"})
+    if not o:
+        raise HTTPException(status_code=422, detail="Ce logement ne peut pas être chiffré avec ces travaux.")
+    if data.purchase_price:
+        o = with_price(o, data.purchase_price, data.profile)
+    return o
+
+
+def with_price(o: Dict[str, Any], price: float, profile: str) -> Dict[str, Any]:
+    """The price actually asked replaces the estimate."""
+    o["_v"]["value_now"] = {**o["_v"]["value_now"], "value": price}
+    rent = {"rent_m2": o["rent_m2"], "low": o["rent_month_low"] / o["surface"], "high": o["rent_month_high"] / o["surface"]} \
+        if o.get("rent_m2") else None
+    o.update(investment(o["_v"], o["_sim"], profile, o["surface"], rent))
+    o["price_is_asked"] = True
+    return o
+
+
+@router.post("/opportunities/dossier/simulation", dependencies=[Depends(search_limiter.per_user)])
+async def simulation_dossier(data: SimulationDossierRequest, user: User = Depends(current_user),
+                             store: SupabaseStore = Depends(store_dep)):
+    await require_pro(user, store)
+    o = await simulation_dossier_data(data)
+    return await render_dossier(o, data.profile, data.audience, data.client_name, user, store)
+
+
+# --- Follow-up of prospected addresses, shared by the agency ---
+
+STATUSES = ("courrier", "relance", "rendez_vous", "mandat", "ecarte")
+NUMBER_RE = re.compile(r"^[0-9A-Za-z]{10,16}$")
+
+
+async def status_scope(user: User, store: SupabaseStore) -> str:
+    """The agency when the user belongs to one: its agents see the same
+    follow-up, so two of them do not write to the same owner."""
+    profile = await store.ensure_profile(user.id, user.email)
+    if not is_pro(profile):
+        raise HTTPException(status_code=402, detail="Réservé aux abonnés Pro.")
+    return (profile.get("org") or {}).get("id") or user.id
+
+
+@router.get("/prospect-status")
+async def get_statuses(numbers: str = Query(..., max_length=4000), user: User = Depends(current_user),
+                       store: SupabaseStore = Depends(store_dep)):
+    wanted = [n for n in dict.fromkeys(numbers.split(",")) if NUMBER_RE.match(n)][:200]
+    scope = await status_scope(user, store)
+    if not wanted:
+        return {"statuses": {}}
+    try:
+        rows = await store.prospect_statuses(scope, wanted)
+    except httpx.HTTPError as e:
+        # Follow-up is a convenience: the list stays usable without it
+        logger.warning(f"Prospect statuses unavailable: {type(e).__name__}")
+        return {"statuses": {}, "unavailable": True}
+    return {"statuses": {r["dpe_number"]: {"status": r["status"], "updated_at": r.get("updated_at"),
+                                            "mine": r.get("user_id") == user.id} for r in rows}}
+
+
+class StatusUpdate(BaseModel):
+    number: str = Field(..., pattern=r"^[0-9A-Za-z]{10,16}$")
+    status: Optional[str] = Field(None, pattern="^(courrier|relance|rendez_vous|mandat|ecarte)$")
+    address: Optional[str] = Field(None, max_length=300)
+
+
+@router.put("/prospect-status")
+async def put_status(data: StatusUpdate, user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    scope = await status_scope(user, store)
+    try:
+        if data.status:
+            await store.set_prospect_status({"scope": scope, "dpe_number": data.number, "status": data.status,
+                                             "address": data.address, "user_id": user.id,
+                                             "updated_at": datetime.now(timezone.utc).isoformat()})
+        else:
+            await store.clear_prospect_status(scope, data.number)
+    except httpx.HTTPError as e:
+        logger.error(f"Prospect status not saved: {type(e).__name__}")
+        raise HTTPException(status_code=503, detail="Le suivi n'a pas pu être enregistré, réessayez.")
+    return {"number": data.number, "status": data.status}

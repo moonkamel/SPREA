@@ -43,7 +43,7 @@ export default function DemoPage() {
 
     useSeo({
         title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
-        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, opportunités investisseurs avec dossier d'investissement, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
+        description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, biens à fort potentiel et dossier acheteur, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
         path: '/demo',
     });
     useEffect(() => {
@@ -67,7 +67,7 @@ export default function DemoPage() {
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
                         <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 lg:-mx-28 gap-3 text-left">
-                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['16 h', 'Les investisseurs', 'investisseurs']].map(([h, t, a]) => (
+                            {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['15 h', 'Le dossier acheteur', 'vendre']].map(([h, t, a]) => (
                                 <li key={a}>
                                     <a href={`#${a}`} className="block rounded-xl border border-line bg-panel px-4 py-3 hover:border-brass/50 transition-colors">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
@@ -94,7 +94,21 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="contacter" kicker="8 h 30 · Courrier" title="Un courrier qui donne envie de vous rappeler"
+                <Step id="potentiel" kicker="8 h 20 · Biens à fort potentiel" title="Les passoires à fort potentiel, et le suivi de chaque adresse"
+                    points={['Classées par potentiel : ce que la rénovation ajoute, fraîcheur du DPE, valeur', 'Filtres par classe, ancienneté du DPE et valeur du bien', 'Suivi partagé dans l\'agence : courrier, relance, rendez-vous, mandat', 'Dossier propriétaire à votre nom pour le premier rendez-vous']}
+                    media={
+                        <div className="grid gap-4 sm:grid-cols-5 items-start">
+                            <div className="sm:col-span-2"><Screen src="/demo/potentiel_liste.webp" alt="Liste des biens à fort potentiel : valeur estimée, ancienneté du DPE et suivi de chaque adresse" width={760} height={1288} /></div>
+                            <div className="sm:col-span-3"><Screen src="/demo/dossier_proprietaire_dialog.webp" alt="Dossier propriétaire : valeur estimée, travaux, aides et valeur après travaux" width={1152} height={1030} chrome={false} /></div>
+                        </div>
+                    }>
+                    <p>Dans l'onglet « Biens à fort potentiel » de la carte, SPREA simule et valorise chaque DPE récent classé E, F ou G du secteur, puis les classe : ceux que la rénovation revalorise le plus, les DPE les plus frais, les biens de plus grande valeur.</p>
+                    <p>Notez où vous en êtes pour chaque adresse, vos collègues le voient aussi. Au rendez-vous, le dossier propriétaire montre ce que vaut le bien aujourd'hui, ce que les travaux changeraient, et comment le vendre malgré son DPE : le même dossier qui aide à vendre une passoire aide à décrocher le mandat de la suivante.</p>
+                    <p className="text-xs text-faint">Captures réalisées avec des données d'exemple. Réservé à la formule Pro.</p>
+                </Step>
+
+                <div className="border-t border-line/60" />
+                <Step id="contacter" kicker="8 h 30 · Courrier" title="Un courrier qui donne envie de vous rappeler" reverse
                     points={['Courrier prêt à imprimer, personnalisable', 'QR code unique par logement', 'Page propriétaire à vos couleurs, avec ses chiffres', 'Demandes de rappel avec consentement, dans « Contacts »']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -106,14 +120,14 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="Le lendemain · Contacts" title="Les propriétaires intéressés arrivent chez vous" reverse
+                <Step kicker="Le lendemain · Contacts" title="Les propriétaires intéressés arrivent chez vous"
                     points={['Nom, téléphone, email et message', 'Statut « à rappeler » ou « contacté »', 'Consentement horodaté (RGPD)']}
                     media={<Screen src="/demo/contacts.webp" alt="Page Contacts : trois demandes de rappel de propriétaires" width={1600} height={1000} />}>
                     <p>Chaque demande arrive avec l'adresse du logement et le DPE concerné : vous rappelez un propriétaire qui sait déjà ce que vaut son bien et ce que coûteraient les travaux.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="immeubles-rapport" kicker="11 h · Immeubles de rapport" title="Les immeubles entiers détenus par une SCI, avec leur propriétaire"
+                <Step id="immeubles-rapport" kicker="11 h · Immeubles de rapport" title="Les immeubles entiers détenus par une SCI, avec leur propriétaire" reverse
                     points={['Immeubles de 3 logements ou plus détenus en entier par une SCI ou une société privée', 'Hors copropriétés, bailleurs sociaux et organismes publics', 'Filtre « DPE F ou G » : les propriétaires qui ont une raison de vendre', 'Siège, gérants et autres immeubles de la société']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-5 items-start">
@@ -127,7 +141,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="11 h 15 · Dossier de cession" title="Un dossier qui donne une raison de vendre maintenant" reverse
+                <Step kicker="11 h 15 · Dossier de cession" title="Un dossier qui donne une raison de vendre maintenant"
                     points={['Logements interdits à la location, avec le calendrier', 'Gel des loyers des logements F et G', 'Travaux à prévoir, à la charge du seul propriétaire', 'Valeur lot par lot, en bloc, et décote liée au DPE', 'Audit énergétique obligatoire pour vendre', 'Courrier à la gérance prêt à imprimer']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-5 items-start">
@@ -143,7 +157,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="11 h 30 · Signaux de vente" title="Les SCI qui vont vendre, repérées au BODACC"
+                <Step kicker="11 h 30 · Signaux de vente" title="Les SCI qui vont vendre, repérées au BODACC" reverse
                     points={['Dissolution, liquidation, procédure collective, radiation, changement de dirigeant', 'Annonces légales vérifiées chaque semaine pour chaque société propriétaire', 'Contour rouge sur la carte et filtre « signal de vente fort »', 'Lecture par l\'IA : ce que ça implique, qui contacter, à quel horizon']}
                     media={<Screen src="/demo/sig_sheet.webp" alt="Fiche d'un immeuble dont la SCI est en liquidation judiciaire : annonces du BODACC et lecture par l'IA" width={1100} height={1879} />}>
                     <p>Une SCI en liquidation judiciaire vend ses immeubles, une SCI dissoute aussi, et un changement de gérant peut annoncer une réorganisation ou un arbitrage. Ces annonces sont publiques mais personne ne les lit : SPREA les croise chaque semaine avec les immeubles de votre secteur.</p>
@@ -152,7 +166,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="pv-ag" kicker="12 h · Documents de copropriété" title="Les PV d'AG lus par l'IA en deux minutes" reverse
+                <Step id="pv-ag" kicker="12 h · Documents de copropriété" title="Les PV d'AG lus par l'IA en deux minutes"
                     points={['PV d\'AG, carnet d\'entretien, pré-état daté : PDF ou photos', 'Travaux votés et appels de fonds, travaux à venir, procédures, impayés', 'Points de vigilance classés, avec la page de chaque information', 'Questions à poser au syndic et documents manquants', 'Synthèse PDF à vos couleurs pour l\'acheteur ou le notaire']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-5 items-start">
@@ -166,14 +180,14 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="convaincre" kicker="14 h · Rendez-vous" title="Le simulateur : travaux, aides, reste à charge, en direct"
+                <Step id="convaincre" kicker="14 h · Rendez-vous" title="Le simulateur : travaux, aides, reste à charge, en direct" reverse
                     points={['Travaux recommandés selon le DPE du logement', 'Nouvelle étiquette, consommation et émissions', 'MaPrimeRénov\', CEE et éco-PTZ selon les barèmes en vigueur', 'Deux scénarios à comparer']}
                     media={<Screen src="/demo/works.webp" alt="Simulateur : choix des travaux et projet de passage de F à C" width={1600} height={1000} />}>
                     <p>Tapez l'adresse : SPREA retrouve le DPE publié par l'ADEME et propose les travaux qui font vraiment gagner des classes. Cochez, décochez : tout se recalcule devant le propriétaire.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="immeuble" kicker="14 h 10 · Copropriété" title="La fiche immeuble : ce que la copropriété va coûter" reverse
+                <Step id="immeuble" kicker="14 h 10 · Copropriété" title="La fiche immeuble : ce que la copropriété va coûter"
                     points={['Registre national des copropriétés : lots, syndic, période de construction', 'DPE collectif et étiquettes des autres appartements', 'Obligations : plan pluriannuel de travaux, DPE collectif', 'Travaux collectifs probables et quote-part de l\'appartement, avant et après aides']}
                     media={<Screen src="/demo/immeuble.webp" alt="Fiche immeuble : copropriété de 20 lots, DPE collectif E, travaux de façade et de chaufferie, quote-part de l'appartement" width={1400} height={1493} />}>
                     <p>Pour un appartement, la vraie question de l'acheteur, ce sont les charges à venir. SPREA croise le registre des copropriétés, le DPE de l'immeuble et la loi pour chiffrer les gros travaux et la part de ce lot.</p>
@@ -181,31 +195,28 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="14 h 20 · Artisans" title="Les artisans RGE les plus proches, travail par travail"
+                <Step kicker="14 h 20 · Artisans" title="Les artisans RGE les plus proches, travail par travail" reverse
                     points={['Annuaire public de l\'ADEME, mis à jour chaque jour', 'Entreprises qualifiées pour chaque travail retenu, les plus proches d\'abord', 'Rénovation globale et audit énergétique pour les projets d\'ampleur', 'Repris dans le rapport remis au client']}
                     media={<Screen src="/demo/rge.webp" alt="Liste des artisans RGE les plus proches pour chaque travail, avec téléphone et site" width={1400} height={1343} />}>
                     <p>Les aides ne sont versées que pour des travaux réalisés par une entreprise RGE. Le propriétaire repart avec des noms et des numéros de téléphone : son projet devient concret.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="investisseurs" kicker="16 h · Investisseurs" title="Les passoires les plus rentables pour vos clients investisseurs" reverse
-                    points={['Jusqu\'à 150 DPE récents de la zone simulés et valorisés', 'Classement par marge (marchand de biens) ou rendement brut (bailleur)', 'Prix d\'achat sur les ventes DVF, frais de notaire, travaux, aides selon le profil', 'Loyer de marché de la commune (Carte des loyers)', 'Dossier d\'investissement en PDF à votre nom, rédigé avec l\'IA']}
+                <Step id="vendre" kicker="15 h · Vendre une passoire" title="Le dossier acheteur : un projet chiffré plutôt qu'une passoire"
+                    points={['Le programme de travaux choisi dans le simulateur', 'Calculé à partir du prix du mandat', 'Valeur après travaux étayée par les ventes DVF comparables', 'Loyer de marché et rendement pour les investisseurs', 'Aucun argument contre le prix : vous représentez le vendeur']}
                     media={
-                        <div className="grid gap-4 sm:grid-cols-5 items-start">
-                            <div className="sm:col-span-2"><Screen src="/demo/invest_liste.webp" alt="Classement des opportunités : marge, rendement brut, budget, revente et loyer de chaque logement" width={760} height={1250} /></div>
-                            <div className="sm:col-span-3 grid grid-cols-2 gap-3">
-                                <Screen src="/demo/invest_dossier_1.webp" alt="Dossier d'investissement, page 1 : synthèse, loyer, location avant et après travaux, l'opportunité en bref" width={900} height={1273} chrome={false} />
-                                <Screen src="/demo/invest_dossier_2.webp" alt="Dossier d'investissement, page 2 : arguments de négociation, plan financier, scénario locatif" width={900} height={1273} chrome={false} />
-                            </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Screen src="/demo/dossier_acheteur_1.webp" alt="Dossier acheteur, page 1 : synthèse, projet en bref, points forts et points à vérifier" width={900} height={1273} chrome={false} />
+                            <Screen src="/demo/dossier_acheteur_2.webp" alt="Dossier acheteur, page 2 : ce qui fait la valeur du projet, plan financier, scénario locatif" width={900} height={1273} chrome={false} />
                         </div>
                     }>
-                    <p>Vos clients investisseurs et marchands de biens cherchent tous la même chose : la passoire dont la valeur après travaux dépasse largement ce qu'elle coûte. Dans l'onglet « Opportunités investisseurs » de la carte, SPREA chiffre chaque logement classé E, F ou G du secteur et les classe du plus rentable au moins rentable.</p>
-                    <p>Pour chacun, un dossier d'investissement à vos couleurs : plan financier, scénario locatif, programme de travaux, marché local et arguments de négociation. Avec le prix affiché de l'annonce, il recalcule budget, marge et rendement.</p>
-                    <p className="text-xs text-faint">Captures réalisées avec des données d'exemple. Estimations avant frais financiers et fiscalité, réservées à la formule Pro.</p>
+                    <p>Un G ou un F sous mandat qui ne part pas, c'est un bien où les acheteurs voient un gouffre. Depuis le simulateur, SPREA en fait un projet chiffré : coût des travaux, aides, valeur après rénovation, loyer possible.</p>
+                    <p>Partagez-le avec vos acquéreurs, investisseurs ou acheteurs prêts à rénover : ils ne voient plus une passoire, mais un projet. Chaque page rappelle que ce sont des estimations, à confirmer par devis.</p>
+                    <p className="text-xs text-faint">Capture réalisée avec des données d'exemple. Réservé à la formule Pro.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux"
+                <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux" reverse
                     points={['Ventes DVF comparables à moins de 500 m, 1 km, 2 km', 'Écart de prix par classe DPE mesuré sur 1,27 million de ventes', 'Ajustement du conseiller (état, étage, extérieur…)', 'PDF à votre nom, à remettre au client']}
                     media={
                         <div className="grid gap-4 sm:grid-cols-5 items-start">
@@ -217,7 +228,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui" reverse
+                <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui"
                     points={['Synthèse, analyse rédigée, plan de travaux et de financement', 'Valeur verte et calendrier de la loi Climat', 'Fiche immeuble pour les appartements en copropriété', 'Artisans RGE proches pour chaque travail', 'Inclus sans limite dans l\'abonnement']}
                     media={
                         <div className="grid grid-cols-3 gap-3">
@@ -230,14 +241,14 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte"
+                <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte" reverse
                     points={['Mis à jour chaque mois', 'France entière et 90 départements', 'Des chiffres à citer en rendez-vous et sur vos réseaux']}
                     media={<Screen src="/demo/observatoire.webp" alt="Observatoire : écart de prix par classe DPE, maisons et appartements" width={1600} height={1000} />}>
                     <p>En moyenne, d'après nos calculs sur les ventes DVF rapprochées de leur DPE (2022 à 2025), une maison classée G s'est vendue 18 % moins cher qu'une maison classée D comparable. Montrez-le à vos vendeurs.</p>
                 </Step>
 
                 <div className="border-t border-line/60" />
-                <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil" reverse
+                <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil"
                     points={['Un abonnement, autant de places que d\'agents, une seule facture', 'Invitation par lien, rôles titulaire, responsable et agent', 'Contacts et alertes partagés : aucun propriétaire ne se perd', 'Console réseau pour suivre toutes les agences']}
                     media={<Screen src="/demo/team.webp" alt="Page Équipe : membres de l'agence, rôles, invitations et nombre de places" width={1400} height={1281} />}>
                     <p>Chaque agent prospecte son secteur, et le responsable voit qui rappelle qui. Quand un agent part, ses contacts restent à l'agence.</p>
