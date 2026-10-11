@@ -994,6 +994,12 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
             preselected.append("vmc")
             suggested.add("vmc")
 
+        # Electric radiators in place of a fuel: never when the consumption
+        # goes up (the label may improve through emissions alone)
+        if "heating" in preselected and energy in FOSSIL_ENERGIES:
+            if simulate(SimulationInput(property=prop, works=list(preselected)))["new_cep"] > prop.initial_cep:
+                preselected.remove("heating")
+
         # One more insulation work that opens the rénovation d'ampleur and
         # leaves less to pay for at least the same label: the report would
         # otherwise recommend the dearer programme above its own variant
