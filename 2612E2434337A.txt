@@ -1,0 +1,243 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+1, Rue Cabrieres
+12000 Rodez
+Appartement · 30,9 m² · 1948-1974 · étage 0
+DPE du 23/09/2026 · n° 2612E2434337A
+Synthèse
++2 classes
+F → D
+366 → 247 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 7 400 € − 3 200 € ≈ 4 300 € 390 € / an
+entre 6 200 € et 9 200 € entre 2 600 € et 3 900 €
+entre 3 500 € et 5 300 €
+Retour sur investissement environ 11 ans
+Valeur verte du bien + 6 500 € (2 000 € à 15 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à D coûte entre 3 500 € et 5 300 € après aides, pour environ 390 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 30,9 m², construit entre 1948 et 1974, est classé F, avec 366 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : toiture ou plafond (32 %), puis renouvellement d'air (28 %). La facture
+d'énergie est estimée à 1 190 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), fenêtres double vitrage et chauffe-eau
+thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+chauffe-eau thermodynamique, avec environ 180 € d'économie par an. Préconisations : Doublage isolant
+de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance
+thermique R ≥ 3,7 m².K/W exigée pour les aides. Double vitrage à isolation renforcée avec gaz argon : Uw
+≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium à rupture de pont
+1, Rue Cabrieres, 12000 Rodez Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+thermique, pose en rénovation ou en dépose totale. Ensemble, ces travaux amènent le logement en classe
+D (247 kWh/m²/an) et la facture à environ 810 € par an.
+Financement
+Le coût des travaux se situe entre 6 200 € et 9 200 €. Avec MaPrimeRénov' rénovation d'ampleur, le reste
+à charge est estimé entre 3 500 € et 5 300 €. Un éco-prêt à taux zéro de 4 300 € sur 20 ans représente
+environ 18 € par mois, à comparer à 32 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 390 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 11 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 0,5 m².
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie en façade demande
+l'accord de la copropriété.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (F / C)
+Consommation d'énergie primaire 366 kWh/m²/an
+Émissions de gaz à effet de serre 14 kg CO₂/m²/an
+Électricité · Convecteur électrique NFC, NF** et NF***
+Chauffage
+· individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable avant 1982
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 1 190 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 305 € / an
+1, Rue Cabrieres, 12000 Rodez Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 32 %
+Renouvellement d'air 28 %
+Murs 20 %
+Fenêtres 14 %
+Ponts thermiques et portes 6 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 850 € 640 €
+Eau chaude 280 € 100 €
+Autres usages (éclairage, auxiliaires) 60 € 60 €
+Total par an 1 190 € 810 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 23/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+1, Rue Cabrieres, 12000 Rodez Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 800 € à 1 200 €
+Les murs représentent 20 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 46 kWh/m²/an · − 150 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 0,5 m².
+2. Fenêtres double vitrage RECOMMANDÉ 2 100 € à 3 500 €
+Les fenêtres représentent 14 % des pertes de chaleur (environ 3 fenêtres) ; le
+DPE juge leur isolation « moyenne ».
+Effet seul : − 18 kWh/m²/an · − 60 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+3. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 23 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 55 kWh/m²/an · − 180 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie
+en façade demande l'accord de la copropriété.
+Total des travaux TTC 6 200 € à 9 200 €
+Durée indicative du chantier : 8 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+1, Rue Cabrieres, 12000 Rodez Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 73
+B 74 à 114
+C 115 à 187
+D 188 à 260 Après travaux
+E 261 à 343
+F 344 à 437 Aujourd'hui
+G > 437
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 190 € → 810 € par an.
+Le plan de financement
+4
+Coût des travaux 6 200 € à 9 200 €
+MaPrimeRénov' rénovation d'ampleur − 2 600 € à 3 900 €
+Reste à charge 3 500 € à 5 300 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 4 300 €
+Durée 20 ans
+Mensualité 18 € / mois
+Économie sur la facture − 32 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 11 ans
+Prix de marché local 2 473 €/m²
+Valeur verte estimée + 6 500 €
+Fourchette 2 000 € à 15 000 €
+Prix local : prix médian DVF de 261 ventes d’appartements de surface comparable à Rodez (2024-2025, actualisées au dernier
+trimestre).
+1, Rue Cabrieres, 12000 Rodez Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur verte : écart de prix de 14 % mesuré entre les classes F et D sur les ventes du département (2 086 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Copropriété CABRIERES CARNUS
+Taille 13 lots principaux dont 12 logements
+Syndic CABINET ROUERGAT - S ALARY - E TREBOSC
+Construction 1975 – 1993
+DPE des appartements 14 publiés : 4 en C, 3 en D, 5 en E, 2 en F
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 37 800 € à 63 000 €
+Isolation de la toiture Combles : isolation insuffisante 3 200 € à 6 300 €
+Total 41 000 € à 69 300 €
+Quote-part de l'appartement (environ 7,4 % de la surface) : 3 000 € à 5 100 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+1 700 € à 3 600 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (420 m² habitables estimés, 4 niveaux, 12 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+1, Rue Cabrieres, 12000 Rodez Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 4 300 € sans intérêts.
+6 Travaux Environ 8 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 14 % mesuré entre les classes F et D sur les ventes du département (2 086
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 473 €/m², prix médian DVF de 261 ventes d’appartements de surface comparable à Rodez
+(2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+1, Rue Cabrieres, 12000 Rodez Page 7 / 7

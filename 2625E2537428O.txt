@@ -1,0 +1,195 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+7 Rue de la Cote
+25690 Passonfontaine
+Maison · 82,8 m² · 1975-1977
+DPE du 05/10/2026 · n° 2625E2537428O
+Synthèse
++3 classes
+F → C
+344 → 167 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 12 300 € − 3 000 € ≈ 9 300 € 1 550 € / an
+entre 10 500 € et 15 400 €
+entre 7 500 € et 12 400 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 27 500 € (15 500 € à 48 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 7 500 € et 12 400 € après aides, pour environ 1 550 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 82,8 m², construite entre 1975 et 1977, est classée F, avec 344 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (44 %), puis murs (19 %). La facture d'énergie est
+estimée à 3 000 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : pompe à chaleur air/eau. Préconisations : Pompe à chaleur
+air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111
+% (moyenne et haute) ; puissance indicative d'environ 5 à 7 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur. Ensemble, ces travaux amènent le logement en classe C (167
+kWh/m²/an) et la facture à environ 1 460 € par an.
+Financement
+7 Rue de la Cote, 25690 Passonfontaine Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 10 500 € et 15 400 €. Avec MaPrimeRénov' par geste, le reste à charge
+est estimé entre 7 500 € et 12 400 €. La rénovation d'ampleur exige au moins deux travaux d'isolation
+(murs, toiture, plancher ou fenêtres). Un éco-prêt à taux zéro de 9 300 € sur 15 ans représente environ 52
+€ par mois, à comparer à 129 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 550 € d'économie par an. Le reste à charge
+est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une isolation est prévue plus
+tard, la faire avant : la pompe à chaleur sera plus petite et moins chère.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (F / C)
+Consommation d'énergie primaire 344 kWh/m²/an
+Émissions de gaz à effet de serre 13 kg CO₂/m²/an
+Chauffage Électricité · Chaudière électrique
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation VMC SF Auto réglable avant 1982
+Isolation des murs Bonne (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 3 000 € / an
+Coût annuel indiqué par le DPE (prix 2021) 3 081 € / an
+7 Rue de la Cote, 25690 Passonfontaine Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 44 %
+Murs 19 %
+Plancher bas 12 %
+Ponts thermiques et portes 11 %
+Fenêtres 8 %
+Toiture ou plafond 6 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 360 € 810 €
+Eau chaude 460 € 460 €
+Autres usages (éclairage, auxiliaires) 190 € 190 €
+Total par an 3 000 € 1 460 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+7 Rue de la Cote, 25690 Passonfontaine Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Pompe à chaleur air/eau RECOMMANDÉ 10 500 € à 15 400 €
+Remplace la chaudière électrique : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'électricité.
+Effet seul : − 177 kWh/m²/an · − 1 550 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 5 à 7 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une
+isolation est prévue plus tard, la faire avant : la pompe à chaleur sera plus petite et
+moins chère.
+Total des travaux TTC 10 500 € à 15 400 €
+Durée indicative du chantier : 3 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 000 € → 1 460 € par an.
+7 Rue de la Cote, 25690 Passonfontaine Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 10 500 € à 15 400 €
+MaPrimeRénov' par geste − 3 000 €
+Reste à charge 7 500 € à 12 400 €
+Aides par travaux Montant estimé
+Pompe à chaleur air/eau 3 000 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 9 300 €
+Durée 15 ans
+Mensualité 52 € / mois
+Économie sur la facture − 129 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 2 092 €/m²
+Valeur verte estimée + 27 500 €
+Fourchette 15 500 € à 48 000 €
+Prix local : prix médian DVF de 38 ventes de maisons de surface comparable à moins de 5 km, communes voisines incluses
+(2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 26 % mesuré entre les classes F et C sur les ventes du département (4 534 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+7 Rue de la Cote, 25690 Passonfontaine Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+4 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 9 300 € sans intérêts.
+5 Travaux Environ 3 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 26 % mesuré entre les classes F et C sur les ventes du département (4 534
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 092 €/m², prix médian DVF de 38 ventes de maisons de surface comparable à moins de 5 km,
+communes voisines incluses (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du
+bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+7 Rue de la Cote, 25690 Passonfontaine Page 6 / 6

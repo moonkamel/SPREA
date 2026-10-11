@@ -1,0 +1,235 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+854 Route des Carbonnieres
+47410 Saint-Colomb-de-Lauzun
+Maison · 107 m² · avant 1948
+DPE du 01/10/2026 · n° 2647E2509090M
+Synthèse
++3 classes
+G → D
+578 → 222 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 31 300 € − 13 400 € ≈ 18 000 € 3 440 € / an
+entre 26 100 € et 39 700 € entre 11 100 € et 17 000 €
+entre 14 900 € et 22 800 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 21 000 € (9 000 € à 43 000 €)
+Location aujourd'hui Location interdite depuis le 01/01/2023
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 14 900 € et 22 800 € après aides, pour environ 3 440 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 107 m², construite avant 1948, est classée G, avec 578 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : toiture ou plafond (32 %), puis murs (30 %). La facture d'énergie est estimée à 5 650
+€ par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), fenêtres double
+vitrage et ventilation mécanique (VMC), dans l'ordre du tableau des travaux : l'enveloppe d'abord, les
+équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le
+plus efficace est : isolation de la toiture, avec environ 1 560 € d'économie par an. Préconisations : Combles
+aménagés : isolation des rampants, 20 à 24 cm en deux couches croisées entre et sous chevrons (laine
+minérale ou fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W exigée pour les aides. Mur ancien (avant 1948)
+qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥ 3,7 m².K/W
+exigée pour les aides. Autre solution pour les murs : isolation des murs (par l'extérieur), pour un reste à
+charge supérieur d'environ 4 500 € ; façade ancienne souvent refusée en secteur protégé (accord de
+l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter. Ensemble, ces travaux
+amènent le logement en classe D (222 kWh/m²/an) et la facture à environ 2 210 € par an.
+Financement
+Le coût des travaux se situe entre 26 100 € et 39 700 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 14 900 € et 22 800 €. Un éco-prêt à taux zéro de 18 000 € sur 20 ans
+représente environ 75 € par mois, à comparer à 287 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 3 440 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 5,8 m².
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 578 kWh/m²/an
+Émissions de gaz à effet de serre 17 kg CO₂/m²/an
+Chauffage Bois · Cuisinière installé avant 1990
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 5 650 € / an
+Coût annuel indiqué par le DPE (prix 2021) 3 023 € / an
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 32 %
+Murs 30 %
+Renouvellement d'air 18 %
+Fenêtres 9 %
+Plancher bas 7 %
+Ponts thermiques et portes 4 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 5 170 € 1 730 €
+Eau chaude 440 € 440 €
+Autres usages (éclairage, auxiliaires) 40 € 40 €
+Total par an 5 650 € 2 210 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2023
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 01/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements. Depuis le 01/01/2023, les logements qui consomment plus de 450 kWh/m²/an d'énergie finale
+sont déjà interdits à la location.
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 7 000 € à 10 300 €
+La toiture représente 32 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 162 kWh/m²/an · − 1 560 €/an sur la facture
+Préconisation : Combles aménagés : isolation des rampants, 20 à 24 cm en deux
+couches croisées entre et sous chevrons (laine minérale ou fibre de bois) avec
+frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 10 300 € à 15 100 €
+Les murs représentent 30 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 135 kWh/m²/an · − 1 300 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 5,8 m².
+3. Fenêtres double vitrage RECOMMANDÉ 7 800 € à 12 700 €
+Les fenêtres représentent 9 % des pertes de chaleur (environ 11 fenêtres) ; le
+DPE juge leur isolation « insuffisante ».
+Effet seul : − 35 kWh/m²/an · − 340 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+4. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 18 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 24 kWh/m²/an · − 230 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+Total des travaux TTC 26 100 € à 39 700 €
+Durée indicative du chantier : 15 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe D, facture d'environ
+2 050 € par an, reste à charge supérieur d'environ 4 500 €. À noter : façade ancienne souvent refusée en
+secteur protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 17 000 € à 25 900 €
+Coût total du programme 32 700 € à 50 600 €
+Aides estimées − 14 000 € à 18 000 €
+Reste à charge 18 800 € à 32 600 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 5 650 € → 2 210 € par an.
+Le plan de financement
+4
+Coût des travaux 26 100 € à 39 700 €
+MaPrimeRénov' rénovation d'ampleur − 11 100 € à 17 000 €
+Reste à charge 14 900 € à 22 800 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 18 000 €
+Durée 20 ans
+Mensualité 75 € / mois
+Économie sur la facture − 287 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 1 688 €/m²
+Valeur verte estimée + 21 000 €
+Fourchette 9 000 € à 43 000 €
+Prix local : prix médian DVF de 27 ventes de maisons de surface comparable à Saint-Colomb-de-Lauzun (2022-2025, actualisées au
+dernier trimestre).
+Valeur verte : écart de prix de 20 % mesuré entre les classes G et D sur les ventes du département (4 645 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 18 000 € sans intérêts.
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Travaux Environ 15 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, bois 0,09 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 20 % mesuré entre les classes G et D sur les ventes du département (4 645
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 688 €/m², prix médian DVF de 27 ventes de maisons de surface comparable à
+Saint-Colomb-de-Lauzun (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas
+de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+854 Route des Carbonnieres, 47410 Saint-Colomb-de-Lauzun Page 7 / 7

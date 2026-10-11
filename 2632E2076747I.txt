@@ -1,0 +1,224 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+1 Bis, Rue d'Angerville 3eme Etage
+32000 Auch
+Appartement · 15,9 m² · avant 1948 · étage 0
+DPE du 05/08/2026 · n° 2632E2076747I
+Synthèse
++1 classe
+G → F
+578 → 448 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 2 400 € − 180 € ≈ 2 200 € 220 € / an
+entre 2 000 € et 3 000 €
+entre 1 900 € et 2 800 €
+Retour sur investissement environ 10 ans
+Valeur verte du bien + 1 500 € (0 € à 19 000 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable jusqu'au 01/01/2028
+L'essentiel
+Passer de G à F coûte entre 1 900 € et 2 800 € après aides, pour environ 220 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 15,9 m², construit avant 1948, est classé G, avec 578 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (37 %), puis renouvellement d'air (33 %). La facture d'énergie est
+estimée à 970 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : isolation des murs (par l'intérieur). Préconisations : Mur
+ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm (fibre de bois,
+chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R
+≥ 3,7 m².K/W exigée pour les aides. Ensemble, ces travaux amènent le logement en classe F (448
+kWh/m²/an) et la facture à environ 750 € par an.
+Financement
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 2 000 € et 3 000 €. Avec primes CEE, le reste à charge est estimé entre
+1 900 € et 2 800 €. La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y
+suffit pas. Un éco-prêt à taux zéro de 2 200 € sur 15 ans représente environ 12 € par mois, à comparer à 18
+€ d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 220 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 10 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 1,1 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 578 kWh/m²/an
+Émissions de gaz à effet de serre 22 kg CO₂/m²/an
+Électricité · radiateur électrique NFC, NF** et NF*** ·
+Chauffage
+individuel
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation VMC SF Auto réglable de 1982 à 2000
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 970 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 073 € / an
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 37 %
+Renouvellement d'air 33 %
+Toiture ou plafond 21 %
+Ponts thermiques et portes 5 %
+Fenêtres 3 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 690 € 470 €
+Eau chaude 250 € 250 €
+Autres usages (éclairage, auxiliaires) 30 € 30 €
+Total par an 970 € 750 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable jusqu'au 01/01/2028
+Validité du DPE Jusqu'au 05/08/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 2 000 € à 3 000 €
+Les murs représentent 37 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 130 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 1,1 m².
+Total des travaux TTC 2 000 € à 3 000 €
+Durée indicative du chantier : 5 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 77
+B 78 à 121
+C 122 à 198
+D 199 à 275
+E 276 à 363
+F 364 à 462 Après travaux
+G > 462 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 970 € → 750 € par an.
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 2 000 € à 3 000 €
+Primes CEE (estimation) − 180 €
+Reste à charge 1 900 € à 2 800 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 180 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige un gain d'au moins deux classes : ce programme n'y suffit pas.
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 2 200 €
+Durée 15 ans
+Mensualité 12 € / mois
+Économie sur la facture − 18 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 10 ans
+Prix de marché local 2 280 €/m²
+Valeur verte estimée + 1 500 €
+Fourchette 0 € à 19 000 €
+Prix local : prix médian DVF de 27 ventes d’appartements de surface comparable à Auch (2024-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 6 % mesuré entre les classes G et F sur les ventes du département (677 ventes rapprochées de leur DPE,
+2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements vendus
+(cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+son haut.
+L'immeuble et ses travaux à venir
+6
+Construction avant 1948
+DPE des appartements 4 publiés : 1 en D, 2 en F, 1 en G
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades (par l'extérieur si
+l'Architecte des Bâtiments de France Isolation des murs insuffisante 5 700 € à 9 500 €
+l'accepte)
+Isolation de la toiture Combles : isolation insuffisante 500 € à 1 000 €
+Total 6 200 € à 10 500 €
+Quote-part de l'appartement (environ 25,0 % de la surface) : 1 600 € à 2 600 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ 900 €
+à 1 900 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (64 m² habitables estimés, 4 niveaux, 4 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 2 200 € sans intérêts.
+5 Travaux Environ 5 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 6 % mesuré entre les classes G et F sur les ventes du département (677
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 280 €/m², prix médian DVF de 27 ventes d’appartements de surface comparable à Auch
+(2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+1 Bis, Rue d'Angerville 3eme Etage, 32000 Auch Page 7 / 7

@@ -1,0 +1,221 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+68 rue Grande
+27220 Bois-le-Roi
+Maison · 43,8 m² · 1948-1974
+DPE du 29/09/2026 · n° 2627E2480459N
+Synthèse
++3 classes
+G → D
+463 → 233 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 9 500 € − 4 100 € ≈ 5 500 € 1 060 € / an
+entre 8 100 € et 12 000 € entre 3 400 € et 5 100 €
+entre 4 600 € et 6 900 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 12 000 € (7 000 € à 19 500 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 4 600 € et 6 900 € après aides, pour environ 1 060 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 43,8 m², construite entre 1948 et 1974, est classée G, avec 463 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : toiture ou plafond (27 %), puis ponts thermiques et portes (25 %). La facture
+d'énergie est estimée à 2 250 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), isolation du
+plancher bas et radiateurs électriques à inertie, dans l'ordre du tableau des travaux : l'enveloppe d'abord,
+les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste
+le plus efficace est : isolation de la toiture, avec environ 480 € d'économie par an. Préconisations :
+Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec
+pare-vapeur côté chauffé. Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec
+membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Autre solution pour les
+68 rue Grande, 27220 Bois-le-Roi Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+murs : isolation des murs (par l'extérieur), pour un reste à charge supérieur d'environ 900 €. Ensemble, ces
+travaux amènent le logement en classe D (233 kWh/m²/an) et la facture à environ 1 190 € par an.
+Financement
+Le coût des travaux se situe entre 8 100 € et 12 000 €. Avec MaPrimeRénov' rénovation d'ampleur, le reste
+à charge est estimé entre 4 600 € et 6 900 €. Un éco-prêt à taux zéro de 5 500 € sur 20 ans représente
+environ 23 € par mois, à comparer à 88 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 060 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 1,1 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 463 kWh/m²/an
+Émissions de gaz à effet de serre 27 kg CO₂/m²/an
+Chauffage Électricité · Autres émetteurs à effet joule
+Chauffe-eau gpl/propane/butane à production
+Eau chaude
+instantanée 2001-2015
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Moyenne (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 2 250 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 302 € / an
+68 rue Grande, 27220 Bois-le-Roi Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 27 %
+Ponts thermiques et portes 25 %
+Murs 22 %
+Plancher bas 11 %
+Renouvellement d'air 10 %
+Fenêtres 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 900 € 840 €
+Eau chaude 270 € 270 €
+Autres usages (éclairage, auxiliaires) 80 € 80 €
+Total par an 2 250 € 1 190 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 29/09/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+68 rue Grande, 27220 Bois-le-Roi Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 1 000 € à 1 400 €
+La toiture représente 27 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 104 kWh/m²/an · − 480 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7
+m².K/W exigée pour les aides, avec pare-vapeur côté chauffé.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 2 000 € à 2 900 €
+Les murs représentent 22 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 79 kWh/m²/an · − 360 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 1,1 m².
+3. Isolation du plancher bas RECOMMANDÉ 3 400 € à 5 100 €
+Le plancher bas représente 11 % des pertes de chaleur ; le DPE juge son
+isolation « moyenne ».
+Effet seul : − 28 kWh/m²/an · − 130 €/an sur la facture
+Préconisation : Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W.
+4. Radiateurs électriques à inertie RECOMMANDÉ 1 800 € à 2 600 €
+Le logement est chauffé par des convecteurs électriques : des radiateurs à
+inertie bien régulés consomment environ 10 % de moins.
+Effet seul : − 37 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : Radiateurs à inertie (fonte, pierre ou fluide) avec programmation et
+détection d'ouverture de fenêtre, label NF Électricité Performance 3 étoiles.
+Total des travaux TTC 8 100 € à 12 000 €
+Durée indicative du chantier : 17 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+68 rue Grande, 27220 Bois-le-Roi Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 920 €
+par an, reste à charge supérieur d'environ 900 €.
+Isolation des murs (par l'extérieur) 3 300 € à 5 000 €
+Coût total du programme 9 400 € à 14 100 €
+Aides estimées − 4 000 € à 6 000 €
+Reste à charge 5 400 € à 8 100 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 250 € → 1 190 € par an.
+Le plan de financement
+4
+Coût des travaux 8 100 € à 12 000 €
+MaPrimeRénov' rénovation d'ampleur − 3 400 € à 5 100 €
+Reste à charge 4 600 € à 6 900 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+68 rue Grande, 27220 Bois-le-Roi Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 5 500 €
+Durée 20 ans
+Mensualité 23 € / mois
+Économie sur la facture − 88 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 2 068 €/m²
+Valeur verte estimée + 12 000 €
+Fourchette 7 000 € à 19 500 €
+Prix local : prix médian DVF de 70 ventes de maisons à Bois-le-Roi (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 22 % mesuré entre les classes G et D sur les ventes du département (9 010 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 5 500 € sans intérêts.
+6 Travaux Environ 17 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+68 rue Grande, 27220 Bois-le-Roi Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 22 % mesuré entre les classes G et D sur les ventes du département (9 010
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (2 068 €/m², prix médian DVF de 70 ventes de maisons à Bois-le-Roi (2022-2025, actualisées au
+dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité
+de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+68 rue Grande, 27220 Bois-le-Roi Page 7 / 7

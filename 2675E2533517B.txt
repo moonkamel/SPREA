@@ -1,0 +1,257 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+7 Rue Ernest Roche
+75017 Paris
+Appartement · 32 m² · avant 1948 · étage 0
+DPE du 05/10/2026 · n° 2675E2533517B
+Synthèse
++3 classes
+F → C
+332 → 159 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 13 100 € − 5 600 € ≈ 7 500 € 620 € / an
+entre 10 900 € et 16 400 € entre 4 700 € et 7 000 €
+entre 6 300 € et 9 400 €
+Retour sur investissement environ 12 ans
+Valeur verte du bien + 13 000 € (7 000 € à 22 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 6 300 € et 9 400 € après aides, pour environ 620 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 32 m², construit avant 1948, est classé F, avec 332 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (49 %), puis renouvellement d'air (25 %). La facture d'énergie est estimée à 1
+170 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), fenêtres double vitrage, ventilation
+mécanique (VMC) et chauffe-eau thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe
+d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément,
+le geste le plus efficace est : isolation des murs (par l'intérieur), avec environ 410 € d'économie par an.
+Préconisations : Mur ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14
+cm (fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de
+pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides. Double vitrage à isolation renforcée avec gaz
+7 Rue Ernest Roche, 75017 Paris Page 1 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+argon : Uw ≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium à
+rupture de pont thermique, pose en rénovation ou en dépose totale. Ensemble, ces travaux amènent le
+logement en classe C (159 kWh/m²/an) et la facture à environ 550 € par an.
+Financement
+Le coût des travaux se situe entre 10 900 € et 16 400 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 6 300 € et 9 400 €. Un éco-prêt à taux zéro de 7 500 € sur 20 ans
+représente environ 31 € par mois, à comparer à 51 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 620 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 12 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 1,8 m².
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (E / F)
+Consommation d'énergie primaire 332 kWh/m²/an
+Émissions de gaz à effet de serre 72 kg CO₂/m²/an
+Gaz · Chaudière gaz à condensation après 2015 ·
+Chauffage
+individuel
+Eau chaude Chaudière gaz à condensation après 2015
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 1 170 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 234 € / an
+7 Rue Ernest Roche, 75017 Paris Page 2 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 49 %
+Renouvellement d'air 25 %
+Fenêtres 16 %
+Ponts thermiques et portes 9 %
+Toiture ou plafond 0 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 980 € 430 €
+Eau chaude 140 € 80 € (électricité)
+Autres usages (éclairage, auxiliaires) 50 € 50 €
+Total par an 1 170 € 550 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+7 Rue Ernest Roche, 75017 Paris Page 3 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 800 € à 5 500 €
+Les murs représentent 49 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 116 kWh/m²/an · − 410 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 1,8 m².
+2. Fenêtres double vitrage RECOMMANDÉ 2 100 € à 3 500 €
+Les fenêtres représentent 16 % des pertes de chaleur (environ 3 fenêtres) ; le
+DPE juge leur isolation « moyenne ».
+Effet seul : − 22 kWh/m²/an · − 80 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 200 € à 1 900 €
+Le renouvellement d'air pèse 25 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 18 kWh/m²/an · − 60 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+4. Chauffe-eau thermodynamique RECOMMANDÉ 3 900 € à 5 500 €
+L'eau chaude représente 12 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 17 kWh/m²/an · − 60 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Il faut un local d'au moins 20 m³ ou une gaine vers l'extérieur ; une sortie
+en façade demande l'accord de la copropriété.
+Total des travaux TTC 10 900 € à 16 400 €
+Durée indicative du chantier : 9 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+7 Rue Ernest Roche, 75017 Paris Page 4 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 72
+B 73 à 113
+C 114 à 185 Après travaux
+D 186 à 258
+E 259 à 340
+F 341 à 433 Aujourd'hui
+G > 433
+Consommation en kWh/m²/an d'énergie primaire.
+Aujourd'hui, la consommation correspond à la classe E, mais les émissions de gaz à effet de serre (72 kg CO₂/m²/an) classent le
+logement en F : l'étiquette retient la moins bonne des deux classes.
+Facture d'énergie estimée : 1 170 € → 550 € par an.
+Le plan de financement
+4
+Coût des travaux 10 900 € à 16 400 €
+MaPrimeRénov' rénovation d'ampleur − 4 700 € à 7 000 €
+Reste à charge 6 300 € à 9 400 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 7 500 €
+Durée 20 ans
+Mensualité 31 € / mois
+Économie sur la facture − 51 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+7 Rue Ernest Roche, 75017 Paris Page 5 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur du bien
+5
+Retour sur investissement environ 12 ans
+Prix de marché local 9 791 €/m²
+Valeur verte estimée + 13 000 €
+Fourchette 7 000 € à 22 500 €
+Prix local : prix médian DVF de 2209 ventes d’appartements de surface comparable à Paris 17e Arrondissement (2024-2025,
+actualisées au dernier trimestre).
+Valeur verte : écart de prix de 6 % mesuré entre les classes F et C sur les ventes du département (62 082 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Construction avant 1948
+DPE des appartements 18 publiés : 6 en D, 10 en E, 1 en F, 1 en G
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+7 Rue Ernest Roche, 75017 Paris Page 6 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades (par l'extérieur si
+l'Architecte des Bâtiments de France Isolation des murs insuffisante 51 800 € à 86 400 €
+l'accepte)
+Ventilation actuelle : Ventilation par
+Ventilation mécanique collective 27 000 € à 54 000 €
+ouverture des fenêtres
+Total 78 800 € à 140 400 €
+Quote-part de l'appartement (environ 5,6 % de la surface) : 4 400 € à 7 800 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+2 500 € à 5 600 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades ;
+une ventilation individuelle fait double emploi avec une ventilation collective. Demandez au syndic si ces travaux
+sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (576 m² habitables estimés, 4 niveaux, 18 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 7 500 € sans intérêts.
+6 Travaux Environ 9 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+7 Rue Ernest Roche, 75017 Paris Page 7 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 6 % mesuré entre les classes F et C sur les ventes du département (62 082
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (9 791 €/m², prix médian DVF de 2209 ventes d’appartements de surface comparable à Paris 17e
+Arrondissement (2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de
+l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+7 Rue Ernest Roche, 75017 Paris Page 8 / 8

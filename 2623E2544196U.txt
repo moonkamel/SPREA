@@ -1,0 +1,232 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 le frais
+23320 Bussière-Dunoise
+Maison · 70,5 m² · avant 1948
+DPE du 05/10/2026 · n° 2623E2544196U
+Synthèse
++3 classes
+G → D
+421 → 206 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 12 700 € − 5 400 € ≈ 7 300 € 1 400 € / an
+entre 10 700 € et 15 900 € entre 4 600 € et 6 800 €
+entre 6 100 € et 9 100 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 10 500 € (5 500 € à 19 500 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 6 100 € et 9 100 € après aides, pour environ 1 400 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 70,5 m², construite avant 1948, est classée G, avec 421 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : murs (43 %), puis renouvellement d'air (29 %). La facture d'énergie est estimée à 2
+740 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), isolation du plancher bas, ventilation
+mécanique (VMC) et chauffe-eau thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe
+d'abord, les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément,
+le geste le plus efficace est : isolation des murs (par l'intérieur), avec environ 850 € d'économie par an.
+Préconisations : Mur ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14
+cm (fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de
+pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides. Panneaux isolants de 10 à 12 cm fixés en
+6 le frais, 23320 Bussière-Dunoise Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+sous-face (polystyrène, polyuréthane ou laine minérale), R ≥ 3 m².K/W. Autre solution pour les murs :
+isolation des murs (par l'extérieur), pour un reste à charge supérieur d'environ 2 500 € ; façade ancienne
+souvent refusée en secteur protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie
+avant d'y compter. Ensemble, ces travaux amènent le logement en classe D (206 kWh/m²/an) et la facture
+à environ 1 330 € par an.
+Financement
+Le coût des travaux se situe entre 10 700 € et 15 900 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 6 100 € et 9 100 €. Un éco-prêt à taux zéro de 7 300 € sur 20 ans
+représente environ 30 € par mois, à comparer à 117 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 400 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 3,6 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 421 kWh/m²/an
+Émissions de gaz à effet de serre 12 kg CO₂/m²/an
+Chauffage Bois · poêle à bois bouilleur bûche installé avant 2012
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation naturelle par conduit
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 2 740 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 644 € / an
+6 le frais, 23320 Bussière-Dunoise Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 43 %
+Renouvellement d'air 29 %
+Fenêtres 10 %
+Ponts thermiques et portes 8 %
+Plancher bas 7 %
+Toiture ou plafond 3 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 310 € 1 140 €
+Eau chaude 380 € 140 €
+Autres usages (éclairage, auxiliaires) 50 € 50 €
+Total par an 2 740 € 1 330 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+6 le frais, 23320 Bussière-Dunoise Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 5 700 € à 8 500 €
+Les murs représentent 43 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 134 kWh/m²/an · − 850 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 3,6 m².
+2. Isolation du plancher bas RECOMMANDÉ 1 200 € à 1 800 €
+Le plancher bas représente 7 % des pertes de chaleur ; le DPE juge son isolation
+« insuffisante ».
+Effet seul : − 23 kWh/m²/an · − 140 €/an sur la facture
+Préconisation : Panneaux isolants de 10 à 12 cm fixés en sous-face (polystyrène,
+polyuréthane ou laine minérale), R ≥ 3 m².K/W.
+3. Ventilation mécanique (VMC) RECOMMANDÉ 900 € à 1 500 €
+Le renouvellement d'air pèse 29 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 27 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+4. Chauffe-eau thermodynamique RECOMMANDÉ 2 900 € à 4 100 €
+L'eau chaude représente 7 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 33 kWh/m²/an · − 240 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 10 700 € à 15 900 €
+Durée indicative du chantier : 10 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+6 le frais, 23320 Bussière-Dunoise Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe D, facture d'environ 1 200 €
+par an, reste à charge supérieur d'environ 2 500 €. À noter : façade ancienne souvent refusée en secteur
+protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 9 500 € à 14 500 €
+Coût total du programme 14 500 € à 21 900 €
+Aides estimées − 6 200 € à 9 300 €
+Reste à charge 8 300 € à 12 600 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 740 € → 1 330 € par an.
+Le plan de financement
+4
+Coût des travaux 10 700 € à 15 900 €
+MaPrimeRénov' rénovation d'ampleur − 4 600 € à 6 800 €
+Reste à charge 6 100 € à 9 100 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+6 le frais, 23320 Bussière-Dunoise Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 7 300 €
+Durée 20 ans
+Mensualité 30 € / mois
+Économie sur la facture − 117 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 667 €/m²
+Valeur verte estimée + 10 500 €
+Fourchette 5 500 € à 19 500 €
+Prix local : prix médian DVF de 56 ventes de maisons de surface comparable à Bussière-Dunoise (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 38 % mesuré entre les classes G et D sur les ventes du département (1 710 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 7 300 € sans intérêts.
+6 le frais, 23320 Bussière-Dunoise Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Travaux Environ 10 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, bois 0,09 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 38 % mesuré entre les classes G et D sur les ventes du département (1 710
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (667 €/m², prix médian DVF de 56 ventes de maisons de surface comparable à Bussière-Dunoise
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+6 le frais, 23320 Bussière-Dunoise Page 7 / 7

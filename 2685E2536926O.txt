@@ -1,0 +1,204 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+3 chemin de la bodinière
+85110 Saint-Germain-de-Prinçay
+Maison · 109,9 m² · avant 1948
+DPE du 05/10/2026 · n° 2685E2536926O
+Synthèse
++2 classes
+E → C
+259 → 162 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 7 400 € − 510 € ≈ 6 900 € 1 240 € / an
+entre 6 300 € et 9 100 €
+entre 5 800 € et 8 600 €
+Retour sur investissement environ 6 ans
+Valeur verte du bien + 17 500 € (11 000 € à 28 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à C coûte entre 5 800 € et 8 600 € après aides, pour environ 1 240 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 109,9 m², construite avant 1948, est classée E, avec 259 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : toiture ou plafond (37 %), puis renouvellement d'air (27 %). La facture
+d'énergie est estimée à 3 300 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture et chauffe-eau thermodynamique, dans l'ordre du
+tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur
+des besoins réduits. Pris isolément, le geste le plus efficace est : isolation de la toiture, avec environ 960 €
+d'économie par an. Préconisations : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec pare-vapeur côté chauffé. Chauffe-eau
+thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non
+chauffé. Ensemble, ces travaux amènent le logement en classe C (162 kWh/m²/an) et la facture à environ 2
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+060 € par an.
+Financement
+Le coût des travaux se situe entre 6 300 € et 9 100 €. Avec primes CEE, le reste à charge est estimé entre 5
+800 € et 8 600 €. La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher
+ou fenêtres). Un éco-prêt à taux zéro de 6 900 € sur 15 ans représente environ 38 € par mois, à comparer
+à 103 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 240 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 6 ans environ.
+Points de vigilance
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / B)
+Consommation d'énergie primaire 259 kWh/m²/an
+Émissions de gaz à effet de serre 10 kg CO₂/m²/an
+Électricité · Panneau rayonnant électrique NFC, NF**
+Chauffage
+et NF***
+Ballon électrique à accumulation vertical Autres ou
+Eau chaude
+inconnue
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Bonne (selon le DPE)
+Isolation du plancher bas Moyenne (selon le DPE)
+Fenêtres Très bonne (selon le DPE)
+Facture d'énergie estimée 3 300 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 875 € / an
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 37 %
+Renouvellement d'air 27 %
+Murs 14 %
+Plancher bas 9 %
+Ponts thermiques et portes 9 %
+Fenêtres 4 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 770 € 1 810 €
+Eau chaude 430 € 150 €
+Autres usages (éclairage, auxiliaires) 100 € 100 €
+Total par an 3 300 € 2 060 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 3 100 € à 4 500 €
+La toiture représente 37 % des pertes de chaleur.
+Effet seul : − 76 kWh/m²/an · − 960 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec pare-vapeur côté
+chauffé.
+2. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 13 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 21 kWh/m²/an · − 270 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 6 300 € à 9 100 €
+Durée indicative du chantier : 8 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330 Aujourd'hui
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 300 € → 2 060 € par an.
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 6 300 € à 9 100 €
+Primes CEE (estimation) − 510 €
+Reste à charge 5 800 € à 8 600 €
+Aides par travaux Montant estimé
+Isolation de la toiture 410 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 6 900 €
+Durée 15 ans
+Mensualité 38 € / mois
+Économie sur la facture − 103 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 6 ans
+Prix de marché local 1 667 €/m²
+Valeur verte estimée + 17 500 €
+Fourchette 11 000 € à 28 500 €
+Prix local : prix médian DVF de 59 ventes de maisons de surface comparable à Saint-Germain-de-Prinçay (2022-2025, actualisées au
+dernier trimestre).
+Valeur verte : écart de prix de 15 % mesuré entre les classes E et C sur les ventes du département (15 772 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 6 900 € sans intérêts.
+5 Travaux Environ 8 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 15 % mesuré entre les classes E et C sur les ventes du département (15 772
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 667 €/m², prix médian DVF de 59 ventes de maisons de surface comparable à
+Saint-Germain-de-Prinçay (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas
+de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+3 chemin de la bodinière, 85110 Saint-Germain-de-Prinçay Page 6 / 6

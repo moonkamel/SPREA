@@ -1,0 +1,215 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Batiment 3 6-8 Rue Alsace Lorraine
+61200 Argentan
+Appartement · 54 m² · 1948-1974 · étage 0
+DPE du 02/10/2026 · n° 2661E2520348A
+Synthèse
++1 classe
+D → C
+220 → 164 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 4 400 € − 320 € ≈ 4 100 € 360 € / an
+entre 3 800 € et 5 500 €
+entre 3 400 € et 5 200 €
+Retour sur investissement environ 11 ans
+Valeur verte du bien + 2 500 € (0 € à 9 500 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 3 400 € et 5 200 € après aides, pour environ 360 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 54 m², construit entre 1948 et 1974, est classé D, avec 220 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (39 %), puis renouvellement d'air (22 %). La facture d'énergie est
+estimée à 1 420 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : isolation des murs (par l'intérieur). Préconisations :
+Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur,
+résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Ensemble, ces travaux amènent le logement en
+classe C (164 kWh/m²/an) et la facture à environ 1 060 € par an.
+Financement
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le coût des travaux se situe entre 3 800 € et 5 500 €. Avec primes CEE, le reste à charge est estimé entre
+3 400 € et 5 200 €. Un éco-prêt à taux zéro de 4 100 € sur 15 ans représente environ 23 € par mois, à
+comparer à 30 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 360 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 11 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,1 m².
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / C)
+Consommation d'énergie primaire 220 kWh/m²/an
+Émissions de gaz à effet de serre 26 kg CO₂/m²/an
+Chauffage Réseau de chaleur · Réseau de chaleur isolé · collectif
+Eau chaude Réseau de chaleur isolé
+Ventilation VMC Basse pression Hygro B
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 1 420 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 092 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 39 %
+Renouvellement d'air 22 %
+Ponts thermiques et portes 19 %
+Fenêtres 16 %
+Plancher bas 3 %
+Toiture ou plafond 1 %
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 050 € 690 €
+Eau chaude 300 € 300 €
+Autres usages (éclairage, auxiliaires) 60 € 60 €
+Total par an 1 420 € 1 060 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 800 € à 5 500 €
+Les murs représentent 39 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 56 kWh/m²/an · − 360 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,1 m².
+Total des travaux TTC 3 800 € à 5 500 €
+Durée indicative du chantier : 5 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 420 € → 1 060 € par an.
+Le plan de financement
+4
+Coût des travaux 3 800 € à 5 500 €
+Primes CEE (estimation) − 320 €
+Reste à charge 3 400 € à 5 200 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 320 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 4 100 €
+Durée 15 ans
+Mensualité 23 € / mois
+Économie sur la facture − 30 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur du bien
+5
+Retour sur investissement environ 11 ans
+Prix de marché local 1 384 €/m²
+Valeur verte estimée + 2 500 €
+Fourchette 0 € à 9 500 €
+Prix local : prix médian DVF de 118 ventes d’appartements de surface comparable à Argentan (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 5 % mesuré entre les classes D et C sur les ventes du département (664 ventes rapprochées de leur DPE,
+2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements vendus
+(cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Construction 1948-1974
+DPE de l'immeuble Classe D · 02/10/2026
+DPE des appartements 16 publiés : 16 en D
+Cette adresse n'a pas été retrouvée dans le registre national des copropriétés.
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble : DPE de l'immeuble publié le 02/10/2026 (classe D).
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 92 700 € à 154 500 €
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 7 700 € à 15 400 €
+parking)
+Total 100 400 € à 169 900 €
+Quote-part de l'appartement (environ 5,2 % de la surface) : 5 300 € à 8 900 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+3 000 € à 6 400 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'immeuble (1 030 m² habitables, 4 niveaux, 16 logements). Le montant réel dépend du plan
+pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources : registre
+national des copropriétés (Anah), base DPE de l'ADEME.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 4 100 € sans intérêts.
+5 Travaux Environ 5 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, réseau de chaleur 0,12 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 5 % mesuré entre les classes D et C sur les ventes du département (664
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 384 €/m², prix médian DVF de 118 ventes d’appartements de surface comparable à Argentan
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+Batiment 3 6-8 Rue Alsace Lorraine, 61200 Argentan Page 7 / 7

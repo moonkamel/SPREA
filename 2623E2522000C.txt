@@ -1,0 +1,227 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+19 rue Grande
+23600 Boussac-Bourg
+Maison · 130,4 m² · 1983-1988
+DPE du 02/10/2026 · n° 2623E2522000C
+Synthèse
++1 classe
+D → C
+241 → 180 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 22 000 € − 1 200 € ≈ 20 800 € 840 € / an
+entre 18 100 € et 27 900 €
+entre 16 900 € et 26 700 €
+Retour sur investissement environ 25 ans
+Valeur verte du bien + 7 500 € (0 € à 30 500 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 16 900 € et 26 700 € après aides, pour environ 840 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 130,4 m², construite entre 1983 et 1988, est classée D, avec 241 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (31 %), puis ponts thermiques et portes (26 %). La
+facture d'énergie est estimée à 3 320 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur), fenêtres double vitrage et chauffe-eau
+thermodynamique, dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+chauffe-eau thermodynamique, avec environ 360 € d'économie par an. Préconisations : Doublage isolant
+de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance
+thermique R ≥ 3,7 m².K/W exigée pour les aides. Double vitrage à isolation renforcée avec gaz argon : Uw
+≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium à rupture de pont
+19 rue Grande, 23600 Boussac-Bourg Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+thermique, pose en rénovation ou en dépose totale. Autre solution pour les murs : isolation des murs (par
+l'extérieur), pour un reste à charge supérieur d'environ 6 600 €. Ensemble, ces travaux amènent le
+logement en classe C (180 kWh/m²/an) et la facture à environ 2 470 € par an.
+Financement
+Le coût des travaux se situe entre 18 100 € et 27 900 €. Avec primes CEE, le reste à charge est estimé
+entre 16 900 € et 26 700 €. Un éco-prêt à taux zéro de 20 800 € sur 15 ans représente environ 115 € par
+mois, à comparer à 70 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 840 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 25 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 4,4 m².
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / B)
+Consommation d'énergie primaire 241 kWh/m²/an
+Émissions de gaz à effet de serre 9 kg CO₂/m²/an
+Chauffage Électricité · Autres émetteurs à effet joule
+Ballon électrique à accumulation vertical Catégorie C
+Eau chaude
+ou 3 étoiles
+Ventilation VMC SF Auto réglable après 2012
+Isolation des murs Moyenne (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Bonne (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 3 320 € / an
+Coût annuel indiqué par le DPE (prix 2021) 3 395 € / an
+19 rue Grande, 23600 Boussac-Bourg Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 31 %
+Ponts thermiques et portes 26 %
+Murs 19 %
+Fenêtres 13 %
+Plancher bas 9 %
+Toiture ou plafond 2 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 640 € 2 150 €
+Eau chaude 560 € 200 €
+Autres usages (éclairage, auxiliaires) 120 € 120 €
+Total par an 3 320 € 2 470 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire à partir du 01/01/2034
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+19 rue Grande, 23600 Boussac-Bourg Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 6 000 € à 8 800 €
+Les murs représentent 19 % des pertes de chaleur ; le DPE juge leur isolation «
+moyenne ».
+Effet seul : − 23 kWh/m²/an · − 320 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 4,4 m².
+2. Fenêtres double vitrage RECOMMANDÉ 9 200 € à 15 000 €
+Les fenêtres représentent 13 % des pertes de chaleur (environ 13 fenêtres) ; le
+DPE juge leur isolation « moyenne ».
+Effet seul : − 12 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+3. Chauffe-eau thermodynamique RECOMMANDÉ 2 900 € à 4 100 €
+L'eau chaude représente 17 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 26 kWh/m²/an · − 360 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 18 100 € à 27 900 €
+Durée indicative du chantier : 8 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+19 rue Grande, 23600 Boussac-Bourg Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ
+2 020 € par an, reste à charge supérieur d'environ 6 600 €.
+Isolation des murs (par l'extérieur) 11 600 € à 17 700 €
+Coût total du programme 23 700 € à 36 800 €
+Aides estimées − 1 200 €
+Reste à charge 22 500 € à 35 600 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 320 € → 2 470 € par an.
+Le plan de financement
+4
+Coût des travaux 18 100 € à 27 900 €
+Primes CEE (estimation) − 1 200 €
+Reste à charge 16 900 € à 26 700 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 670 €
+Fenêtres double vitrage 460 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+19 rue Grande, 23600 Boussac-Bourg Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 20 800 €
+Durée 15 ans
+Mensualité 115 € / mois
+Économie sur la facture − 70 € / mois
+Effort mensuel net 45 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 25 ans
+Prix de marché local 1 151 €/m²
+Valeur verte estimée + 7 500 €
+Fourchette 0 € à 30 500 €
+Prix local : prix médian DVF de 15 ventes de maisons de surface comparable à Boussac-Bourg (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 6 % mesuré entre les classes D et C sur les ventes du département (1 710 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 20 800 € sans intérêts.
+5 Travaux Environ 8 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+19 rue Grande, 23600 Boussac-Bourg Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 6 % mesuré entre les classes D et C sur les ventes du département (1 710
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 151 €/m², prix médian DVF de 15 ventes de maisons de surface comparable à Boussac-Bourg
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+19 rue Grande, 23600 Boussac-Bourg Page 7 / 7

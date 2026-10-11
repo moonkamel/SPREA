@@ -1,0 +1,215 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+68 Rue Desire Guelliot
+08400 Vouziers
+Maison · 59,9 m² · 1948-1974
+DPE du 01/10/2026 · n° 2608E2512928P
+Synthèse
++2 classes
+E → C
+280 → 149 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 15 300 € − 5 600 € ≈ 9 700 € 890 € / an
+entre 13 000 € et 18 900 €
+entre 7 400 € et 13 300 €
+Retour sur investissement environ 11 ans
+Valeur verte du bien + 7 000 € (3 000 € à 14 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à C coûte entre 7 400 € et 13 300 € après aides, pour environ 890 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 59,9 m², construite entre 1948 et 1974, est classée E, avec 280 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (34 %), puis murs (22 %). La facture d'énergie est
+estimée à 1 830 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne pompe à chaleur air/eau et chauffe-eau thermodynamique, dans l'ordre du
+tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur
+des besoins réduits. Pris isolément, le geste le plus efficace est : pompe à chaleur air/eau, avec environ
+660 € d'économie par an. Préconisations : Pompe à chaleur air/eau basse ou moyenne température,
+efficacité saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ; puissance
+indicative d'environ 4 à 6 kW sur les besoins actuels du logement, à confirmer par l'étude de l'installateur.
+Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un
+68 Rue Desire Guelliot, 08400 Vouziers Page 1 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+local non chauffé. Ensemble, ces travaux amènent le logement en classe C (149 kWh/m²/an) et la facture à
+environ 940 € par an.
+Financement
+Le coût des travaux se situe entre 13 000 € et 18 900 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 7 400 € et 13 300 €. La rénovation d'ampleur exige au moins deux travaux
+d'isolation (murs, toiture, plancher ou fenêtres). Un éco-prêt à taux zéro de 9 700 € sur 15 ans représente
+environ 54 € par mois, à comparer à 74 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 890 € d'économie par an. Le reste à charge
+est remboursé par les économies en 11 ans environ.
+Points de vigilance
+– Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une isolation est prévue plus
+tard, la faire avant : la pompe à chaleur sera plus petite et moins chère.
+– Prévoir un emplacement de préférence non chauffé (garage, cellier) ou une gaine vers l'extérieur.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / E)
+Consommation d'énergie primaire 280 kWh/m²/an
+Émissions de gaz à effet de serre 51 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz standard 2001-2015
+Ballon électrique à accumulation vertical Catégorie C
+Eau chaude
+ou 3 étoiles
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Moyenne (selon le DPE)
+Isolation de la toiture Bonne (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 1 830 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 952 € / an
+68 Rue Desire Guelliot, 08400 Vouziers Page 2 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 34 %
+Murs 22 %
+Plancher bas 15 %
+Fenêtres 12 %
+Ponts thermiques et portes 12 %
+Toiture ou plafond 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 1 420 € 760 € (électricité)
+Eau chaude 350 € 130 €
+Autres usages (éclairage, auxiliaires) 60 € 60 €
+Total par an 1 830 € 940 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 01/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+68 Rue Desire Guelliot, 08400 Vouziers Page 3 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Pompe à chaleur air/eau RECOMMANDÉ 9 700 € à 14 300 €
+Remplace le chauffage au gaz : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 95 kWh/m²/an · − 660 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 4 à 6 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une
+isolation est prévue plus tard, la faire avant : la pompe à chaleur sera plus petite et
+moins chère.
+2. Chauffe-eau thermodynamique RECOMMANDÉ 3 200 € à 4 600 €
+L'eau chaude représente 12 % de la consommation : un chauffe-eau
+thermodynamique la divise par environ 2,5.
+Effet seul : − 36 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme
+EN 16147), sur air extérieur ou air d'un local non chauffé.
+À prévoir : Prévoir un emplacement de préférence non chauffé (garage, cellier) ou
+une gaine vers l'extérieur.
+Total des travaux TTC 13 000 € à 18 900 €
+Durée indicative du chantier : 4 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330 Aujourd'hui
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 830 € → 940 € par an.
+68 Rue Desire Guelliot, 08400 Vouziers Page 4 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 13 000 € à 18 900 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 2 600 €
+Reste à charge 7 400 € à 13 300 €
+Aides par travaux Montant estimé
+Pompe à chaleur air/eau 5 500 €
+Chauffe-eau thermodynamique 100 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 9 700 €
+Durée 15 ans
+Mensualité 54 € / mois
+Économie sur la facture − 74 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 11 ans
+Prix de marché local 1 037 €/m²
+Valeur verte estimée + 7 000 €
+Fourchette 3 000 € à 14 000 €
+Prix local : prix médian DVF de 63 ventes de maisons de surface comparable à Vouziers (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 17 % mesuré entre les classes E et C sur les ventes du département (3 223 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+68 Rue Desire Guelliot, 08400 Vouziers Page 5 / 6
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+vendus (cuisine, salle de bains, finitions).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 9 700 € sans intérêts.
+6 Travaux Environ 4 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 17 % mesuré entre les classes E et C sur les ventes du département (3 223
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions) ; appliquée au
+prix local (1 037 €/m², prix médian DVF de 63 ventes de maisons de surface comparable à Vouziers
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+68 Rue Desire Guelliot, 08400 Vouziers Page 6 / 6
