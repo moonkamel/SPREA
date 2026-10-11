@@ -23,6 +23,8 @@ FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
 # Tests only: an httpx2 transport answering in place of the API
 TRANSPORT = None
+# Scripts only: called with (model, usage) after each answer, to count spend
+USAGE_HOOK = None
 
 
 class ClaudeUnavailable(Exception):
@@ -68,6 +70,8 @@ async def json_call(system: str, content: Union[str, List[Dict[str, Any]]], sche
     finally:
         await client.close()
 
+    if USAGE_HOOK:
+        USAGE_HOOK(model, message.usage)
     if message.stop_reason == "refusal":
         logger.error("Anthropic API: request declined")
         raise ClaudeUnavailable("refusal")
