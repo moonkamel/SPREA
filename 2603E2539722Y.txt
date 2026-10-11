@@ -1,0 +1,233 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+11 Rue Jean Baptiste Burlot
+03700 Bellerive-sur-Allier
+Maison · 174,9 m² · 1948-1974
+DPE du 05/10/2026 · n° 2603E2539722Y
+Synthèse
++3 classes
+E → B
+319 → 108 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 32 300 € − 13 800 € ≈ 18 500 € 4 630 € / an
+entre 27 500 € et 40 500 € entre 11 700 € et 17 300 €
+entre 15 800 € et 23 200 €
+Retour sur investissement environ 4 ans
+Valeur verte du bien + 62 000 € (27 500 € à 125 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à B coûte entre 15 700 € et 23 200 € après aides, pour environ 4 630 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 174,9 m², construite entre 1948 et 1974, est classée E, avec 319 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (45 %), puis renouvellement d'air (27 %). La facture d'énergie est
+estimée à 6 610 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), ventilation
+mécanique (VMC) et pompe à chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe d'abord,
+les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste
+le plus efficace est : pompe à chaleur air/eau, avec environ 3 250 € d'économie par an. Préconisations :
+Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec
+pare-vapeur côté chauffé. Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec
+membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Autre solution pour les
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+murs : isolation des murs (par l'extérieur), pour un reste à charge supérieur d'environ 4 800 €. Ensemble,
+ces travaux amènent le logement en classe B (108 kWh/m²/an) et la facture à environ 1 980 € par an.
+Financement
+Le coût des travaux se situe entre 27 400 € et 40 500 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 15 700 € et 23 200 €. Un éco-prêt à taux zéro de 18 500 € sur 20 ans
+représente environ 77 € par mois, à comparer à 386 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 4 630 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 4 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 6,8 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / E)
+Consommation d'énergie primaire 319 kWh/m²/an
+Émissions de gaz à effet de serre 64 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul classique 1976-1980
+Ballon électrique à accumulation vertical Catégorie C
+Eau chaude
+ou 3 étoiles
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 6 610 € / an
+Coût annuel indiqué par le DPE (prix 2021) 6 280 € / an
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 45 %
+Renouvellement d'air 27 %
+Ponts thermiques et portes 9 %
+Fenêtres 8 %
+Plancher bas 6 %
+Toiture ou plafond 4 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 6 010 € 1 380 € (électricité)
+Eau chaude 480 € 480 €
+Autres usages (éclairage, auxiliaires) 120 € 120 €
+Total par an 6 610 € 1 980 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 900 € à 1 400 €
+La toiture représente 4 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 11 kWh/m²/an · − 220 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7
+m².K/W exigée pour les aides, avec pare-vapeur côté chauffé.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 12 100 € à 17 700 €
+Les murs représentent 45 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 114 kWh/m²/an · − 2 390 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 6,8 m².
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 27 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 19 kWh/m²/an · − 400 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+4. Pompe à chaleur air/eau RECOMMANDÉ 13 500 € à 19 800 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 136 kWh/m²/an · − 3 250 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 9 à 11 kW après isolation, à confirmer par l'étude de
+l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 27 500 € à 40 500 €
+Durée indicative du chantier : 16 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe B, facture d'environ 1 800 €
+par an, reste à charge supérieur d'environ 4 800 €.
+Isolation des murs (par l'extérieur) 19 900 € à 30 400 €
+Coût total du programme 34 500 € à 52 100 €
+Aides estimées − 14 700 € à 18 000 €
+Reste à charge 19 800 € à 34 100 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110 Après travaux
+C 111 à 180
+D 181 à 250
+E 251 à 330 Aujourd'hui
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 6 610 € → 1 980 € par an.
+Le plan de financement
+4
+Coût des travaux 27 500 € à 40 500 €
+MaPrimeRénov' rénovation d'ampleur − 11 700 € à 17 300 €
+Reste à charge 15 800 € à 23 200 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 18 500 €
+Durée 20 ans
+Mensualité 77 € / mois
+Économie sur la facture − 386 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 4 ans
+Prix de marché local 1 895 €/m²
+Valeur verte estimée + 62 000 €
+Fourchette 27 500 € à 125 000 €
+Prix local : prix médian DVF de 120 ventes de maisons de surface comparable à Bellerive-sur-Allier (2023-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 28 % mesuré entre les classes E et B sur les ventes du département (4 177 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe E, estimée à 322 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 18 500 € sans intérêts.
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Travaux Environ 16 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 28 % mesuré entre les classes E et B sur les ventes du département (4 177
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe E, estimée à 322 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (1 895 €/m², prix médian DVF de 120 ventes de maisons de surface
+comparable à Bellerive-sur-Allier (2023-2025, actualisées au dernier trimestre)). Fourchette : de la moitié
+du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+11 Rue Jean Baptiste Burlot, 03700 Bellerive-sur-Allier Page 7 / 7
