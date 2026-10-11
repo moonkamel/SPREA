@@ -322,11 +322,12 @@ def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
         return f"{v} %".replace(".", ",")
     gained = "ABCDEFG".index(o["label"]) - "ABCDEFG".index(o["new_label"])
     good = o["margin"] > 0
-    these = (f"{o['kind']} de {o['surface']:g} m² classé {o['label']}, estimé {eur(o['price'])} : le programme proposé "
+    surface = f"{o['surface']:g}".replace(".", ",")
+    these = (f"{o['kind']} de {surface} m² classé {o['label']}, estimé {eur(o['price'])} : le programme proposé "
              f"({', '.join(lower_first(n) for n in o['works_names'])}) le porte en classe {o['new_label']} pour une valeur estimée "
-             f"de {eur(o['resale'])}. ").replace(".0 m²", " m²")
+             f"de {eur(o['resale'])}. ")
     these += (f"La marge brute ressort à {eur(o['margin'])} ({pct(o['margin_pct'])} du budget), avant frais financiers et fiscalité."
-              if good else f"Aux prix estimés, l'opération ne dégage pas de marge ({eur(o['margin'])}) : le prix d'achat doit se négocier.")
+              if good else f"Aux prix estimés, l'opération ne dégage pas de marge (−{eur(abs(o['margin']))}) : le prix d'achat doit se négocier.")
     strengths = [f"Gain de {gained} classe{'s' if gained > 1 else ''} DPE ({o['label']} → {o['new_label']}).",
                  f"Budget total estimé : {eur(o['total'])}, travaux compris."]
     if o.get("gross_yield"):
@@ -341,7 +342,11 @@ def fallback_thesis(o: Dict[str, Any], profile: str) -> Dict[str, Any]:
                       + ("revendre une fois la nouvelle classe DPE établie." if profile == "marchand"
                          else "louer après le nouveau DPE, qui conditionne le droit de louer.")),
         "negociation": (f"La classe {o['label']} et le coût des travaux ({eur(o['works_low'])} à {eur(o['works_high'])}) "
-                        "justifient une décote : le vendeur ne peut plus louer ou devra financer ces travaux."),
+                        "justifient une décote : "
+                        + ("le logement ne peut déjà plus être loué en l'état." if "interdite" in (o.get("rental_now") or "").lower()
+                           else f"{(o.get('rental_now') or '').lower().replace('louable', 'il reste louable')}, puis le vendeur devra financer ces travaux pour louer."
+                           if "jusqu" in (o.get("rental_now") or "").lower()
+                           else "un acheteur occupant devra financer ces travaux.")),
     }
 
 

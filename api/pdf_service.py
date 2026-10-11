@@ -1177,7 +1177,7 @@ class PDFReportGenerator:
             [*kpi_cell(f"Valeur après travaux (classe {text(d['new_label'])})", f"{eur(d['resale'])}"),
              Paragraph(f"entre {eur(d['resale_low'])} et {eur(d['resale_high'])}" if d['resale_low'] != d['resale_high'] else '', small)],
             [*kpi_cell('Marge brute' if good else 'Bilan', f"<font color='{color}'>{'+' if good else '−'}{NBSP}{eur(abs(margin))}</font>", big=True),
-             Paragraph((f"{str(d['margin_pct']).replace('.', ',')}{NBSP}% du budget" if d.get('margin_pct') is not None else '')
+             Paragraph((f"{str(d['margin_pct']).replace('.', ',').replace('-', '−')}{NBSP}% du budget" if d.get('margin_pct') is not None else '')
                        + ", avant frais financiers et impôts", small)],
         ]
         kpis = Table([cells], colWidths=[w] * 4)

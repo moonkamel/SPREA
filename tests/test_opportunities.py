@@ -58,6 +58,7 @@ def setup_function():
     dvf._cache.clear()
     dvf._sales_cache.clear()
     rents._tables.clear()
+    rents._locks.clear()
     opportunities._cache.clear()
 
 

@@ -6,6 +6,7 @@ The files are found through the data.gouv.fr API (their URLs change each
 year) and kept in memory a day. None when the source does not answer: the
 opportunity scan then shows no yield rather than an invented one.
 """
+import asyncio
 import csv
 import io
 import logging
@@ -22,6 +23,8 @@ API_URL = "https://www.data.gouv.fr/api/1/datasets/{id}/"
 CACHE_TTL = 24 * 3600
 # kind -> {insee: (rent per m2, low, high)}
 _tables: Dict[str, Tuple[float, Dict[str, Tuple[float, float, float]]]] = {}
+# One download per kind when a scan asks for many dwellings at once
+_locks: Dict[str, asyncio.Lock] = {}
 
 
 def _number(value: Optional[str]) -> Optional[float]:
@@ -101,10 +104,13 @@ async def rent_per_m2(insee: Optional[str], building_type: Optional[str],
     kind = "maison" if "maison" in (building_type or "").lower() else "appartement"
     cached = _tables.get(kind)
     if not cached or time.time() - cached[0] > CACHE_TTL:
-        table = await _load(kind, transport)
-        # An empty table is kept an hour only: the source may come back
-        _tables[kind] = (time.time() - (CACHE_TTL - 3600 if not table else 0), table)
-        cached = _tables[kind]
+        async with _locks.setdefault(kind, asyncio.Lock()):
+            cached = _tables.get(kind)
+            if not cached or time.time() - cached[0] > CACHE_TTL:
+                table = await _load(kind, transport)
+                # An empty table is kept an hour only: the source may come back
+                _tables[kind] = (time.time() - (CACHE_TTL - 3600 if not table else 0), table)
+                cached = _tables[kind]
     found = cached[1].get(code)
     if not found:
         return None
