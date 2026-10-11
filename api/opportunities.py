@@ -242,6 +242,8 @@ def assemble(simulation: SimulationInput, market: Dict[str, Any], rent: Optional
         "rental_now": sim["rental_status"], "rental_after": sim["new_rental_status"],
         **investment(v, sim, profile, info["surface"], rent, info.get("building_type")),
         "risks": risks(facts, sim, v, market, today),
+        # Value after works bounded by twice the works (api/green_value.py)
+        "gain_capped": bool(v.get("gain_capped")),
         "_v": v, "_sim": sim, "_market": market,
     }
 
@@ -342,7 +344,7 @@ async def opportunities(bbox: str, labels: str = "F,G", kind: Optional[str] = No
 
 # --- Investment file ---
 
-THESIS_COMMON = """Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement ou de plus-value. Les montants sont des estimations avant frais financiers et fiscalité : rappelle-le quand c'est utile."""
+THESIS_COMMON = """Quand "valeur_apres_travaux_plafonnee" est vrai, le gain de valeur attribué aux travaux a été limité à deux fois leur coût : ne présente pas la rénovation comme une source de forte plus-value. Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement ou de plus-value. Les montants sont des estimations avant frais financiers et fiscalité : rappelle-le quand c'est utile."""
 
 THESIS_SYSTEM = {
     "investisseur": "Tu es un analyste en investissement immobilier qui rédige, pour un agent immobilier, la note d'opportunité d'un logement à rénover destinée à un client investisseur (marchand de biens ou bailleur). " + THESIS_COMMON + " Signale clairement quand l'opération n'est pas rentable selon les chiffres.",
@@ -384,6 +386,7 @@ def thesis_facts(o: Dict[str, Any], profile: str, audience: str = "investisseur"
         "sortie": {"valeur_apres_travaux_eur": o["resale"], "marge_brute_eur": o["margin"], "marge_pct": o["margin_pct"],
                    "loyer_mensuel_eur": o.get("rent_month"), "rendement_brut_pct": o.get("gross_yield")},
         "location": {"aujourd_hui": o["rental_now"], "apres_travaux": o["rental_after"]},
+        "valeur_apres_travaux_plafonnee": bool(o.get("gain_capped")),
         "points_de_vigilance_calcules": o["risks"],
     }
 

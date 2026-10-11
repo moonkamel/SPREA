@@ -17,12 +17,12 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from api.address import address_key, same_address  # noqa: F401 (address_key: used by the audit)
-    from api.green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from api.green_value import LABELS, WORKS_SHARE, cap_gain, department, kind_of, model
     from api.immeuble import collective_works, is_building_dpe, latest_per_apartment, _float, _int
     from api.valuation import class_factor, round_value
 except ImportError:
     from address import address_key, same_address  # noqa: F401
-    from green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from green_value import LABELS, WORKS_SHARE, cap_gain, department, kind_of, model
     from immeuble import collective_works, is_building_dpe, latest_per_apartment, _float, _int
     from valuation import class_factor, round_value
 
@@ -243,6 +243,9 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
         # rest of the gap comes from the general state of the dwellings
         after_full = shab * price * factor_target
         after_works = max(lots_now, lots_now + WORKS_SHARE * (after_full - lots_now))
+        if works:
+            # Never more than twice what the works cost (api/green_value.py)
+            after_works = lots_now + cap_gain(after_works - lots_now, (works["low"] + works["high"]) / 2)
         value = {
             "price_m2": price, "source": market.get("source"), "per_unit_m2": round(per_unit),
             "lots_now": round_value(lots_now),

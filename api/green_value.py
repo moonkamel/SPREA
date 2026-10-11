@@ -26,6 +26,19 @@ Z_95 = 1.96
 # not bring. Prudent value: 70 % of the gap; range from half of its lower
 # bound to the whole of its upper bound.
 WORKS_SHARE, WORKS_SHARE_LOW, WORKS_SHARE_HIGH = 0.7, 0.5, 1.0
+# The class gap of the sales also prices the general state of the dwellings:
+# on an expensive dwelling with a cheap programme it gave far more than the
+# works can bring (47 rue de Bourgogne, Lille: +270 000 EUR for 30 400 EUR of
+# works). The gain credited to the works never exceeds twice their cost.
+WORKS_RETURN_CAP = 2.0
+
+
+def cap_gain(gain: float, cost: float) -> float:
+    """Value gained, bounded by what the works cost (when they cost something)."""
+    return min(gain, WORKS_RETURN_CAP * cost) if cost and cost > 0 else gain
+
+
+CAP_NOTE = "plafonnée à deux fois le coût des travaux : au-delà, l'écart de prix tient à l'état général du bien"
 
 
 @lru_cache(maxsize=1)

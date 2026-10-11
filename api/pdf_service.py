@@ -1149,7 +1149,7 @@ class PDFReportGenerator:
             + (", prix ramenés au dernier trimestre connu." if adjusted else "."),
             "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE. "
             "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus : le reste tient à l'état général des "
-            "logements vendus, que les travaux énergétiques seuls n'apportent pas.",
+            "logements vendus, que les travaux énergétiques seuls n'apportent pas. Le gain retenu ne dépasse jamais deux fois le coût des travaux.",
             "Fourchette : entre le premier et le troisième quart des prix au m² des ventes comparables.",
             "Cet avis de valeur ne constitue pas une expertise immobilière. Il ne tient compte que des éléments indiqués et de l'ajustement du conseiller ;"
             " l'état réel, les prestations et la situation précise du bien peuvent modifier sa valeur.",
@@ -1322,13 +1322,15 @@ class PDFReportGenerator:
                                      + ("</b>" if c in (d['label'], d['new_label']) else ''), style(f'ip{c}', alignment=1)) for c in LABELS]]]
             story += [Spacer(1, 10), grid(cls_rows, [CONTENT_W * 0.30] + [CONTENT_W * 0.10] * 7), Spacer(1, 3),
                       Paragraph(f"Écarts de prix entre classes mesurés sur {num(v.get('class_sample') or 0)} ventes rapprochées de leur DPE. "
-                                "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus.", S['small'])]
+                                "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus, dans la limite de "
+                                "deux fois le coût des travaux.", S['small'])]
 
         # Method
         contact = ' · '.join(x for x in [text(agency.get('agent_name') or ''), text(agency.get('phone') or ''), text(agency.get('email') or '')] if x)
         story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
             "Valeur actuelle : prix au m² des ventes comparables (DVF), corrigé de l'écart de prix mesuré pour la classe DPE du bien.",
-            "Valeur après travaux : même méthode à la classe atteinte, en ne retenant que 70 % de l'écart entre classes.",
+            "Valeur après travaux : même méthode à la classe atteinte, en ne retenant que 70 % de l'écart entre classes, et un gain "
+            "qui ne dépasse jamais deux fois le coût des travaux : au-delà, l'écart de prix tient à l'état général du bien.",
             "Travaux et aides : moteur de simulation SPREA à partir du DPE publié par l'ADEME ; barème des aides en vigueur.",
             "Ce dossier est une estimation indicative : il ne constitue ni une expertise immobilière, ni un audit énergétique, ni un conseil en "
             "investissement. Visite, diagnostics, devis et étude de financement restent indispensables avant toute offre.",

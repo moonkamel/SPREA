@@ -17,7 +17,7 @@ try:
     from api.accounts import ReportMeta, is_pro, safe_filename, store_dep
     from api.auth import User, current_user
     from api.dvf import market_price
-    from api.green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from api.green_value import LABELS, WORKS_RETURN_CAP, WORKS_SHARE, cap_gain, department, kind_of, model
     from api.pdf_service import pdf_service
     from api.ratelimit import search_limiter
     from api.report_content import display_address
@@ -27,7 +27,7 @@ except ImportError:
     from accounts import ReportMeta, is_pro, safe_filename, store_dep
     from auth import User, current_user
     from dvf import market_price
-    from green_value import LABELS, WORKS_SHARE, department, kind_of, model
+    from green_value import LABELS, WORKS_RETURN_CAP, WORKS_SHARE, cap_gain, department, kind_of, model
     from pdf_service import pdf_service
     from ratelimit import search_limiter
     from report_content import display_address
@@ -66,6 +66,9 @@ def compute(sim: Dict[str, Any], market: Dict[str, Any], surface: float, kind: s
     # is credited to the works (api/green_value.py)
     after = {k: now[k] + WORKS_SHARE * (values(market[p], f_after) - now[k])
              for k, p in (("value", "price_per_m2"), ("low", "q25"), ("high", "q75"))}
+    # The gain credited to the works never exceeds twice their cost (api/green_value.py)
+    capped = after["value"] - now["value"] > WORKS_RETURN_CAP * sim["cost"] > 0
+    after = {k: now[k] + cap_gain(after[k] - now[k], sim[c]) for k, c in (("value", "cost"), ("low", "cost_low"), ("high", "cost_high"))}
     works = sim["cost"] > 0 and target != current
     net = after["value"] - now["value"] - sim["rest_to_pay"] if works else None
     premium = {c: round((math.exp(m["class"][c]) - 1) * 100, 1) for c in LABELS} if m else None
@@ -81,6 +84,7 @@ def compute(sim: Dict[str, Any], market: Dict[str, Any], surface: float, kind: s
         "rest": {"low": sim["rest_to_pay_low"], "high": sim["rest_to_pay_high"], "value": sim["rest_to_pay"]},
         "net_gain": round_value(net) if net is not None else None,
         "class_premium": premium,
+        "gain_capped": capped,
         "class_scope": (m or {}).get("scope"),
         "class_sample": (m or {}).get("n"),
         "class_period": (m or {}).get("period"),
