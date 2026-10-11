@@ -83,6 +83,11 @@ def test_investment_figures_by_profile():
     assert dealer["notary"] == 6000 and dealer["aids"] == 0 and dealer["total"] == 236000 and dealer["margin"] == 24000
     landlord = investment(v, sim, "bailleur", 90, {"rent_m2": 14, "low": 12, "high": 16})
     assert landlord["aids"] == 10000 and landlord["total"] == 236000
+    # Shown lines add up to the budget and the margin
+    odd = investment({"value_now": {"value": 153049}, "value_after": {"value": 187020, "low": 1, "high": 2}},
+                     {**sim, "cost": 26437, "subsidies": 10270, "cee_est": 1003}, "bailleur", 96, None)
+    assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 100 == 0
+    assert odd["margin"] == odd["resale"] - odd["total"]
     assert landlord["rent_month"] == 1260 and landlord["gross_yield"] == round(100 * 1260 * 12 / 236000, 1)
 
 

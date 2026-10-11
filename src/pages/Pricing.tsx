@@ -26,7 +26,7 @@ const INCLUDED = [
 const FAQ = [
     {
         q: 'Puis-je voir SPREA avant de m\'abonner ?',
-        a: "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous.",
+        a: "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, opportunités investisseurs, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous.",
     },
     {
         q: "Y a-t-il un engagement ?",

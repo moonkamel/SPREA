@@ -112,20 +112,21 @@ def investment(v: Dict[str, Any], sim: Dict[str, Any], profile: str, surface: fl
                rent: Optional[Dict[str, float]]) -> Dict[str, Any]:
     """The investor's figures from the valuation and the simulation."""
     p = PROFILES[profile]
-    price = v["value_now"]["value"]
-    notary = price * p["notary"]
-    works = sim["cost"]
-    aids = (sim["subsidies"] + sim["cee_est"]) if p["aids"] else 0.0
+    # Each line rounded once, the totals from the rounded lines: the table adds up
+    price = round(v["value_now"]["value"], -2)
+    notary = round(price * p["notary"], -2)
+    works = round(sim["cost"], -2)
+    aids = round(sim["subsidies"] + sim["cee_est"], -2) if p["aids"] else 0.0
     total = price + notary + works - aids
-    resale = v["value_after"]["value"]
+    resale = round(v["value_after"]["value"], -2)
     margin = resale - total
     out = {
-        "price": round(price, -2), "notary": round(notary, -2), "works": round(works, -2),
+        "price": price, "notary": notary, "works": works,
         "works_low": round(sim["cost_low"], -2), "works_high": round(sim["cost_high"], -2),
-        "aids": round(aids, -1), "total": round(total, -2), "resale": round(resale, -2),
+        "aids": aids, "total": total, "resale": resale,
         "resale_low": v["value_after"]["low"], "resale_high": v["value_after"]["high"],
-        "margin": round(margin, -2), "margin_pct": round(100 * margin / total, 1) if total > 0 else None,
-        "value_created": round(resale - price - works + aids, -2),
+        "margin": margin, "margin_pct": round(100 * margin / total, 1) if total > 0 else None,
+        "value_created": resale - price - works + aids,
     }
     if rent:
         monthly = rent["rent_m2"] * surface
