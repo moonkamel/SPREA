@@ -1,0 +1,250 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+109-109b J.j.fournier
+77550 Moissy-Cramayel
+Appartement · 64 m² · avant 1948 · étage 0
+DPE du 05/10/2026 · n° 2677E2538914S
+Synthèse
++3 classes
+G → D
+640 → 237 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 18 900 € − 8 100 € ≈ 10 800 € 2 720 € / an
+entre 16 100 € et 23 700 € entre 6 800 € et 10 100 €
+entre 9 300 € et 13 600 €
+Retour sur investissement environ 4 ans
+Valeur verte du bien + 16 000 € (8 000 € à 29 500 €)
+Location aujourd'hui Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 9 200 € et 13 600 € après aides, pour environ 2 720 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 64 m², construit avant 1948, est classé G, avec 640 kWh/m²/an. Ses pertes de chaleur
+passent d'abord par : toiture ou plafond (43 %), puis renouvellement d'air (31 %). La facture d'énergie est
+estimée à 4 320 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur) et ventilation
+mécanique (VMC), dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+isolation de la toiture, avec environ 1 730 € d'économie par an. Préconisations : Combles aménagés :
+isolation des rampants, 20 à 24 cm en deux couches croisées entre et sous chevrons (laine minérale ou
+fibre de bois) avec frein-vapeur, R ≥ 6 m².K/W exigée pour les aides. Mur ancien (avant 1948) qui doit
+rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée
+pour les aides. Ensemble, ces travaux amènent le logement en classe D (237 kWh/m²/an) et la facture à
+environ 1 600 € par an.
+Financement
+Le coût des travaux se situe entre 16 000 € et 23 800 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 9 200 € et 13 600 €. Un éco-prêt à taux zéro de 10 800 € sur 20 ans
+représente environ 45 € par mois, à comparer à 226 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 2 720 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 4 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 2,2 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / C)
+Consommation d'énergie primaire 640 kWh/m²/an
+Émissions de gaz à effet de serre 26 kg CO₂/m²/an
+Électricité · radiateur électrique NFC, NF** et NF*** ·
+Chauffage
+individuel
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Moyenne (selon le DPE)
+Facture d'énergie estimée 4 320 € / an
+Coût annuel indiqué par le DPE (prix 2021) 4 394 € / an
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 43 %
+Renouvellement d'air 31 %
+Murs 18 %
+Ponts thermiques et portes 5 %
+Fenêtres 3 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 4 290 € 1 580 €
+non renseignée dans le
+Eau chaude –
+DPE
+Autres usages (éclairage, auxiliaires) 20 € 20 €
+Total par an 4 310 € 1 600 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2025
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 10 100 € à 14 800 €
+La toiture représente 43 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 256 kWh/m²/an · − 1 730 €/an sur la facture
+Préconisation : Combles aménagés : isolation des rampants, 20 à 24 cm en deux
+couches croisées entre et sous chevrons (laine minérale ou fibre de bois) avec
+frein-vapeur, R ≥ 6 m².K/W exigée pour les aides.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 4 800 € à 7 000 €
+Les murs représentent 18 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 98 kWh/m²/an · − 660 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 2,2 m².
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 200 € à 1 900 €
+Le renouvellement d'air pèse 31 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 49 kWh/m²/an · − 330 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+Total des travaux TTC 16 100 € à 23 700 €
+Durée indicative du chantier : 13 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 4 320 € → 1 600 € par an.
+Le plan de financement
+4
+Coût des travaux 16 100 € à 23 700 €
+MaPrimeRénov' rénovation d'ampleur − 6 800 € à 10 100 €
+Reste à charge 9 300 € à 13 600 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 10 800 €
+Durée 20 ans
+Mensualité 45 € / mois
+Économie sur la facture − 226 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 4 ans
+Prix de marché local 2 998 €/m²
+Valeur verte estimée + 16 000 €
+Fourchette 8 000 € à 29 500 €
+Prix local : prix médian DVF de 226 ventes d’appartements de surface comparable à Moissy-Cramayel (2023-2025, actualisées au
+dernier trimestre).
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur verte : écart de prix de 13 % mesuré entre les classes G et D sur les ventes du département (13 216 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe G, estimée à 170 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Copropriété LE CLOS FOURNIER
+Taille 6 lots principaux dont 5 logements
+Syndic Non connu
+Construction Avant 1949
+DPE des appartements 7 publiés : 1 en C, 2 en D, 1 en E, 1 en F, 2 en G
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades (par l'extérieur si
+l'Architecte des Bâtiments de France Isolation des murs insuffisante 28 800 € à 48 000 €
+l'accepte)
+Isolation de la toiture Toiture : isolation insuffisante 4 800 € à 14 400 €
+Isolation du plancher bas (caves,
+Plancher bas : isolation insuffisante 2 400 € à 4 800 €
+parking)
+Ventilation actuelle : Ventilation par
+Ventilation mécanique collective 7 500 € à 15 000 €
+ouverture des fenêtres
+Total 43 500 € à 82 200 €
+Quote-part de l'appartement (environ 20,0 % de la surface) : 8 700 € à 16 400 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+5 000 € à 11 800 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades ;
+une ventilation individuelle fait double emploi avec une ventilation collective. Demandez au syndic si ces travaux
+sont prévus avant d'engager les vôtres.
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Ordres de grandeur déduits du DPE de l'appartement (320 m² habitables estimés, 4 niveaux, 5 logements). Le montant réel dépend du
+plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 10 800 € sans intérêts.
+6 Travaux Environ 13 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 13 % mesuré entre les classes G et D sur les ventes du département (13 216
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe G, estimée à 170 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (2 998 €/m², prix médian DVF de 226 ventes d’appartements de surface
+comparable à Moissy-Cramayel (2023-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du
+bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+109-109b J.j.fournier, 77550 Moissy-Cramayel Page 7 / 7

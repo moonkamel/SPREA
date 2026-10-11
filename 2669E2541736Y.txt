@@ -1,0 +1,234 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+73 Rue Ferdinand Buisson
+69003 Lyon
+Appartement · 46,8 m² · 1948-1974 · étage 0
+DPE du 05/10/2026 · n° 2669E2541736Y
+Synthèse
++1 classe
+D → C
+196 → 137 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 5 800 € − 280 € ≈ 5 520 € 310 € / an
+entre 4 600 € et 7 500 €
+entre 4 320 € et 7 220 €
+Retour sur investissement environ 18 ans
+Valeur verte du bien + 6 000 € (3 500 € à 10 000 €)
+Location aujourd'hui Louable sans limite de date
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de D à C coûte entre 4 400 € et 7 200 € après aides, pour environ 310 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 46,8 m², construit entre 1948 et 1974, est classé D, avec 196 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : fenêtres (29 %), puis renouvellement d'air (29 %). La facture d'énergie
+est estimée à 1 010 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation des murs (par l'intérieur) et fenêtres double vitrage, dans l'ordre
+du tableau des travaux : l'enveloppe d'abord, les équipements ensuite, pour dimensionner ces derniers sur
+des besoins réduits. Pris isolément, le geste le plus efficace est : isolation des murs (par l'intérieur), avec
+environ 170 € d'économie par an. Préconisations : Doublage isolant de 12 à 14 cm (laine minérale ou fibre
+de bois, λ ≤ 0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les
+aides. Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3 W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et
+Sw ≥ 0,36), menuiseries PVC, bois ou aluminium à rupture de pont thermique, pose en rénovation ou en
+73 Rue Ferdinand Buisson, 69003 Lyon Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+dépose totale. Ensemble, ces travaux amènent le logement en classe C (137 kWh/m²/an) et la facture à
+environ 700 € par an.
+Financement
+Le coût des travaux se situe entre 4 700 € et 7 400 €. Avec primes CEE, le reste à charge est estimé entre
+4 400 € et 7 200 €. Un éco-prêt à taux zéro de 5 500 € sur 15 ans représente environ 31 € par mois, à
+comparer à 26 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 310 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 18 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 0,6 m².
+– Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) D (D / D)
+Consommation d'énergie primaire 196 kWh/m²/an
+Émissions de gaz à effet de serre 39 kg CO₂/m²/an
+Gaz · Chaudière gaz basse température 2001-2015 ·
+Chauffage
+individuel
+Eau chaude Chaudière gaz basse température 2001-2015
+Ventilation VMC SF Auto réglable avant 1982
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 1 010 € / an
+Coût annuel indiqué par le DPE (prix 2021) 1 159 € / an
+73 Rue Ferdinand Buisson, 69003 Lyon Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Fenêtres 29 %
+Renouvellement d'air 29 %
+Murs 28 %
+Ponts thermiques et portes 14 %
+Toiture ou plafond 0 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 690 € 380 €
+Eau chaude 190 € 190 €
+Autres usages (éclairage, auxiliaires) 130 € 130 €
+Total par an 1 010 € 700 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable sans limite de date
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+73 Rue Ferdinand Buisson, 69003 Lyon Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation des murs (par l'intérieur) RECOMMANDÉ 1 100 € à 1 700 €
+Les murs représentent 28 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 33 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 0,6 m².
+2. Fenêtres double vitrage RECOMMANDÉ 3 500 € à 5 800 €
+Les fenêtres représentent 29 % des pertes de chaleur (environ 5 fenêtres) ; le
+DPE juge leur isolation « insuffisante ».
+Effet seul : − 26 kWh/m²/an · − 140 €/an sur la facture
+Préconisation : Double vitrage à isolation renforcée avec gaz argon : Uw ≤ 1,3
+W/m².K et Sw ≥ 0,3 (ou Uw ≤ 1,7 et Sw ≥ 0,36), menuiseries PVC, bois ou aluminium
+à rupture de pont thermique, pose en rénovation ou en dépose totale.
+À prévoir : Prévoir des entrées d'air : des fenêtres étanches sans ventilation
+favorisent la condensation.
+Total des travaux TTC 4 600 € à 7 500 €
+Durée indicative du chantier : 7 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250 Aujourd'hui
+E 251 à 330
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 1 010 € → 700 € par an.
+73 Rue Ferdinand Buisson, 69003 Lyon Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le plan de financement
+4
+Coût des travaux 4 600 € à 7 500 €
+Primes CEE (estimation) − 280 €
+Reste à charge 4 320 € à 7 220 €
+Aides par travaux Montant estimé
+Isolation des murs (par l'intérieur) 100 €
+Fenêtres double vitrage 180 €
+Catégorie de revenus retenue : Intermédiaire.
+Depuis le 1er septembre 2026, l'isolation, les fenêtres, la ventilation et les chauffe-eau ne sont plus financés par
+MaPrimeRénov' par geste : seules les primes CEE s'appliquent.
+Financer le reste à charge
+Éco-prêt à taux zéro 5 500 €
+Durée 15 ans
+Mensualité 31 € / mois
+Économie sur la facture − 26 € / mois
+Effort mensuel net 5 € / mois
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec les primes CEE.
+Valeur du bien
+5
+Retour sur investissement environ 18 ans
+Prix de marché local 4 497 €/m²
+Valeur verte estimée + 6 000 €
+Fourchette 3 500 € à 10 000 €
+Prix local : prix médian DVF de 1515 ventes d’appartements de surface comparable à Lyon 3e Arrondissement (2024-2025, actualisées
+au dernier trimestre).
+Valeur verte : écart de prix de 4 % mesuré entre les classes D et C sur les ventes du département (34 675 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe D, estimée à 209 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+73 Rue Ferdinand Buisson, 69003 Lyon Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+L'immeuble et ses travaux à venir
+6
+Copropriété LE SUDILON 1
+Taille 23 lots principaux dont 23 logements
+Syndic CHOMETTE
+Construction 1961 – 1974
+DPE des appartements 11 publiés : 6 en D, 4 en E, 1 en F
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2025) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2026) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 96 900 € à 161 500 €
+Total 96 900 € à 161 500 €
+Quote-part de l'appartement (environ 4,3 % de la surface) : 4 200 € à 7 000 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+2 400 € à 5 000 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (1 076 m² habitables estimés, 7 niveaux, 23 logements). Le montant réel dépend
+du plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+73 Rue Ferdinand Buisson, 69003 Lyon Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne les primes CEE. Comparez les fourchettes de
+ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Éco-prêt à taux zéro Avec les devis
+À demander à une banque partenaire avec les devis : environ 5 500 € sans intérêts.
+5 Travaux Environ 7 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 4 % mesuré entre les classes D et C sur les ventes du département (34 675
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe D, estimée à 209 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (4 497 €/m², prix médian DVF de 1515 ventes d’appartements de surface
+comparable à Lyon 3e Arrondissement (2024-2025, actualisées au dernier trimestre)). Fourchette : de la
+moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+73 Rue Ferdinand Buisson, 69003 Lyon Page 7 / 7

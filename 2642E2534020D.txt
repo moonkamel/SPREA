@@ -1,0 +1,242 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+38 Rue des Docteurs Charcot
+42100 Saint-Étienne
+Appartement · 61,2 m² · 1948-1974 · étage 0
+DPE du 05/10/2026 · n° 2642E2534020D
+Synthèse
++3 classes
+G → D
+519 → 210 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 9 500 € − 4 100 € ≈ 5 400 € 2 080 € / an
+entre 8 100 € et 12 000 € entre 3 400 € et 5 100 €
+entre 4 700 € et 6 900 €
+Retour sur investissement environ 3 ans
+Valeur verte du bien + 8 000 € (4 000 € à 15 000 €)
+Location aujourd'hui Location interdite depuis le 01/01/2023
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de G à D coûte entre 4 600 € et 6 900 € après aides, pour environ 2 080 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cet appartement de 61,2 m², construit entre 1948 et 1974, est classé G, avec 519 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : toiture ou plafond (44 %), puis murs (24 %). La facture d'énergie est estimée
+à 3 500 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur) et ventilation
+mécanique (VMC), dans l'ordre du tableau des travaux : l'enveloppe d'abord, les équipements ensuite,
+pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste le plus efficace est :
+isolation de la toiture, avec environ 1 290 € d'économie par an. Préconisations : Combles perdus : 30 à 35
+cm de laine soufflée, R ≥ 7 ; rampants ou toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec
+pare-vapeur côté chauffé. Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec
+membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Ensemble, ces travaux
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+amènent le logement en classe D (210 kWh/m²/an) et la facture à environ 1 410 € par an.
+Financement
+Le coût des travaux se situe entre 8 000 € et 12 000 €. Avec MaPrimeRénov' rénovation d'ampleur, le reste
+à charge est estimé entre 4 600 € et 6 900 €. Un éco-prêt à taux zéro de 5 500 € sur 20 ans représente
+environ 23 € par mois, à comparer à 174 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 2 080 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 3 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 1,8 m².
+– Appareil au gaz raccordé à un conduit de fumée (tirage naturel) : une VMC classique peut faire
+refouler les fumées (monoxyde de carbone). Prévoir une VMC gaz avec dispositif de sécurité
+collective, ou le remplacement de l'appareil par un modèle étanche ; vérification par un professionnel
+qualifié.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) G (G / G)
+Consommation d'énergie primaire 519 kWh/m²/an
+Émissions de gaz à effet de serre 115 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz classique 1986-1990 · collectif
+Eau chaude Chaudière gaz classique 1986-1990
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Insuffisante (selon le DPE)
+Isolation du plancher bas Très bonne (selon le DPE)
+Fenêtres Très bonne (selon le DPE)
+Facture d'énergie estimée 3 500 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 980 € / an
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Toiture ou plafond 44 %
+Murs 24 %
+Renouvellement d'air 19 %
+Ponts thermiques et portes 9 %
+Fenêtres 5 %
+Plancher bas 0 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 3 110 € 1 020 €
+Eau chaude 320 € 320 €
+Autres usages (éclairage, auxiliaires) 70 € 70 €
+Total par an 3 500 € 1 410 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Location interdite depuis le 01/01/2023
+Location après travaux Louable sans limite de date
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements. Depuis le 01/01/2023, les logements qui consomment plus de 450 kWh/m²/an d'énergie finale
+sont déjà interdits à la location.
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 3 900 € à 5 700 €
+La toiture représente 44 % des pertes de chaleur.
+Effet seul : − 192 kWh/m²/an · − 1 290 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec pare-vapeur côté
+chauffé.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 3 200 € à 4 700 €
+Les murs représentent 24 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 96 kWh/m²/an · − 650 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 1,8 m².
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 19 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 21 kWh/m²/an · − 140 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Appareil au gaz raccordé à un conduit de fumée (tirage naturel) : une
+VMC classique peut faire refouler les fumées (monoxyde de carbone). Prévoir une
+VMC gaz avec dispositif de sécurité collective, ou le remplacement de l'appareil par
+un modèle étanche ; vérification par un professionnel qualifié.
+Total des travaux TTC 8 100 € à 12 000 €
+Durée indicative du chantier : 13 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180
+D 181 à 250 Après travaux
+E 251 à 330
+F 331 à 420
+G > 420 Aujourd'hui
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 3 500 € → 1 410 € par an.
+Le plan de financement
+4
+Coût des travaux 8 100 € à 12 000 €
+MaPrimeRénov' rénovation d'ampleur − 3 400 € à 5 100 €
+Reste à charge 4 700 € à 6 900 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+Financer le reste à charge
+Éco-prêt à taux zéro 5 500 €
+Durée 20 ans
+Mensualité 23 € / mois
+Économie sur la facture − 174 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 3 ans
+Prix de marché local 1 104 €/m²
+Valeur verte estimée + 8 000 €
+Fourchette 4 000 € à 15 000 €
+Prix local : prix médian DVF de 3362 ventes d’appartements de surface comparable à Saint-Étienne (2024-2025, actualisées au dernier
+trimestre).
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Valeur verte : écart de prix de 20 % mesuré entre les classes G et D sur les ventes du département (10 237 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe G, estimée à 57 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+L'immeuble et ses travaux à venir
+6
+Copropriété LE PATIO
+Taille 80 lots principaux dont 75 logements
+Syndic FONCIA LOIRE AUVERGNE
+Construction 1961 – 1974
+DPE des appartements 4 publiés : 1 en D, 2 en E, 1 en G
+Obligations de la copropriété
+– Projet de plan pluriannuel de travaux (PPT) (depuis le 01/01/2024) : Obligatoire pour les copropriétés de
+plus de 15 ans : il liste les travaux des 10 prochaines années et le syndic doit le présenter en assemblée
+générale. Il alimente le fonds travaux.
+– DPE collectif de l'immeuble (depuis le 01/01/2025) : Aucun DPE de l'immeuble n'est publié à cette adresse
+dans la base de l'ADEME : demandez au syndic s'il est réalisé.
+Travaux collectifs à prévoir
+Travaux collectifs probables Constat Immeuble
+Isolation des façades par l'extérieur Isolation des murs insuffisante 427 700 € à 712 800 €
+Remplacement de la chaufferie Chauffage collectif gaz naturel, classe
+225 000 € à 525 000 €
+collective G
+Total 652 700 € à 1 237 800 €
+Quote-part de l'appartement (environ 1,3 % de la surface) : 8 400 € à 15 900 €
+Après MaPrimeRénov' Copropriété (30 à 45 % des travaux si le gain énergétique atteint 35 %) : environ
+4 800 € à 11 400 €.
+À coordonner : l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades.
+Demandez au syndic si ces travaux sont prévus avant d'engager les vôtres.
+Ordres de grandeur déduits du DPE de l'appartement (4 752 m² habitables estimés, 4 niveaux, 75 logements). Le montant réel dépend
+du plan pluriannuel de travaux voté en assemblée générale, et la répartition suit les tantièmes du règlement de copropriété. Sources :
+registre national des copropriétés (Anah), base DPE de l'ADEME.
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Calendrier et prochaines étapes
+7
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 5 500 € sans intérêts.
+6 Travaux Environ 13 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 20 % mesuré entre les classes G et D sur les ventes du département (10 237
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe G, estimée à 57 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (1 104 €/m², prix médian DVF de 3362 ventes d’appartements de surface
+comparable à Saint-Étienne (2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas
+de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+38 Rue des Docteurs Charcot, 42100 Saint-Étienne Page 7 / 7

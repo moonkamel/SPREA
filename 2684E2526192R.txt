@@ -1,0 +1,233 @@
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+3 Rue Montée des Romarins
+84110 Vaison-la-Romaine
+Maison · 105,6 m² · 1948-1974
+DPE du 02/10/2026 · n° 2684E2526192R
+Synthèse
++3 classes
+F → C
+343 → 132 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 24 100 € − 10 300 € ≈ 13 800 € 2 650 € / an
+entre 20 400 € et 30 200 € entre 8 700 € et 12 900 €
+entre 11 700 € et 17 300 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 35 500 € (17 500 € à 67 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 11 700 € et 17 300 € après aides, pour environ 2 650 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 105,6 m², construite entre 1948 et 1974, est classée F, avec 343 kWh/m²/an. Ses pertes
+de chaleur passent d'abord par : murs (27 %), puis toiture ou plafond (20 %). La facture d'énergie est
+estimée à 4 040 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), ventilation
+mécanique (VMC) et pompe à chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe d'abord,
+les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste
+le plus efficace est : pompe à chaleur air/eau, avec environ 1 890 € d'économie par an. Préconisations :
+Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7 m².K/W exigée pour les aides, avec
+pare-vapeur côté chauffé. Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤ 0,035) avec
+membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée pour les aides. Autre solution pour les
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+murs : isolation des murs (par l'extérieur), pour un reste à charge supérieur d'environ 2 500 €. Ensemble,
+ces travaux amènent le logement en classe C (132 kWh/m²/an) et la facture à environ 1 380 € par an.
+Financement
+Le coût des travaux se situe entre 20 400 € et 30 200 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 11 700 € et 17 300 €. Un éco-prêt à taux zéro de 13 800 € sur 20 ans
+représente environ 58 € par mois, à comparer à 221 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 2 650 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 3,9 m².
+– Le passage des gaines se prévoit avant les finitions de l'isolation.
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (F / E)
+Consommation d'énergie primaire 343 kWh/m²/an
+Émissions de gaz à effet de serre 70 kg CO₂/m²/an
+Chauffage Fioul · Chaudière fioul classique 1981-1990
+Ballon électrique à accumulation vertical Catégorie B
+Eau chaude
+ou 2 étoiles
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 4 040 € / an
+Coût annuel indiqué par le DPE (prix 2021) 4 478 € / an
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 27 %
+Toiture ou plafond 20 %
+Renouvellement d'air 19 %
+Plancher bas 17 %
+Ponts thermiques et portes 10 %
+Fenêtres 7 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 3 510 € 850 € (électricité)
+Eau chaude 420 € 420 €
+Autres usages (éclairage, auxiliaires) 110 € 110 €
+Total par an 4 040 € 1 380 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 02/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 2 000 € à 3 000 €
+La toiture représente 20 % des pertes de chaleur ; le DPE juge son isolation «
+insuffisante ».
+Effet seul : − 55 kWh/m²/an · − 660 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée sur le plancher, R ≥ 7
+m².K/W exigée pour les aides, avec pare-vapeur côté chauffé.
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 6 900 € à 10 200 €
+Les murs représentent 27 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 68 kWh/m²/an · − 820 €/an sur la facture
+Préconisation : Doublage isolant de 12 à 14 cm (laine minérale ou fibre de bois, λ ≤
+0,035) avec membrane pare-vapeur, résistance thermique R ≥ 3,7 m².K/W exigée
+pour les aides.
+À prévoir : Surface habitable réduite d'environ 3,9 m².
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 19 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 14 kWh/m²/an · − 170 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Le passage des gaines se prévoit avant les finitions de l'isolation.
+4. Pompe à chaleur air/eau RECOMMANDÉ 10 500 € à 15 400 €
+Remplace le chauffage au fioul : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 139 kWh/m²/an · − 1 890 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 5 à 7 kW après isolation, à confirmer par l'étude de
+l'installateur.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 20 400 € à 30 200 €
+Durée indicative du chantier : 16 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe C, facture d'environ 1 280 €
+par an, reste à charge supérieur d'environ 2 500 €.
+Isolation des murs (par l'extérieur) 11 400 € à 17 500 €
+Coût total du programme 24 200 € à 36 400 €
+Aides estimées − 10 300 € à 15 500 €
+Reste à charge 13 900 € à 20 900 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 4 040 € → 1 380 € par an.
+Le plan de financement
+4
+Coût des travaux 20 400 € à 30 200 €
+MaPrimeRénov' rénovation d'ampleur − 8 700 € à 12 900 €
+Reste à charge 11 700 € à 17 300 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 13 800 €
+Durée 20 ans
+Mensualité 58 € / mois
+Économie sur la facture − 221 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 3 116 €/m²
+Valeur verte estimée + 35 500 €
+Fourchette 17 500 € à 67 000 €
+Prix local : prix médian DVF de 198 ventes de maisons de surface comparable à Vaison-la-Romaine (2022-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 17 % mesuré entre les classes F et C sur les ventes du département (4 706 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe F, estimée à 294 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 13 800 € sans intérêts.
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 11/10/2026
+6 Travaux Environ 16 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Méthode et hypothèses
+7
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, fioul 0,12 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 17 % mesuré entre les classes F et C sur les ventes du département (4 706
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe F, estimée à 294 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (3 116 €/m², prix médian DVF de 198 ventes de maisons de surface
+comparable à Vaison-la-Romaine (2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié
+du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+3 Rue Montée des Romarins, 84110 Vaison-la-Romaine Page 7 / 7
