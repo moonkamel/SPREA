@@ -286,6 +286,19 @@ class SupabaseStore:
         return await self._request("GET", "alert_zones", params={
             "user_id": self._in(user_ids), "select": "*", "order": "created_at.asc"})
 
+    # --- Follow-up of prospected addresses (015_prospect_status.sql) ---
+
+    async def prospect_statuses(self, scope: str, numbers: List[str]) -> List[Dict[str, Any]]:
+        return await self._request("GET", "prospect_status", params={
+            "scope": f"eq.{scope}", "dpe_number": self._in(numbers), "select": "dpe_number,status,user_id,updated_at"})
+
+    async def set_prospect_status(self, row: Dict[str, Any]) -> None:
+        await self._request("POST", "prospect_status", params={"on_conflict": "scope,dpe_number"}, json=row,
+                            prefer="resolution=merge-duplicates,return=minimal")
+
+    async def clear_prospect_status(self, scope: str, number: str) -> None:
+        await self._request("DELETE", "prospect_status", params={"scope": f"eq.{scope}", "dpe_number": f"eq.{number}"})
+
     async def list_hits_for_users(self, user_ids: List[str], limit: int = 500) -> List[Dict[str, Any]]:
         return await self._request("GET", "alert_hits", params={
             "user_id": self._in(user_ids), "select": "*", "order": "created_at.desc,received_on.desc", "limit": str(limit)})

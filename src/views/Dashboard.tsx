@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info, Scale } from 'lucide-react';
+import { TourHost } from '../tour';
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CheckCircle2, FileText, Loader2, Info, Scale, Users } from 'lucide-react';
 import { Button, Card, DpeBadge, DpeScale, Help, Label, NumberField, Row, Segmented, Step, Switch, eur, eurRange, num } from '../ui';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { navigate } from '../router';
@@ -41,6 +42,8 @@ interface Props {
     report: { available: boolean; price: string | null; included: boolean; downloading: boolean; onDownload: () => void };
     // Pro: avis de valeur avant / après rénovation
     valuation?: () => void;
+    // Pro: file for the buyers of a dwelling under mandate
+    buyerDossier?: () => void;
     onBack: () => void;
 }
 
@@ -61,7 +64,7 @@ function climateStatus(ban: Date | null) {
 
 // --- Summary (sticky on desktop) ---
 
-function Summary({ sim, property, report, updating, failed, onRetry, scenarioName, valuation }: {
+function Summary({ sim, property, report, updating, failed, onRetry, scenarioName, valuation, buyerDossier }: {
     sim: Simulation | null;
     property: PropertyData;
     report: Props['report'];
@@ -70,6 +73,7 @@ function Summary({ sim, property, report, updating, failed, onRetry, scenarioNam
     onRetry: () => void;
     scenarioName: string;
     valuation?: () => void;
+    buyerDossier?: () => void;
 }) {
     const aids = (sim?.sub || 0) + (sim?.ceeEst || 0);
     const noWorks = sim && sim.cost === 0;
@@ -166,6 +170,14 @@ function Summary({ sim, property, report, updating, failed, onRetry, scenarioNam
                         <Scale size={18} />Avis de valeur avant / après
                     </Button>
                 )}
+                {buyerDossier && (
+                    <div data-tour="sell-dossier">
+                        <Button variant="secondary" onClick={buyerDossier} disabled={!sim || !!noWorks} className="w-full mt-3">
+                            <Users size={18} />Dossier acheteur
+                        </Button>
+                        <p className="mt-1.5 text-xs text-faint text-center">Le projet chiffré à remettre aux acquéreurs d'un bien sous mandat.</p>
+                    </div>
+                )}
             </div>
         </Card>
     );
@@ -189,6 +201,7 @@ export default function Dashboard(props: Props) {
     return (
         <div className="min-h-screen flex flex-col">
             <SiteHeader onHome={onBack} />
+            <TourHost screen="logement" />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
                 {/* Property header */}
@@ -219,8 +232,8 @@ export default function Dashboard(props: Props) {
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] items-start">
                     {/* Summary first on mobile, sticky column on desktop */}
-                    <aside className="lg:order-2 lg:sticky lg:top-24">
-                        <Summary sim={sim} property={property} report={report} updating={updating} failed={failed} onRetry={onRetry} scenarioName={scenarioName} valuation={props.valuation} />
+                    <aside className="lg:order-2 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:rounded-2xl" data-tour="sell-summary">
+                        <Summary sim={sim} property={property} report={report} updating={updating} failed={failed} onRetry={onRetry} scenarioName={scenarioName} valuation={props.valuation} buyerDossier={props.buyerDossier} />
                     </aside>
 
                     <div className="lg:order-1 space-y-6 min-w-0">
@@ -289,6 +302,7 @@ export default function Dashboard(props: Props) {
                         </Step>
 
                         {/* 2. Works */}
+                        <div data-tour="sell-works">
                         <Step n={2} title="Choisissez les travaux" subtitle="Cochez les travaux envisagés : tout se recalcule instantanément." help="works">
                             <div className="mb-5 max-w-md">
                                 <Segmented
@@ -373,6 +387,7 @@ export default function Dashboard(props: Props) {
                                 </div>
                             )}
                         </Step>
+                        </div>
 
                         {/* 3. Situation */}
                         <Step n={3} title="Votre situation" subtitle="Pour calculer les aides auxquelles vous avez droit.">

@@ -36,8 +36,8 @@ export const INVEST_STEPS: LoadingStep[] = [
     { label: 'Collecte des DPE récents du secteur', detail: 'ADEME · logements classés E, F ou G' },
     { label: 'Programme de travaux de chaque logement', detail: 'Moteur SPREA · coûts, aides, classe atteinte' },
     { label: 'Valeur avant et après travaux', detail: 'Ventes DVF comparables · écarts de prix par classe DPE' },
-    { label: 'Loyers de marché de la commune', detail: 'Carte des loyers ANIL · rendement brut' },
-    { label: 'Classement des opportunités', detail: 'Marge brute · frais de notaire · budget total' },
+    { label: 'Loyers de marché de la commune', detail: 'Carte des loyers ANIL' },
+    { label: 'Classement des biens', detail: 'Potentiel de revalorisation · fraîcheur du DPE · valeur' },
 ];
 
 const STEP_MS = 750;      // pace of one step

@@ -115,7 +115,7 @@ ${ul([
 pages.push(page({
     path: '/demo',
     title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
-    description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, opportunités investisseurs avec dossier d'investissement, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
+    description: "Prospection des passoires thermiques, immeubles entiers détenus par des SCI et signaux de vente au BODACC, biens à fort potentiel et dossier acheteur, PV d'AG lus par l'IA, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation, avis de valeur : la journée d'un agent avec SPREA, écran par écran.",
     jsonld: [SOFTWARE, BREADCRUMB([['SPREA', '/'], ['Visite guidée', '/demo']])],
     body: `${nav}
 <h1>Une journée avec SPREA</h1>
@@ -124,6 +124,8 @@ pages.push(page({
 <p>Un DPE est obligatoire avant de vendre ou de louer : quand un propriétaire en fait réaliser un, il prépare presque toujours un projet. Jusqu'à 10 zones, filtres par étiquette, récapitulatif par email chaque matin.</p>
 <h2>8 h 15 · Toutes les passoires de votre secteur sur une carte</h2>
 <p>Les adresses classées E, F ou G, logement par logement, avec export CSV pour votre CRM.</p>
+<h2>8 h 20 · Les biens à fort potentiel et leur suivi</h2>
+<p>Les DPE récents du secteur classés par potentiel de revalorisation, fraîcheur du DPE et valeur ; le suivi de chaque adresse partagé dans l'agence ; un dossier propriétaire pour le premier rendez-vous.</p>
 <h2>8 h 30 · Un courrier qui donne envie de vous rappeler</h2>
 <p>Un courrier prêt à imprimer et un QR code unique : le propriétaire découvre ce qu'une rénovation changerait pour son logement, au nom de votre agence, et vous laisse ses coordonnées.</p>
 <h2>Les propriétaires intéressés arrivent chez vous</h2>
@@ -138,8 +140,8 @@ pages.push(page({
 <p>Registre national des copropriétés, DPE collectif, plan pluriannuel de travaux : les gros travaux à venir et la quote-part de l'appartement, avant et après aides.</p>
 <h2>14 h 20 · Les artisans RGE les plus proches</h2>
 <p>Pour chaque travail retenu, les entreprises qualifiées RGE les plus proches d'après l'annuaire de l'ADEME, reprises dans le rapport.</p>
-<h2>16 h · Les passoires les plus rentables pour vos clients investisseurs</h2>
-<p>Les DPE récents du secteur simulés et valorisés, classés par marge (marchand de biens) ou rendement brut (bailleur) : prix d'achat DVF, frais de notaire, travaux et aides, loyer de marché, et un dossier d'investissement en PDF à votre nom, rédigé avec l'IA.</p>
+<h2>15 h · Le dossier acheteur d'une passoire sous mandat</h2>
+<p>Depuis le simulateur, le projet chiffré à remettre aux acquéreurs : programme de travaux, aides, valeur après rénovation étayée par les ventes DVF comparables, loyer et rendement, à partir du prix du mandat.</p>
 <h2>L'avis de valeur avant / après travaux</h2>
 <p>Ventes DVF comparables autour du bien, écart de prix par classe DPE mesuré sur ${int(obs.total_sales)} ventes, ajustement du conseiller, PDF à votre nom.</p>
 <h2>Un rapport complet pour le client</h2>
@@ -150,7 +152,7 @@ pages.push(page({
 }));
 
 const FAQ = [
-    ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, opportunités investisseurs, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous."],
+    ["Puis-je voir SPREA avant de m'abonner ?", "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, biens à fort potentiel, dossier acheteur, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous."],
     ["Y a-t-il un engagement ?", "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte »."],
     ['Les prix sont-ils TTC ?', "Oui, tous les prix affichés incluent la TVA à 20 %. La facture détaille le montant hors taxes et la TVA, avec votre raison sociale et votre numéro de TVA."],
     ['Comment équiper toute mon agence ?', "Avec la formule Agence, vous payez par agent (2 agents minimum) et invitez vos agents par email depuis la page Équipe. Vous ajoutez des agents à tout moment, au prorata ; le nombre d'agents peut être réduit à la fin de l'engagement."],

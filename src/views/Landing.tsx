@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Bell, Building2, Loader2, MapPin, Search, ShieldCheck, Users } from 'lucide-react';
 import { Button, Card, Help, Segmented } from '../ui';
+import { TourHost, useAutoTour } from '../tour';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { Link } from '../router';
 
@@ -12,12 +13,14 @@ interface Props {
 }
 
 const SHORTCUTS = [
-    { to: '/prospection', icon: MapPin, title: 'Carte de prospection', text: 'Les passoires E, F, G de votre secteur, adresse par adresse.' },
+    { to: '/prospection?mode=potentiel', icon: MapPin, title: 'Biens à fort potentiel', text: 'Les passoires de votre secteur classées par potentiel, avec le suivi de chaque adresse.' },
     { to: '/alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
     { to: '/contacts', icon: Users, title: 'Contacts', text: 'Les propriétaires qui ont répondu à vos courriers.' },
 ]
 
 export default function Landing({ loading, error, onSearchAddress, onSearchDpe }: Props) {
+    // Shown to subscribers only: their first visit starts the "sell" journey
+    useAutoTour('vendre', true);
     const [mode, setMode] = useState<'address' | 'dpe'>('address');
     const [query, setQuery] = useState('');
     const [dpeNumber, setDpeNumber] = useState('');
@@ -49,6 +52,7 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
     return (
         <div className="min-h-screen flex flex-col">
             <SiteHeader />
+            <TourHost screen="simulateur" />
 
             <main className="flex-1">
                 {/* Hero */}
@@ -60,10 +64,11 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                             Quel logement étudions-nous ?
                         </h1>
                         <p className="mt-6 text-lg text-muted max-w-2xl mx-auto">
-                            Adresse ou numéro de DPE : travaux, nouvelle étiquette, aides, reste à charge, valeur verte et avis de valeur en quelques secondes.
+                            Le bien que vous vendez ou celui d'un propriétaire à convaincre : travaux, aides, valeur après rénovation, avis de valeur et dossier acheteur en quelques secondes.
                         </p>
 
-                        <Card className="mt-10 p-4 sm:p-6 text-left shadow-2xl shadow-black/40">
+                        <div data-tour="sell-address" className="mt-10">
+                        <Card className="p-4 sm:p-6 text-left shadow-2xl shadow-black/40">
                             <div className="mb-4">
                                 <Segmented
                                     ariaLabel="Type de recherche"
@@ -134,6 +139,7 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                                 Données publiques : DPE de l'ADEME, ventes DVF de la DGFiP.
                             </p>
                         </Card>
+                        </div>
                     </div>
                 </section>
 
