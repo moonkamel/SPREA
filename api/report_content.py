@@ -9,17 +9,17 @@ from typing import Any, Dict, List, Optional
 try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
-    from api.figures import display_figures
+    from api.figures import display_figures, green_range_shown
     from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                                FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
+                                FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, LABELS, available_works, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
-    from figures import display_figures
+    from figures import display_figures, green_range_shown
     from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                            FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
+                            FOSSIL_ENERGIES, HEATING_SYSTEMS, heat_pump_kw, LABELS, available_works, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
 
@@ -285,6 +285,26 @@ def floor_of(address: Optional[str], dpe_floor: Optional[str]) -> Optional[str]:
     return dpe_floor
 
 
+def better_label_reachable(sim_input: SimulationInput, sim: Dict[str, Any]) -> bool:
+    """Whether adding one of the works this dwelling can take gains a class
+    over the programme (the report suggests aiming higher only then)."""
+    from_label = LABELS.index(sim["new_label"])
+    for w in available_works(sim_input.property)["works"] - set(sim_input.works):
+        alt = simulate(sim_input.model_copy(update={"works": [*sim_input.works, w]}))
+        if LABELS.index(alt["new_label"]) < from_label:
+            return True
+    return False
+
+
+def shown_floor(address: Optional[str], dpe_floor: Optional[str], losses: Optional[Dict[str, float]]) -> Optional[str]:
+    """The floor for the header. A DPE "0" with no loss through the floor is
+    a flat between two heated floors, not a ground floor: not shown."""
+    floor = floor_of(address, dpe_floor)
+    if floor == "0" and floor_of(address, None) is None and losses and not losses.get("floor"):
+        return None
+    return floor
+
+
 def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
     if work_id == "iti":
         return f"Surface habitable réduite d'environ {fr_dec(ctx['iti_surface_loss'])} m²."
@@ -361,7 +381,7 @@ def regulatory(sim: Dict[str, Any], house: bool, dpe_date: Optional[date], postc
     return {"items": items, "calendar": calendar, "ban_2023": "01/01/2023" in (sim.get("rental_status") or "")}
 
 
-def next_steps(sim: Dict[str, Any], is_investor: bool) -> List[Dict[str, str]]:
+def next_steps(sim: Dict[str, Any], is_investor: bool, eco_ptz: Optional[int] = None) -> List[Dict[str, str]]:
     ampleur = sim["aid_pathway"] == "accompagne"
     steps = [{
         "title": "Rendez-vous France Rénov'",
@@ -404,7 +424,7 @@ def next_steps(sim: Dict[str, Any], is_investor: bool) -> List[Dict[str, str]]:
         steps.append({
             "title": "Éco-prêt à taux zéro",
             "when": "En parallèle du dépôt" if sim["subsidies"] > 0 else "Avec les devis",
-            "text": f"À demander à une banque partenaire avec les devis : environ {fr_eur(r100(sim['eco_ptz_amount']))} sans intérêts.",
+            "text": f"À demander à une banque partenaire avec les devis : environ {fr_eur(eco_ptz if eco_ptz is not None else r100(sim['eco_ptz_amount']))} sans intérêts.",
         })
     steps.append({
         "title": "Travaux",
@@ -533,7 +553,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "dpe_date": date_fr(dpe_date),
             # The DPE gives a floor for houses too (0): meaningless, and it
             # led the text to call any house "de plain-pied"
-            "floor": None if house else floor_of(meta.get("address"), details.get("floor")),
+            "floor": None if house else shown_floor(meta.get("address"), details.get("floor"), prop.dpe_losses),
             "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "")[:1].upper() + ENERGY_NAMES.get(energy, "")[1:], details.get("heating_system"),
                                                 details.get("heating_installation")] if x) or None,
             "hot_water": details.get("hot_water_system"),
@@ -558,9 +578,10 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             "ampleur_possible_label": sim["current_label"] in AMPLEUR_LABELS,
         },
         "ampleur_variant": ampleur_variant(sim_input, sim),
+        "better_label_reachable": better_label_reachable(sim_input, sim) if sim.get("new_ban_date") else None,
         "wall_alternative": wall_alternative_with_caution(sim_input, sim, ctx),
         "insulation_state": insulation_state(prop),
-        "steps": next_steps(sim, sim_input.is_investor),
+        "steps": next_steps(sim, sim_input.is_investor, display_figures(sim, work_rows, extra_costs)["eco_ptz"]),
         "assumptions": assumptions(sim, sim_input, price_per_m2, not prop.price_per_m2),
         "price_per_m2": price_per_m2,
         "price_is_default": not prop.price_per_m2,
@@ -657,7 +678,7 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
             # Same condition as the PDF: only for dwellings rated E, F or G
             "pourquoi_pas_la_renovation_d_ampleur": (sim["aid_blockers"] or None) if sim["current_label"] in AMPLEUR_LABELS else None,
             "categorie_revenus": sim["income_profile"],
-            "eco_ptz_eur": r100(sim["eco_ptz_amount"]) or None,
+            "eco_ptz_eur": fig["eco_ptz"] or None,
             "eco_ptz_mensualite_eur": round(fin["eco_ptz_monthly"]) or None,
             "eco_ptz_duree_ans": fin["eco_ptz_years"] or None,
             "economie_mensuelle_eur": round(fin["monthly_saving"]),
@@ -676,7 +697,9 @@ def facts_for_writer(report: Dict[str, Any]) -> Dict[str, Any]:
         "reglementation": {i["label"]: i["value"] for i in report["regulatory"]["items"]},
         # Rounded to 500 € like the PDF, so that the text quotes the same figures
         "valeur_verte_eur": round500(sim["latent_gain"]),
-        "valeur_verte_fourchette_eur": [round500(sim["latent_gain_low"]), round500(sim["latent_gain_high"])],
+        # None when the PDF says "fourchette large": the text must not give it
+        "valeur_verte_fourchette_eur": [round500(sim["latent_gain_low"]), round500(sim["latent_gain_high"])]
+        if green_range_shown(sim) else None,
         "valeur_verte_methode": sim["green_value_basis"],
         "ecart_de_prix_entre_classes_pct": sim["green_value_premium_pct"],
         "valeur_verte_calculee_sur_prix_m2_par_defaut": report["price_is_default"],
