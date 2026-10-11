@@ -142,9 +142,12 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
 
     best = max(works, key=lambda w: w["economie_seule_eur_an"]) if works else None
     names = [w["nom"][:1].lower() + w["nom"][1:] for w in works]
-    strat = (f"Le programme retenu enchaîne {_join(names)}, dans l'ordre du tableau des travaux : l'enveloppe d'abord, "
-             f"les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. ") if works else ""
-    if best:
+    if len(works) > 1:
+        strat = (f"Le programme retenu enchaîne {_join(names)}, dans l'ordre du tableau des travaux : l'enveloppe d'abord, "
+                 f"les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. ")
+    else:
+        strat = f"Le programme retenu porte sur un seul geste : {names[0]}. " if works else ""
+    if best and len(works) > 1:
         strat += (f"Pris isolément, le geste le plus efficace est : {best['nom'][:1].lower() + best['nom'][1:]}, "
                   f"avec environ {eur(best['economie_seule_eur_an'])} d'économie par an. ")
     specs = [w["preconisation_technique"] for w in works if w.get("preconisation_technique")][:2]
@@ -176,7 +179,9 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
         finance += (f"Ajouter {variant['travail_ajoute']} ouvrirait la rénovation d'ampleur : "
                     f"environ {eur(variant['maprimerenov_eur'])} d'aide, pour un reste à charge entre {eur(low)} et {eur(high)}, "
                     "avec un Accompagnateur Rénov' obligatoire. ")
-    if fin["eco_ptz_eur"]:
+    if not works:
+        finance = "Sans travaux retenus, il n'y a rien à financer. "
+    if fin["eco_ptz_eur"] and works:
         finance += (f"Un éco-prêt à taux zéro de {eur(fin['eco_ptz_eur'])} sur {fin['eco_ptz_duree_ans']} ans représente "
                     f"environ {eur(fin['eco_ptz_mensualite_eur'])} par mois, à comparer à {eur(fin['economie_mensuelle_eur'])} "
                     "d'économie mensuelle sur la facture.")
@@ -193,13 +198,17 @@ def fallback_analysis(facts: Dict[str, Any]) -> Dict[str, Any]:
     else:
         insulated = any(w["nom"].lower().startswith(("isolation", "fenêtres")) for w in works)
         profile = (f"Pour un occupant, l'enjeu est la facture et le confort : environ {eur(after['economies_eur_an'])} "
-                   "d'économie par an" + (", des parois moins froides et moins de courants d'air." if insulated else "."))
+                   "d'économie par an" + (", des parois moins froides et moins de courants d'air." if insulated else ".")) if works else \
+            f"Pour un occupant, la facture d'énergie est estimée à {eur(now['facture_estimee_eur_an'])} par an, hors abonnement."
         if fin.get("retour_sur_investissement_ans"):
             profile += f" Le reste à charge est remboursé par les économies en {fin['retour_sur_investissement_ans']} ans environ."
 
     vigilance = [w["point_de_vigilance"] for w in works if w.get("point_de_vigilance")][:3]
-    vigilance.append("Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.")
-    vigilance.append("Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.")
+    if works:
+        vigilance.append("Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.")
+        vigilance.append("Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.")
+    else:
+        vigilance.append("Le DPE est valable dix ans : il reste la référence pour louer ou vendre ce logement.")
 
     if not works:
         verdict = f"Logement classé {now['classe_dpe']}, facture estimée à {eur(now['facture_estimee_eur_an'])} par an. Aucun travaux retenu."

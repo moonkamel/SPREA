@@ -10,14 +10,14 @@ try:
     from api.aids import AMPLEUR_LABELS
     from api.envelope import FLOOR_HEIGHT
     from api.simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                                HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                                FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                                 SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                                 simulate, single_work_effects)
 except ImportError:
     from aids import AMPLEUR_LABELS
     from envelope import FLOOR_HEIGHT
     from simulation import (DEFAULT_PRICE_PER_M2, CURRENT_HEATING_EFFICIENCY, ampleur_variant, usage_split, wall_alternative, ENERGY_PRICES_EUR_KWH,
-                            HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP,
+                            FOSSIL_ENERGIES, HEATING_SYSTEMS, HEAT_PUMP_WATER_HEATER_COP, boiler_makes_hot_water, equipment,
                             SimulationInput, WORKS_BY_ID, is_house, projected_performance,
                             simulate, single_work_effects)
 
@@ -28,6 +28,7 @@ ENERGY_NAMES = {
     "wood": "bois",
     "district_heating": "réseau de chaleur",
     "coal": "charbon",
+    "lpg": "GPL",
 }
 
 LOSS_NAMES = {
@@ -167,17 +168,18 @@ def work_reason(work_id: str, ctx: Dict[str, Any]) -> str:
         return (f"Le renouvellement d'air pèse {fr_pct(shares['air'])} des pertes. Une ventilation contrôlée évite "
                 "l'humidité et les moisissures une fois le logement isolé.")
     if work_id == "pac_air_eau":
-        if energy in ("gas", "oil", "coal"):
+        if energy in FOSSIL_ENERGIES:
             return (f"Remplace le chauffage au {ENERGY_NAMES[energy]} : pour la même chaleur, la pompe à chaleur "
                     f"consomme environ {fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'énergie.")
         return (f"Remplace la chaudière électrique : pour la même chaleur, la pompe à chaleur consomme environ "
                 f"{fr_dec(HEATING_SYSTEMS['pac_air_eau']['efficiency'])} fois moins d'électricité.")
     if work_id == "heating":
-        if energy in ("gas", "oil", "coal"):
+        if energy in FOSSIL_ENERGIES:
             return (f"Le chauffage au {ENERGY_NAMES[energy]} fait l'essentiel des émissions de CO₂ du logement : des radiateurs "
                     "électriques à inertie améliorent son étiquette climat.")
         generator = (ctx.get("heating_generator") or "").lower()
         emitters = ("des panneaux rayonnants électriques" if "rayonnant" in generator
+                    else "des radiateurs électriques à accumulation" if "accumulation" in generator
                     else "des radiateurs électriques directs" if "radiateur" in generator
                     else "des convecteurs électriques")
         return (f"Le logement est chauffé par {emitters} : des radiateurs à inertie bien régulés consomment "
@@ -226,10 +228,13 @@ def tech_spec(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
         return "VMC simple flux hygroréglable type B ; double flux si le logement est rendu étanche à l'air."
     if work_id == "pac_air_eau":
         power = ctx.get("heat_pump_kw")
-        sizing = (f"puissance indicative d'environ {power - 1} à {power + 1} kW après isolation, à confirmer par l'étude "
-                  "de l'installateur" if power else "puissance à calculer après isolation par l'installateur")
+        when = "après isolation" if ctx.get("insulated") else "sur les besoins actuels du logement"
+        sizing = (f"puissance indicative d'environ {power - 1} à {power + 1} kW {when}, à confirmer par l'étude "
+                  "de l'installateur" if power else f"puissance à calculer {when} par l'installateur")
+        service = (" Modèle double service (chauffage et eau chaude) : la chaudière remplacée produisait aussi l'eau chaude."
+                   if ctx.get("double_service") else "")
         return ("Pompe à chaleur air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse "
-                f"température) ou ≥ 111 % (moyenne et haute) ; {sizing}.")
+                f"température) ou ≥ 111 % (moyenne et haute) ; {sizing}.{service}")
     if work_id == "ecs":
         return "Chauffe-eau thermodynamique de 200 à 270 L, COP ≥ 2,5 (norme EN 16147), sur air extérieur ou air d'un local non chauffé."
     if work_id == "heating":
@@ -298,13 +303,14 @@ def work_caution(work_id: str, ctx: Dict[str, Any]) -> Optional[str]:
                         "site patrimonial remarquable) ; une façade sur rue en brique peut imposer l'isolation par l'intérieur.")
         return caution
     if work_id == "pac_air_eau":
-        return ("Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à chaleur "
-                "après l'isolation.")
+        return ("Vérifier que les radiateurs à eau supportent une eau moins chaude"
+                + (", et dimensionner la pompe à chaleur après l'isolation." if ctx.get("insulated") else
+                   ". Si une isolation est prévue plus tard, la faire avant : la pompe à chaleur sera plus petite et moins chère."))
     if work_id == "windows":
         return "Prévoir des entrées d'air : des fenêtres étanches sans ventilation favorisent la condensation."
     if work_id == "vmc":
         return "Le passage des gaines se prévoit avant les finitions de l'isolation."
-    if work_id == "heating" and ctx["energy"] in ("gas", "oil", "coal"):
+    if work_id == "heating" and ctx["energy"] in FOSSIL_ENERGIES:
         return (f"La facture de chauffage augmente : le kWh d'électricité coûte plus cher que le {ENERGY_NAMES[ctx['energy']]}. "
                 "À retenir surtout si l'étiquette compte (location, vente).")
     if work_id == "ecs":
@@ -337,8 +343,9 @@ def regulatory(sim: Dict[str, Any], house: bool, dpe_date: Optional[date], postc
     # An owner-occupier is only concerned if they let the dwelling one day
     items = [
         {"label": "Location aujourd'hui" if is_investor else "Si vous mettez en location", "value": sim["rental_status"]},
-        {"label": "Location après travaux", "value": sim["new_rental_status"]},
     ]
+    if sim.get("cost"):
+        items.append({"label": "Location après travaux", "value": sim["new_rental_status"]})
     if current in ("F", "G") and is_investor:
         items.append({"label": "Loyer", "value": "Gelé : aucune hausse possible (révision, relocation, renouvellement) tant que le logement reste classé F ou G"})
     # Sale audit: houses and buildings with a single owner, not flats in a copropriété
@@ -353,7 +360,8 @@ def regulatory(sim: Dict[str, Any], house: bool, dpe_date: Optional[date], postc
     overseas = bool(postcode) and postcode.startswith("97")
     calendar = ([("G", "01/01/2028"), ("F", "01/01/2031")] if overseas else
                 [("G", "01/01/2025"), ("F", "01/01/2028"), ("E", "01/01/2034")])
-    return {"items": items, "calendar": calendar}
+    # The 2023 step (over 450 kWh/m² of final energy) explains a ban older than the G date
+    return {"items": items, "calendar": calendar, "ban_2023": "01/01/2023" in (sim.get("rental_status") or "")}
 
 
 def next_steps(sim: Dict[str, Any], is_investor: bool) -> List[Dict[str, str]]:
@@ -403,7 +411,7 @@ def next_steps(sim: Dict[str, Any], is_investor: bool) -> List[Dict[str, str]]:
         })
     steps.append({
         "title": "Travaux",
-        "when": f"Environ {sim['duration_days']} jours ouvrés de chantier" if sim.get("duration_days") else "Selon le planning des artisans",
+        "when": f"Environ {sim['duration_days']} jour{'s' if sim['duration_days'] > 1 else ''} ouvré{'s' if sim['duration_days'] > 1 else ''} de chantier" if sim.get("duration_days") else "Selon le planning des artisans",
         "text": "Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.",
     })
     if is_investor:
@@ -440,10 +448,12 @@ def assumptions(sim: Dict[str, Any], sim_input: SimulationInput, price_per_m2_us
         f"Prix de l'énergie retenus (par kWh, hors abonnement) : {prices}.",
         "Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au chantier. "
         "Fourchette basse et haute selon la variabilité habituelle des devis.",
-        f"Aides : {sim['aid_rules']}, catégorie de revenus « {sim['income_profile']} »."
-        + (" Primes CEE : valeurs de marché indicatives." if sim["cee_est"] > 0 else ""),
-        green_value_assumption(sim, sim_input, price_per_m2_used, price_is_default),
     ]
+    if sim_input.works:
+        out.append(f"Aides : {sim['aid_rules']}, catégorie de revenus « {sim['income_profile']} »."
+                   + (" Primes CEE : valeurs de marché indicatives." if sim["cee_est"] > 0 else ""))
+    if sim_input.works and not price_is_default:
+        out.append(green_value_assumption(sim, sim_input, price_per_m2_used, price_is_default))
     if "pac_air_eau" in sim_input.works:
         out.insert(3, "Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.")
     if sim_input.is_investor:
@@ -475,6 +485,9 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
         # A 12-13 cm lining along the insulated walls
         "iti_surface_loss": env.wall_area / FLOOR_HEIGHT * 0.13,
         "heat_pump_kw": heat_pump_kw(prop, env, energy, list(sim_input.works)),
+        "insulated": bool(set(sim_input.works) & {"iti", "ite", "roof", "floor_ceiling", "windows"}),
+        "double_service": "ecs" not in sim_input.works and boiler_makes_hot_water(
+            prop, energy, equipment(prop)["hot_water_energy"] or energy),
     }
 
     ordered = sorted(works, key=lambda d: WORK_ORDER.index(d["id"]) if d["id"] in WORK_ORDER else 99)
@@ -519,7 +532,7 @@ def build_report(meta: Dict[str, Any], sim_input: SimulationInput) -> Dict[str, 
             # The DPE gives a floor for houses too (0): meaningless, and it
             # led the text to call any house "de plain-pied"
             "floor": None if house else floor_of(meta.get("address"), details.get("floor")),
-            "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "").capitalize(), details.get("heating_system"),
+            "heating": " · ".join(x for x in [ENERGY_NAMES.get(energy, "")[:1].upper() + ENERGY_NAMES.get(energy, "")[1:], details.get("heating_system"),
                                                 details.get("heating_installation")] if x) or None,
             "hot_water": details.get("hot_water_system"),
             "ventilation": details.get("ventilation"),

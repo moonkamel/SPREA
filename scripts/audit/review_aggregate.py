@@ -24,13 +24,15 @@ def main(folder: str):
     for r, f in findings:
         by_cat[f["category"]].append((r, f))
     sev = Counter(f["severity"] for _, f in findings)
-    worst = Counter(min((SEVERITY[f["severity"]] for f in r["findings"]), default=3) for r in done)
+    worst = Counter(min((SEVERITY[f["severity"]] for f in r.get("findings") or []), default=3) for r in done)
     lines = [f"# Relecture experte : {len(done)} rapports, {len(clean)} sans défaut",
              "",
              f"- Rapports avec au moins un défaut bloquant : {worst[0]} ; important (sans bloquant) : {worst[1]} ; seulement mineurs : {worst[2]}",
              f"- Défauts : {len(findings)} ({sev['bloquant']} bloquants, {sev['important']} importants, {sev['mineur']} mineurs)",
              f"- Analyse rédigée par Claude : {sum(1 for r in done if r.get('analysis_source') == 'claude')} / {len(done)}",
              f"- Erreurs de génération : {len(errors)}" + (f" ({'; '.join(r['error'][:80] for r in errors[:3])})" if errors else ""),
+             f"- Contrôles automatiques en défaut : {sum(1 for r in done if r.get('checks'))} rapports"
+             + "".join(f"\n  - {r['number']} : {' ; '.join(r['checks'])[:300]}" for r in done if r.get("checks")),
              "", "## Par catégorie", "", "| Catégorie | Bloquants | Importants | Mineurs |", "|---|---|---|---|"]
     for cat, items in sorted(by_cat.items(), key=lambda kv: -len(kv[1])):
         c = Counter(f["severity"] for _, f in items)

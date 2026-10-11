@@ -24,12 +24,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 try:
     from api.accounts import store_dep, subscriber_access
-    from api.address import same_address, same_street
+    from api.address import parts, same_address, same_street
     from api.prospection import ADEME_URL, dwelling_detail
     from api.ratelimit import search_limiter
 except ImportError:
     from accounts import store_dep, subscriber_access
-    from address import same_address, same_street
+    from address import parts, same_address, same_street
     from prospection import ADEME_URL, dwelling_detail
     from ratelimit import search_limiter
 
@@ -132,6 +132,37 @@ def last_year(period: Optional[str]) -> Optional[int]:
     if not years:
         return None
     return years[-1] - 1 if "AVANT" in p else years[-1]
+
+
+def year_range(period: Optional[str]) -> Optional[Tuple[int, int]]:
+    """First and last construction years of a period, open ends widened
+    ("AVANT_1949" -> (1700, 1948), "A_COMPTER_DE_2011" -> (2011, 2100))."""
+    p = (period or "").upper()
+    years = [int(y) for y in re.findall(r"\d{4}", p)]
+    if not years or "NON" in p:
+        return None
+    if "AVANT" in p:
+        return 1700, years[0] - 1
+    if "COMPTER" in p or "APRES" in p or "APRÈS" in p or "DEPUIS" in p:
+        return years[0], 2100
+    return years[0], years[-1]
+
+
+def periods_agree(a: Optional[str], b: Optional[str], slack: int = 3) -> bool:
+    """Two construction periods of the same building overlap (sources round
+    differently: a few years of slack). True when either is unknown."""
+    ra, rb = year_range(a), year_range(b)
+    if not ra or not rb:
+        return True
+    return ra[0] - slack <= rb[1] and rb[0] - slack <= ra[1]
+
+
+def same_building(copro: Dict, address: Optional[str]) -> bool:
+    """The registry entry is at the flat's street number (a copropriété at
+    another number of the street is the next building)."""
+    na, _, _ = parts(copro.get("address"))
+    nb, _, _ = parts(address)
+    return not na or not nb or na == nb
 
 
 def period_label(period: Optional[str]) -> Optional[str]:
@@ -277,6 +308,13 @@ def copro_summary(c: Dict, match: str) -> Dict:
 def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match: Optional[str],
                 today: Optional[date] = None) -> Dict:
     today = today or date.today()
+    # A registry entry at another number, or of another era than the DPE, is
+    # another building: left out unless the DPE itself gives its number
+    if copro and match != "immat" and (not same_building(copro, apartment.get("adresse_ban"))
+                                       or not periods_agree(copro.get("period"), apartment.get("periode_construction"))):
+        copro, match = None, None
+    elif copro and not periods_agree(copro.get("period"), apartment.get("periode_construction")):
+        copro = {**copro, "period": None}
     buildings = sorted((r for r in rows if is_building_dpe(r) and r.get("etiquette_dpe") in set(LABELS)),
                        key=lambda r: r.get("date_etablissement_dpe") or "", reverse=True)
     associated = apartment.get("numero_dpe_immeuble_associe")
@@ -290,10 +328,17 @@ def build_sheet(apartment: Dict, rows: List[Dict], copro: Optional[Dict], match:
 
     surface = _float(apartment.get("surface_habitable_logement"))
     # Unknown rather than 1 when only the flat's own DPE is published
-    dwellings = (copro or {}).get("lots_housing") or (building or {}).get("apartments") or \
-        _int(apartment.get("nombre_appartement")) or (len(apartments) if len(apartments) > 1 else None)
+    # A flat is never the only dwelling of its building: "1" is a data error
+    counts = [(copro or {}).get("lots_housing"), (building or {}).get("apartments"), _int(apartment.get("nombre_appartement"))]
+    dwellings = next((c for c in counts if c and c > 1), None) or (len(apartments) if len(apartments) > 1 else None)
     shab = (building or {}).get("surface") or _float(apartment.get("surface_habitable_immeuble")) or \
         (surface * dwellings if surface and dwellings else None)
+    # Surface per dwelling out of any plausible range (63 dwellings in 297 m²,
+    # 13 000 m² for one flat, the flat as large as the building): no figures
+    if shab and dwellings and not (12 <= shab / dwellings <= 250):
+        shab = surface * dwellings if surface else None
+    if shab and surface and dwellings and surface > shab * 0.9:
+        shab = None
     floors = [_int(r.get("numero_etage_appartement")) for r in apartments]
     levels = (building or {}).get("levels") or _int(apartment.get("nombre_niveau_immeuble")) or \
         max([f + 1 for f in floors if f is not None] or [0]) or 4

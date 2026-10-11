@@ -7,6 +7,10 @@ a programme that costs too much for what it brings, a floor that contradicts
 the address, an invented feature, advice that does not fit the dwelling.
 
   python scripts/audit/review_pdfs.py --count 40 --shard 0 --shards 5
+
+Without --ai, nothing is sent to Claude: the analysis is the rule-based text
+and the reports (PDF, text, DPE data) are written to reports/ to be read
+outside, with the automatic checks of the audit.
 """
 import argparse
 import asyncio
@@ -24,7 +28,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from api import claude  # noqa: E402
 from api.ademe_client import AdemeConnector  # noqa: E402
-from api.ai_service import ai_service  # noqa: E402
+from api.ai_service import ai_service, fallback_analysis  # noqa: E402
 from api.dvf import market_price  # noqa: E402
 from api.immeuble import sheet_or_none  # noqa: E402
 from api.main import enrich_property, simulation_property  # noqa: E402
@@ -32,8 +36,8 @@ from api.pdf_service import pdf_service  # noqa: E402
 from api.report_content import build_report, facts_for_writer  # noqa: E402
 from api.rge import nearby_or_empty  # noqa: E402
 from api.simulation import SimulationInput  # noqa: E402
-from scripts.audit.audit import sample_dpe  # noqa: E402
-from scripts.audit.checks import pdf_text  # noqa: E402
+from scripts.audit.audit import Case, sample_dpe  # noqa: E402
+from scripts.audit.checks import pdf_text, report_checks, text_checks  # noqa: E402
 
 REVIEWER_MODEL = os.getenv("REVIEW_MODEL", "claude-opus-5-5")
 # Dollars per million tokens (input, output), to stop at the budget
@@ -42,6 +46,8 @@ PRICES = {"opus": (4.0, 20.0), "sonnet": (2.0, 10.0), "haiku": (0.10, 0.50)}
 # when the spend plus what the running ones may still cost passes the budget
 REPORT_COST = 0.10
 spent = [0.0]
+USE_AI = [False]
+OUT_DIR = "reports"
 
 
 def count_usage(model: str, usage) -> None:
@@ -125,12 +131,27 @@ async def review_one(number: str, store) -> None:
         content = build_report(meta, sim_in)
         content["rge"] = await nearby_or_empty(prop.latitude, prop.longitude, works, prop.building_type)
         content["immeuble"] = await sheet_or_none(number, prop.building_type, store)
-        analysis = await ai_service.write_analysis(facts_for_writer(content))
-        pdf = pdf_service.generate(content, analysis["sections"])
+        if USE_AI[0]:
+            analysis = await ai_service.write_analysis(facts_for_writer(content))
+        else:
+            analysis = {"source": "rules", "sections": fallback_analysis(facts_for_writer(content))}
+        pdf = pdf_service.generate(content, analysis["sections"], by_ai=analysis["source"] == "claude")
         text = pdf_text(pdf)
         out.update({"kind": prop.building_type, "surface": prop.shab, "label": content["sim"]["current_label"],
                     "new_label": content["sim"]["new_label"], "works": works, "analysis_source": analysis["source"],
                     "address": prop.address})
+        if not USE_AI[0]:
+            case = Case("logement", number)
+            report_checks(case, sp, content, (sp.price_per_m2 * prop.shab) if sp.price_per_m2 and prop.shab else None)
+            text_checks(case, text, sp)
+            out["checks"] = case.failures
+            out["dpe"] = dpe_summary(prop)
+            os.makedirs(OUT_DIR, exist_ok=True)
+            with open(os.path.join(OUT_DIR, f"{number}.pdf"), "wb") as f:
+                f.write(pdf)
+            with open(os.path.join(OUT_DIR, f"{number}.txt"), "w") as f:
+                f.write(text)
+            return
         review = await claude.json_call(
             RUBRIC,
             "Données brutes du DPE (ADEME) :\n" + json.dumps(dpe_summary(prop), ensure_ascii=False, default=str)
@@ -147,7 +168,10 @@ async def review_one(number: str, store) -> None:
         results.append(out)
         f = out.get("findings") or []
         head = f"{out.get('kind', '?')} {out.get('surface', '?')} m² {out.get('label', '?')}→{out.get('new_label', '?')} {'+'.join(out.get('works') or [])}"
-        print(f"{'ERR' if 'error' in out else ('OK ' if not f else 'KO ')} {number} | {head} | {out.get('error') or out.get('verdict') or ''}", flush=True)
+        bad = f or out.get("checks")
+        print(f"{'ERR' if 'error' in out else ('OK ' if not bad else 'KO ')} {number} | {head} | {out.get('error') or out.get('verdict') or ''}", flush=True)
+        for x in out.get("checks") or []:
+            print(f"     ✗ {x}", flush=True)
         for x in f:
             print(f"     [{x['severity']}/{x['category']}] {x['finding']} « {x['excerpt'][:160]} »", flush=True)
 
@@ -160,9 +184,11 @@ async def main():
     ap.add_argument("--shards", type=int, default=1)
     ap.add_argument("--concurrency", type=int, default=3)
     ap.add_argument("--numbers", default="")
+    ap.add_argument("--ai", action="store_true", help="analysis written by Claude, then reviewed by Claude")
     ap.add_argument("--budget", type=float, default=0, help="dollars; stops starting reports past it (0 = none)")
     args = ap.parse_args()
-    if not claude.configured():
+    USE_AI[0] = args.ai
+    if args.ai and not claude.configured():
         sys.exit("ANTHROPIC_API_KEY manquante")
     store = None
     if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
@@ -192,6 +218,10 @@ async def main():
     done = [r for r in results if "error" not in r]
     cats = Counter(x["category"] for r in done for x in r.get("findings") or [])
     sev = Counter(x["severity"] for r in done for x in r.get("findings") or [])
+    if not args.ai:
+        print(f"\n{len(done)} rapports générés dans {OUT_DIR}/, {len(results) - len(done)} erreurs ; "
+              f"{sum(1 for r in done if r.get('checks'))} avec un contrôle automatique en défaut")
+        return
     print(f"\n{len(done)} rapports relus, {sum(1 for r in done if not r.get('findings'))} sans défaut ; "
           f"gravité {dict(sev)} ; catégories {dict(cats)} ; dépense ${spent[0]:.2f}")
 
