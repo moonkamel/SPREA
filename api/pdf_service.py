@@ -474,6 +474,19 @@ class PDFReportGenerator:
                     Paragraph(f"Après MaPrimeRénov' Copropriété ({round(est['aid_rates'][0] * 100)} à {round(est['aid_rates'][1] * 100)}{NBSP}% "
                               f"des travaux si le gain énergétique atteint 35{NBSP}%) : environ {eur_range(est['net_low'], est['net_high'])}.",
                               S['muted'])], rule=BRASS)]
+            # The same walls or ventilation in the flat's programme and in the
+            # collective works: say which comes first, not pay twice
+            mine = {w['id'] for w in report.get('works', [])}
+            theirs = {w['id'] for w in sheet['works']}
+            overlap = []
+            if mine & {'iti', 'ite'} and 'facade' in theirs:
+                overlap.append("l'isolation des murs de l'appartement devient inutile si la copropriété vote l'isolation des façades")
+            if 'vmc' in mine and 'vmc' in theirs:
+                overlap.append("une ventilation individuelle fait double emploi avec une ventilation collective")
+            if overlap:
+                works_block += [Spacer(1, 6), Paragraph(
+                    "À coordonner : " + " ; ".join(overlap) + ". Demandez au syndic si ces travaux sont prévus avant "
+                    "d'engager les vôtres.", S['muted'])]
             out.append(KeepTogether(works_block))
             out += [Spacer(1, 6), Paragraph(
                 f"Ordres de grandeur déduits {source} ({num(dims.get('surface'))}{NBSP}m² habitables{' estimés' if sheet['works_source'] != 'immeuble' else ''}, "
