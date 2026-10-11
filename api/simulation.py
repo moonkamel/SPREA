@@ -45,6 +45,7 @@ ENERGY_CONVERSION = {
     "oil": 1.0,
     "wood": 1.0,
     "district_heating": 1.0,
+    "coal": 1.0,
 }
 
 # Average 2025-2026 prices per kWh of final energy, TTC, excluding subscription.
@@ -55,6 +56,7 @@ ENERGY_PRICES_EUR_KWH = {
     "oil": 0.12,
     "wood": 0.09,
     "district_heating": 0.12,
+    "coal": 0.09,
 }
 
 # GHG emission factors, kgCO2e per kWh of final energy (DPE 3CL-2021 method)
@@ -64,6 +66,7 @@ EMISSION_FACTORS = {
     "oil": 0.324,
     "wood": 0.030,
     "district_heating": 0.150,
+    "coal": 0.385,
 }
 
 # Seasonal efficiency of the heating system being replaced
@@ -73,6 +76,7 @@ CURRENT_HEATING_EFFICIENCY = {
     "oil": 0.80,
     "wood": 0.70,
     "district_heating": 1.0,
+    "coal": 0.65,
 }
 
 # Works that replace the heating system: new energy and seasonal efficiency
@@ -89,6 +93,7 @@ CURRENT_HOT_WATER_EFFICIENCY = {
     "oil": 0.70,
     "wood": 0.60,
     "district_heating": 0.9,
+    "coal": 0.60,
 }
 HEAT_PUMP_WATER_HEATER_COP = 2.5
 
@@ -245,6 +250,15 @@ def calibrated_thresholds(surface: float, cep: float, ges: float, official: Opti
     return adjusted_thresholds(surface, default), official
 
 
+def not_worse(label: str, official: Optional[str], cep: float, ges: float, cep0: float, ges0: float) -> str:
+    """A consumption and emissions no higher than the DPE's never give a worse
+    label than the official one (thresholds that could not be calibrated on it,
+    small dwellings)."""
+    if official in LABELS and cep <= cep0 + 0.5 and ges <= ges0 + 0.05 and LABELS.index(label) > LABELS.index(official):
+        return official
+    return label
+
+
 def get_labels(cep: float, ges: float, thresholds: List[Dict]) -> Dict[str, str]:
     cep_idx = next((i for i, t in enumerate(thresholds) if cep <= t["max"]), 6)
     ges_idx = next((i for i, t in enumerate(thresholds) if ges <= t["max_ges"]), 6)
@@ -276,6 +290,8 @@ def rental_status(ban: Optional[date], today: Optional[date] = None) -> str:
 def _energy_of(label: str) -> Optional[str]:
     s = label.lower()
     if s in ENERGY_CONVERSION: return s
+    # Before gas: some generators read "Poêle fioul ou GPL ou charbon"
+    if s.startswith("charbon") or s == "anthracite": return "coal"
     if "lectri" in s or "pac " in f"{s} " or "pompe" in s or "convecteur" in s or "joule" in s or "panneau rayonnant" in s:
         return "electricity"
     if "gaz" in s or "gpl" in s or "propane" in s or "butane" in s: return "gas"
@@ -493,6 +509,7 @@ def simulate(data: SimulationInput) -> Dict:
     if official:
         current["label"] = official
     target = get_labels(new_cep, new_ges, thresholds)
+    target["label"] = not_worse(target["label"], official, new_cep, new_ges, prop.initial_cep, ges)
     steps = max(0, LABELS.index(current["label"]) - LABELS.index(target["label"]))
 
     # Aids
@@ -714,7 +731,7 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     if not eq["collective_heating"] and energy_known(prop) and not eq["heat_pump"]:
         # Air/water heat pump: houses with a boiler (gas, oil, electric boiler);
         # not district heating (often mandatory, low-carbon), nor wood
-        if house and (energy in ("gas", "oil") or (energy == "electricity" and eq["hydronic"])):
+        if house and (energy in ("gas", "oil", "coal") or (energy == "electricity" and eq["hydronic"])):
             systems.add("pac_air_eau")
         # Inertia radiators only replace electric convectors
         if energy == "electricity" and not eq["hydronic"]:
@@ -745,7 +762,7 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     # Individual gas or oil heating in a flat: electric radiators, only kept
     # by the default selection when they improve the label (emissions often
     # make it), even though the bill goes up
-    if (not house and energy in ("gas", "oil") and not eq["collective_heating"]
+    if (not house and energy in ("gas", "oil", "coal") and not eq["collective_heating"]
             and not eq["heat_pump"] and energy_known(prop)):
         works.add("heating")
     return {"systems": systems, "works": works, "equipment": eq}
@@ -836,7 +853,16 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
 
         def score(works: List[str]) -> Tuple[int, float]:
             perf = projected_performance(prop, works)
-            return LABELS.index(get_labels(perf["new_cep"], perf["new_ges"], thresholds)["label"]), perf["new_cep"]
+            found = get_labels(perf["new_cep"], perf["new_ges"], thresholds)["label"]
+            return LABELS.index(not_worse(found, prop.official_label or label, perf["new_cep"], perf["new_ges"],
+                                          prop.initial_cep, ges)), perf["new_cep"]
+
+        # Class D (no rental ban): no electric heating replacing a cheaper
+        # energy only for its emissions, when the bill goes up
+        def bill(works: List[str]) -> float:
+            return simulate(SimulationInput(property=prop, works=works))["annual_bill_after"]
+        costly = ({w for w in HEATING_SYSTEMS if w in avail["works"] and bill([w]) > bill([]) + 1}
+                  if label == "D" else set())
 
         def pick(candidates: set, current: Tuple[int, float]) -> Tuple[int, float]:
             while current[0] > target:
@@ -844,6 +870,7 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
                 # Exterior wall insulation is offered as the alternative to the
                 # interior one (report), not picked by default: it costs more
                 options = [(score(preselected + [w]), w) for w in sorted(candidates) if w not in preselected and w != "ite"
+                           and w not in costly
                            and not (w in HEATING_SYSTEMS and any(p in HEATING_SYSTEMS for p in preselected))]
                 if not options:
                     break
@@ -887,7 +914,7 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
         if current[0] > target:
             # Exterior wall insulation counts here (it can be the only way to the
             # target), except on pre-1948 facades, often refused in protected areas
-            pool = sorted(w for w in avail["works"] if not (w == "ite" and env.period == 0))
+            pool = sorted(w for w in avail["works"] if not (w == "ite" and env.period == 0) and w not in costly)
             best_combo, best_key = None, (current[0], 0.0)
             for n in range(1, len(pool) + 1):
                 for combo in itertools.combinations(pool, n):

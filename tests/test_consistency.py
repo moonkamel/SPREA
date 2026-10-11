@@ -233,3 +233,25 @@ def test_audit_findings_of_the_1000_dpe_run():
         base = simulate(SimulationInput(property=p, works=[w for w in sel if w != "windows"]))
         full = simulate(SimulationInput(property=p, works=sel))
         assert full["new_label"] < base["new_label"] or full["rest_to_pay"] < base["rest_to_pay"]
+
+
+def test_launch_audit_cases():
+    """Audit of 1 000 new DPE (11/10): a 24.7 m² flat that dropped to D with no
+    works, an electric heating pushed on a recent propane condensing boiler (bill
+    up), coal read as gas from the generator name."""
+    from api.simulation import normalize_energy
+    small = prop(FLAT, surface=24.7, initial_cep=151.4, ges_value=31.5, official_label="C", dpe_date="2026-09-30",
+                 construction_year=1947, heating_generator="Chaudière gaz standard 1991-2000",
+                 dpe_losses={"walls": 3.0, "roof": 0.0, "floor": 0.0, "windows": 11.1, "air": 18.9, "bridges": 0.5},
+                 usage_consumption={"heating": 1919.2, "hot_water": 1467.4, "other": 187.6})
+    assert simulate(SimulationInput(property=small))["new_label"] == "C"
+    propane = prop(FLAT, surface=91.7, initial_cep=145.7, ges_value=35.6, official_label="D", dpe_date="2026-09-16",
+                   construction_year=2010, heating_energy="Propane",
+                   heating_generator="Chaudière gpl/propane/butane à condensation après 2015",
+                   ventilation="VMC SF Hygro B de 2001 à 2012",
+                   insulation_quality={"walls": "bonne", "roof": "moyenne", "windows": "très bonne"},
+                   usage_consumption={"heating": 6358.8, "hot_water": 5468.9, "other": 804.9})
+    works = suggest_works(propane, "D")["preselected"]
+    sim = simulate(SimulationInput(property=propane, works=works))
+    assert sim["annual_bill_after"] <= sim["annual_bill_before"] + 1
+    assert normalize_energy("Charbon", "Poêle fioul ou GPL ou charbon") == "coal"

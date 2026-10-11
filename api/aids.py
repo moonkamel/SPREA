@@ -82,7 +82,7 @@ AMPLEUR_ECRETEMENT = {
 
 # Works counted as "isolation" for the rénovation d'ampleur requirement.
 INSULATION_WORKS = {"iti", "ite", "iti_ossature", "ite_pse", "ite_bois", "roof", "combles", "floor_ceiling", "windows", "windows_pvc"}
-FOSSIL_ENERGIES = {"gas", "oil"}
+FOSSIL_ENERGIES = {"gas", "oil", "coal"}
 # Works that remove gas or oil heating
 FOSSIL_REPLACEMENTS = {"pac_air_eau"}
 
