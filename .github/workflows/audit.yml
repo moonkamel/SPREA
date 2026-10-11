@@ -27,11 +27,11 @@ on:
         description: "Only these DPE numbers, comma separated, with their data printed"
         default: ""
       review:
-        description: "Expert review by Claude of this many real reports instead of the audit (0 = audit)"
+        description: "Generate this many real reports instead of the audit (0 = audit)"
         default: "0"
       budget:
-        description: "Expert review: dollars of Claude spend, all shards together"
-        default: "3"
+        description: "Report review: dollars of Claude spend, all shards together (0 = no AI, reports pushed to a branch)"
+        default: "0"
   push:
     paths:
       - "scripts/audit/**"
@@ -66,16 +66,17 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Expert review
+      - name: Reports
         if: inputs.review && inputs.review != '0'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ inputs.budget != '0' && inputs.budget != '' && secrets.ANTHROPIC_API_KEY || '' }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           PER=$(( (${{ inputs.review }} + SHARDS - 1) / SHARDS ))
-          BUDGET=$(python3 -c "print(float('${{ inputs.budget || '3' }}') / $SHARDS)")
-          python scripts/audit/review_pdfs.py --count $PER --budget $BUDGET --shard ${{ matrix.shard }} --shards $SHARDS ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }} ${{ inputs.numbers && format('--numbers {0}', inputs.numbers) || '' }}
+          BUDGET=$(python3 -c "print(float('${{ inputs.budget || '0' }}') / $SHARDS)")
+          if [ "$BUDGET" = "0.0" ]; then AI=""; else AI="--ai --budget $BUDGET"; fi
+          python scripts/audit/review_pdfs.py --count $PER $AI --shard ${{ matrix.shard }} --shards $SHARDS ${{ inputs.seed && format('--seed {0}', inputs.seed) || '' }} ${{ inputs.numbers && format('--numbers {0}', inputs.numbers) || '' }}
       - name: Audit
         if: ${{ !inputs.review || inputs.review == '0' }}
         env:
@@ -106,12 +107,15 @@ jobs:
             sel_base.json
             sel_new.json
             reviews.json
+            reports/
           retention-days: 14
 
   summary:
     needs: audit
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -123,3 +127,11 @@ jobs:
           path: shards
       - run: python scripts/audit/aggregate.py shards
       - run: python scripts/audit/review_aggregate.py shards
+      - name: Reports to a branch
+        if: inputs.review && inputs.review != '0'
+        run: |
+          mkdir -p /tmp/out && cp shards/*/reports/* /tmp/out/ 2>/dev/null || true
+          for f in shards/*/reviews.json; do cp "$f" "/tmp/out/reviews-$(basename $(dirname $f)).json"; done
+          cd /tmp/out && ls | head -3 && git init -q -b reports && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Reports of run ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" reports:audit-reports/${{ github.run_id }}
