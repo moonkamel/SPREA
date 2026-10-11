@@ -58,7 +58,7 @@ def transport_for(files):
 
 
 def test_median_near_the_dwelling_first():
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     near = [row(f"n{i}", 3000 * 50 + i * 500, "Appartement", 50) for i in range(20)]
     far = [row(f"f{i}", 9000 * 50, "Appartement", 50, lat=50.70, lon=3.20) for i in range(40)]
     files = {2025: to_csv(near[:10] + far[:20]), 2024: to_csv(near[10:] + far[20:])}
@@ -71,29 +71,29 @@ def test_median_near_the_dwelling_first():
 
 
 def test_commune_median_without_coordinates_and_none_when_too_few():
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     files = {2025: to_csv([row(f"m{i}", 2500 * 100, "Maison", 100) for i in range(12)])}
     res = asyncio.run(market_price("59350", "Maison", transport=transport_for(files), today=date(2026, 10, 8)))
     assert res["price_per_m2"] == 2500 and res["scope"] == "à Lille"
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     few = {2025: to_csv([row("x", 250000, "Maison", 100)])}
     assert asyncio.run(market_price("59350", "Maison", transport=transport_for(few), today=date(2026, 10, 8))) is None
     assert asyncio.run(market_price("bad", "Maison")) is None
 
 
 def test_surface_band_and_time_adjustment(monkeypatch):
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     small = [row(f"s{i}", 5000 * 20, "Appartement", 20) for i in range(25)]   # studios: 5 000 €/m²
     large = [row(f"l{i}", 3000 * 80, "Appartement", 80) for i in range(25)]   # large flats: 3 000 €/m²
     files = {2025: to_csv(small + large)}
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for(files), today=date(2026, 10, 8)))
     assert res["price_per_m2"] == 3000 and res["surface_matched"]
     # No surface given: the report must not claim comparable surfaces
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, transport=transport_for(files), today=date(2026, 10, 8)))
     assert not res["surface_matched"] and "surface comparable" not in res["source"]
     # Sales of the first quarter 2025 were 10 % cheaper than the latest quarter
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     monkeypatch.setattr(dvf, "quarter_index", lambda kind, dep: {"2025T1": -0.0953})
     dated = [{**r, "date_mutation": "2025-02-01"} for r in large]
     res = asyncio.run(market_price("59350", "Appartement", *LILLE, surface=75, transport=transport_for({2025: to_csv(dated)}), today=date(2026, 10, 8)))
@@ -102,7 +102,7 @@ def test_surface_band_and_time_adjustment(monkeypatch):
 
 
 def test_widens_to_neighbouring_communes():
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     village = (50.60, 3.10)
     # 3 sales in the village, 20 in a commune 4 km away, 20 in one 30 km away
     own = [{**row(f"v{i}", 2000 * 60, "Appartement", 60, *village), "nom_commune": "Village"} for i in range(3)]
@@ -128,13 +128,13 @@ def test_widens_to_neighbouring_communes():
     assert res["sales"] == 23 and res["price_per_m2"] == 2500
     assert {c["commune"] for c in res["comparables"]} == {"Village", "Voisine"}
     # Without coordinates: around the commune's centre
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     res = asyncio.run(market_price("59001", "Appartement", transport=t, today=date(2026, 10, 8)))
     assert res["sales"] == 23
 
 
 def test_follows_redirects_and_skips_forbidden_years():
-    dvf._cache.clear()
+    dvf._cache.clear(); dvf._sales_cache.clear()
     sales = to_csv([row(f"r{i}", 2500 * 100, "Maison", 100) for i in range(12)])
 
     def handler(request):
