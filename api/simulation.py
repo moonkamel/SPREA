@@ -104,6 +104,8 @@ CURRENT_HOT_WATER_EFFICIENCY = {
     "lpg": 0.75,
 }
 HEAT_PUMP_WATER_HEATER_COP = 2.5
+# Hot water made by a double-service air/water heat pump (higher water temperature)
+HEAT_PUMP_HOT_WATER_COP = 2.0
 
 # Roof insulation cost by kind of roof, around the 65 €/m2 average
 ROOF_COST_FACTOR = {"combles perdus": 0.6, "combles aménagés": 1.45, "toit terrasse": 2.0}
@@ -391,6 +393,13 @@ def usage_split(prop: "SimulationProperty", env: Envelope, energy: str) -> Tuple
     return heating, hot_water, final - heating - hot_water
 
 
+def boiler_makes_hot_water(prop: "SimulationProperty", energy: str, hw_energy: str) -> bool:
+    """The fuel boiler heats the water too: replaced by a heat pump, it leaves
+    no hot water production unless the heat pump takes it over."""
+    hw = (prop.hot_water_system or "").lower()
+    return energy in FOSSIL_ENERGIES and hw_energy == energy and "chaudi" in hw and "collecti" not in hw
+
+
 def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works: List[str]) -> Dict:
     """Final consumption per usage (kWh/m2/year) and its energy, before and after the works."""
     heating, hot_water, other = usage_split(prop, env, energy)
@@ -415,8 +424,11 @@ def energy_balance(prop: "SimulationProperty", env: Envelope, energy: str, works
     if options:
         heating_after = min(options, key=lambda o: o[0] * ENERGY_CONVERSION[o[1]])
 
-    # 3. Thermodynamic water heater
+    # 3. Thermodynamic water heater; or the heat pump, when the boiler it
+    # replaces also made the hot water (double-service heat pump)
     hot_water_after = (hot_water, hw_energy)
+    if boiler_makes_hot_water(prop, energy, hw_energy) and "pac_air_eau" in works and "ecs" not in works:
+        hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[hw_energy] / HEAT_PUMP_HOT_WATER_COP, "electricity")
     if "ecs" in works:
         hot_water_after = (hot_water * CURRENT_HOT_WATER_EFFICIENCY[hw_energy] / HEAT_PUMP_WATER_HEATER_COP, "electricity")
 
@@ -602,6 +614,9 @@ def simulate(data: SimulationInput) -> Dict:
         "rest_to_pay": rest,
         "rest_to_pay_low": rest_low,
         "rest_to_pay_high": rest_high,
+        # Aids on the low and high cost (they follow the cost in rénovation d'ampleur)
+        "aids_low": max(0.0, sum(d["cost_low"] for d in detailed_costs) - rest_low),
+        "aids_high": max(0.0, sum(d["cost_high"] for d in detailed_costs) - rest_high),
         "eco_ptz_limit": eco_ptz_limit,
         "eco_ptz_amount": eco_ptz_amount,
         "eco_ptz_months": eco_ptz_months if eco_ptz_amount else 0,
@@ -715,6 +730,8 @@ def ampleur_variant(data: SimulationInput, sim: Dict) -> Optional[Dict]:
         "rest_to_pay": alt["rest_to_pay"],
         "rest_to_pay_low": alt["rest_to_pay_low"],
         "rest_to_pay_high": alt["rest_to_pay_high"],
+        "aids_low": alt["aids_low"],
+        "aids_high": alt["aids_high"],
         "saving_vs_programme": sim["rest_to_pay"] - alt["rest_to_pay"],
         "new_label": alt["new_label"],
         "new_cep": alt["new_cep"],
@@ -738,16 +755,21 @@ def available_works(prop: SimulationProperty) -> Dict[str, Any]:
     # decision of the co-owners), an unknown energy or an existing heat pump
     systems = set()
     if not eq["collective_heating"] and energy_known(prop) and not eq["heat_pump"]:
-        # Air/water heat pump: houses with a boiler (gas, oil, electric boiler);
-        # not district heating (often mandatory, low-carbon), nor wood
-        if house and (energy in FOSSIL_ENERGIES or (energy == "electricity" and eq["hydronic"])):
+        # Air/water heat pump: houses with a boiler (gas, oil, electric boiler),
+        # not with stoves or room heaters that have no water circuit (a fuel
+        # boiler is assumed when the DPE does not name the generator); not
+        # district heating (often mandatory, low-carbon), nor wood
+        water = eq["hydronic"] or (energy in FOSSIL_ENERGIES and not (prop.heating_generator or "").strip())
+        if house and water and (energy in FOSSIL_ENERGIES or energy == "electricity"):
             systems.add("pac_air_eau")
         # Inertia radiators only replace electric convectors
         if energy == "electricity" and not eq["hydronic"]:
             systems.add("heating")
     # Thermodynamic water heater: not when hot water is already thermodynamic,
     # solar or collective; a small flat rarely has room for it
-    water_heater = (not eq["efficient_hot_water"] and not eq["collective_hot_water"]
+    # nor a whole building (one 200 L tank for every flat)
+    whole_building = "immeuble" in (prop.building_type or "").lower()
+    water_heater = (not eq["efficient_hot_water"] and not eq["collective_hot_water"] and not whole_building
                     and (house or prop.surface >= 30))
     walls_poor = env.u["walls"] > 0.45
     windows_poor = env.u["windows"] > 2.0
@@ -802,6 +824,8 @@ def wall_alternative(data: SimulationInput, sim: Dict) -> Optional[Dict]:
         "rest_to_pay": alt["rest_to_pay"],
         "rest_to_pay_low": alt["rest_to_pay_low"],
         "rest_to_pay_high": alt["rest_to_pay_high"],
+        "aids_low": alt["aids_low"],
+        "aids_high": alt["aids_high"],
         "rest_difference": alt["rest_to_pay"] - sim["rest_to_pay"],
         "new_label": alt["new_label"],
         "new_cep": alt["new_cep"],
@@ -969,6 +993,17 @@ def suggest_works(prop: SimulationProperty, label: Optional[str]) -> Dict[str, L
                 and not eq["mechanical_ventilation"]):
             preselected.append("vmc")
             suggested.add("vmc")
+
+        # One more insulation work that opens the rénovation d'ampleur and
+        # leaves less to pay for at least the same label: the report would
+        # otherwise recommend the dearer programme above its own variant
+        if preselected:
+            data = SimulationInput(property=prop, works=list(preselected))
+            sim = simulate(data)
+            variant = ampleur_variant(data, sim)
+            if variant and LABELS.index(variant["new_label"]) <= LABELS.index(sim["new_label"]):
+                preselected.append(variant["work"])
+                suggested.add(variant["work"])
 
     return {
         "suggested": [w["id"] for w in WORKS_CATALOG if w["id"] in suggested],
