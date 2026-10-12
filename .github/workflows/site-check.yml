@@ -1,0 +1,42 @@
+name: Site check
+
+# Live check of the production site from a GitHub runner: public pages,
+# links, mobile layout, then the Pro journeys with real data under a
+# temporary subscriber account deleted at the end (scripts/site/site_check.mjs).
+# Results and the PDFs downloaded are pushed to the branch site-reports/<run>.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Site to check"
+        default: "https://sprea.app"
+  push:
+    paths:
+      - "scripts/site/**"
+      - ".github/workflows/site-check.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save --no-package-lock playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Check
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://sprea.app' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/site/site_check.mjs
+      - name: Report to a branch
+        if: always()
+        run: |
+          cd site-report && git init -q -b report && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Site check ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" report:site-reports/${{ github.run_id }}
