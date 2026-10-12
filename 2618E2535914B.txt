@@ -1,0 +1,285 @@
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+6 Route de Dun
+18210 Thaumiers
+Maison · 221,4 m² · avant 1948
+DPE du 05/10/2026 · n° 2618E2535914B
+Synthèse
++3 classes
+F → C
+416 → 121 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 52 000 € − 18 000 € ≈ 34 000 € 7 210 € / an
+entre 44 200 € et 65 000 €
+entre 26 200 € et 47 000 €
+Retour sur investissement environ 5 ans
+Valeur verte du bien + 30 000 € (17 500 € à 51 500 €)
+Location aujourd'hui Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de F à C coûte entre 26 200 € et 47 000 € après aides, pour environ 7 210 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 221,4 m², construite avant 1948, est classée F, avec 416 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : murs (35 %), puis renouvellement d'air (21 %). La facture d'énergie est
+estimée à 9 980 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu enchaîne isolation de la toiture, isolation des murs (par l'intérieur), ventilation
+mécanique (VMC) et pompe à chaleur air/eau, dans l'ordre du tableau des travaux : l'enveloppe d'abord,
+les équipements ensuite, pour dimensionner ces derniers sur des besoins réduits. Pris isolément, le geste
+le plus efficace est : pompe à chaleur air/eau, avec environ 4 510 € d'économie par an. Préconisations :
+Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou toiture : 20 à 24 cm, R ≥ 6 (valeurs
+exigées pour les aides), avec frein-vapeur hygrovariable côté chauffé (pas de pare-vapeur étanche sur un
+bâti ancien). Mur ancien (avant 1948) qui doit rester perméable à la vapeur : isolant biosourcé de 10 à 14 cm
+6 Route de Dun, 18210 Thaumiers Page 1 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+(fibre de bois, chanvre, liège ou enduit chaux-chanvre) avec frein-vapeur hygrovariable, pas de
+pare-vapeur étanche ; R ≥ 3,7 m².K/W exigée pour les aides. Autre solution pour les murs : isolation des
+murs (par l'extérieur), pour un reste à charge supérieur d'environ 12 700 € ; façade ancienne souvent
+refusée en secteur protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y
+compter. Ensemble, ces travaux amènent le logement en classe C (121 kWh/m²/an) et la facture à environ 2
+770 € par an.
+Financement
+Le coût des travaux se situe entre 44 200 € et 65 000 €. Avec MaPrimeRénov' rénovation d'ampleur, le
+reste à charge est estimé entre 26 200 € et 47 000 €. Un éco-prêt à taux zéro de 34 000 € sur 20 ans
+représente environ 141 € par mois, à comparer à 601 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 7 210 € d'économie par an, des parois moins
+froides et moins de courants d'air. Le reste à charge est remboursé par les économies en 5 ans environ.
+Points de vigilance
+– Surface habitable réduite d'environ 10,5 m².
+– Appareil au gaz raccordé à un conduit de fumée (tirage naturel) : une VMC classique peut faire
+refouler les fumées (monoxyde de carbone). Prévoir une VMC gaz avec dispositif de sécurité
+collective, ou le remplacement de l'appareil par un modèle étanche ; vérification par un professionnel
+qualifié.
+– Vérifier que les radiateurs à eau supportent une eau moins chaude, et dimensionner la pompe à
+chaleur après l'isolation.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) F (F / E)
+Consommation d'énergie primaire 416 kWh/m²/an
+Émissions de gaz à effet de serre 66 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz classique 1981-1985
+Eau chaude Chaudière gaz classique 1981-1985
+Ventilation Ventilation par ouverture des fenêtres
+Isolation des murs Insuffisante (selon le DPE)
+Isolation du plancher bas Insuffisante (selon le DPE)
+Fenêtres Insuffisante (selon le DPE)
+Facture d'énergie estimée 9 980 € / an
+6 Route de Dun, 18210 Thaumiers Page 2 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Coût annuel indiqué par le DPE (prix 2021) 7 620 € / an
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Murs 35 %
+Renouvellement d'air 21 %
+Toiture ou plafond 21 %
+Ponts thermiques et portes 10 %
+Fenêtres 9 %
+Plancher bas 5 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 9 340 € 2 280 € (électricité)
+Eau chaude 480 € 330 € (électricité)
+Autres usages (éclairage, auxiliaires) 160 € 160 €
+Total par an 9 980 € 2 770 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2028
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+6 Route de Dun, 18210 Thaumiers Page 3 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Isolation de la toiture RECOMMANDÉ 5 800 € à 8 500 €
+La toiture représente 21 % des pertes de chaleur.
+Effet seul : − 75 kWh/m²/an · − 1 810 €/an sur la facture
+Préconisation : Combles perdus : 30 à 35 cm de laine soufflée, R ≥ 7 ; rampants ou
+toiture : 20 à 24 cm, R ≥ 6 (valeurs exigées pour les aides), avec frein-vapeur
+hygrovariable côté chauffé (pas de pare-vapeur étanche sur un bâti ancien).
+2. Isolation des murs (par l'intérieur) RECOMMANDÉ 18 700 € à 27 500 €
+Les murs représentent 35 % des pertes de chaleur ; le DPE juge leur isolation «
+insuffisante ».
+Effet seul : − 115 kWh/m²/an · − 2 760 €/an sur la facture
+Préconisation : Mur ancien (avant 1948) qui doit rester perméable à la vapeur :
+isolant biosourcé de 10 à 14 cm (fibre de bois, chanvre, liège ou enduit
+chaux-chanvre) avec frein-vapeur hygrovariable, pas de pare-vapeur étanche ; R ≥
+3,7 m².K/W exigée pour les aides.
+À prévoir : Surface habitable réduite d'environ 10,5 m².
+3. Ventilation mécanique (VMC) RECOMMANDÉ 1 000 € à 1 600 €
+Le renouvellement d'air pèse 21 % des pertes. Une ventilation contrôlée évite
+l'humidité et les moisissures une fois le logement isolé.
+Effet seul : − 20 kWh/m²/an · − 490 €/an sur la facture
+Préconisation : VMC simple flux hygroréglable type B ; double flux si le logement est
+rendu étanche à l'air.
+À prévoir : Appareil au gaz raccordé à un conduit de fumée (tirage naturel) : une
+VMC classique peut faire refouler les fumées (monoxyde de carbone). Prévoir une
+VMC gaz avec dispositif de sécurité collective, ou le remplacement de l'appareil par
+un modèle étanche ; vérification par un professionnel qualifié.
+4. Pompe à chaleur air/eau RECOMMANDÉ 18 700 € à 27 400 €
+Remplace le chauffage au gaz : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 178 kWh/m²/an · − 4 510 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 16 à 18 kW après isolation, à confirmer par l'étude de
+l'installateur. Modèle double service (chauffage et eau chaude) : la chaudière
+remplacée produisait aussi l'eau chaude.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude, et
+dimensionner la pompe à chaleur après l'isolation.
+Total des travaux TTC 44 200 € à 65 000 €
+Durée indicative du chantier : 16 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+6 Route de Dun, 18210 Thaumiers Page 4 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Autre solution pour les murs : isolation des murs (par l'extérieur)
+Aucune perte de surface habitable, ponts thermiques traités, chantier sans libérer les pièces, façade rénovée.
+En contrepartie : coût plus élevé et déclaration préalable en mairie. Résultat : classe B, facture d'environ
+2 440 € par an, reste à charge supérieur d'environ 12 700 €. À noter : façade ancienne souvent refusée en
+secteur protégé (accord de l'Architecte des Bâtiments de France) : à vérifier en mairie avant d'y compter.
+Isolation des murs (par l'extérieur) 30 900 € à 47 200 €
+Coût total du programme 54 900 € à 82 700 €
+Aides estimées − 18 000 €
+Reste à charge 36 900 € à 64 700 €
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330
+F 331 à 420 Aujourd'hui
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 9 980 € → 2 770 € par an.
+Le plan de financement
+4
+Coût des travaux 44 200 € à 65 000 €
+MaPrimeRénov' rénovation d'ampleur − 18 000 €
+Reste à charge 26 200 € à 47 000 €
+Catégorie de revenus retenue : Intermédiaire.
+CEE non cumulables : l'Anah les intègre déjà dans l'aide de la rénovation d'ampleur.
+6 Route de Dun, 18210 Thaumiers Page 5 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Financer le reste à charge
+Éco-prêt à taux zéro 34 000 €
+Durée 20 ans
+Mensualité 141 € / mois
+Économie sur la facture − 601 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 5 ans
+Prix de marché local 747 €/m²
+Valeur verte estimée + 30 000 €
+Fourchette 17 500 € à 51 500 €
+Prix local : prix médian DVF de 17 ventes de maisons à moins de 2 km (2022-2025, actualisées au dernier trimestre).
+Valeur verte : écart de prix de 30 % mesuré entre les classes F et C sur les ventes du département (4 818 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe F, estimée à 142 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Obligatoire avant tout dépôt de rénovation d'ampleur.
+2 Accompagnateur Rénov' et audit Semaines 2 à 6
+L'Accompagnateur Rénov' est obligatoire : il réalise ou commande l'audit énergétique et construit le
+programme de travaux définitif. Son coût est en partie pris en charge.
+3 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov'. Comparez les fourchettes de
+ce rapport aux devis reçus.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 34 000 € sans intérêts.
+6 Route de Dun, 18210 Thaumiers Page 6 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+6 Travaux Environ 16 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Des artisans RGE près du logement
+7
+Les aides de l'État ne sont versées que pour des travaux réalisés par une entreprise RGE. Voici les entreprises
+qualifiées les plus proches pour chaque travail, d'après l'annuaire public de l'ADEME, sans classement ni
+recommandation. Demandez plusieurs devis et vérifiez la qualification sur france-renov.gouv.fr.
+Pompe à chaleur air/eau
+02 48 59 14 23 ·
+SAS DUN ENERGIES Dun Sur Auron · 8,8 km
+http://www.dunenergies.com
+02 48 57 33 90 · https://www.qualit-enr.or
+BC ENERGY Dun Sur Auron · 9,3 km
+g/entreprises/bc-energy
+Ainay Le Chateau · 04 70 02 93 73 ·
+FLUZAT ENERGIE
+12,6 km http://www.fluzat-energie.com
+Isolation des murs (par l'intérieur)
+02 48 59 87 62 ·
+DUN COUVERTURE SARAIVA Dun-Sur-Auron · 9,1 km
+http://www.couverture-dun.fr
+PLEUCHOT COUVERTURE Dun Sur Auron · 9,3 km 06 84 15 32 45
+BOUBAT SARL Neuilly-En-Dun · 10,1 km 02 48 74 54 17
+Ventilation mécanique (VMC)
+B.C. ENERGY Dun-Sur-Auron · 8,5 km 02 48 57 33 90
+CLAIN PHILIPPE Givardon · 14,2 km 06 32 89 90 09
+BARON PLOMBERIE CHAUFFAGE 02 48 55 03 74 ·
+St Eloy De Gy · 43,5 km
+ENERGIE - B.P.C.E. https://www.baron-plomberie.fr
+Isolation de la toiture
+02 48 59 87 62 ·
+DUN COUVERTURE SARAIVA Dun-Sur-Auron · 9,1 km
+http://www.couverture-dun.fr
+PLEUCHOT COUVERTURE Dun Sur Auron · 9,3 km 06 84 15 32 45
+BOUBAT SARL Neuilly-En-Dun · 10,1 km 02 48 74 54 17
+6 Route de Dun, 18210 Thaumiers Page 7 / 8
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Audit énergétique
+Charenton Du Cher ·
+COVALENCE https://covalence-architectes.fr
+10,8 km
+St Amand Montrond · 02 36 81 01 22 ·
+ENTROPIE INGENIERIE
+15,6 km http://www.entropie-ingenierie.com
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+– Valeur verte : écart de prix de 30 % mesuré entre les classes F et C sur les ventes du département (4 818
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe F, estimée à 142 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (747 €/m², prix médian DVF de 17 ventes de maisons à moins de 2 km
+(2022-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du bas de l'intervalle de confiance
+à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+6 Route de Dun, 18210 Thaumiers Page 8 / 8

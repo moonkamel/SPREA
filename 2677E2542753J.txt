@@ -1,0 +1,220 @@
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+8 allée Chopin
+77500 Chelles
+Maison · 93,3 m² · 1978-1982
+DPE du 05/10/2026 · n° 2677E2542753J
+Synthèse
++2 classes
+E → C
+264 → 155 kWh/m²/an
+Coût des travaux Aides estimées Reste à charge Économies d'énergie
+≈ 19 900 € − 5 500 € ≈ 14 400 € 1 180 € / an
+entre 16 900 € et 24 900 €
+entre 11 400 € et 19 400 €
+Retour sur investissement environ 12 ans
+Valeur verte du bien + 13 500 € (7 000 € à 24 000 €)
+Location aujourd'hui Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+L'essentiel
+Passer de E à C coûte entre 11 400 € et 19 400 € après aides, pour environ 1 180 € d'économie par an.
+Notre analyse
+1
+Analyse établie automatiquement à partir des chiffres de ce rapport, à relire avec votre conseiller.
+Diagnostic
+Cette maison de 93,3 m², construite entre 1978 et 1982, est classée E, avec 264 kWh/m²/an. Ses pertes de
+chaleur passent d'abord par : renouvellement d'air (34 %), puis murs (32 %). La facture d'énergie est
+estimée à 2 710 € par an, hors abonnement.
+Stratégie de travaux
+Le programme retenu porte sur un seul geste : pompe à chaleur air/eau. Préconisations : Pompe à chaleur
+air/eau basse ou moyenne température, efficacité saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111
+% (moyenne et haute) ; puissance indicative d'environ 8 à 10 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur. Modèle double service (chauffage et eau chaude) : la chaudière
+remplacée produisait aussi l'eau chaude. Ensemble, ces travaux amènent le logement en classe C (155
+kWh/m²/an) et la facture à environ 1 530 € par an.
+8 allée Chopin, 77500 Chelles Page 1 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Financement
+Le coût des travaux se situe entre 16 900 € et 24 900 €. Avec MaPrimeRénov' par geste et primes CEE, le
+reste à charge est estimé entre 11 400 € et 19 400 €. La rénovation d'ampleur exige au moins deux travaux
+d'isolation (murs, toiture, plancher ou fenêtres). Un éco-prêt à taux zéro de 14 400 € sur 15 ans représente
+environ 80 € par mois, à comparer à 99 € d'économie mensuelle sur la facture.
+Pour vous, propriétaire occupant
+Pour un occupant, l'enjeu est la facture et le confort : environ 1 180 € d'économie par an. Le reste à charge
+est remboursé par les économies en 12 ans environ.
+Points de vigilance
+– Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une isolation est prévue plus
+tard, la faire avant : la pompe à chaleur sera plus petite et moins chère.
+– Faites confirmer le montant des aides par un conseiller France Rénov' avant de signer un devis.
+– Comparez au moins deux devis d'artisans RGE par lot avec les fourchettes de ce rapport.
+Le logement aujourd'hui
+2
+Étiquette DPE (énergie / climat) E (E / E)
+Consommation d'énergie primaire 264 kWh/m²/an
+Émissions de gaz à effet de serre 58 kg CO₂/m²/an
+Chauffage Gaz · Chaudière gaz standard 2001-2015
+Eau chaude Chaudière gaz standard 2001-2015
+Ventilation Ventilation par entrées d'air hautes et basses
+Isolation des murs Insuffisante (selon le DPE)
+Isolation de la toiture Très bonne (selon le DPE)
+Isolation du plancher bas Bonne (selon le DPE)
+Fenêtres Bonne (selon le DPE)
+Facture d'énergie estimée 2 710 € / an
+Coût annuel indiqué par le DPE (prix 2021) 2 602 € / an
+8 allée Chopin, 77500 Chelles Page 2 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Où part la chaleur
+Répartition des pertes de chaleur du logement, calculée à partir de son DPE.
+Renouvellement d'air 34 %
+Murs 32 %
+Plancher bas 11 %
+Ponts thermiques et portes 11 %
+Fenêtres 7 %
+Toiture ou plafond 4 %
+Votre facture par usage
+Usage Aujourd'hui Après travaux
+Chauffage 2 360 € 1 260 € (électricité)
+Eau chaude 250 € 170 € (électricité)
+Autres usages (éclairage, auxiliaires) 90 € 90 €
+Total par an 2 700 € 1 520 €
+Énergie facturée aux prix moyens actuels, hors abonnement.
+Cadre réglementaire
+Si vous mettez en location Louable jusqu'au 01/01/2034
+Location après travaux Louable sans limite de date
+Vente Audit énergétique obligatoire, à remettre dès la première visite
+Validité du DPE Jusqu'au 05/10/2036
+Calendrier d'interdiction de louer (Loi Climat et Résilience), par classe : G : 01/01/2025 · F : 01/01/2028 · E : 01/01/2034. Il s'applique aux
+nouveaux baux et aux renouvellements.
+8 allée Chopin, 77500 Chelles Page 3 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Le programme de travaux
+3
+Dans l'ordre conseillé : l'enveloppe d'abord (toiture, murs, plancher, fenêtres), puis la ventilation, puis les
+équipements, qui peuvent alors être dimensionnés sur des besoins réduits. « Effet seul » : ce que le geste
+apporterait réalisé sans les autres ; les effets ne s'additionnent pas exactement.
+Travaux Fourchette TTC
+1. Pompe à chaleur air/eau RECOMMANDÉ 16 900 € à 24 900 €
+Remplace le chauffage au gaz : pour la même chaleur, la pompe à chaleur
+consomme environ 2,9 fois moins d'énergie.
+Effet seul : − 109 kWh/m²/an · − 1 180 €/an sur la facture
+Préconisation : Pompe à chaleur air/eau basse ou moyenne température, efficacité
+saisonnière ETAS ≥ 126 % (basse température) ou ≥ 111 % (moyenne et haute) ;
+puissance indicative d'environ 8 à 10 kW sur les besoins actuels du logement, à
+confirmer par l'étude de l'installateur. Modèle double service (chauffage et eau
+chaude) : la chaudière remplacée produisait aussi l'eau chaude.
+À prévoir : Vérifier que les radiateurs à eau supportent une eau moins chaude. Si une
+isolation est prévue plus tard, la faire avant : la pompe à chaleur sera plus petite et
+moins chère.
+Total des travaux TTC 16 900 € à 24 900 €
+Durée indicative du chantier : 3 jours ouvrés, hors délais d'approvisionnement. TVA à 5,5 % incluse. Fourchettes
+fondées sur les prix moyens du marché : seuls des devis fixent le prix réel.
+Effet sur l'étiquette énergie
+A ≤ 70
+B 71 à 110
+C 111 à 180 Après travaux
+D 181 à 250
+E 251 à 330 Aujourd'hui
+F 331 à 420
+G > 420
+Consommation en kWh/m²/an d'énergie primaire.
+Facture d'énergie estimée : 2 710 € → 1 530 € par an.
+8 allée Chopin, 77500 Chelles Page 4 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Le plan de financement
+4
+Coût des travaux 16 900 € à 24 900 €
+MaPrimeRénov' par geste − 3 000 €
+Primes CEE (estimation) − 2 500 €
+Reste à charge 11 400 € à 19 400 €
+Aides par travaux Montant estimé
+Pompe à chaleur air/eau 5 500 €
+Catégorie de revenus retenue : Intermédiaire.
+Pourquoi pas la rénovation d'ampleur ?
+– La rénovation d'ampleur exige au moins deux travaux d'isolation (murs, toiture, plancher ou fenêtres).
+Financer le reste à charge
+Éco-prêt à taux zéro 14 400 €
+Durée 15 ans
+Mensualité 80 € / mois
+Économie sur la facture − 99 € / mois
+Effort mensuel net Les économies couvrent la mensualité
+Sans intérêts ni frais de dossier, sous conditions de la banque. Il se cumule avec MaPrimeRénov'.
+Valeur du bien
+5
+Retour sur investissement environ 12 ans
+Prix de marché local 3 610 €/m²
+Valeur verte estimée + 13 500 €
+Fourchette 7 000 € à 24 000 €
+Prix local : prix médian DVF de 20 ventes de maisons de surface comparable à moins de 500 m (2024-2025, actualisées au dernier
+trimestre).
+Valeur verte : écart de prix de 6 % mesuré entre les classes E et C sur les ventes du département (15 480 ventes rapprochées de leur
+DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le reste de l'écart tient à l'état général des logements
+vendus (cuisine, salle de bains, finitions). L'écart s'applique à la valeur du logement en classe E, estimée à 329 000 € (le prix médian
+local mêle toutes les classes).
+Les ventes ont été rapprochées une à une du DPE du logement vendu ; l'écart est mesuré à emplacement, surface, époque de
+construction et date de vente comparables. Fourchette : de la moitié du bas de l'intervalle de confiance à 95 % de l'écart à la totalité de
+8 allée Chopin, 77500 Chelles Page 5 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+son haut.
+Calendrier et prochaines étapes
+6
+1 Rendez-vous France Rénov' Semaines 1 à 2
+Gratuit, sur france-renov.gouv.fr ou au 0 808 800 700. Il confirme les aides auxquelles vous avez droit.
+2 Devis d'artisans RGE Semaines 3 à 8
+Au moins deux devis par lot. La certification RGE conditionne MaPrimeRénov' et les primes CEE. Comparez
+les fourchettes de ce rapport aux devis reçus.
+3 Primes CEE Avant de signer
+Acceptez l'offre de prime d'un fournisseur d'énergie avant de signer les devis : une prime demandée après la
+signature est refusée.
+4 Dépôt MaPrimeRénov' Avant le début des travaux
+Sur maprimerenov.gouv.fr, avec les devis. Ne commencez pas les travaux avant l'accusé de réception du
+dossier.
+5 Éco-prêt à taux zéro En parallèle du dépôt
+À demander à une banque partenaire avec les devis : environ 14 400 € sans intérêts.
+6 Travaux Environ 3 jours ouvrés de chantier
+Dans l'ordre conseillé ci-dessus. Gardez toutes les factures : elles déclenchent le versement des aides.
+Des artisans RGE près du logement
+7
+Les aides de l'État ne sont versées que pour des travaux réalisés par une entreprise RGE. Voici les entreprises
+qualifiées les plus proches pour chaque travail, d'après l'annuaire public de l'ADEME, sans classement ni
+recommandation. Demandez plusieurs devis et vérifiez la qualification sur france-renov.gouv.fr.
+Pompe à chaleur air/eau
+06 67 30 37 90 · https://www.qualit-enr.or
+ECOCONFORT Chelles · 0,4 km
+g/entreprises/ecoconfort
+06 37 22 04 64 ·
+ECO RENOV Chelles · 0,4 km
+http://www.ecorenov-pro.fr
+07 53 46 22 03 · https://www.qualit-enr.or
+MT ECO ENERGY Chelles · 0,4 km
+g/entreprises/mt-eco-energy-
+8 allée Chopin, 77500 Chelles Page 6 / 7
+SPREA
+Rapport de rénovation énergétique Établi le 12/10/2026
+Méthode et hypothèses
+8
+– Point de départ : les consommations du DPE publié par l'ADEME, par usage (chauffage, eau chaude, autres
+usages) comme le DPE les détaille.
+– Effet de l'isolation calculé à partir des pertes de chaleur propres au logement (par paroi), et non d'un
+pourcentage forfaitaire.
+– Prix de l'énergie retenus (par kWh, hors abonnement) : électricité 0,20 €, gaz 0,11 €.
+– Pompe à chaleur : rendement saisonnier prudent de 2,9 en logement existant.
+– Coûts : prix moyens de marché actualisés (indice BT01), ajustés à la surface, à la région et à l'accès au
+chantier. Fourchette basse et haute selon la variabilité habituelle des devis.
+– Aides : barème MaPrimeRénov' en vigueur au 1er septembre 2026, catégorie de revenus « Intermédiaire ».
+Primes CEE : valeurs de marché indicatives.
+– Valeur verte : écart de prix de 6 % mesuré entre les classes E et C sur les ventes du département (15 480
+ventes rapprochées de leur DPE, 2022 à 2025), dont 70 % retenus pour les seuls travaux énergétiques : le
+reste de l'écart tient à l'état général des logements vendus (cuisine, salle de bains, finitions). L'écart
+s'applique à la valeur du logement en classe E, estimée à 329 000 € (le prix médian local mêle toutes les
+classes) ; appliquée au prix local (3 610 €/m², prix médian DVF de 20 ventes de maisons de surface
+comparable à moins de 500 m (2024-2025, actualisées au dernier trimestre)). Fourchette : de la moitié du
+bas de l'intervalle de confiance à 95 % de l'écart à la totalité de son haut.
+Simulation indicative fondée sur les données publiques de l'ADEME et des coûts moyens de marché. Ce document ne constitue ni un
+DPE, ni un audit énergétique réglementaire, ni un devis. Les montants d'aides (barème MaPrimeRénov' en vigueur au 1er septembre
+2026) doivent être confirmés par France Rénov' ou un Accompagnateur Rénov' avant tout engagement.
+8 allée Chopin, 77500 Chelles Page 7 / 7
