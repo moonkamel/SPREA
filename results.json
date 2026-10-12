@@ -1,0 +1,2012 @@
+{
+ "base": "https://sprea.app",
+ "started": "2026-10-12T06:22:38.128Z",
+ "steps": [
+  {
+   "name": "sitemap.xml et robots.txt",
+   "ok": true,
+   "ms": 590,
+   "notes": "97 URL dans le sitemap"
+  },
+  {
+   "name": "page /",
+   "ok": true,
+   "ms": 1691,
+   "notes": "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte · h1 « Trouvez les vendeurs avant les autres. Convainquez »"
+  },
+  {
+   "name": "page /demo",
+   "ok": true,
+   "ms": 1342,
+   "notes": "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV · h1 « Une journée avec SPREA »"
+  },
+  {
+   "name": "page /tarifs",
+   "ok": true,
+   "ms": 1292,
+   "notes": "Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers · h1 « Un mandat signé rembourse des années d'abonnement »"
+  },
+  {
+   "name": "page /observatoire",
+   "ok": true,
+   "ms": 1222,
+   "notes": "Observatoire de la valeur verte : prix des logements selon le DPE · SP · h1 « Combien le DPE pèse-t-il sur le prix d'un logement »"
+  },
+  {
+   "name": "page /cgv",
+   "ok": true,
+   "ms": 1205,
+   "notes": "Conditions générales de vente · SPREA · h1 « Conditions générales de vente »"
+  },
+  {
+   "name": "page /mentions-legales",
+   "ok": true,
+   "ms": 1183,
+   "notes": "Mentions légales · SPREA · h1 « Mentions légales »"
+  },
+  {
+   "name": "page /confidentialite",
+   "ok": true,
+   "ms": 1203,
+   "notes": "Politique de confidentialité · SPREA · h1 « Politique de confidentialité »"
+  },
+  {
+   "name": "page /prospection",
+   "ok": true,
+   "ms": 3247,
+   "notes": "Carte de prospection · SPREA · h1 « Carte de prospection »"
+  },
+  {
+   "name": "page /alertes",
+   "ok": true,
+   "ms": 1122,
+   "notes": "Alertes · SPREA · h1 « Alertes nouveaux DPE »"
+  },
+  {
+   "name": "page /contacts",
+   "ok": true,
+   "ms": 1090,
+   "notes": "Contacts · SPREA · h1 « Contacts »"
+  },
+  {
+   "name": "page /observatoire/ain-01",
+   "ok": true,
+   "ms": 1205,
+   "notes": "Valeur verte Ain (01) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Ain (01) »"
+  },
+  {
+   "name": "page /observatoire/aisne-02",
+   "ok": true,
+   "ms": 1183,
+   "notes": "Valeur verte Aisne (02) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Aisne (02) »"
+  },
+  {
+   "name": "page /observatoire/allier-03",
+   "ok": true,
+   "ms": 1186,
+   "notes": "Valeur verte Allier (03) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Allier (03) »"
+  },
+  {
+   "name": "page /observatoire/alpes-de-haute-provence-04",
+   "ok": true,
+   "ms": 1198,
+   "notes": "Valeur verte Alpes-de-Haute-Provence (04) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Alpes-de-Haute-Pr »"
+  },
+  {
+   "name": "page /observatoire/hautes-alpes-05",
+   "ok": true,
+   "ms": 1208,
+   "notes": "Valeur verte Hautes-Alpes (05) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Hautes-Alpes (05) »"
+  },
+  {
+   "name": "page /observatoire/alpes-maritimes-06",
+   "ok": true,
+   "ms": 1195,
+   "notes": "Valeur verte Alpes-Maritimes (06) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Alpes-Maritimes ( »"
+  },
+  {
+   "name": "page /observatoire/ardeche-07",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Ardèche (07) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Ardèche (07) »"
+  },
+  {
+   "name": "page /observatoire/ardennes-08",
+   "ok": true,
+   "ms": 1198,
+   "notes": "Valeur verte Ardennes (08) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Ardennes (08) »"
+  },
+  {
+   "name": "page /observatoire/ariege-09",
+   "ok": true,
+   "ms": 1225,
+   "notes": "Valeur verte Ariège (09) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Ariège (09) »"
+  },
+  {
+   "name": "page /observatoire/aube-10",
+   "ok": true,
+   "ms": 1204,
+   "notes": "Valeur verte Aube (10) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Aube (10) »"
+  },
+  {
+   "name": "page /observatoire/aude-11",
+   "ok": true,
+   "ms": 1198,
+   "notes": "Valeur verte Aude (11) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Aude (11) »"
+  },
+  {
+   "name": "page /observatoire/aveyron-12",
+   "ok": true,
+   "ms": 1179,
+   "notes": "Valeur verte Aveyron (12) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Aveyron (12) »"
+  },
+  {
+   "name": "page /observatoire/bouches-du-rhone-13",
+   "ok": true,
+   "ms": 1210,
+   "notes": "Valeur verte Bouches-du-Rhône (13) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Bouches-du-Rhône  »"
+  },
+  {
+   "name": "page /observatoire/calvados-14",
+   "ok": true,
+   "ms": 1266,
+   "notes": "Valeur verte Calvados (14) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Calvados (14) »"
+  },
+  {
+   "name": "page /observatoire/cantal-15",
+   "ok": true,
+   "ms": 1326,
+   "notes": "Valeur verte Cantal (15) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Cantal (15) »"
+  },
+  {
+   "name": "page /observatoire/charente-16",
+   "ok": true,
+   "ms": 1189,
+   "notes": "Valeur verte Charente (16) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Charente (16) »"
+  },
+  {
+   "name": "page /observatoire/charente-maritime-17",
+   "ok": true,
+   "ms": 1190,
+   "notes": "Valeur verte Charente-Maritime (17) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Charente-Maritime »"
+  },
+  {
+   "name": "page /observatoire/cher-18",
+   "ok": true,
+   "ms": 1197,
+   "notes": "Valeur verte Cher (18) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Cher (18) »"
+  },
+  {
+   "name": "page /observatoire/correze-19",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Corrèze (19) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Corrèze (19) »"
+  },
+  {
+   "name": "page /observatoire/cote-d-or-21",
+   "ok": true,
+   "ms": 1193,
+   "notes": "Valeur verte Côte-d'Or (21) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Côte-d'Or (21) »"
+  },
+  {
+   "name": "page /observatoire/cotes-d-armor-22",
+   "ok": true,
+   "ms": 1210,
+   "notes": "Valeur verte Côtes-d'Armor (22) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Côtes-d'Armor (22 »"
+  },
+  {
+   "name": "page /observatoire/creuse-23",
+   "ok": true,
+   "ms": 1210,
+   "notes": "Valeur verte Creuse (23) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Creuse (23) »"
+  },
+  {
+   "name": "page /observatoire/dordogne-24",
+   "ok": true,
+   "ms": 1188,
+   "notes": "Valeur verte Dordogne (24) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Dordogne (24) »"
+  },
+  {
+   "name": "page /observatoire/doubs-25",
+   "ok": true,
+   "ms": 1210,
+   "notes": "Valeur verte Doubs (25) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Doubs (25) »"
+  },
+  {
+   "name": "page /observatoire/drome-26",
+   "ok": true,
+   "ms": 1200,
+   "notes": "Valeur verte Drôme (26) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Drôme (26) »"
+  },
+  {
+   "name": "page /observatoire/eure-27",
+   "ok": true,
+   "ms": 1203,
+   "notes": "Valeur verte Eure (27) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Eure (27) »"
+  },
+  {
+   "name": "page /observatoire/eure-et-loir-28",
+   "ok": true,
+   "ms": 1196,
+   "notes": "Valeur verte Eure-et-Loir (28) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Eure-et-Loir (28) »"
+  },
+  {
+   "name": "page /observatoire/finistere-29",
+   "ok": true,
+   "ms": 1193,
+   "notes": "Valeur verte Finistère (29) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Finistère (29) »"
+  },
+  {
+   "name": "page /observatoire/gard-30",
+   "ok": true,
+   "ms": 1196,
+   "notes": "Valeur verte Gard (30) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Gard (30) »"
+  },
+  {
+   "name": "page /observatoire/haute-garonne-31",
+   "ok": true,
+   "ms": 1281,
+   "notes": "Valeur verte Haute-Garonne (31) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Garonne (31 »"
+  },
+  {
+   "name": "page /observatoire/gers-32",
+   "ok": true,
+   "ms": 1192,
+   "notes": "Valeur verte Gers (32) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Gers (32) »"
+  },
+  {
+   "name": "page /observatoire/gironde-33",
+   "ok": true,
+   "ms": 1210,
+   "notes": "Valeur verte Gironde (33) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Gironde (33) »"
+  },
+  {
+   "name": "page /observatoire/herault-34",
+   "ok": true,
+   "ms": 1252,
+   "notes": "Valeur verte Hérault (34) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Hérault (34) »"
+  },
+  {
+   "name": "page /observatoire/ille-et-vilaine-35",
+   "ok": true,
+   "ms": 1182,
+   "notes": "Valeur verte Ille-et-Vilaine (35) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Ille-et-Vilaine ( »"
+  },
+  {
+   "name": "page /observatoire/indre-36",
+   "ok": true,
+   "ms": 1206,
+   "notes": "Valeur verte Indre (36) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Indre (36) »"
+  },
+  {
+   "name": "page /observatoire/indre-et-loire-37",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Indre-et-Loire (37) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Indre-et-Loire (3 »"
+  },
+  {
+   "name": "page /observatoire/isere-38",
+   "ok": true,
+   "ms": 1196,
+   "notes": "Valeur verte Isère (38) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Isère (38) »"
+  },
+  {
+   "name": "page /observatoire/jura-39",
+   "ok": true,
+   "ms": 1221,
+   "notes": "Valeur verte Jura (39) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Jura (39) »"
+  },
+  {
+   "name": "page /observatoire/landes-40",
+   "ok": true,
+   "ms": 1188,
+   "notes": "Valeur verte Landes (40) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Landes (40) »"
+  },
+  {
+   "name": "page /observatoire/loir-et-cher-41",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Loir-et-Cher (41) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Loir-et-Cher (41) »"
+  },
+  {
+   "name": "page /observatoire/loire-42",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Loire (42) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Loire (42) »"
+  },
+  {
+   "name": "page /observatoire/haute-loire-43",
+   "ok": true,
+   "ms": 1195,
+   "notes": "Valeur verte Haute-Loire (43) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Loire (43) »"
+  },
+  {
+   "name": "page /observatoire/loire-atlantique-44",
+   "ok": true,
+   "ms": 1192,
+   "notes": "Valeur verte Loire-Atlantique (44) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Loire-Atlantique  »"
+  },
+  {
+   "name": "page /observatoire/loiret-45",
+   "ok": true,
+   "ms": 1189,
+   "notes": "Valeur verte Loiret (45) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Loiret (45) »"
+  },
+  {
+   "name": "page /observatoire/lot-46",
+   "ok": true,
+   "ms": 1205,
+   "notes": "Valeur verte Lot (46) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Lot (46) »"
+  },
+  {
+   "name": "page /observatoire/lot-et-garonne-47",
+   "ok": true,
+   "ms": 1195,
+   "notes": "Valeur verte Lot-et-Garonne (47) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Lot-et-Garonne (4 »"
+  },
+  {
+   "name": "page /observatoire/maine-et-loire-49",
+   "ok": true,
+   "ms": 1181,
+   "notes": "Valeur verte Maine-et-Loire (49) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Maine-et-Loire (4 »"
+  },
+  {
+   "name": "page /observatoire/manche-50",
+   "ok": true,
+   "ms": 1199,
+   "notes": "Valeur verte Manche (50) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Manche (50) »"
+  },
+  {
+   "name": "page /observatoire/marne-51",
+   "ok": true,
+   "ms": 1189,
+   "notes": "Valeur verte Marne (51) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Marne (51) »"
+  },
+  {
+   "name": "page /observatoire/haute-marne-52",
+   "ok": true,
+   "ms": 1201,
+   "notes": "Valeur verte Haute-Marne (52) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Marne (52) »"
+  },
+  {
+   "name": "page /observatoire/mayenne-53",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Mayenne (53) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Mayenne (53) »"
+  },
+  {
+   "name": "page /observatoire/meurthe-et-moselle-54",
+   "ok": true,
+   "ms": 1185,
+   "notes": "Valeur verte Meurthe-et-Moselle (54) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Meurthe-et-Mosell »"
+  },
+  {
+   "name": "page /observatoire/meuse-55",
+   "ok": true,
+   "ms": 1188,
+   "notes": "Valeur verte Meuse (55) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Meuse (55) »"
+  },
+  {
+   "name": "page /observatoire/morbihan-56",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Morbihan (56) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Morbihan (56) »"
+  },
+  {
+   "name": "page /observatoire/nievre-58",
+   "ok": true,
+   "ms": 1202,
+   "notes": "Valeur verte Nièvre (58) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Nièvre (58) »"
+  },
+  {
+   "name": "page /observatoire/nord-59",
+   "ok": true,
+   "ms": 1197,
+   "notes": "Valeur verte Nord (59) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Nord (59) »"
+  },
+  {
+   "name": "page /observatoire/oise-60",
+   "ok": true,
+   "ms": 1189,
+   "notes": "Valeur verte Oise (60) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Oise (60) »"
+  },
+  {
+   "name": "page /observatoire/orne-61",
+   "ok": true,
+   "ms": 1181,
+   "notes": "Valeur verte Orne (61) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Orne (61) »"
+  },
+  {
+   "name": "page /observatoire/pas-de-calais-62",
+   "ok": true,
+   "ms": 1176,
+   "notes": "Valeur verte Pas-de-Calais (62) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Pas-de-Calais (62 »"
+  },
+  {
+   "name": "page /observatoire/puy-de-dome-63",
+   "ok": true,
+   "ms": 1211,
+   "notes": "Valeur verte Puy-de-Dôme (63) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Puy-de-Dôme (63) »"
+  },
+  {
+   "name": "page /observatoire/pyrenees-atlantiques-64",
+   "ok": true,
+   "ms": 1255,
+   "notes": "Valeur verte Pyrénées-Atlantiques (64) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Pyrénées-Atlantiq »"
+  },
+  {
+   "name": "page /observatoire/hautes-pyrenees-65",
+   "ok": true,
+   "ms": 1195,
+   "notes": "Valeur verte Hautes-Pyrénées (65) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Hautes-Pyrénées ( »"
+  },
+  {
+   "name": "page /observatoire/pyrenees-orientales-66",
+   "ok": true,
+   "ms": 1185,
+   "notes": "Valeur verte Pyrénées-Orientales (66) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Pyrénées-Oriental »"
+  },
+  {
+   "name": "page /observatoire/rhone-69",
+   "ok": true,
+   "ms": 1254,
+   "notes": "Valeur verte Rhône (69) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Rhône (69) »"
+  },
+  {
+   "name": "page /observatoire/haute-saone-70",
+   "ok": true,
+   "ms": 1203,
+   "notes": "Valeur verte Haute-Saône (70) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Saône (70) »"
+  },
+  {
+   "name": "page /observatoire/saone-et-loire-71",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Saône-et-Loire (71) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Saône-et-Loire (7 »"
+  },
+  {
+   "name": "page /observatoire/sarthe-72",
+   "ok": true,
+   "ms": 1233,
+   "notes": "Valeur verte Sarthe (72) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Sarthe (72) »"
+  },
+  {
+   "name": "page /observatoire/savoie-73",
+   "ok": true,
+   "ms": 1186,
+   "notes": "Valeur verte Savoie (73) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Savoie (73) »"
+  },
+  {
+   "name": "page /observatoire/haute-savoie-74",
+   "ok": true,
+   "ms": 1189,
+   "notes": "Valeur verte Haute-Savoie (74) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Savoie (74) »"
+  },
+  {
+   "name": "page /observatoire/paris-75",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Paris (75) : prix selon le DPE · SPREA · h1 « Valeur verte à Paris »"
+  },
+  {
+   "name": "page /observatoire/seine-maritime-76",
+   "ok": true,
+   "ms": 1188,
+   "notes": "Valeur verte Seine-Maritime (76) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Seine-Maritime (7 »"
+  },
+  {
+   "name": "page /observatoire/seine-et-marne-77",
+   "ok": true,
+   "ms": 1190,
+   "notes": "Valeur verte Seine-et-Marne (77) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Seine-et-Marne (7 »"
+  },
+  {
+   "name": "page /observatoire/yvelines-78",
+   "ok": true,
+   "ms": 1233,
+   "notes": "Valeur verte Yvelines (78) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Yvelines (78) »"
+  },
+  {
+   "name": "page /observatoire/deux-sevres-79",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Deux-Sèvres (79) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Deux-Sèvres (79) »"
+  },
+  {
+   "name": "page /observatoire/somme-80",
+   "ok": true,
+   "ms": 1259,
+   "notes": "Valeur verte Somme (80) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Somme (80) »"
+  },
+  {
+   "name": "page /observatoire/tarn-81",
+   "ok": true,
+   "ms": 1202,
+   "notes": "Valeur verte Tarn (81) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Tarn (81) »"
+  },
+  {
+   "name": "page /observatoire/tarn-et-garonne-82",
+   "ok": true,
+   "ms": 1196,
+   "notes": "Valeur verte Tarn-et-Garonne (82) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Tarn-et-Garonne ( »"
+  },
+  {
+   "name": "page /observatoire/var-83",
+   "ok": true,
+   "ms": 1235,
+   "notes": "Valeur verte Var (83) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Var (83) »"
+  },
+  {
+   "name": "page /observatoire/vaucluse-84",
+   "ok": true,
+   "ms": 1200,
+   "notes": "Valeur verte Vaucluse (84) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Vaucluse (84) »"
+  },
+  {
+   "name": "page /observatoire/vendee-85",
+   "ok": true,
+   "ms": 1205,
+   "notes": "Valeur verte Vendée (85) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Vendée (85) »"
+  },
+  {
+   "name": "page /observatoire/vienne-86",
+   "ok": true,
+   "ms": 1219,
+   "notes": "Valeur verte Vienne (86) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Vienne (86) »"
+  },
+  {
+   "name": "page /observatoire/haute-vienne-87",
+   "ok": true,
+   "ms": 1195,
+   "notes": "Valeur verte Haute-Vienne (87) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Haute-Vienne (87) »"
+  },
+  {
+   "name": "page /observatoire/vosges-88",
+   "ok": true,
+   "ms": 1190,
+   "notes": "Valeur verte Vosges (88) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Vosges (88) »"
+  },
+  {
+   "name": "page /observatoire/yonne-89",
+   "ok": true,
+   "ms": 1184,
+   "notes": "Valeur verte Yonne (89) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Yonne (89) »"
+  },
+  {
+   "name": "page /observatoire/territoire-de-belfort-90",
+   "ok": true,
+   "ms": 1179,
+   "notes": "Valeur verte Territoire de Belfort (90) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Territoire de Bel »"
+  },
+  {
+   "name": "page /observatoire/essonne-91",
+   "ok": true,
+   "ms": 1214,
+   "notes": "Valeur verte Essonne (91) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Essonne (91) »"
+  },
+  {
+   "name": "page /observatoire/hauts-de-seine-92",
+   "ok": true,
+   "ms": 1267,
+   "notes": "Valeur verte Hauts-de-Seine (92) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Hauts-de-Seine (9 »"
+  },
+  {
+   "name": "page /observatoire/seine-saint-denis-93",
+   "ok": true,
+   "ms": 1191,
+   "notes": "Valeur verte Seine-Saint-Denis (93) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Seine-Saint-Denis »"
+  },
+  {
+   "name": "page /observatoire/val-de-marne-94",
+   "ok": true,
+   "ms": 1187,
+   "notes": "Valeur verte Val-de-Marne (94) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Val-de-Marne (94) »"
+  },
+  {
+   "name": "page /observatoire/val-d-oise-95",
+   "ok": true,
+   "ms": 1185,
+   "notes": "Valeur verte Val-d'Oise (95) : prix selon le DPE · SPREA · h1 « Valeur verte dans le département Val-d'Oise (95) »"
+  },
+  {
+   "name": "page inexistante → 404 propre",
+   "ok": true,
+   "ms": 702
+  },
+  {
+   "name": "liens internes",
+   "ok": true,
+   "ms": 2644,
+   "notes": "97 liens vérifiés"
+  },
+  {
+   "name": "visite guidée publique : ancres de la frise",
+   "ok": true,
+   "ms": 1584,
+   "notes": "7 ancres, 28 captures"
+  },
+  {
+   "name": "API publique (config, observatoire, géoloc)",
+   "ok": true,
+   "ms": 413
+  },
+  {
+   "name": "mobile / sans défilement horizontal",
+   "ok": true,
+   "ms": 1323
+  },
+  {
+   "name": "mobile /demo sans défilement horizontal",
+   "ok": true,
+   "ms": 1246
+  },
+  {
+   "name": "mobile /tarifs sans défilement horizontal",
+   "ok": true,
+   "ms": 1205
+  },
+  {
+   "name": "mobile /observatoire sans défilement horizontal",
+   "ok": true,
+   "ms": 1217
+  },
+  {
+   "name": "mobile /prospection sans défilement horizontal",
+   "ok": true,
+   "ms": 2527
+  },
+  {
+   "name": "compte Pro temporaire",
+   "ok": true,
+   "ms": 997
+  },
+  {
+   "name": "connexion par le formulaire",
+   "ok": true,
+   "ms": 2225
+  },
+  {
+   "name": "fiche agence (Contacts)",
+   "ok": true,
+   "ms": 3658
+  },
+  {
+   "name": "navigation de l'en-tête (tous les liens)",
+   "ok": true,
+   "ms": 6832,
+   "notes": "Prospection → /prospection (845 ms, « Carte de prospection ») ; PV d'AG → /documents-copro (840 ms, « Documents de copropriété ») ; Alertes → /alertes (820 ms, « Alertes nouveaux DPE ») ; Contacts → /contacts (833 ms, « Contacts ») ; Observatoire → /observatoire (837 ms, « Combien le DPE pèse-t-il sur l ») ; Simulateur → / (833 ms, « Quel logement étudions-nous ? »)"
+  },
+  {
+   "name": "simulateur : recherche par adresse",
+   "ok": true,
+   "ms": 3698,
+   "notes": "Analyse du logement"
+  },
+  {
+   "name": "simulateur : DPE 2659E0132455X → fiche",
+   "ok": true,
+   "ms": 8634,
+   "notes": "Votre projet Scénario recommandé G C +4 classes 155 kWh/m²/an Coût des travaux 25 800 à 38 200 € Aides estimées − 12 900 € Reste à charge ≈ 17 500 € entre 14 800 à 21 900 € Finançable à 0 % jusqu'à 17 400 € Économies sur la facture 7 601 € / an Retour sur investissement 2 ans Valeur verte du bien + "
+  },
+  {
+   "name": "rapport PDF",
+   "ok": true,
+   "ms": 12031,
+   "notes": "rapport.pdf 77 Ko"
+  },
+  {
+   "name": "avis de valeur PDF",
+   "ok": true,
+   "ms": 7390,
+   "notes": "avis.pdf 60 Ko"
+  },
+  {
+   "name": "dossier acheteur PDF (prix du mandat)",
+   "ok": true,
+   "ms": 10320,
+   "notes": "dossier_acheteur.pdf 67 Ko"
+  },
+  {
+   "name": "cocher / décocher un travail recalcule",
+   "ok": true,
+   "ms": 3554
+  },
+  {
+   "name": "carte : logements à rénover (Lille Vauban)",
+   "ok": true,
+   "ms": 3014,
+   "notes": "355 logements · 297 adresses · dans le cadre en pointillés"
+  },
+  {
+   "name": "carte : immeubles entiers",
+   "ok": true,
+   "ms": 8168,
+   "notes": "+ · − ·  Leaflet | © IGN, données DPE ADEME"
+  },
+  {
+   "name": "carte : biens à fort potentiel (analyse réelle)",
+   "ok": true,
+   "ms": 4043,
+   "notes": "101 biens à fort potentiel 150 DPE récents analysés · plus fort potentiel d'abord · valeurs estimées sur les ventes DVF · 40 lignes · visite auto non affichée"
+  },
+  {
+   "name": "tri et filtres",
+   "ok": true,
+   "ms": 24205,
+   "notes": "recent: 101 biens à fort potentiel ; valeur: 101 biens à fort potentiel ; < 6 mois: 18 biens à fort potentiel"
+  },
+  {
+   "name": "suivi d'une adresse : enregistré et retrouvé après rechargement",
+   "ok": true,
+   "ms": 9115,
+   "notes": "Suivi de 26 Rue Jean Bart"
+  },
+  {
+   "name": "dossier propriétaire PDF",
+   "ok": true,
+   "ms": 9623,
+   "notes": "dossier_proprietaire.pdf 67 Ko"
+  },
+  {
+   "name": "visite guidée in-app : relance depuis le menu (Vendre)",
+   "ok": true,
+   "ms": 1774
+  },
+  {
+   "name": "visite guidée in-app : relance depuis le menu (Prospecter)",
+   "ok": true,
+   "ms": 933
+  },
+  {
+   "name": "page Pro /alertes",
+   "ok": true,
+   "ms": 2040,
+   "notes": "2038 ms · Alertes nouveaux DPE"
+  },
+  {
+   "name": "page Pro /documents-copro",
+   "ok": true,
+   "ms": 1801,
+   "notes": "1799 ms · Documents de copropriété"
+  },
+  {
+   "name": "page Pro /observatoire",
+   "ok": true,
+   "ms": 1636,
+   "notes": "1634 ms · Combien le DPE pèse-t-il sur le prix d'un logement ?"
+  },
+  {
+   "name": "page Pro /contacts",
+   "ok": true,
+   "ms": 1563,
+   "notes": "1561 ms · Contacts"
+  },
+  {
+   "name": "fenêtre Mon compte",
+   "ok": true,
+   "ms": 125
+  },
+  {
+   "name": "mobile Pro / sans défilement horizontal",
+   "ok": true,
+   "ms": 2623
+  },
+  {
+   "name": "mobile Pro /prospection?mode=potentiel sans défilement horizontal",
+   "ok": true,
+   "ms": 3136
+  },
+  {
+   "name": "mobile Pro /alertes sans défilement horizontal",
+   "ok": true,
+   "ms": 3164
+  },
+  {
+   "name": "mobile Pro /contacts sans défilement horizontal",
+   "ok": true,
+   "ms": 2999
+  },
+  {
+   "name": "suppression du compte temporaire",
+   "ok": true,
+   "ms": 324
+  }
+ ],
+ "pages": [
+  {
+   "route": "/",
+   "status": 200,
+   "title": "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte, avis de valeur",
+   "description": 181,
+   "h1": "Trouvez les vendeurs avant les autres. Convainquez-les avec des chiffres.",
+   "brokenImages": []
+  },
+  {
+   "route": "/demo",
+   "status": 200,
+   "title": "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
+   "description": 312,
+   "h1": "Une journée avec SPREA",
+   "brokenImages": []
+  },
+  {
+   "route": "/tarifs",
+   "status": 200,
+   "title": "Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers",
+   "description": 165,
+   "h1": "Un mandat signé rembourse des années d'abonnement",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire",
+   "status": 200,
+   "title": "Observatoire de la valeur verte : prix des logements selon le DPE · SPREA",
+   "description": 161,
+   "h1": "Combien le DPE pèse-t-il sur le prix d'un logement ?",
+   "brokenImages": []
+  },
+  {
+   "route": "/cgv",
+   "status": 200,
+   "title": "Conditions générales de vente · SPREA",
+   "description": 178,
+   "h1": "Conditions générales de vente",
+   "brokenImages": []
+  },
+  {
+   "route": "/mentions-legales",
+   "status": 200,
+   "title": "Mentions légales · SPREA",
+   "description": 100,
+   "h1": "Mentions légales",
+   "brokenImages": []
+  },
+  {
+   "route": "/confidentialite",
+   "status": 200,
+   "title": "Politique de confidentialité · SPREA",
+   "description": 119,
+   "h1": "Politique de confidentialité",
+   "brokenImages": []
+  },
+  {
+   "route": "/prospection",
+   "status": 200,
+   "title": "Carte de prospection · SPREA",
+   "description": 0,
+   "h1": "Carte de prospection",
+   "brokenImages": []
+  },
+  {
+   "route": "/alertes",
+   "status": 200,
+   "title": "Alertes · SPREA",
+   "description": 0,
+   "h1": "Alertes nouveaux DPE",
+   "brokenImages": []
+  },
+  {
+   "route": "/contacts",
+   "status": 200,
+   "title": "Contacts · SPREA",
+   "description": 0,
+   "h1": "Contacts",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/ain-01",
+   "status": 200,
+   "title": "Valeur verte Ain (01) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Ain (01)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/aisne-02",
+   "status": 200,
+   "title": "Valeur verte Aisne (02) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Aisne (02)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/allier-03",
+   "status": 200,
+   "title": "Valeur verte Allier (03) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Allier (03)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/alpes-de-haute-provence-04",
+   "status": 200,
+   "title": "Valeur verte Alpes-de-Haute-Provence (04) : prix selon le DPE · SPREA",
+   "description": 298,
+   "h1": "Valeur verte dans le département Alpes-de-Haute-Provence (04)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/hautes-alpes-05",
+   "status": 200,
+   "title": "Valeur verte Hautes-Alpes (05) : prix selon le DPE · SPREA",
+   "description": 287,
+   "h1": "Valeur verte dans le département Hautes-Alpes (05)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/alpes-maritimes-06",
+   "status": 200,
+   "title": "Valeur verte Alpes-Maritimes (06) : prix selon le DPE · SPREA",
+   "description": 290,
+   "h1": "Valeur verte dans le département Alpes-Maritimes (06)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/ardeche-07",
+   "status": 200,
+   "title": "Valeur verte Ardèche (07) : prix selon le DPE · SPREA",
+   "description": 282,
+   "h1": "Valeur verte dans le département Ardèche (07)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/ardennes-08",
+   "status": 200,
+   "title": "Valeur verte Ardennes (08) : prix selon le DPE · SPREA",
+   "description": 261,
+   "h1": "Valeur verte dans le département Ardennes (08)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/ariege-09",
+   "status": 200,
+   "title": "Valeur verte Ariège (09) : prix selon le DPE · SPREA",
+   "description": 259,
+   "h1": "Valeur verte dans le département Ariège (09)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/aube-10",
+   "status": 200,
+   "title": "Valeur verte Aube (10) : prix selon le DPE · SPREA",
+   "description": 257,
+   "h1": "Valeur verte dans le département Aube (10)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/aude-11",
+   "status": 200,
+   "title": "Valeur verte Aude (11) : prix selon le DPE · SPREA",
+   "description": 277,
+   "h1": "Valeur verte dans le département Aude (11)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/aveyron-12",
+   "status": 200,
+   "title": "Valeur verte Aveyron (12) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Aveyron (12)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/bouches-du-rhone-13",
+   "status": 200,
+   "title": "Valeur verte Bouches-du-Rhône (13) : prix selon le DPE · SPREA",
+   "description": 290,
+   "h1": "Valeur verte dans le département Bouches-du-Rhône (13)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/calvados-14",
+   "status": 200,
+   "title": "Valeur verte Calvados (14) : prix selon le DPE · SPREA",
+   "description": 262,
+   "h1": "Valeur verte dans le département Calvados (14)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/cantal-15",
+   "status": 200,
+   "title": "Valeur verte Cantal (15) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Cantal (15)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/charente-16",
+   "status": 200,
+   "title": "Valeur verte Charente (16) : prix selon le DPE · SPREA",
+   "description": 282,
+   "h1": "Valeur verte dans le département Charente (16)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/charente-maritime-17",
+   "status": 200,
+   "title": "Valeur verte Charente-Maritime (17) : prix selon le DPE · SPREA",
+   "description": 292,
+   "h1": "Valeur verte dans le département Charente-Maritime (17)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/cher-18",
+   "status": 200,
+   "title": "Valeur verte Cher (18) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Cher (18)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/correze-19",
+   "status": 200,
+   "title": "Valeur verte Corrèze (19) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Corrèze (19)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/cote-d-or-21",
+   "status": 200,
+   "title": "Valeur verte Côte-d'Or (21) : prix selon le DPE · SPREA",
+   "description": 284,
+   "h1": "Valeur verte dans le département Côte-d'Or (21)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/cotes-d-armor-22",
+   "status": 200,
+   "title": "Valeur verte Côtes-d'Armor (22) : prix selon le DPE · SPREA",
+   "description": 286,
+   "h1": "Valeur verte dans le département Côtes-d'Armor (22)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/creuse-23",
+   "status": 200,
+   "title": "Valeur verte Creuse (23) : prix selon le DPE · SPREA",
+   "description": 222,
+   "h1": "Valeur verte dans le département Creuse (23)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/dordogne-24",
+   "status": 200,
+   "title": "Valeur verte Dordogne (24) : prix selon le DPE · SPREA",
+   "description": 282,
+   "h1": "Valeur verte dans le département Dordogne (24)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/doubs-25",
+   "status": 200,
+   "title": "Valeur verte Doubs (25) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Doubs (25)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/drome-26",
+   "status": 200,
+   "title": "Valeur verte Drôme (26) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Drôme (26)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/eure-27",
+   "status": 200,
+   "title": "Valeur verte Eure (27) : prix selon le DPE · SPREA",
+   "description": 258,
+   "h1": "Valeur verte dans le département Eure (27)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/eure-et-loir-28",
+   "status": 200,
+   "title": "Valeur verte Eure-et-Loir (28) : prix selon le DPE · SPREA",
+   "description": 284,
+   "h1": "Valeur verte dans le département Eure-et-Loir (28)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/finistere-29",
+   "status": 200,
+   "title": "Valeur verte Finistère (29) : prix selon le DPE · SPREA",
+   "description": 284,
+   "h1": "Valeur verte dans le département Finistère (29)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/gard-30",
+   "status": 200,
+   "title": "Valeur verte Gard (30) : prix selon le DPE · SPREA",
+   "description": 258,
+   "h1": "Valeur verte dans le département Gard (30)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-garonne-31",
+   "status": 200,
+   "title": "Valeur verte Haute-Garonne (31) : prix selon le DPE · SPREA",
+   "description": 287,
+   "h1": "Valeur verte dans le département Haute-Garonne (31)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/gers-32",
+   "status": 200,
+   "title": "Valeur verte Gers (32) : prix selon le DPE · SPREA",
+   "description": 257,
+   "h1": "Valeur verte dans le département Gers (32)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/gironde-33",
+   "status": 200,
+   "title": "Valeur verte Gironde (33) : prix selon le DPE · SPREA",
+   "description": 283,
+   "h1": "Valeur verte dans le département Gironde (33)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/herault-34",
+   "status": 200,
+   "title": "Valeur verte Hérault (34) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Hérault (34)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/ille-et-vilaine-35",
+   "status": 200,
+   "title": "Valeur verte Ille-et-Vilaine (35) : prix selon le DPE · SPREA",
+   "description": 287,
+   "h1": "Valeur verte dans le département Ille-et-Vilaine (35)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/indre-36",
+   "status": 200,
+   "title": "Valeur verte Indre (36) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Indre (36)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/indre-et-loire-37",
+   "status": 200,
+   "title": "Valeur verte Indre-et-Loire (37) : prix selon le DPE · SPREA",
+   "description": 288,
+   "h1": "Valeur verte dans le département Indre-et-Loire (37)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/isere-38",
+   "status": 200,
+   "title": "Valeur verte Isère (38) : prix selon le DPE · SPREA",
+   "description": 277,
+   "h1": "Valeur verte dans le département Isère (38)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/jura-39",
+   "status": 200,
+   "title": "Valeur verte Jura (39) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Jura (39)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/landes-40",
+   "status": 200,
+   "title": "Valeur verte Landes (40) : prix selon le DPE · SPREA",
+   "description": 260,
+   "h1": "Valeur verte dans le département Landes (40)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/loir-et-cher-41",
+   "status": 200,
+   "title": "Valeur verte Loir-et-Cher (41) : prix selon le DPE · SPREA",
+   "description": 286,
+   "h1": "Valeur verte dans le département Loir-et-Cher (41)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/loire-42",
+   "status": 200,
+   "title": "Valeur verte Loire (42) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Loire (42)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-loire-43",
+   "status": 200,
+   "title": "Valeur verte Haute-Loire (43) : prix selon le DPE · SPREA",
+   "description": 264,
+   "h1": "Valeur verte dans le département Haute-Loire (43)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/loire-atlantique-44",
+   "status": 200,
+   "title": "Valeur verte Loire-Atlantique (44) : prix selon le DPE · SPREA",
+   "description": 290,
+   "h1": "Valeur verte dans le département Loire-Atlantique (44)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/loiret-45",
+   "status": 200,
+   "title": "Valeur verte Loiret (45) : prix selon le DPE · SPREA",
+   "description": 260,
+   "h1": "Valeur verte dans le département Loiret (45)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/lot-46",
+   "status": 200,
+   "title": "Valeur verte Lot (46) : prix selon le DPE · SPREA",
+   "description": 277,
+   "h1": "Valeur verte dans le département Lot (46)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/lot-et-garonne-47",
+   "status": 200,
+   "title": "Valeur verte Lot-et-Garonne (47) : prix selon le DPE · SPREA",
+   "description": 289,
+   "h1": "Valeur verte dans le département Lot-et-Garonne (47)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/maine-et-loire-49",
+   "status": 200,
+   "title": "Valeur verte Maine-et-Loire (49) : prix selon le DPE · SPREA",
+   "description": 289,
+   "h1": "Valeur verte dans le département Maine-et-Loire (49)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/manche-50",
+   "status": 200,
+   "title": "Valeur verte Manche (50) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Manche (50)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/marne-51",
+   "status": 200,
+   "title": "Valeur verte Marne (51) : prix selon le DPE · SPREA",
+   "description": 257,
+   "h1": "Valeur verte dans le département Marne (51)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-marne-52",
+   "status": 200,
+   "title": "Valeur verte Haute-Marne (52) : prix selon le DPE · SPREA",
+   "description": 285,
+   "h1": "Valeur verte dans le département Haute-Marne (52)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/mayenne-53",
+   "status": 200,
+   "title": "Valeur verte Mayenne (53) : prix selon le DPE · SPREA",
+   "description": 282,
+   "h1": "Valeur verte dans le département Mayenne (53)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/meurthe-et-moselle-54",
+   "status": 200,
+   "title": "Valeur verte Meurthe-et-Moselle (54) : prix selon le DPE · SPREA",
+   "description": 293,
+   "h1": "Valeur verte dans le département Meurthe-et-Moselle (54)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/meuse-55",
+   "status": 200,
+   "title": "Valeur verte Meuse (55) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Meuse (55)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/morbihan-56",
+   "status": 200,
+   "title": "Valeur verte Morbihan (56) : prix selon le DPE · SPREA",
+   "description": 284,
+   "h1": "Valeur verte dans le département Morbihan (56)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/nievre-58",
+   "status": 200,
+   "title": "Valeur verte Nièvre (58) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Nièvre (58)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/nord-59",
+   "status": 200,
+   "title": "Valeur verte Nord (59) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Nord (59)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/oise-60",
+   "status": 200,
+   "title": "Valeur verte Oise (60) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Oise (60)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/orne-61",
+   "status": 200,
+   "title": "Valeur verte Orne (61) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Orne (61)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/pas-de-calais-62",
+   "status": 200,
+   "title": "Valeur verte Pas-de-Calais (62) : prix selon le DPE · SPREA",
+   "description": 288,
+   "h1": "Valeur verte dans le département Pas-de-Calais (62)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/puy-de-dome-63",
+   "status": 200,
+   "title": "Valeur verte Puy-de-Dôme (63) : prix selon le DPE · SPREA",
+   "description": 286,
+   "h1": "Valeur verte dans le département Puy-de-Dôme (63)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/pyrenees-atlantiques-64",
+   "status": 200,
+   "title": "Valeur verte Pyrénées-Atlantiques (64) : prix selon le DPE · SPREA",
+   "description": 295,
+   "h1": "Valeur verte dans le département Pyrénées-Atlantiques (64)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/hautes-pyrenees-65",
+   "status": 200,
+   "title": "Valeur verte Hautes-Pyrénées (65) : prix selon le DPE · SPREA",
+   "description": 289,
+   "h1": "Valeur verte dans le département Hautes-Pyrénées (65)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/pyrenees-orientales-66",
+   "status": 200,
+   "title": "Valeur verte Pyrénées-Orientales (66) : prix selon le DPE · SPREA",
+   "description": 293,
+   "h1": "Valeur verte dans le département Pyrénées-Orientales (66)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/rhone-69",
+   "status": 200,
+   "title": "Valeur verte Rhône (69) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Rhône (69)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-saone-70",
+   "status": 200,
+   "title": "Valeur verte Haute-Saône (70) : prix selon le DPE · SPREA",
+   "description": 285,
+   "h1": "Valeur verte dans le département Haute-Saône (70)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/saone-et-loire-71",
+   "status": 200,
+   "title": "Valeur verte Saône-et-Loire (71) : prix selon le DPE · SPREA",
+   "description": 288,
+   "h1": "Valeur verte dans le département Saône-et-Loire (71)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/sarthe-72",
+   "status": 200,
+   "title": "Valeur verte Sarthe (72) : prix selon le DPE · SPREA",
+   "description": 282,
+   "h1": "Valeur verte dans le département Sarthe (72)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/savoie-73",
+   "status": 200,
+   "title": "Valeur verte Savoie (73) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Savoie (73)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-savoie-74",
+   "status": 200,
+   "title": "Valeur verte Haute-Savoie (74) : prix selon le DPE · SPREA",
+   "description": 288,
+   "h1": "Valeur verte dans le département Haute-Savoie (74)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/paris-75",
+   "status": 200,
+   "title": "Valeur verte Paris (75) : prix selon le DPE · SPREA",
+   "description": 115,
+   "h1": "Valeur verte à Paris",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/seine-maritime-76",
+   "status": 200,
+   "title": "Valeur verte Seine-Maritime (76) : prix selon le DPE · SPREA",
+   "description": 287,
+   "h1": "Valeur verte dans le département Seine-Maritime (76)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/seine-et-marne-77",
+   "status": 200,
+   "title": "Valeur verte Seine-et-Marne (77) : prix selon le DPE · SPREA",
+   "description": 290,
+   "h1": "Valeur verte dans le département Seine-et-Marne (77)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/yvelines-78",
+   "status": 200,
+   "title": "Valeur verte Yvelines (78) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Yvelines (78)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/deux-sevres-79",
+   "status": 200,
+   "title": "Valeur verte Deux-Sèvres (79) : prix selon le DPE · SPREA",
+   "description": 284,
+   "h1": "Valeur verte dans le département Deux-Sèvres (79)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/somme-80",
+   "status": 200,
+   "title": "Valeur verte Somme (80) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Somme (80)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/tarn-81",
+   "status": 200,
+   "title": "Valeur verte Tarn (81) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Tarn (81)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/tarn-et-garonne-82",
+   "status": 200,
+   "title": "Valeur verte Tarn-et-Garonne (82) : prix selon le DPE · SPREA",
+   "description": 290,
+   "h1": "Valeur verte dans le département Tarn-et-Garonne (82)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/var-83",
+   "status": 200,
+   "title": "Valeur verte Var (83) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Var (83)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/vaucluse-84",
+   "status": 200,
+   "title": "Valeur verte Vaucluse (84) : prix selon le DPE · SPREA",
+   "description": 281,
+   "h1": "Valeur verte dans le département Vaucluse (84)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/vendee-85",
+   "status": 200,
+   "title": "Valeur verte Vendée (85) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Vendée (85)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/vienne-86",
+   "status": 200,
+   "title": "Valeur verte Vienne (86) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Vienne (86)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/haute-vienne-87",
+   "status": 200,
+   "title": "Valeur verte Haute-Vienne (87) : prix selon le DPE · SPREA",
+   "description": 285,
+   "h1": "Valeur verte dans le département Haute-Vienne (87)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/vosges-88",
+   "status": 200,
+   "title": "Valeur verte Vosges (88) : prix selon le DPE · SPREA",
+   "description": 278,
+   "h1": "Valeur verte dans le département Vosges (88)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/yonne-89",
+   "status": 200,
+   "title": "Valeur verte Yonne (89) : prix selon le DPE · SPREA",
+   "description": 279,
+   "h1": "Valeur verte dans le département Yonne (89)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/territoire-de-belfort-90",
+   "status": 200,
+   "title": "Valeur verte Territoire de Belfort (90) : prix selon le DPE · SPREA",
+   "description": 274,
+   "h1": "Valeur verte dans le département Territoire de Belfort (90)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/essonne-91",
+   "status": 200,
+   "title": "Valeur verte Essonne (91) : prix selon le DPE · SPREA",
+   "description": 280,
+   "h1": "Valeur verte dans le département Essonne (91)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/hauts-de-seine-92",
+   "status": 200,
+   "title": "Valeur verte Hauts-de-Seine (92) : prix selon le DPE · SPREA",
+   "description": 289,
+   "h1": "Valeur verte dans le département Hauts-de-Seine (92)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/seine-saint-denis-93",
+   "status": 200,
+   "title": "Valeur verte Seine-Saint-Denis (93) : prix selon le DPE · SPREA",
+   "description": 291,
+   "h1": "Valeur verte dans le département Seine-Saint-Denis (93)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/val-de-marne-94",
+   "status": 200,
+   "title": "Valeur verte Val-de-Marne (94) : prix selon le DPE · SPREA",
+   "description": 286,
+   "h1": "Valeur verte dans le département Val-de-Marne (94)",
+   "brokenImages": []
+  },
+  {
+   "route": "/observatoire/val-d-oise-95",
+   "status": 200,
+   "title": "Valeur verte Val-d'Oise (95) : prix selon le DPE · SPREA",
+   "description": 286,
+   "h1": "Valeur verte dans le département Val-d'Oise (95)",
+   "brokenImages": []
+  }
+ ],
+ "links": [
+  {
+   "href": "/demo",
+   "status": 200
+  },
+  {
+   "href": "/observatoire",
+   "status": 200
+  },
+  {
+   "href": "/tarifs",
+   "status": 200
+  },
+  {
+   "href": "/cgv",
+   "status": 200
+  },
+  {
+   "href": "/mentions-legales",
+   "status": 200
+  },
+  {
+   "href": "/confidentialite",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/deux-sevres-79",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/mayenne-53",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/sarthe-72",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/creuse-23",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/correze-19",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/allier-03",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/nord-59",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/orne-61",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/cantal-15",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/meurthe-et-moselle-54",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/indre-36",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-saone-70",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/meuse-55",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-vienne-87",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/jura-39",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/saone-et-loire-71",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/somme-80",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/cher-18",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-marne-52",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/pas-de-calais-62",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/nievre-58",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/vienne-86",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/loir-et-cher-41",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/pyrenees-atlantiques-64",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/yonne-89",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/dordogne-24",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/cotes-d-armor-22",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/aveyron-12",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/hautes-pyrenees-65",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/puy-de-dome-63",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/lot-46",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/charente-16",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/doubs-25",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/vosges-88",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/finistere-29",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/manche-50",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/aisne-02",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/eure-et-loir-28",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/cote-d-or-21",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/indre-et-loire-37",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/maine-et-loire-49",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/seine-maritime-76",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/vendee-85",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/aube-10",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/marne-51",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/territoire-de-belfort-90",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-loire-43",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/loiret-45",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/ardennes-08",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/ariege-09",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/eure-27",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/gard-30",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/landes-40",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/calvados-14",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/gers-32",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/loire-42",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/ardeche-07",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/morbihan-56",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/oise-60",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/tarn-et-garonne-82",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/lot-et-garonne-47",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/tarn-81",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/aude-11",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/loire-atlantique-44",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/alpes-de-haute-provence-04",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/charente-maritime-17",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/savoie-73",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/gironde-33",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/drome-26",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/ain-01",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/isere-38",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/ille-et-vilaine-35",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-savoie-74",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/seine-et-marne-77",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/haute-garonne-31",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/essonne-91",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/yvelines-78",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/vaucluse-84",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/seine-saint-denis-93",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/pyrenees-orientales-66",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/val-de-marne-94",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/herault-34",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/val-d-oise-95",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/hautes-alpes-05",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/alpes-maritimes-06",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/rhone-69",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/hauts-de-seine-92",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/var-83",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/bouches-du-rhone-13",
+   "status": 200
+  },
+  {
+   "href": "/observatoire/paris-75",
+   "status": 200
+  }
+ ],
+ "console": [],
+ "failed": [],
+ "finished": "2026-10-12T06:27:15.084Z",
+ "summary": {
+  "steps": 138,
+  "failed": [],
+  "console": 0,
+  "httpErrors": 0
+ }
+}
