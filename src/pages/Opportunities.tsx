@@ -30,6 +30,8 @@ export interface Opportunity {
     resale: number;
     margin: number;
     margin_pct: number | null;
+    // What the works add to the value, aids deducted (the potential)
+    value_created: number;
     rent_month?: number;
     gross_yield?: number | null;
     rental_now: string;
@@ -101,8 +103,8 @@ export function dpeAge(day: string | null): string {
 
 // Marker colour: what the renovation adds to the dwelling
 export function potentialColor(o: Opportunity): string {
-    if (o.margin <= 0) return '#8A93A3';
-    if ((o.margin_pct ?? 0) >= 15) return '#3E8E63';
+    if ((o.value_created ?? 0) <= 0) return '#8A93A3';
+    if ((o.value_created ?? 0) >= 0.05 * o.price) return '#3E8E63';
     return '#C9A45C';
 }
 

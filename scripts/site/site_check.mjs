@@ -226,6 +226,8 @@ if (created) {
                 await page.locator('header nav a', { hasText: label }).first().click({ force: true });
             }
             await page.waitForLoadState('networkidle');
+            // Lazy pages: let the new page replace the previous one before reading it
+            await page.waitForTimeout(800);
             await skipTour(page);
             const h1 = (await page.locator('h1').first().textContent().catch(() => '')) || '';
             visited.push(`${label} → ${new URL(page.url()).pathname} (${Date.now() - t0} ms, « ${h1.trim().slice(0, 30)} »)`);

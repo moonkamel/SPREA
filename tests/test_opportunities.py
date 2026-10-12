@@ -193,6 +193,10 @@ def test_scan_sorts_and_filters_for_the_agent():
     assert by_value["sort"] == "valeur" and by_value["items"][0]["number"] == "2659E0000003C"
     assert "2659E0000003C" not in [o["number"] for o in run(max_age_months=6)["items"]]
     assert all(o["price"] <= 200000 for o in run(max_value=200000)["items"])
+    # The count and the ranking are the agent's potential: value added by the works, aids deducted
+    res = run(sort="potentiel")
+    assert res["positive"] == sum(1 for o in res["items"] if o["value_created"] > 0)
+    assert [o["value_created"] for o in res["items"]] == sorted((o["value_created"] for o in res["items"]), reverse=True)
 
 
 def test_follow_up_shared_by_the_agency(env):

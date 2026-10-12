@@ -305,13 +305,15 @@ async def scan(bbox: str, labels: List[str], kind: Optional[str], profile: str,
     # argument), by freshness of the DPE or by value; an investor by yield
     sort = sort if sort in SORTS else ("rendement" if profile == "bailleur" else "potentiel")
     sort_key = {
-        "potentiel": lambda o: o["margin"],
+        # For the agent: what the works add to the dwelling's value, aids
+        # deducted, without a buyer's notary fees (those stay in the files)
+        "potentiel": lambda o: (o.get("value_created") or 0, o["margin"]),
         "recent": lambda o: o.get("dpe_date") or "",
         "valeur": lambda o: o["price"],
         "rendement": lambda o: (o.get("gross_yield") or 0, o["margin"]),
     }[sort]
     items.sort(key=sort_key, reverse=True)
-    positive = [o for o in items if o["margin"] > 0]
+    positive = [o for o in items if (o.get("value_created") or 0) > 0]
     return {
         "profile": profile,
         "sort": sort,
