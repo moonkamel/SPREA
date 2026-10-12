@@ -206,9 +206,25 @@ if (created) {
         await page.goto(BASE + '/', { waitUntil: 'networkidle' });
         await skipTour(page);
         const visited = [];
+        const blocked = [];
         for (const label of ['Prospection', "PV d'AG", 'Alertes', 'Contacts', 'Observatoire', 'Simulateur']) {
             const t0 = Date.now();
-            await page.locator('header nav a', { hasText: label }).first().click();
+            try {
+                await page.locator('header nav a', { hasText: label }).first().click({ timeout: 10000 });
+            } catch (e) {
+                // What covers the link, for the report
+                const reason = String(e.message).split('\n').filter(l => /intercept|visible|stable|enabled|retrying/.test(l)).slice(0, 3).join(' / ');
+                const top = await page.evaluate(lbl => {
+                    const a = [...document.querySelectorAll('header nav a')].find(x => x.textContent.includes(lbl));
+                    if (!a) return 'lien absent';
+                    const r = a.getBoundingClientRect();
+                    const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                    return el ? `${el.tagName}.${String(el.className).slice(0, 80)}` : 'rien';
+                }, label);
+                await page.screenshot({ path: path.join(OUT, 'shots', `nav_blocked_${blocked.length}.png`) });
+                blocked.push(`${label} (${reason} ; au-dessus : ${top})`);
+                await page.locator('header nav a', { hasText: label }).first().click({ force: true });
+            }
             await page.waitForLoadState('networkidle');
             await skipTour(page);
             const h1 = (await page.locator('h1').first().textContent().catch(() => '')) || '';
@@ -216,6 +232,7 @@ if (created) {
         }
         await page.goBack(); await page.waitForLoadState('networkidle');
         await page.goForward(); await page.waitForLoadState('networkidle');
+        if (blocked.length) throw new Error('liens couverts : ' + blocked.join(' ; ') + ' — ' + visited.join(' ; '));
         return visited.join(' ; ');
     });
 
@@ -275,17 +292,16 @@ if (created) {
         await skipTour(page);
         await page.locator('input[aria-label="Commune ou adresse"]').fill('Place Philippe Lebon, Lille');
         await page.locator('input[aria-label="Commune ou adresse"]').press('Enter');
-        await page.waitForTimeout(6000);
-        const n = await page.locator('.sprea-map path.leaflet-interactive').count();
+        // Markers are drawn on a canvas: the count badge of the map says what is shown
+        await page.getByText(/\d[\d\s]* logements? · \d/).first().waitFor({ timeout: 30000 });
         await page.screenshot({ path: path.join(OUT, 'shots', 'map_dpe.png') });
-        if (!n) throw new Error('aucun logement sur la carte');
-        return `${n} marqueurs`;
+        return (await page.getByText(/\d[\d\s]* logements? · \d/).first().textContent()).trim();
     });
     await step('carte : immeubles entiers', async () => {
         await page.getByRole('tab', { name: 'Immeubles entiers' }).click();
         await page.waitForTimeout(8000);
         await page.screenshot({ path: path.join(OUT, 'shots', 'map_immeubles.png') });
-        return `${await page.locator('.sprea-map path.leaflet-interactive').count()} marqueurs`;
+        return (await page.locator('aside, .lg\\:grid-cols-\\[1fr_380px\\]').first().innerText().catch(() => '')).split('\n').slice(0, 3).join(' · ');
     });
     await step('carte : biens à fort potentiel (analyse réelle)', async () => {
         await page.getByRole('tab', { name: 'Biens à fort potentiel' }).click();

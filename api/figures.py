@@ -34,6 +34,17 @@ def display_figures(sim: Dict[str, Any], works: List[Dict[str, Any]],
             "rest_low": max(0, low - aids_low), "rest_high": max(0, high - aids_high)}
 
 
+def cost_range(sim: Dict[str, Any]) -> Dict[str, int]:
+    """Low and high cost as every document shows them: the sum of the lines,
+    each rounded (works to 100 EUR, parking to 10 EUR). The screen and the
+    files gave 25 700 EUR where the report and the avis gave 25 800 EUR."""
+    lines = sim.get("detailed_costs") or []
+    step = lambda d: 10 if d.get("id") == "parking" else 100
+    if not lines:
+        return {"low": r(sim.get("cost_low")), "high": r(sim.get("cost_high"))}
+    return {"low": sum(r(d["cost_low"], step(d)) for d in lines), "high": sum(r(d["cost_high"], step(d)) for d in lines)}
+
+
 def green_range_shown(sim: Dict[str, Any]) -> bool:
     """The 95 % range of the green value, unless so wide (few comparable
     sales) that it says nothing: "0 € à 134 000 €" for a value of 20 000 €."""

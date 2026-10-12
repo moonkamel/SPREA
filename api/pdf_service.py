@@ -1294,7 +1294,7 @@ class PDFReportGenerator:
         works = [[head('Travaux'), head('Fourchette TTC', 2)]]
         for c in sim['detailed_costs']:
             works.append([Paragraph(text(c['name']), S['body']), Paragraph(eur_range(c['cost_low'], c['cost_high']), S['right'])])
-        works.append([Paragraph('<b>Total</b>', S['body']), Paragraph(f"<b>{eur_range(sim['cost_low'], sim['cost_high'])}</b>", S['right'])])
+        works.append([Paragraph('<b>Total</b>', S['body']), Paragraph(f"<b>{eur_range(d['works_low'], d['works_high'])}</b>", S['right'])])
         story += [CondPageBreak(6 * cm), Spacer(1, 18), next_section('Le programme de travaux'), Spacer(1, 8),
                   Paragraph(f"Programme simulé à partir du DPE pour passer de la classe {text(d['label'])} à la classe {text(d['new_label'])} "
                             f"({num(sim['initial_cep'])} → {num(sim['new_cep'])}{NBSP}kWh/m²/an). Durée indicative : {days(sim.get('duration_days'))}.",

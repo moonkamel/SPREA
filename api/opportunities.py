@@ -34,6 +34,7 @@ try:
     from api.ademe_client import AdemeConnector
     from api.auth import User, current_user
     from api.dvf import market_price
+    from api.figures import cost_range
     from api.green_value import department, kind_of
     from api.pdf_service import pdf_service
     from api.prospection import ADEME_URL, AreaTooLarge, parse_bbox
@@ -49,6 +50,7 @@ except ImportError:
     from ademe_client import AdemeConnector
     from auth import User, current_user
     from dvf import market_price
+    from figures import cost_range
     from green_value import department, kind_of
     from pdf_service import pdf_service
     from prospection import ADEME_URL, AreaTooLarge, parse_bbox
@@ -137,13 +139,19 @@ def investment(v: Dict[str, Any], sim: Dict[str, Any], profile: str, surface: fl
     price = round(v["value_now"]["value"], -2)
     notary = round(price * p["notary"], -2)
     works = round(sim["cost"], -2)
-    aids = round(sim["subsidies"] + sim["cee_est"], -2) if p["aids"] else 0.0
+    # Aids rounded as the report rounds them (api/figures.py display_figures)
+    if not p["aids"]:
+        aids = 0.0
+    elif sim.get("aid_pathway") == "accompagne":
+        aids = round(sim["subsidies"], -2)
+    else:
+        aids = round(sim["subsidies"], -1) + round(sim["cee_est"], -1)
     total = price + notary + works - aids
     resale = round(v["value_after"]["value"], -2)
     margin = resale - total
     out = {
         "price": price, "notary": notary, "works": works,
-        "works_low": round(sim["cost_low"], -2), "works_high": round(sim["cost_high"], -2),
+        "works_low": cost_range(sim)["low"], "works_high": cost_range(sim)["high"],
         "aids": aids, "total": total, "resale": resale,
         "resale_low": v["value_after"]["low"], "resale_high": v["value_after"]["high"],
         "margin": margin, "margin_pct": round(100 * margin / total, 1) if total > 0 else None,

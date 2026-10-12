@@ -88,7 +88,7 @@ def test_investment_figures_by_profile():
     # Shown lines add up to the budget and the margin
     odd = investment({"value_now": {"value": 153049}, "value_after": {"value": 187020, "low": 1, "high": 2}},
                      {**sim, "cost": 26437, "subsidies": 10270, "cee_est": 1003}, "bailleur", 96, None)
-    assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 100 == 0
+    assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 10 == 0
     assert odd["margin"] == odd["resale"] - odd["total"]
     assert landlord["rent_month"] == 1290 and landlord["gross_yield"] == round(100 * 14 * 92 * 12 / 236000, 1)
     # 47 rue de Bourgogne, Lille: a 328 m2 house does not let at the commune's rent per m2
@@ -222,3 +222,15 @@ def test_follow_up_shared_by_the_agency(env):
     assert got == {"2659E0000001A": {"status": "courrier", "updated_at": got["2659E0000001A"]["updated_at"], "mine": False}}
     client.put("/api/prospect-status", json={"number": "2659E0000001A", "status": None})
     assert client.get("/api/prospect-status?numbers=2659E0000001A").json()["statuses"] == {}
+
+
+def test_files_show_the_report_cost_range():
+    """2659E0132455X: the report and the avis said 25 800 - 38 200 EUR, the
+    screen and the files 25 700 - 38 200 EUR."""
+    from api.figures import display_figures
+    o = asyncio.run(analyse(RAW, "bailleur", dvf_transport=dvf_transport(), rent_transport=rent_transport()))
+    sim = o["_sim"]
+    works = [d for d in sim["detailed_costs"] if d["id"] != "parking"]
+    extras = [d for d in sim["detailed_costs"] if d["id"] == "parking"]
+    fig = display_figures(sim, works, extras)
+    assert (o["works_low"], o["works_high"]) == (fig["cost_low"], fig["cost_high"])
