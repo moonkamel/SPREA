@@ -151,7 +151,7 @@ def _render(d: Dict[str, Any], compact: bool) -> bytes:
             Paragraph(text(f"Prix : {v['source'] or 'ventes DVF voisines'}. Correction selon la classe DPE de chaque logement"
                            + (" (écarts mesurés sur les ventes du département)." if v.get('scope') == "department" else
                               " (écarts mesurés sur les ventes nationales)." if v.get('scope') == "national" else " (aucun écart mesuré : pas de correction).")
-                           + f" Après rénovation : {round(WORKS_SHARE * 100)}{NBSP}% de l'écart retenus, le reste tient à l'état général des logements."
+                           + f" Après rénovation : {round(WORKS_SHARE * 100)}{NBSP}% de l'écart retenus, dans la limite de deux fois le coût des travaux ; le reste tient à l'état général des logements."
                            + " Estimation indicative, qui ne remplace pas une expertise."), S['small'])])]
 
     # 5. Owner, obligations and contact

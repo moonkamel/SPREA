@@ -34,6 +34,7 @@ try:
     from api.ademe_client import AdemeConnector
     from api.auth import User, current_user
     from api.dvf import market_price
+    from api.figures import cost_range
     from api.green_value import department, kind_of
     from api.pdf_service import pdf_service
     from api.prospection import ADEME_URL, AreaTooLarge, parse_bbox
@@ -49,6 +50,7 @@ except ImportError:
     from ademe_client import AdemeConnector
     from auth import User, current_user
     from dvf import market_price
+    from figures import cost_range
     from green_value import department, kind_of
     from pdf_service import pdf_service
     from prospection import ADEME_URL, AreaTooLarge, parse_bbox
@@ -114,33 +116,57 @@ async def area_rows(bbox: str, labels: List[str], kind: Optional[str],
     return rows[:SCAN_LIMIT], data.get("total", len(rows))
 
 
+# Surfaces the "Carte des loyers" is calibrated on (typical dwellings of the
+# model); a larger dwelling lets for less per m2, a smaller one for more
+RENT_REF_SURFACE = {"maison": 92, "appartement": 52}
+
+
+def rent_surface_factor(surface: float, kind: Optional[str]) -> float:
+    """47 rue de Bourgogne, Lille: a 328 m2 house at the commune's 12,7 EUR/m2
+    gave 4 180 EUR a month. Rent per m2 falls with the surface: elasticity
+    -0.25, bounded to +/- 25 %."""
+    ref = RENT_REF_SURFACE["maison" if "maison" in (kind or "").lower() else "appartement"]
+    if not surface or surface <= 0:
+        return 1.0
+    return min(1.25, max(0.75, (ref / surface) ** 0.25))
+
+
 def investment(v: Dict[str, Any], sim: Dict[str, Any], profile: str, surface: float,
-               rent: Optional[Dict[str, float]]) -> Dict[str, Any]:
+               rent: Optional[Dict[str, Any]], kind: Optional[str] = None) -> Dict[str, Any]:
     """The investor's figures from the valuation and the simulation."""
     p = PROFILES[profile]
     # Each line rounded once, the totals from the rounded lines: the table adds up
     price = round(v["value_now"]["value"], -2)
     notary = round(price * p["notary"], -2)
     works = round(sim["cost"], -2)
-    aids = round(sim["subsidies"] + sim["cee_est"], -2) if p["aids"] else 0.0
+    # Aids rounded as the report rounds them (api/figures.py display_figures)
+    if not p["aids"]:
+        aids = 0.0
+    elif sim.get("aid_pathway") == "accompagne":
+        aids = round(sim["subsidies"], -2)
+    else:
+        aids = round(sim["subsidies"], -1) + round(sim["cee_est"], -1)
     total = price + notary + works - aids
     resale = round(v["value_after"]["value"], -2)
     margin = resale - total
     out = {
         "price": price, "notary": notary, "works": works,
-        "works_low": round(sim["cost_low"], -2), "works_high": round(sim["cost_high"], -2),
+        "works_low": cost_range(sim)["low"], "works_high": cost_range(sim)["high"],
         "aids": aids, "total": total, "resale": resale,
         "resale_low": v["value_after"]["low"], "resale_high": v["value_after"]["high"],
         "margin": margin, "margin_pct": round(100 * margin / total, 1) if total > 0 else None,
         "value_created": resale - price - works + aids,
     }
     if rent:
-        monthly = rent["rent_m2"] * surface
+        # The commune's rent, brought to this dwelling's surface (once)
+        factor = 1.0 if rent.get("adjusted") else rent_surface_factor(surface, kind)
+        monthly = rent["rent_m2"] * factor * surface
         out.update({
-            "rent_m2": round(rent["rent_m2"], 1),
+            "rent_m2": round(rent["rent_m2"] * factor, 1),
+            "rent_m2_commune": round(rent.get("commune_m2") or rent["rent_m2"], 1),
             "rent_month": round(monthly, -1),
-            "rent_month_low": round(rent["low"] * surface, -1),
-            "rent_month_high": round(rent["high"] * surface, -1),
+            "rent_month_low": round(rent["low"] * factor * surface, -1),
+            "rent_month_high": round(rent["high"] * factor * surface, -1),
             "gross_yield": round(100 * monthly * 12 / total, 1) if total > 0 else None,
         })
     return out
@@ -222,8 +248,10 @@ def assemble(simulation: SimulationInput, market: Dict[str, Any], rent: Optional
         "works_ids": works,
         "works_names": [WORKS_BY_ID[w]["name"] for w in works if w in WORKS_BY_ID],
         "rental_now": sim["rental_status"], "rental_after": sim["new_rental_status"],
-        **investment(v, sim, profile, info["surface"], rent),
+        **investment(v, sim, profile, info["surface"], rent, info.get("building_type")),
         "risks": risks(facts, sim, v, market, today),
+        # Value after works bounded by twice the works (api/green_value.py)
+        "gain_capped": bool(v.get("gain_capped")),
         "_v": v, "_sim": sim, "_market": market,
     }
 
@@ -277,13 +305,15 @@ async def scan(bbox: str, labels: List[str], kind: Optional[str], profile: str,
     # argument), by freshness of the DPE or by value; an investor by yield
     sort = sort if sort in SORTS else ("rendement" if profile == "bailleur" else "potentiel")
     sort_key = {
-        "potentiel": lambda o: o["margin"],
+        # For the agent: what the works add to the dwelling's value, aids
+        # deducted, without a buyer's notary fees (those stay in the files)
+        "potentiel": lambda o: (o.get("value_created") or 0, o["margin"]),
         "recent": lambda o: o.get("dpe_date") or "",
         "valeur": lambda o: o["price"],
         "rendement": lambda o: (o.get("gross_yield") or 0, o["margin"]),
     }[sort]
     items.sort(key=sort_key, reverse=True)
-    positive = [o for o in items if o["margin"] > 0]
+    positive = [o for o in items if (o.get("value_created") or 0) > 0]
     return {
         "profile": profile,
         "sort": sort,
@@ -324,7 +354,7 @@ async def opportunities(bbox: str, labels: str = "F,G", kind: Optional[str] = No
 
 # --- Investment file ---
 
-THESIS_COMMON = """Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement ou de plus-value. Les montants sont des estimations avant frais financiers et fiscalité : rappelle-le quand c'est utile."""
+THESIS_COMMON = """Quand "valeur_apres_travaux_plafonnee" est vrai, le gain de valeur attribué aux travaux a été limité à deux fois leur coût : ne présente pas la rénovation comme une source de forte plus-value. Tu disposes uniquement des chiffres fournis (estimations SPREA : valeur DVF corrigée de la classe DPE, programme de travaux simulé, aides, loyers de la commune). N'invente aucun chiffre, aucune caractéristique ni aucun élément de quartier absent des données. Écris en français, de façon factuelle et professionnelle, sans superlatifs ni promesse de rendement ou de plus-value. Les montants sont des estimations avant frais financiers et fiscalité : rappelle-le quand c'est utile."""
 
 THESIS_SYSTEM = {
     "investisseur": "Tu es un analyste en investissement immobilier qui rédige, pour un agent immobilier, la note d'opportunité d'un logement à rénover destinée à un client investisseur (marchand de biens ou bailleur). " + THESIS_COMMON + " Signale clairement quand l'opération n'est pas rentable selon les chiffres.",
@@ -366,6 +396,7 @@ def thesis_facts(o: Dict[str, Any], profile: str, audience: str = "investisseur"
         "sortie": {"valeur_apres_travaux_eur": o["resale"], "marge_brute_eur": o["margin"], "marge_pct": o["margin_pct"],
                    "loyer_mensuel_eur": o.get("rent_month"), "rendement_brut_pct": o.get("gross_yield")},
         "location": {"aujourd_hui": o["rental_now"], "apres_travaux": o["rental_after"]},
+        "valeur_apres_travaux_plafonnee": bool(o.get("gain_capped")),
         "points_de_vigilance_calcules": o["risks"],
     }
 
@@ -534,8 +565,8 @@ async def simulation_dossier_data(data: SimulationDossierRequest,
 def with_price(o: Dict[str, Any], price: float, profile: str) -> Dict[str, Any]:
     """The price actually asked replaces the estimate."""
     o["_v"]["value_now"] = {**o["_v"]["value_now"], "value": price}
-    rent = {"rent_m2": o["rent_m2"], "low": o["rent_month_low"] / o["surface"], "high": o["rent_month_high"] / o["surface"]} \
-        if o.get("rent_m2") else None
+    rent = {"rent_m2": o["rent_m2"], "low": o["rent_month_low"] / o["surface"], "high": o["rent_month_high"] / o["surface"],
+            "adjusted": True, "commune_m2": o.get("rent_m2_commune")} if o.get("rent_m2") else None
     o.update(investment(o["_v"], o["_sim"], profile, o["surface"], rent))
     o["price_is_asked"] = True
     return o

@@ -83,14 +83,19 @@ def test_investment_figures_by_profile():
     sim = {"cost": 30000, "cost_low": 26000, "cost_high": 38000, "subsidies": 9000, "cee_est": 1000}
     dealer = investment(v, sim, "marchand", 90, None)
     assert dealer["notary"] == 6000 and dealer["aids"] == 0 and dealer["total"] == 236000 and dealer["margin"] == 24000
-    landlord = investment(v, sim, "bailleur", 90, {"rent_m2": 14, "low": 12, "high": 16})
+    landlord = investment(v, sim, "bailleur", 92, {"rent_m2": 14, "low": 12, "high": 16}, "maison")
     assert landlord["aids"] == 10000 and landlord["total"] == 236000
     # Shown lines add up to the budget and the margin
     odd = investment({"value_now": {"value": 153049}, "value_after": {"value": 187020, "low": 1, "high": 2}},
                      {**sim, "cost": 26437, "subsidies": 10270, "cee_est": 1003}, "bailleur", 96, None)
-    assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 100 == 0
+    assert odd["total"] == odd["price"] + odd["notary"] + odd["works"] - odd["aids"] and odd["aids"] % 10 == 0
     assert odd["margin"] == odd["resale"] - odd["total"]
-    assert landlord["rent_month"] == 1260 and landlord["gross_yield"] == round(100 * 1260 * 12 / 236000, 1)
+    assert landlord["rent_month"] == 1290 and landlord["gross_yield"] == round(100 * 14 * 92 * 12 / 236000, 1)
+    # 47 rue de Bourgogne, Lille: a 328 m2 house does not let at the commune's rent per m2
+    big = investment(v, sim, "bailleur", 328.1, {"rent_m2": 12.7, "low": 8.9, "high": 18.1}, "maison")
+    assert big["rent_m2"] == 9.5 and big["rent_m2_commune"] == 12.7 and big["rent_month"] == 3130
+    studio = investment(v, sim, "bailleur", 20, {"rent_m2": 14, "low": 12, "high": 16}, "appartement")
+    assert studio["rent_m2"] == 17.5
 
 
 def test_scan_ranks_and_dossier_pdf():
@@ -188,6 +193,10 @@ def test_scan_sorts_and_filters_for_the_agent():
     assert by_value["sort"] == "valeur" and by_value["items"][0]["number"] == "2659E0000003C"
     assert "2659E0000003C" not in [o["number"] for o in run(max_age_months=6)["items"]]
     assert all(o["price"] <= 200000 for o in run(max_value=200000)["items"])
+    # The count and the ranking are the agent's potential: value added by the works, aids deducted
+    res = run(sort="potentiel")
+    assert res["positive"] == sum(1 for o in res["items"] if o["value_created"] > 0)
+    assert [o["value_created"] for o in res["items"]] == sorted((o["value_created"] for o in res["items"]), reverse=True)
 
 
 def test_follow_up_shared_by_the_agency(env):
@@ -217,3 +226,15 @@ def test_follow_up_shared_by_the_agency(env):
     assert got == {"2659E0000001A": {"status": "courrier", "updated_at": got["2659E0000001A"]["updated_at"], "mine": False}}
     client.put("/api/prospect-status", json={"number": "2659E0000001A", "status": None})
     assert client.get("/api/prospect-status?numbers=2659E0000001A").json()["statuses"] == {}
+
+
+def test_files_show_the_report_cost_range():
+    """2659E0132455X: the report and the avis said 25 800 - 38 200 EUR, the
+    screen and the files 25 700 - 38 200 EUR."""
+    from api.figures import display_figures
+    o = asyncio.run(analyse(RAW, "bailleur", dvf_transport=dvf_transport(), rent_transport=rent_transport()))
+    sim = o["_sim"]
+    works = [d for d in sim["detailed_costs"] if d["id"] != "parking"]
+    extras = [d for d in sim["detailed_costs"] if d["id"] == "parking"]
+    fig = display_figures(sim, works, extras)
+    assert (o["works_low"], o["works_high"]) == (fig["cost_low"], fig["cost_high"])

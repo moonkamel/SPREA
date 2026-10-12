@@ -1149,7 +1149,7 @@ class PDFReportGenerator:
             + (", prix ramenés au dernier trimestre connu." if adjusted else "."),
             "Correction selon la classe DPE du bien, à partir des écarts de prix mesurés entre classes sur les ventes rapprochées de leur DPE. "
             "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus : le reste tient à l'état général des "
-            "logements vendus, que les travaux énergétiques seuls n'apportent pas.",
+            "logements vendus, que les travaux énergétiques seuls n'apportent pas. Le gain retenu ne dépasse jamais deux fois le coût des travaux.",
             "Fourchette : entre le premier et le troisième quart des prix au m² des ventes comparables.",
             "Cet avis de valeur ne constitue pas une expertise immobilière. Il ne tient compte que des éléments indiqués et de l'ajustement du conseiller ;"
             " l'état réel, les prestations et la situation précise du bien peuvent modifier sa valeur.",
@@ -1279,19 +1279,22 @@ class PDFReportGenerator:
             story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Le scénario locatif'), Spacer(1, 8), rows_table([
                 kv('Loyer de marché (charges comprises)', f"{eur(d['rent_month'])} / mois"),
                 kv('Fourchette de la commune', f"{eur(d['rent_month_low'])} à {eur(d['rent_month_high'])} / mois"),
-                kv('Loyer au m²', f"{str(d['rent_m2']).replace('.', ',')}{NBSP}€/m²"),
+                kv('Loyer au m²', f"{str(d['rent_m2']).replace('.', ',')}{NBSP}€/m²"
+                   + (f" <font size='7.5' color='#8A93A3'>(commune : {str(d['rent_m2_commune']).replace('.', ',')}{NBSP}€/m²)</font>"
+                      if d.get('rent_m2_commune') and d['rent_m2_commune'] != d['rent_m2'] else '')),
                 kv('<b>Rendement brut sur le budget total</b>', f"<b>{str(d['gross_yield']).replace('.', ',')}{NBSP}%</b>"),
                 kv('Location aujourd\'hui', text(d['rental_now'])),
                 kv('Location après travaux', text(d['rental_after'])),
             ], [CONTENT_W * 0.6, CONTENT_W * 0.4]), Spacer(1, 3), Paragraph(
-                "Loyer d'annonce prédit pour la commune (« Carte des loyers », ANIL et ministère du Logement), charges comprises. "
+                "Loyer d'annonce prédit pour la commune (« Carte des loyers », ANIL et ministère du Logement), charges comprises, "
+                "ramené à la surface du logement : un grand logement se loue moins cher au m², un petit plus cher. "
                 "Dans les communes en zone tendue, l'encadrement ou le plafonnement des loyers peut s'appliquer.", S['small'])]
 
         # Works programme
         works = [[head('Travaux'), head('Fourchette TTC', 2)]]
         for c in sim['detailed_costs']:
             works.append([Paragraph(text(c['name']), S['body']), Paragraph(eur_range(c['cost_low'], c['cost_high']), S['right'])])
-        works.append([Paragraph('<b>Total</b>', S['body']), Paragraph(f"<b>{eur_range(sim['cost_low'], sim['cost_high'])}</b>", S['right'])])
+        works.append([Paragraph('<b>Total</b>', S['body']), Paragraph(f"<b>{eur_range(d['works_low'], d['works_high'])}</b>", S['right'])])
         story += [CondPageBreak(6 * cm), Spacer(1, 18), next_section('Le programme de travaux'), Spacer(1, 8),
                   Paragraph(f"Programme simulé à partir du DPE pour passer de la classe {text(d['label'])} à la classe {text(d['new_label'])} "
                             f"({num(sim['initial_cep'])} → {num(sim['new_cep'])}{NBSP}kWh/m²/an). Durée indicative : {days(sim.get('duration_days'))}.",
@@ -1319,13 +1322,15 @@ class PDFReportGenerator:
                                      + ("</b>" if c in (d['label'], d['new_label']) else ''), style(f'ip{c}', alignment=1)) for c in LABELS]]]
             story += [Spacer(1, 10), grid(cls_rows, [CONTENT_W * 0.30] + [CONTENT_W * 0.10] * 7), Spacer(1, 3),
                       Paragraph(f"Écarts de prix entre classes mesurés sur {num(v.get('class_sample') or 0)} ventes rapprochées de leur DPE. "
-                                "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus.", S['small'])]
+                                "Après travaux, 70 % de l'écart entre la classe actuelle et la classe visée sont retenus, dans la limite de "
+                                "deux fois le coût des travaux.", S['small'])]
 
         # Method
         contact = ' · '.join(x for x in [text(agency.get('agent_name') or ''), text(agency.get('phone') or ''), text(agency.get('email') or '')] if x)
         story += [CondPageBreak(5 * cm), Spacer(1, 18), next_section('Méthode et réserves'), Spacer(1, 8), *bullet_list([
             "Valeur actuelle : prix au m² des ventes comparables (DVF), corrigé de l'écart de prix mesuré pour la classe DPE du bien.",
-            "Valeur après travaux : même méthode à la classe atteinte, en ne retenant que 70 % de l'écart entre classes.",
+            "Valeur après travaux : même méthode à la classe atteinte, en ne retenant que 70 % de l'écart entre classes, et un gain "
+            "qui ne dépasse jamais deux fois le coût des travaux : au-delà, l'écart de prix tient à l'état général du bien.",
             "Travaux et aides : moteur de simulation SPREA à partir du DPE publié par l'ADEME ; barème des aides en vigueur.",
             "Ce dossier est une estimation indicative : il ne constitue ni une expertise immobilière, ni un audit énergétique, ni un conseil en "
             "investissement. Visite, diagnostics, devis et étude de financement restent indispensables avant toute offre.",

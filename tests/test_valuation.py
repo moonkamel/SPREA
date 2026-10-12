@@ -64,3 +64,29 @@ def test_valuation_endpoints(env, monkeypatch):
         return None
     monkeypatch.setattr(valuation, "market_price", no_market)
     assert client.post("/api/valuation", json=REQUEST).status_code == 422
+
+
+def test_gain_never_exceeds_twice_the_works():
+    """47 rue de Bourgogne, Lille: a 328 m2 house classed G worth 889 000 EUR,
+    30 400 EUR of works to C, was shown at 1 159 000 EUR after works (+270 000)."""
+    from api.valuation import compute
+    sim = {"current_label": "G", "new_label": "C", "cost": 30400, "cost_low": 25700, "cost_high": 38200,
+           "subsidies": 10000, "cee_est": 2900, "rest_to_pay": 17500, "rest_to_pay_low": 12800, "rest_to_pay_high": 25300}
+    market = {"price_per_m2": 3525, "q25": 2846, "q75": 4250}
+    v = compute(sim, market, 328.1, "Maison", "59", 0)
+    assert v["value_now"]["value"] == 889000 and v["value_after"]["value"] == 950000
+    gain = v["value_after"]["value"] - v["value_now"]["value"]
+    assert v["gain_capped"] and gain <= 2 * 30400 + 1000
+    assert v["value_after"]["high"] - v["value_now"]["high"] <= 2 * 38200 + 1000
+    # A modest dwelling with a large programme keeps the measured gap
+    small = compute({**sim, "cost": 60000, "cost_low": 50000, "cost_high": 75000}, market, 40, "Maison", "59", 0)
+    assert not small["gain_capped"]
+
+
+def test_report_green_value_capped_too():
+    from api.simulation import SimulationInput, simulate
+    from tests.test_consistency import HOUSE, prop
+    sim = simulate(SimulationInput(property=prop(HOUSE, surface=300, price_per_m2=6000, official_label="G", initial_cep=480),
+                                   works=["roof"]))
+    assert 0 < sim["latent_gain"] <= 2 * sim["cost"] + 1 and sim["latent_gain_high"] <= 2 * sim["cost_high"] + 1
+    assert "deux fois le coût des travaux" in sim["green_value_basis"]

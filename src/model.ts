@@ -96,7 +96,39 @@ export interface Simulation {
     hasITI: boolean;
 }
 
-export const toSimulation = (r: any): Simulation => ({
+const round = (v: number | null | undefined, step = 100) => Math.round((v || 0) / step) * step;
+
+// Cost, aids, rest to pay and loan as every PDF shows them (api/figures.py
+// display_figures): rounded once, so that cost - aids = rest on screen too.
+// 47 rue de Bourgogne showed 12 946 € of aids and 17 400 € to pay where the
+// documents said 12 900 € and 17 500 €.
+function shownFigures(r: any) {
+    const cost = round(r.cost);
+    const costLow = lineSum(r.detailed_costs, 'cost_low') ?? round(r.cost_low);
+    const costHigh = lineSum(r.detailed_costs, 'cost_high') ?? round(r.cost_high);
+    const ampleur = r.aid_pathway === 'accompagne';
+    const sub = ampleur ? round(r.subsidies) : round(r.subsidies, 10);
+    const ceeEst = ampleur ? 0 : round(r.cee_est, 10);
+    const aids = sub + ceeEst;
+    const aidsLow = ampleur ? round(r.aids_low ?? r.subsidies) : aids;
+    const aidsHigh = ampleur ? round(r.aids_high ?? r.subsidies) : aids;
+    const rest = Math.max(0, cost - aids);
+    return {
+        cost, costLow, costHigh, sub, ceeEst, rest,
+        restLow: Math.max(0, costLow - aidsLow),
+        restHigh: Math.max(0, costHigh - aidsHigh),
+        ecoPTZAmount: r.eco_ptz_amount ? Math.min(round(r.eco_ptz_amount), Math.floor(rest / 100) * 100) : 0,
+    };
+}
+
+function lineSum(lines: { id: string; cost_low: number; cost_high: number }[] | undefined, key: 'cost_low' | 'cost_high'): number | null {
+    if (!lines?.length) return null;
+    return lines.reduce((sum, d) => { const step = d.id === 'parking' ? 10 : 100; return sum + Math.round(d[key] / step) * step; }, 0);
+}
+
+export const toSimulation = (r: any): Simulation => ({ ...toSimulationRaw(r), ...shownFigures(r) });
+
+const toSimulationRaw = (r: any): Simulation => ({
     currentLabel: r.current_label,
     newLabel: r.new_label,
     gainClasses: r.gain_classes,
@@ -105,8 +137,9 @@ export const toSimulation = (r: any): Simulation => ({
     newGes: r.new_ges,
     thresholds: r.thresholds,
     cost: r.cost,
-    costLow: r.cost_low,
-    costHigh: r.cost_high,
+    // Sum of the lines, each rounded as the PDFs round them (api/figures.py cost_range)
+    costLow: lineSum(r.detailed_costs, 'cost_low') ?? r.cost_low,
+    costHigh: lineSum(r.detailed_costs, 'cost_high') ?? r.cost_high,
     detailedCosts: r.detailed_costs,
     durationDays: r.duration_days,
     sub: r.subsidies,

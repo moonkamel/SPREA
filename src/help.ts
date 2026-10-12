@@ -100,7 +100,7 @@ export const HELP = {
     },
     greenValue: {
         title: 'Valeur verte',
-        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie. Nous la mesurons sur les ventes réelles : chaque vente des données DVF (DGFiP) est rapprochée du DPE du logement vendu (ADEME), puis l'écart de prix entre classes est calculé dans votre département, à emplacement, surface, époque et date de vente comparables. Il est appliqué au prix au m² des ventes comparables autour du logement. C'est une tendance de marché, pas une garantie.",
+        text: "Hausse estimée de la valeur du bien liée au gain de classes énergie. Nous la mesurons sur les ventes réelles : chaque vente des données DVF (DGFiP) est rapprochée du DPE du logement vendu (ADEME), puis l'écart de prix entre classes est calculé dans votre département, à emplacement, surface, époque et date de vente comparables. Il est appliqué au prix au m² des ventes comparables autour du logement. Seuls 70 % de l'écart sont attribués aux travaux, et jamais plus de deux fois leur coût : le reste tient à l'état général du bien. C'est une tendance de marché, pas une garantie.",
     },
     yield: {
         title: 'Rendement brut',

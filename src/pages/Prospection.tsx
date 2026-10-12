@@ -397,7 +397,7 @@ export default function ProspectionPage() {
             invest.items.forEach((o, i) => {
                 if (o.lat == null || o.lon == null) return;
                 const marker = L.circleMarker([o.lat, o.lon], {
-                    radius: Math.min(15, 5 + Math.sqrt(Math.max(0, o.margin) / 2000)),
+                    radius: Math.min(15, 5 + Math.sqrt(Math.max(0, o.value_created ?? 0) / 2000)),
                     color: i < 3 ? '#E3C98F' : '#0A0F1A', weight: i < 3 ? 3 : 1.5, opacity: 0.95, fillColor: potentialColor(o), fillOpacity: 0.95,
                 });
                 const follow = FOLLOW_UPS.find(f => f.value === statuses[o.number])?.label;

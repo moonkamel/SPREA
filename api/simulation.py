@@ -16,11 +16,11 @@ from pydantic import BaseModel, Field
 try:
     from api.aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from api.envelope import Envelope
-    from api.green_value import department, estimate as green_value_estimate, kind_of
+    from api.green_value import CAP_NOTE, cap_gain, department, estimate as green_value_estimate, kind_of
 except ImportError:
     from aids import RULES_LABEL, ResourceProfile, compute_aids, get_profile
     from envelope import Envelope
-    from green_value import department, estimate as green_value_estimate, kind_of
+    from green_value import CAP_NOTE, cap_gain, department, estimate as green_value_estimate, kind_of
 
 LABELS = ["A", "B", "C", "D", "E", "F", "G"]
 
@@ -622,6 +622,11 @@ def simulate(data: SimulationInput) -> Dict:
     price_per_m2 = prop.price_per_m2 or DEFAULT_PRICE_PER_M2
     green = green_value_estimate(current["label"], target["label"], surface, price_per_m2,
                                  kind_of(prop.building_type), department(prop.insee_code, prop.postcode))
+    capped = green["value"] > 0 and cap_gain(green["value"], cost) < green["value"]
+    green = {**green, "value": cap_gain(green["value"], cost), "low": cap_gain(green["low"], cost_low),
+             "high": cap_gain(green["high"], cost_high)}
+    if capped and green.get("basis"):
+        green["basis"] += f" ; valeur verte {CAP_NOTE}"
     ban = rental_ban_date(current["label"], final_before, prop.postcode)
     new_ban = rental_ban_date(target["label"], final_after, prop.postcode)
 

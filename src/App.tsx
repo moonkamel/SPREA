@@ -158,10 +158,18 @@ function Simulator() {
     useEffect(() => { if (error) setAnalyzing(false); }, [error]);
 
     useEffect(() => {
-        fetch('/api/works')
+        // Cancelled when the page is left; one retry on a network failure
+        const controller = new AbortController();
+        const load = (attempt: number): Promise<void> => fetch('/api/works', { signal: controller.signal })
             .then(res => res.json())
             .then(data => setCatalog((data.works || []).map((w: any) => ({ id: w.id, name: w.name, description: w.description, active: false }))))
-            .catch(err => console.error('Works catalog error:', err));
+            .catch(err => {
+                if (controller.signal.aborted) return;
+                if (attempt === 0) return new Promise<void>(resolve => setTimeout(resolve, 1500)).then(() => load(1));
+                console.error('Works catalog error:', err);
+            });
+        load(0);
+        return () => controller.abort();
     }, []);
 
     // Opened from the prospection map: /?dpe=NUMBER
