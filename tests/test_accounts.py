@@ -287,6 +287,10 @@ class FakeBilling:
         self.seat_updates = []
         self.portals = []
         self.kept = []
+        self.missing_customers = set()
+
+    async def customer_exists(self, customer_id):
+        return customer_id not in self.missing_customers
 
     async def create_customer(self, user_id, email):
         self.customers.append(user_id)
@@ -403,6 +407,16 @@ def test_subscription_records_terms_and_plan(env):
     assert store.profiles[ALICE.id]["terms_version"] == accounts.TERMS_VERSION
     assert billing.plans == ["solo_yearly"]
     assert client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "gratuit"}).status_code == 422
+
+
+def test_subscription_replaces_a_customer_unknown_to_stripe(env):
+    # A test-mode customer once the site runs on the live key
+    client, store, billing, _ = env
+    store.profiles[ALICE.id] = {"id": ALICE.id, "email": ALICE.email, "stripe_customer_id": "cus_test_old"}
+    billing.missing_customers.add("cus_test_old")
+    assert client.post("/api/billing/subscribe", json=SUBSCRIBE).status_code == 200
+    assert billing.customers == [ALICE.id]
+    assert store.profiles[ALICE.id]["stripe_customer_id"] == "cus_1"
 
 
 def test_tools_are_for_subscribers(env):

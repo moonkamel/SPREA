@@ -1,0 +1,34 @@
+name: Stripe setup
+
+# Creates the prices and the webhook the site needs in the Stripe account of the
+# STRIPE_SECRET_KEY repository secret (scripts/stripe/setup_live.py, idempotent).
+# The price ids are pushed to the branch stripe-reports/setup-<run>.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/stripe-setup.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Setup
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: python scripts/stripe/setup_live.py
+      - name: Report to a branch
+        if: always()
+        run: |
+          mkdir -p stripe-report && cd stripe-report && git init -q -b report && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Stripe setup ${{ github.run_id }}" --allow-empty
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" report:stripe-reports/setup-${{ github.run_id }}

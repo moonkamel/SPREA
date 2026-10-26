@@ -1,0 +1,77 @@
+name: Prospects (agences + emails)
+
+# The prospection file in one run: the real estate agencies of an area
+# (Annuaire des entreprises, scripts/campaign/agencies.py), then the contact
+# email published on each agency's own website (scripts/campaign/find_emails.py),
+# merged into prospects.csv. Pushed to the branch campaign-reports/<run> to be
+# read without downloading artifacts.
+on:
+  workflow_dispatch:
+    inputs:
+      departments:
+        description: "Départements (ex. 59)"
+        default: "59"
+      epci:
+        description: "Intercommunalité (200093201 = Métropole européenne de Lille ; vide = tout le département)"
+        default: "200093201"
+      limit:
+        description: "Nombre d'agences dont on cherche l'email"
+        default: "300"
+  push:
+    paths:
+      - ".github/workflows/campaign-prospects.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prospects:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Agencies
+        env:
+          DEPS: ${{ inputs.departments || '59' }}
+          EPCI: ${{ inputs.epci || '200093201' }}
+        run: python scripts/campaign/agencies.py --dep $DEPS ${EPCI:+--epci $EPCI} --out agences.csv
+      - name: Emails
+        env:
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          MAX_QUERIES: "900"
+          LIMIT: ${{ inputs.limit || '300' }}
+        run: |
+          SIRENS=$(python -c "import csv,os; r=list(csv.DictReader(open('agences.csv',encoding='utf-8'),delimiter=';')); print(' '.join(x['siren'] for x in r[:int(os.environ['LIMIT'])] if x['siren']))")
+          timeout 270m python scripts/campaign/find_emails.py --sirens $SIRENS --out emails.csv || true
+      - name: Merge
+        if: always()
+        run: |
+          python - <<'EOF'
+          import csv, os
+          agencies = list(csv.DictReader(open('agences.csv', encoding='utf-8'), delimiter=';'))
+          found = {}
+          if os.path.exists('emails.csv'):
+              for r in csv.DictReader(open('emails.csv', encoding='utf-8'), delimiter=';'):
+                  if r.get('email'):
+                      found[r['siren']] = r
+          cols = list(agencies[0].keys()) + ['email_type', 'source_url']
+          with open('prospects.csv', 'w', newline='', encoding='utf-8') as f:
+              w = csv.DictWriter(f, fieldnames=cols, delimiter=';')
+              w.writeheader()
+              for a in agencies:
+                  e = found.get(a['siren'])
+                  if e:
+                      w.writerow({**a, 'email': e['email'], 'email_type': e.get('email_type', ''), 'source_url': e.get('source_url', '')})
+          print(f"{len(agencies)} agences, {len(found)} emails trouvés")
+          EOF
+      - name: To a branch
+        if: always()
+        run: |
+          mkdir -p /tmp/out && cp agences.csv emails.csv prospects.csv /tmp/out/ 2>/dev/null || true
+          cd /tmp/out && git init -q -b report && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Prospects ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" report:campaign-reports/${{ github.run_id }}

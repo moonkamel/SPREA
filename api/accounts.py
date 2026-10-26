@@ -160,7 +160,7 @@ def iso_from_timestamp(ts: Optional[int]) -> Optional[str]:
 
 
 async def ensure_customer(store: SupabaseStore, billing: Billing, user: User, profile: Dict[str, Any]) -> str:
-    if profile.get("stripe_customer_id"):
+    if profile.get("stripe_customer_id") and await billing.customer_exists(profile["stripe_customer_id"]):
         return profile["stripe_customer_id"]
     customer_id = await billing.create_customer(user.id, user.email)
     await store.update_profile(user.id, {"stripe_customer_id": customer_id})
