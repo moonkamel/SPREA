@@ -5,6 +5,9 @@ name: Stripe setup
 # The price ids are pushed to the branch stripe-reports/setup-<run>.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/stripe-setup.yml"
 
 permissions:
   contents: write
