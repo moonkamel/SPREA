@@ -12,7 +12,7 @@ export const LEGAL = {
     registration: '[SIREN / RCS, ex. RCS Lille 123 456 789]',
     // e.g. "TVA intracommunautaire : FR12345678901" or "TVA non applicable, art. 293 B du CGI"
     vat: '[Numéro de TVA intracommunautaire ou mention de franchise en base]',
-    email: '[contact@votre-domaine.fr]',
+    email: 'contact@sprea.app',
     // Court competent for disputes (customers are professionals only)
     court: '[Tribunal de commerce de ...]',
     phone: '[Numéro de téléphone]',
