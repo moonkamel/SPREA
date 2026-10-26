@@ -92,13 +92,14 @@ if (created) {
             const sid = (url.match(/\/(cs_(?:live|test)_[A-Za-z0-9]+)/) || [])[1];
             if (sid) sessions.push(sid);
             const mode = /\/cs_live_/.test(url) ? 'live' : /\/cs_test_/.test(url) ? 'test' : 'inconnu';
-            // Checkout keeps connections open: networkidle never comes
+            // Checkout keeps connections open: networkidle never comes. Adaptive pricing
+            // shows the runner's local currency (USD on GitHub)
             await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.getByText(/€/).first().waitFor({ timeout: 30000 });
+            await page.getByText(/[€$]/).first().waitFor({ timeout: 30000 });
             await page.waitForTimeout(1500);
             await page.screenshot({ path: path.join(OUT, `${plan}.png`), fullPage: true });
             const text = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
-            const amounts = [...new Set(text.match(/\d[\d\s ]*(?:,\d{2})?\s?€/g) || [])].slice(0, 6);
+            const amounts = [...new Set(text.match(/(?:\d[\d\s ]*(?:[,.]\d{2})?\s?€|\$\s?\d[\d,]*(?:\.\d{2})?)/g) || [])].slice(0, 6);
             return { mode, montants: amounts, extrait: text.slice(0, 300) };
         });
     }
