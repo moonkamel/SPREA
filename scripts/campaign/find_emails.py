@@ -50,7 +50,7 @@ NETWORKS = ("iadfrance", "safti", "capifrance", "optimhome", "efficity", "bskimm
 FREE_MAIL = ("gmail.com", "hotmail.fr", "hotmail.com", "orange.fr", "wanadoo.fr", "free.fr", "outlook.fr",
              "outlook.com", "yahoo.fr", "yahoo.com", "laposte.net", "sfr.fr", "neuf.fr", "live.fr", "icloud.com",
              "bbox.fr", "aol.com", "numericable.fr")
-BAD_LOCAL = ("webmaster", "dpo", "dpd", "rgpd", "privacy", "donneespersonnelles", "donnees", "cnil", "protection", "noreply", "no-reply", "nepasrepondre", "recrutement", "jobs",
+BAD_LOCAL = ("webmaster", "dpo", "dpd", "rgpd", "privacy", "donneespersonnelles", "donnees", "cnil", "protection", "informatique-et-libertes", "libertes", "noreply", "no-reply", "nepasrepondre", "recrutement", "jobs",
              "support", "abuse", "postmaster", "admin", "hostmaster", "sentry", "example", "votre", "nom", "email",
              "exemple", "test", "wordpress", "comptabilite", "compta", "facturation", "juridique", "presse", "rh")
 BAD_DOMAIN = ("sentry", "wix", "example", "domain", "votredomaine", "monsite", "email.com", "ovh", "o2switch",
