@@ -17,9 +17,6 @@ on:
       limit:
         description: "Nombre d'agences dont on cherche l'email"
         default: "300"
-  push:
-    paths:
-      - ".github/workflows/campaign-prospects.yml"
 
 permissions:
   contents: write
