@@ -80,7 +80,7 @@ Texte brut, sans image : c'est ce qui passe le mieux les filtres anti-spam.
 
 ## Pied de chaque e-mail (obligatoire)
 
-> SPREA – Tarik Lakel EI, 239b rue du Jardin des Plantes, 59000 Lille. Vous recevez ce message car {agence} est référencée comme agence immobilière dans l'Annuaire des entreprises (données publiques INSEE / RNE) et que votre adresse est publiée sur votre site. Pour ne plus recevoir nos messages, répondez simplement « STOP ».
+> SPREA EI, 239b rue du Jardin des Plantes, 59000 Lille. Pour ne plus recevoir nos messages, répondez simplement « STOP ».
 
 ## Règles d'envoi
 
