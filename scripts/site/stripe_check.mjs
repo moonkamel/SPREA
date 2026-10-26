@@ -2,7 +2,8 @@
 // by /api/config, then a Checkout session for each plan opened under a
 // temporary account (live or test mode, amount shown by Stripe), and the
 // webhook refusing an unsigned call. Nothing is paid; the account and its
-// agency are deleted at the end (the Stripe customer stays, without payment).
+// agency are deleted at the end, and with STRIPE_SECRET_KEY the sessions are
+// expired and the Stripe customer deleted too.
 // Writes stripe-report/ (results.json, screenshots of the Checkout pages).
 //   BASE_URL=https://sprea.app SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/site/stripe_check.mjs
 import { chromium } from 'playwright';
@@ -12,6 +13,7 @@ import path from 'node:path';
 const BASE = (process.env.BASE_URL || 'https://sprea.app').replace(/\/$/, '');
 const SB = process.env.SUPABASE_URL;
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const STRIPE = process.env.STRIPE_SECRET_KEY;
 const OUT = 'stripe-report';
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -67,7 +69,8 @@ const created = await step('compte temporaire (non abonné)', async () => {
     token = sj.access_token;
 });
 
-let orgId = null;
+let orgId = null, customerId = null;
+const sessions = [];
 if (created) {
     const browser = await chromium.launch();
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'fr-FR' })).newPage();
@@ -86,8 +89,12 @@ if (created) {
             if (!r.ok) throw new Error(`statut ${r.status} : ${JSON.stringify(j).slice(0, 200)}`);
             const url = j.checkout_url || '';
             if (!url.startsWith('https://checkout.stripe.com/')) throw new Error('URL inattendue : ' + url.slice(0, 120));
+            const sid = (url.match(/\/(cs_(?:live|test)_[A-Za-z0-9]+)/) || [])[1];
+            if (sid) sessions.push(sid);
             const mode = /\/cs_live_/.test(url) ? 'live' : /\/cs_test_/.test(url) ? 'test' : 'inconnu';
-            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+            // Checkout keeps connections open: networkidle never comes
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.getByText(/€/).first().waitFor({ timeout: 30000 });
             await page.waitForTimeout(1500);
             await page.screenshot({ path: path.join(OUT, `${plan}.png`), fullPage: true });
             const text = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
@@ -101,10 +108,23 @@ if (created) {
         const r = await fetch(`${SB}/rest/v1/profiles?id=eq.${userId}&select=stripe_customer_id`, { headers: admin });
         const id = r.ok ? ((await r.json())[0] || {}).stripe_customer_id : null;
         if (!id) throw new Error('aucun client Stripe enregistré');
+        customerId = id;
         return id.slice(0, 8) + '…';
     });
     const m =await fetch(`${SB}/rest/v1/memberships?user_id=eq.${userId}&select=org_id`, { headers: admin });
     orgId = m.ok ? ((await m.json())[0] || {}).org_id : null;
+}
+
+if (STRIPE && (sessions.length || customerId)) {
+    await step('nettoyage Stripe (sessions expirées, client supprimé)', async () => {
+        const stripe = (method, p) => fetch('https://api.stripe.com/v1' + p, { method, headers: { Authorization: `Bearer ${STRIPE}` } });
+        for (const sid of sessions) await stripe('POST', `/checkout/sessions/${sid}/expire`);
+        if (customerId) {
+            const r = await stripe('DELETE', `/customers/${customerId}`);
+            if (!r.ok) throw new Error('client : statut ' + r.status);
+        }
+        return `${sessions.length} sessions, client ${customerId ? 'supprimé' : 'absent'}`;
+    });
 }
 
 await step('suppression du compte temporaire', async () => {
