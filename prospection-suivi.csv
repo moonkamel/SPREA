@@ -1,0 +1,6 @@
+siren;agence;ville;email;etape;dernier_envoi;statut;source_url
+990406605;DELEU IMMOBILIER;RONCQ;roncq@deleuimmobilier.com;1;2026-10-26;en cours;https://deleuimmobilier.com/fr/deleu-roncq
+989371299;PULP IMMOBILIER;SECLIN;contact@pulp-immobilier.fr;1;2026-10-26;en cours;https://www.pulp-immobilier.fr/agence-immobiliere-seclin
+943987669;PULP IMMOBILIER;HALLUIN;contact@pulp-immobilier.fr;1;2026-10-26;doublon (même adresse que Seclin);https://www.pulp-immobilier.fr/agence-immobiliere-halluin
+989240262;QG IMMO;ROUBAIX;contact@qgimmo.fr;1;2026-10-26;en cours;https://www.qgimmo.fr/contact
+940769896;DELANNOY IMMOBILIER;LILLE;contact@delannoy-immobilier.fr;1;2026-10-26;en cours;https://www.delannoy-immobilier.fr/
