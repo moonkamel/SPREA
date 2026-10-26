@@ -1,0 +1,41 @@
+name: Stripe check
+
+# Live check of the payment setup (scripts/site/stripe_check.mjs): prices,
+# webhook, a Checkout session per plan under a temporary account, nothing paid.
+# Results and screenshots are pushed to the branch stripe-reports/<run>.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Site to check"
+        default: "https://sprea.app"
+  push:
+    paths:
+      - "scripts/site/stripe_check.mjs"
+      - ".github/workflows/stripe-check.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save --no-package-lock playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Check
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://sprea.app' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/site/stripe_check.mjs
+      - name: Report to a branch
+        if: always()
+        run: |
+          cd stripe-report && git init -q -b report && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Stripe check ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" report:stripe-reports/${{ github.run_id }}
