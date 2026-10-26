@@ -108,6 +108,7 @@ def main():
             units[u["siren"]] = u
 
     out: List[Dict] = []
+    storefront: Dict[str, bool] = {}
     for siren, e in found.items():
         u = units.get(siren)
         if not u or u.get("statutDiffusionUniteLegale") != "O" or u.get("etatAdministratifUniteLegale") != "A":
@@ -115,9 +116,11 @@ def main():
         person = " ".join(p for p in (u.get("prenomUsuelUniteLegale") or u.get("prenom1UniteLegale"),
                                       u.get("nomUsageUniteLegale") or u.get("nomUniteLegale")) if p).title()
         legal = u.get("denominationUniteLegale") or person
-        trade = [e.get("enseigne1Etablissement"), e.get("denominationUsuelleEtablissement"),
-                 u.get("denominationUsuelle1UniteLegale"), u.get("sigleUniteLegale")]
-        names = [n for n in dict.fromkeys([*(t for t in trade if t), legal]) if n]
+        # Trade name first: what the agency shows on its window and website
+        trade = [t for t in (e.get("enseigne1Etablissement"), e.get("denominationUsuelleEtablissement"),
+                             u.get("denominationUsuelle1UniteLegale")) if t]
+        names = [n for n in dict.fromkeys([*trade, legal]) if n]
+        storefront[siren] = bool(trade)
         out.append({
             "email": "", "agence": names[0], "civilite_nom": person if not u.get("denominationUniteLegale") else "",
             "adresse": address(e), "code_postal": e.get("codePostalEtablissement"),
@@ -126,8 +129,17 @@ def main():
             "date_creation": u.get("dateCreationUniteLegale"), "noms": " | ".join(names),
             "dirigeant": person if not u.get("denominationUniteLegale") else "",
         })
-    # Most recent first (the email search covers the first rows only)
-    out.sort(key=lambda r: r["date_creation"] or "", reverse=True)
+    # The email search covers the first rows only: agencies with a storefront
+    # first (a company with a trade name, at least a year old: they have a
+    # website), then companies, then individual agents (often without a site)
+    year_ago = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 365 * 86400))
+
+    def group(r: Dict) -> int:
+        company = not r["dirigeant"]
+        settled = (r["date_creation"] or "9999") <= year_ago
+        return 0 if company and settled and storefront[r["siren"]] else 1 if company and settled else 2 if company else 3
+    out.sort(key=lambda r: r["date_creation"] or "", reverse=True)  # newest first within a group (stable sort)
+    out.sort(key=group)
     with open(args.out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=COLUMNS, delimiter=";")
         w.writeheader()
