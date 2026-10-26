@@ -1,0 +1,45 @@
+{
+ "mode": "live",
+ "prices": {
+  "solo_monthly": {
+   "id": "price_1UUotiF8TTpnfVd4L74u6sJ1",
+   "montant": 79.0,
+   "statut": "existant"
+  },
+  "solo_yearly": {
+   "id": "price_1UUotjF8TTpnfVd4HibAyf7g",
+   "montant": 790.0,
+   "statut": "existant"
+  },
+  "agence_monthly": {
+   "id": "price_1UUotkF8TTpnfVd45K9Mcue2",
+   "montant": 59.0,
+   "statut": "existant"
+  },
+  "agence_yearly": {
+   "id": "price_1UUotkF8TTpnfVd4i10eDfwm",
+   "montant": 590.0,
+   "statut": "existant"
+  },
+  "report_single": {
+   "id": "price_1UUotlF8TTpnfVd4fNCd07jN",
+   "montant": 39.0,
+   "statut": "existant"
+  }
+ },
+ "webhook": {
+  "id": "we_1UUotmF8TTpnfVd4xMJCoZw8",
+  "statut": "existant",
+  "événements": [
+   "checkout.session.completed",
+   "checkout.session.async_payment_succeeded",
+   "customer.subscription.created",
+   "customer.subscription.updated",
+   "customer.subscription.deleted"
+  ]
+ },
+ "vercel": {
+  "STRIPE_PRICE_PRO": "price_1UUotiF8TTpnfVd4L74u6sJ1",
+  "STRIPE_PRICE_REPORT": "price_1UUotlF8TTpnfVd4fNCd07jN"
+ }
+}
