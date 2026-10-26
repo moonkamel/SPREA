@@ -57,13 +57,21 @@ def officer(result: Dict) -> str:
     return ""
 
 
-def agencies(dep: str) -> Iterator[Dict]:
+def agencies(dep: str, epci: Optional[str] = None) -> Iterator[Dict]:
     page = 1
+    t0 = time.time()
     while True:
-        data = get({"activite_principale": "68.31Z", "departement": dep, "etat_administratif": "A",
-                    "per_page": "25", "page": str(page)})
+        params = {"activite_principale": "68.31Z", "departement": dep, "etat_administratif": "A",
+                  "per_page": "25", "page": str(page)}
+        if epci:
+            # Narrows the search server side; the towns filter in main() stays the reference
+            params["epci"] = epci
+        data = get(params)
         if not data:
+            print(f"{dep} page {page} : pas de réponse, arrêt", flush=True)
             return
+        if page == 1 or page % 10 == 0:
+            print(f"{dep} page {page}/{data.get('total_pages')} ({time.time() - t0:.0f} s)", flush=True)
         for r in data.get("results") or []:
             siege = r.get("siege") or {}
             if siege.get("departement") not in (None, dep):
@@ -93,7 +101,7 @@ def main():
         print(f"{len(towns)} communes dans l'intercommunalité {args.epci}", flush=True)
     rows: List[Dict] = []
     for dep in args.dep:
-        for a in agencies(dep):
+        for a in agencies(dep, args.epci):
             if args.prefix and not any((a["code_postal"] or "").startswith(p) for p in args.prefix):
                 continue
             if towns is not None and a["code_insee"] not in towns:

@@ -38,15 +38,17 @@ jobs:
         env:
           DEPS: ${{ inputs.departments || '59' }}
           EPCI: ${{ inputs.epci || '200093201' }}
-        run: python scripts/campaign/agencies.py --dep $DEPS ${EPCI:+--epci $EPCI} --out agences.csv
+        timeout-minutes: 30
+        run: python -u scripts/campaign/agencies.py --dep $DEPS ${EPCI:+--epci $EPCI} --out agences.csv
       - name: Emails
+        timeout-minutes: 240
         env:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           MAX_QUERIES: "900"
           LIMIT: ${{ inputs.limit || '300' }}
         run: |
           SIRENS=$(python -c "import csv,os; r=list(csv.DictReader(open('agences.csv',encoding='utf-8'),delimiter=';')); print(' '.join(x['siren'] for x in r[:int(os.environ['LIMIT'])] if x['siren']))")
-          timeout 270m python scripts/campaign/find_emails.py --sirens $SIRENS --out emails.csv || true
+          timeout 230m python -u scripts/campaign/find_emails.py --sirens $SIRENS --out emails.csv || true
       - name: Merge
         if: always()
         run: |
