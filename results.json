@@ -1,0 +1,51 @@
+{
+ "base": "https://sprea.app",
+ "started": "2026-10-26T14:13:59.441Z",
+ "steps": [
+  {
+   "name": "prix publiés (/api/config)",
+   "ok": true,
+   "notes": {
+    "solo_monthly": "79 € / mois",
+    "solo_yearly": "790 € / an",
+    "agence_monthly": "59 € / mois",
+    "agence_yearly": "590 € / an"
+   }
+  },
+  {
+   "name": "webhook refuse un appel non signé",
+   "ok": true,
+   "notes": "statut 400"
+  },
+  {
+   "name": "compte temporaire (non abonné)",
+   "ok": true
+  },
+  {
+   "name": "Checkout solo_monthly",
+   "ok": false,
+   "error": "statut 500 : {\"detail\":\"Erreur interne du serveur.\",\"path\":\"/api/billing/subscribe\"}"
+  },
+  {
+   "name": "Checkout solo_yearly",
+   "ok": false,
+   "error": "statut 500 : {\"detail\":\"Erreur interne du serveur.\",\"path\":\"/api/billing/subscribe\"}"
+  },
+  {
+   "name": "Checkout agence_monthly",
+   "ok": false,
+   "error": "statut 500 : {\"detail\":\"Erreur interne du serveur.\",\"path\":\"/api/billing/subscribe\"}"
+  },
+  {
+   "name": "Checkout agence_yearly",
+   "ok": false,
+   "error": "statut 500 : {\"detail\":\"Erreur interne du serveur.\",\"path\":\"/api/billing/subscribe\"}"
+  },
+  {
+   "name": "suppression du compte temporaire",
+   "ok": true,
+   "notes": "compte et agence supprimés"
+  }
+ ],
+ "finished": "2026-10-26T14:14:07.344Z"
+}
