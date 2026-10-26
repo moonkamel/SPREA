@@ -420,24 +420,47 @@ def find(agency: Dict) -> Dict:
     return {"email": "", "email_type": "non trouvé", "source_url": ""}
 
 
+def from_csv(path: str, limit: int) -> List[Dict]:
+    """Agencies read from agencies_sirene.py's CSV (no Annuaire API call)."""
+    out = []
+    with open(path, encoding="utf-8") as f:
+        for r in csv.DictReader(f, delimiter=";"):
+            names = [n.strip() for n in (r.get("noms") or r.get("agence") or "").split("|") if n.strip()]
+            person = (r.get("dirigeant") or "").split(" ", 1)
+            out.append({"siren": r["siren"], "names": names or [r["agence"]],
+                        "officers": [(person[0], person[1])] if len(person) == 2 else [],
+                        "postcode": r.get("code_postal") or "", "town": r.get("ville") or "",
+                        "street": r.get("adresse") or ""})
+            if len(out) >= limit:
+                break
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sirens", nargs="+", required=True)
+    ap.add_argument("--sirens", nargs="+")
+    ap.add_argument("--agencies", help="CSV of agencies_sirene.py, instead of --sirens and the Annuaire API")
+    ap.add_argument("--limit", type=int, default=300)
     ap.add_argument("--out", default="emails.csv")
     args = ap.parse_args()
-    sirens = [s for chunk in args.sirens for s in re.split(r"[\s,;]+", chunk) if s]
+    if args.agencies:
+        todo = [(a["siren"], a) for a in from_csv(args.agencies, args.limit)]
+    else:
+        todo = [(s, None) for chunk in args.sirens or [] for s in re.split(r"[\s,;]+", chunk) if s]
     rows = []
-    for i, siren in enumerate(sirens, 1):
-        agency = company(siren)
-        row = {"siren": siren, **(find(agency) if agency else {"email": "", "email_type": "non trouvé", "source_url": ""})}
-        rows.append(row)
-        print(f"RESULT\t{i}\t{siren}\t{row['email']}\t{row['email_type']}\t{row['source_url']}", flush=True)
-        if i % 20 == 0:
-            print(f"{i}/{len(sirens)} — moteurs : {STATS}", file=sys.stderr, flush=True)
+    # Written row by row: a run stopped by its time limit keeps what it found
     with open(args.out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["siren", "email", "email_type", "source_url"], delimiter=";")
         w.writeheader()
-        w.writerows(rows)
+        for i, (siren, agency) in enumerate(todo, 1):
+            agency = agency or company(siren)
+            row = {"siren": siren, **(find(agency) if agency else {"email": "", "email_type": "non trouvé", "source_url": ""})}
+            rows.append(row)
+            w.writerow(row)
+            f.flush()
+            print(f"RESULT\t{i}\t{siren}\t{row['email']}\t{row['email_type']}\t{row['source_url']}", flush=True)
+            if i % 20 == 0:
+                print(f"{i}/{len(todo)} — moteurs : {STATS}", file=sys.stderr, flush=True)
     counts: Dict[str, int] = {}
     for r in rows:
         counts[r["email_type"]] = counts.get(r["email_type"], 0) + 1
