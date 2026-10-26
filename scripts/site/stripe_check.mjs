@@ -96,7 +96,14 @@ if (created) {
         });
     }
     await browser.close();
-    const m = await fetch(`${SB}/rest/v1/memberships?user_id=eq.${userId}&select=org_id`, { headers: admin });
+    // Where a failed Checkout stops: Stripe customer created (the session failed) or not (the key cannot write)
+    await step('client Stripe créé pour le compte', async () => {
+        const r = await fetch(`${SB}/rest/v1/profiles?id=eq.${userId}&select=stripe_customer_id`, { headers: admin });
+        const id = r.ok ? ((await r.json())[0] || {}).stripe_customer_id : null;
+        if (!id) throw new Error('aucun client Stripe enregistré');
+        return id.slice(0, 8) + '…';
+    });
+    const m =await fetch(`${SB}/rest/v1/memberships?user_id=eq.${userId}&select=org_id`, { headers: admin });
     orgId = m.ok ? ((await m.json())[0] || {}).org_id : null;
 }
 
