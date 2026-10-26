@@ -1,0 +1,56 @@
+{
+ "base": "https://sprea.app",
+ "started": "2026-10-26T14:38:29.412Z",
+ "steps": [
+  {
+   "name": "prix publiés (/api/config)",
+   "ok": true,
+   "notes": {
+    "solo_monthly": "79 € / mois",
+    "solo_yearly": "790 € / an",
+    "agence_monthly": "59 € / mois",
+    "agence_yearly": "590 € / an"
+   }
+  },
+  {
+   "name": "webhook refuse un appel non signé",
+   "ok": true,
+   "notes": "statut 400"
+  },
+  {
+   "name": "compte temporaire (non abonné)",
+   "ok": true
+  },
+  {
+   "name": "Checkout solo_monthly",
+   "ok": false,
+   "error": "page.goto: Timeout 60000ms exceeded. | Call log: |   - navigating to \"https://checkout.stripe.com/c/pay/cs_live_b1DRuRQUIhpzwcrgBUuXBeGxn980oj7X6jQm3Bc1sXqLr9qTgavnBaa2Dr#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicyc%2FNSknZHVsTmB8Jz8ndW5aaWxzYFowNFBKQT11Qz1RUXVrY1NhMVxhMHJIQ3dHMFxqV2NPcDYxVElGPW1IZGppPERqS01%2FN0prYn03fGxHbVxAY29xaDJfX0BhRkBvbTxKTkBhfUBKNH0zbkY1VzU1QzVrTn9hdDwnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmY2NjY2NjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl\", waiting until \"networkidle\" | "
+  },
+  {
+   "name": "Checkout solo_yearly",
+   "ok": false,
+   "error": "page.goto: Timeout 60000ms exceeded. | Call log: |   - navigating to \"https://checkout.stripe.com/c/pay/cs_live_b1xil7YlnQxuyGGNkxBacdG2R3qR0LriOnjFRDxiqRwwrsaGLMzCRoGFmy#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicyc%2FNSknZHVsTmB8Jz8ndW5aaWxzYFowNFBKQT11Qz1RUXVrY1NhMVxhMHJIQ3dHMFxqV2NPcDYxVElGPW1IZGppPERqS01%2FN0prYn03fGxHbVxAY29xaDJfX0BhRkBvbTxKTkBhfUBKNH0zbkY1VzU1QzVrTn9hdDwnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmY2NjY2NjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl\", waiting until \"networkidle\" | "
+  },
+  {
+   "name": "Checkout agence_monthly",
+   "ok": false,
+   "error": "page.goto: Timeout 60000ms exceeded. | Call log: |   - navigating to \"https://checkout.stripe.com/c/pay/cs_live_b1CyYrm8PQxg2OlR5Fm97fs3U3muxifmaB1yLwAmIdzuK9xe66lOSVmwnc#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicyc%2FNSknZHVsTmB8Jz8ndW5aaWxzYFowNFBKQT11Qz1RUXVrY1NhMVxhMHJIQ3dHMFxqV2NPcDYxVElGPW1IZGppPERqS01%2FN0prYn03fGxHbVxAY29xaDJfX0BhRkBvbTxKTkBhfUBKNH0zbkY1VzU1QzVrTn9hdDwnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmY2NjY2NjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl\", waiting until \"networkidle\" | "
+  },
+  {
+   "name": "Checkout agence_yearly",
+   "ok": false,
+   "error": "page.goto: Timeout 60000ms exceeded. | Call log: |   - navigating to \"https://checkout.stripe.com/c/pay/cs_live_b14JDKBnc8DR5iGrPOFg5FzqqY8F2eNpa7IymDKQH4SZ5RTvqVY7zYJ2R8#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicyc%2FNSknZHVsTmB8Jz8ndW5aaWxzYFowNFBKQT11Qz1RUXVrY1NhMVxhMHJIQ3dHMFxqV2NPcDYxVElGPW1IZGppPERqS01%2FN0prYn03fGxHbVxAY29xaDJfX0BhRkBvbTxKTkBhfUBKNH0zbkY1VzU1QzVrTn9hdDwnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmY2NjY2NjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl\", waiting until \"networkidle\" | "
+  },
+  {
+   "name": "client Stripe créé pour le compte",
+   "ok": true,
+   "notes": "cus_VVqk…"
+  },
+  {
+   "name": "suppression du compte temporaire",
+   "ok": true,
+   "notes": "compte et agence supprimés"
+  }
+ ],
+ "finished": "2026-10-26T14:42:43.089Z"
+}
