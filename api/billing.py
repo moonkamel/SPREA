@@ -187,6 +187,17 @@ class Billing:
         })
         return customer["id"]
 
+    async def customer_exists(self, customer_id: str) -> bool:
+        """False for a customer deleted or unknown to this key's mode (a test
+        customer once the site runs on the live key)."""
+        try:
+            customer = as_dict(await self.client.v1.customers.retrieve_async(customer_id))
+        except stripe.InvalidRequestError as e:
+            if e.code == "resource_missing":
+                return False
+            raise
+        return not customer.get("deleted")
+
     async def report_checkout(self, report_id: str, user_id: str, customer_id: str) -> Dict[str, str]:
         session = await self.client.v1.checkout.sessions.create_async(params={
             "mode": "payment",
