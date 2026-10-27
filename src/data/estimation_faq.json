@@ -1,0 +1,26 @@
+[
+ {
+  "q": "Comment est calculée l'estimation ?",
+  "a": "Nous partons des ventes réelles enregistrées par l'administration fiscale (base DVF) autour de votre adresse : même type de bien, surface comparable, dans un rayon de 500 m à 2 km selon le nombre de ventes. Les prix sont actualisés au dernier trimestre connu, puis ajustés selon l'étiquette énergie, l'état, l'étage et les atouts du bien."
+ },
+ {
+  "q": "L'estimation est-elle vraiment gratuite et sans inscription ?",
+  "a": "Oui. Le résultat s'affiche immédiatement, sans email ni compte. Vous pouvez ensuite, si vous le souhaitez, demander à être rappelé par un conseiller de votre secteur pour affiner le prix."
+ },
+ {
+  "q": "Quelle est la fiabilité d'une estimation en ligne ?",
+  "a": "Elle dépend du nombre de ventes comparables proches et de leur homogénéité : c'est ce qu'indique notre note de fiabilité. Une estimation en ligne ne voit ni la vue, ni l'exposition, ni l'état réel : seule une visite par un professionnel permet un avis de valeur précis."
+ },
+ {
+  "q": "Pourquoi l'étiquette énergie (DPE) change-t-elle le prix ?",
+  "a": "À caractéristiques égales, un logement classé F ou G se vend moins cher qu'un logement classé C ou D. Nous mesurons cet écart sur plus d'un million de ventes rapprochées de leur DPE, département par département, et l'appliquons à votre bien."
+ },
+ {
+  "q": "D'où viennent les données ?",
+  "a": "Des données publiques : les Demandes de valeurs foncières (DVF) publiées par la DGFiP, les diagnostics de performance énergétique publiés par l'ADEME et la Base Adresse Nationale. Aucune donnée personnelle n'est revendue."
+ },
+ {
+  "q": "Que se passe-t-il si je demande à être rappelé ?",
+  "a": "Vos coordonnées et votre estimation sont transmises, avec votre accord, à un conseiller immobilier partenaire de SPREA qui exerce dans votre secteur. Il vous recontacte pour affiner le prix, gratuitement et sans engagement."
+ }
+]

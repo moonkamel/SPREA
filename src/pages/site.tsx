@@ -35,7 +35,7 @@ function Nav() {
     const links: [string, string, boolean][] = me?.is_pro
         ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
-        : [['/demo', 'Visite guidée', true], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
+        : [['/demo', 'Visite guidée', true], ['/estimation', 'Estimer un bien', false], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     const hidden = links.some(([, , essential]) => !essential);
 
     // Closed on navigation, Escape or a click outside
@@ -144,11 +144,12 @@ export function SiteFooter({ className = '' }: { className?: string }) {
     return (
         <footer className={`border-t border-line/70 ${className}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm text-faint">
-                <span>© {new Date().getFullYear()} {LEGAL.brand} · Réservé aux professionnels. Estimations indicatives, sans valeur de DPE, d'audit ni de devis.</span>
+                <span>© {new Date().getFullYear()} {LEGAL.brand} · Logiciel réservé aux professionnels. Estimations indicatives, sans valeur d'expertise, de DPE, d'audit ni de devis.</span>
                 <nav className="flex flex-wrap gap-x-5 gap-y-2">
                     <Link to="/demo" className="hover:text-ink">Visite guidée</Link>
                     <Link to="/tarifs" className="hover:text-ink">Tarifs</Link>
                     <Link to="/observatoire" className="hover:text-ink">Observatoire</Link>
+                    <Link to="/estimation" className="hover:text-ink">Estimation immobilière gratuite</Link>
                     <Link to="/cgv" className="hover:text-ink">CGV</Link>
                     <Link to="/mentions-legales" className="hover:text-ink">Mentions légales</Link>
                     <Link to="/confidentialite" className="hover:text-ink">Confidentialité</Link>

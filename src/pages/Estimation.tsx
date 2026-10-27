@@ -5,6 +5,7 @@ import { SiteFooter, SiteHeader } from './site';
 import { useSeo } from '../seo';
 import { DPE_COLORS, DPE_LABELS, errorDetail, type DPEClass } from '../ui';
 import { GlowButton, Reveal } from '../views/home/fx';
+import faqData from '../data/estimation_faq.json';
 
 // Public online estimator: address, a few taps (prefilled from the DPE of the
 // address, or from a sentence read by the AI), a live estimate from the DVF
@@ -151,7 +152,10 @@ export default function EstimationPage() {
                                         </Panel>
                                     )}
                                     {dpes && dpes.length === 1 && (
-                                        <p className="flex items-center gap-2 text-sm text-sage"><Check size={16} /> DPE trouvé à cette adresse : type, surface et étiquette pré-remplis.</p>
+                                        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-sage">
+                                            <Check size={16} /> DPE trouvé à cette adresse : {dpes[0].kind === 'maison' ? 'maison' : 'appartement'} de {dpes[0].surface} m²{dpes[0].dpe ? `, classe ${dpes[0].dpe}` : ''}.
+                                            <span className="text-muted">Pas votre logement ? Corrigez les champs ci-dessous.</span>
+                                        </p>
                                     )}
                                     <Panel title="Votre bien">
                                         <Field label="Type">
@@ -623,16 +627,10 @@ function Comparables({ result }: { result: Result }) {
     );
 }
 
-// --- Explanations and FAQ (also in the prerendered page, with the FAQ structured data) ---
+// --- Explanations and FAQ ---
 
-export const FAQ: [string, string][] = [
-    ['Comment est calculée l\'estimation ?', "Nous partons des ventes réelles enregistrées par l'administration fiscale (base DVF) autour de votre adresse : même type de bien, surface comparable, dans un rayon de 500 m à 2 km selon le nombre de ventes. Les prix sont actualisés au dernier trimestre connu, puis ajustés selon l'étiquette énergie, l'état, l'étage et les atouts du bien."],
-    ['L\'estimation est-elle vraiment gratuite et sans inscription ?', "Oui. Le résultat s'affiche immédiatement, sans email ni compte. Vous pouvez ensuite, si vous le souhaitez, demander à être rappelé par un conseiller de votre secteur pour affiner le prix."],
-    ['Quelle est la fiabilité d\'une estimation en ligne ?', "Elle dépend du nombre de ventes comparables proches et de leur homogénéité : c'est ce qu'indique notre note de fiabilité. Une estimation en ligne ne voit ni la vue, ni l'exposition, ni l'état réel : seule une visite par un professionnel permet un avis de valeur précis."],
-    ['Pourquoi l\'étiquette énergie (DPE) change-t-elle le prix ?', "À caractéristiques égales, un logement classé F ou G se vend moins cher qu'un logement classé C ou D. Nous mesurons cet écart sur plus d'un million de ventes rapprochées de leur DPE, département par département, et l'appliquons à votre bien."],
-    ['D\'où viennent les données ?', "Des données publiques : les Demandes de valeurs foncières (DVF) publiées par la DGFiP, les diagnostics de performance énergétique publiés par l'ADEME et la Base Adresse Nationale. Aucune donnée personnelle n'est revendue."],
-    ['Que se passe-t-il si je demande à être rappelé ?', "Vos coordonnées et votre estimation sont transmises, avec votre accord, à un conseiller immobilier partenaire de SPREA qui exerce dans votre secteur. Il vous recontacte pour affiner le prix, gratuitement et sans engagement."],
-];
+// Also in the prerendered page, with the FAQ structured data (scripts/seo/prerender.mjs)
+const FAQ: [string, string][] = faqData.map(f => [f.q, f.a]);
 
 function SeoContent() {
     const [open, setOpen] = useState<number | null>(0);

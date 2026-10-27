@@ -20,6 +20,7 @@ const template = readFileSync(join(DIST, 'index.html'), 'utf8');
 writeFileSync(join(DIST, 'app.html'), template.replace(/<!--seo-->[\s\S]*<!--\/seo-->/,
     '<title>SPREA</title>\n    <meta name="robots" content="noindex" />'));
 const obs = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'observatoire.json'), 'utf8'));
+const faq = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'estimation_faq.json'), 'utf8'));
 
 // --- Helpers ---
 
@@ -87,7 +88,7 @@ const page = ({ path, title, description, body = '', jsonld = [], noindex = fals
     return path;
 };
 
-const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Visite guidée</a> · <a href="/tarifs">Tarifs</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
+const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Visite guidée</a> · <a href="/tarifs">Tarifs</a> · <a href="/estimation">Estimation immobilière gratuite</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
 const ul = items => `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
 
 // --- Pages ---
@@ -120,6 +121,35 @@ ${ul([
     ])}
 <p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte.</p>
 <p><a href="/demo">Faire la visite guidée</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
+}));
+
+// Public estimator: the long tail of "estimation (maison|immobilière) gratuite / en ligne / sans inscription"
+pages.push(page({
+    path: '/estimation',
+    title: 'Estimation immobilière gratuite en ligne, immédiate et sans inscription | SPREA',
+    description: "Estimez gratuitement votre maison ou votre appartement en 30 secondes : prix calculé sur les ventes réelles autour de chez vous (DVF), ajusté de l'étiquette énergie. Sans inscription.",
+    jsonld: [
+        {
+            '@context': 'https://schema.org', '@type': 'WebApplication', name: 'Estimation immobilière gratuite SPREA',
+            url: `${SITE}/estimation`, applicationCategory: 'FinanceApplication', operatingSystem: 'Web', publisher: ORG,
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+            description: "Estimation en ligne d'une maison ou d'un appartement à partir des ventes DVF comparables et de l'étiquette énergie.",
+        },
+        { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+        BREADCRUMB([['SPREA', '/'], ['Estimation immobilière', '/estimation']]),
+    ],
+    body: `${nav}
+<h1>Estimation immobilière gratuite : combien vaut votre bien ?</h1>
+<p>Estimez votre maison ou votre appartement en ligne, immédiatement et sans inscription. Le prix est calculé sur les ventes réelles enregistrées autour de votre adresse (DVF, DGFiP), pour des biens de même type et de surface comparable, puis ajusté de l'étiquette énergie, de l'état, de l'étage et des atouts du bien.</p>
+<h2>Comment fonctionne l'estimation</h2>
+${ul([
+        "<strong>Les ventes réelles</strong> : les prix de vente enregistrés chez les notaires (DVF) autour de votre adresse, actualisés au dernier trimestre connu.",
+        `<strong>L'étiquette énergie</strong> : l'écart de prix entre classes DPE, mesuré sur ${int(obs.total_sales)} ventes rapprochées de leur DPE.`,
+        "<strong>Vos atouts</strong> : état, étage, balcon, terrasse, parking, chacun affiché avec son poids.",
+    ])}
+<h2>Questions fréquentes</h2>
+${faq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n')}
+<p><a href="/estimation">Estimer mon bien gratuitement</a></p>`,
 }));
 
 pages.push(page({

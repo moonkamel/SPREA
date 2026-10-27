@@ -111,6 +111,12 @@ export default function ConfidentialitePage() {
                 <p>Le site ne fait pas de publicité ciblée, ne vend pas de données et ne prend aucune décision automatisée produisant des effets juridiques à votre égard.</p>
             </LegalSection>
 
+            <LegalSection title="Estimation immobilière en ligne (propriétaires)">
+                <p>L'estimation gratuite de <a href="/estimation" className="underline">sprea.app/estimation</a> ne demande aucun compte. L'adresse et les caractéristiques saisies servent uniquement à calculer l'estimation et ne sont pas conservées, sauf si vous demandez à être rappelé.</p>
+                <p>Dans ce cas, avec votre consentement explicite (case à cocher), nous enregistrons votre nom, votre téléphone et/ou votre email, votre projet, l'adresse et les caractéristiques du bien et le résultat de l'estimation. Ces informations sont transmises à <b>un conseiller immobilier partenaire de SPREA</b> qui exerce dans le secteur du bien (abonné dont la zone de prospection couvre l'adresse), pour qu'il vous recontacte au sujet de votre projet. Elles ne sont ni vendues à d'autres tiers ni utilisées pour d'autres finalités.</p>
+                <p>Base légale : votre consentement, que vous pouvez retirer à tout moment en écrivant à l'adresse indiquée plus haut ; le conseiller ne pourra alors plus vous contacter. Durée de conservation : 3 ans après le dernier contact. Si vous décrivez votre bien en texte libre, ce texte est transmis à Anthropic (modèle Claude) pour remplir le formulaire, sans votre nom ni vos coordonnées.</p>
+            </LegalSection>
+
             <LegalSection title="Destinataires et sous-traitants">
                 <p>Les données sont accessibles uniquement à l'éditeur et aux prestataires nécessaires au service, qui agissent sur ses instructions :</p>
                 <ul className="list-disc pl-5 space-y-1">
