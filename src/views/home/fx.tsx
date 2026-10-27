@@ -85,7 +85,7 @@ export function RotatingWord({ words, className = '' }: { words: string[]; class
         <span className={`relative inline-grid align-baseline ${className}`}>
             {/* Reserve the width of the longest word */}
             {words.map(w => <span key={w} className="invisible col-start-1 row-start-1" aria-hidden="true">{w}</span>)}
-            <span className="col-start-1 row-start-1 overflow-hidden pb-[0.18em] -mb-[0.18em]">
+            <span className="col-start-1 row-start-1 [clip-path:inset(0_-0.3em_-0.25em_-0.3em)]">
                 <motion.span
                     key={words[i]}
                     className="inline-block"
@@ -134,41 +134,28 @@ export function Reveal({ children, delay = 0, className = '' }: { children: Reac
     );
 }
 
-/** Button drawn towards the cursor, with a glow following it. */
-export function MagneticButton({ children, onClick, variant = 'primary', className = '' }: {
+/** Button with a glow following the cursor (the button itself stays still). */
+export function GlowButton({ children, onClick, variant = 'primary', className = '' }: {
     children: ReactNode; onClick?: () => void; variant?: 'primary' | 'ghost'; className?: string;
 }) {
     const ref = useRef<HTMLButtonElement>(null);
-    const x = useSpring(0, { stiffness: 220, damping: 16, mass: 0.4 });
-    const y = useSpring(0, { stiffness: 220, damping: 16, mass: 0.4 });
     const gx = useMotionValue(50), gy = useMotionValue(50);
-    const glow = useTransform([gx, gy], ([a, b]) => `radial-gradient(circle at ${a}% ${b}%, rgba(255,236,190,0.55), transparent 55%)`);
+    const glow = useTransform([gx, gy], ([a, b]) => `radial-gradient(circle at ${a}% ${b}%, rgba(255,236,190,0.55), transparent 60%)`);
+    const ghostGlow = useTransform([gx, gy], ([a, b]) => `radial-gradient(circle at ${a}% ${b}%, rgba(227,201,143,0.18), transparent 65%)`);
     const move = (e: React.PointerEvent) => {
         const r = ref.current!.getBoundingClientRect();
-        const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-        x.set(dx * 0.35); y.set(dy * 0.45);
         gx.set(((e.clientX - r.left) / r.width) * 100); gy.set(((e.clientY - r.top) / r.height) * 100);
     };
-    const leave = () => { x.set(0); y.set(0); };
     const styles = variant === 'primary'
-        ? 'bg-gradient-to-br from-brass-light via-brass to-brass-dark text-canvas shadow-[0_0_0_1px_rgba(227,201,143,0.4),0_10px_40px_-8px_rgba(201,164,92,0.7)] hover:shadow-[0_0_0_1px_rgba(227,201,143,0.7),0_0_60px_0_rgba(201,164,92,0.75)]'
-        : 'border border-white/15 bg-white/[0.03] text-ink backdrop-blur hover:border-brass/60 hover:text-brass-light';
+        ? 'bg-gradient-to-br from-brass-light via-brass to-brass-dark text-canvas shadow-[0_0_0_1px_rgba(227,201,143,0.4),0_8px_30px_-8px_rgba(201,164,92,0.65)] hover:shadow-[0_0_0_1px_rgba(227,201,143,0.75),0_0_48px_0_rgba(201,164,92,0.7)]'
+        : 'border border-white/15 bg-white/[0.03] text-ink backdrop-blur hover:border-brass/60 hover:text-brass-light hover:shadow-[0_0_32px_-6px_rgba(201,164,92,0.45)]';
     return (
-        <motion.button
-            ref={ref}
-            type="button"
-            onClick={onClick}
-            onPointerMove={move}
-            onPointerLeave={leave}
-            style={{ x, y }}
-            whileTap={{ scale: 0.96 }}
-            className={`group relative inline-flex items-center justify-center gap-2 rounded-full px-8 h-14 font-semibold text-[15px] transition-shadow duration-300 ${styles} ${className}`}
-        >
-            {variant === 'primary' && (
-                <motion.span aria-hidden="true" style={{ background: glow }} className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            )}
+        <button ref={ref} type="button" onClick={onClick} onPointerMove={move}
+            className={`group relative inline-flex items-center justify-center gap-2 rounded-full px-7 h-12 font-semibold text-sm transition-[box-shadow,border-color,color] duration-300 ${styles} ${className}`}>
+            <motion.span aria-hidden="true" style={{ background: variant === 'primary' ? glow : ghostGlow }}
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <span className="relative inline-flex items-center gap-2">{children}</span>
-        </motion.button>
+        </button>
     );
 }
 
