@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, BellRing, ChevronLeft, ChevronRight, Clock, FileSignature, MapPinned, ShieldCheck, Store, Swords, Wallet } from 'lucide-react';
+import { ArrowRight, BellRing, Clock, FileSignature, MapPinned, ShieldCheck, Store, Swords, Wallet } from 'lucide-react';
 import { navigate, usePath } from '../router';
 import { SiteFooter, SiteHeader } from '../pages/site';
 import { useSeo } from '../seo';
@@ -55,9 +55,12 @@ export default function Home() {
 
 function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
     const [ref, on] = useOnScreen<HTMLElement>();
-    const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-    const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
-    const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+    // From the window's scroll, not the section's: the home page stays mounted (hidden)
+    // under the other routes, and a progress measured while hidden would keep the
+    // title faded out when coming back to it
+    const { scrollY } = useScroll();
+    const y = useTransform(scrollY, [0, 700], [0, 140]);
+    const fade = useTransform(scrollY, [0, 560], [1, 0]);
     return (
         <section ref={ref} className="relative lg:h-[calc(100svh-4rem)] lg:min-h-[30rem] lg:max-h-[50rem] flex flex-col lg:flex-row lg:items-center overflow-hidden">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_72%_50%,rgba(40,120,255,0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_15%_30%,rgba(201,164,92,0.10),transparent_70%)]" />
@@ -135,63 +138,28 @@ function Figures() {
     );
 }
 
-// A day of prospecting: an auto-advancing carousel of tilted cards
-// (pauses under the cursor and off screen; dots and arrows to navigate)
-const STEP = 5000;
-
+// A day of prospecting: the cards scroll on their own in a slow, endless
+// band (paused under the cursor and off screen; scrollable by hand under
+// reduced motion)
 function Day() {
     const reduce = useReducedMotion();
     const [ref, on] = useOnScreen<HTMLElement>('0px');
-    const [index, setIndex] = useState(0);
-    const [paused, setPaused] = useState(false);
-    const n = DAY.length;
-    useEffect(() => {
-        if (reduce || paused || !on) return;
-        const t = setTimeout(() => setIndex(i => (i + 1) % n), STEP);
-        return () => clearTimeout(t);
-    }, [index, paused, on, reduce, n]);
-    const go = (d: number) => setIndex(i => (i + d + n) % n);
     return (
         <section ref={ref} className="relative py-16 sm:py-20 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <p className="text-xs sm:text-sm text-brass tracking-[0.2em] uppercase">Une journée avec SPREA</p>
                 <h2 className="mt-3 text-2xl sm:text-4xl text-ink max-w-2xl leading-tight">Du café du matin au mandat signé.</h2>
             </div>
-            <div className="mt-8 sm:mt-10 grid [perspective:1600px]" onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
-                {DAY.map((d, i) => {
-                    // Signed distance to the current card, on the shortest way round
-                    let off = i - index;
-                    if (off > n / 2) off -= n;
-                    if (off < -n / 2) off += n;
-                    const far = Math.abs(off) > 1;
-                    return (
-                        <motion.div key={d.time}
-                            className="col-start-1 row-start-1 mx-auto w-[88%] sm:w-[74%] max-w-[54rem]"
-                            style={{ zIndex: 10 - Math.abs(off), pointerEvents: off === 0 ? 'auto' : 'none' }}
-                            initial={false}
-                            animate={{ x: `${off * 82}%`, rotateY: off * -24, scale: 1 - Math.abs(off) * 0.12, opacity: far ? 0 : 1 - Math.abs(off) * 0.55 }}
-                            transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 70, damping: 18 }}
-                            aria-hidden={off !== 0}
-                        >
+            <div className={`group mt-8 sm:mt-10 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)] ${reduce ? 'overflow-x-auto' : ''}`}>
+                <div className={`flex w-max gap-5 pr-5 ${reduce ? '' : 'animate-[daymarquee_110s_linear_infinite] group-hover:[animation-play-state:paused]'}`}
+                    style={on ? undefined : { animationPlayState: 'paused' }}>
+                    {/* Twice the cards: the band loops on the second copy */}
+                    {(reduce ? DAY : [...DAY, ...DAY]).map((d, i) => (
+                        <div key={i} className="w-[min(84vw,44rem)] shrink-0" aria-hidden={i >= DAY.length}>
                             <DayCard d={d} />
-                        </motion.div>
-                    );
-                })}
-            </div>
-            <div className="mt-8 flex items-center justify-center gap-4">
-                <button type="button" onClick={() => go(-1)} aria-label="Étape précédente" className="h-9 w-9 rounded-full border border-white/15 text-muted hover:text-brass-light hover:border-brass/50 transition-colors inline-flex items-center justify-center"><ChevronLeft size={18} /></button>
-                <div className="flex items-center gap-2">
-                    {DAY.map((d, i) => (
-                        <button key={d.time} type="button" onClick={() => setIndex(i)} aria-label={`${d.time} · ${d.title}`}
-                            className={`relative h-1.5 rounded-full overflow-hidden transition-all duration-500 ${i === index ? 'w-10 bg-white/15' : 'w-4 bg-white/15 hover:bg-white/30'}`}>
-                            {i === index && !reduce && (
-                                <motion.span key={`${index}-${paused}`} className="absolute inset-y-0 left-0 bg-brass-light"
-                                    initial={{ width: '0%' }} animate={{ width: paused ? '0%' : '100%' }} transition={{ duration: paused ? 0 : STEP / 1000, ease: 'linear' }} />
-                            )}
-                        </button>
+                        </div>
                     ))}
                 </div>
-                <button type="button" onClick={() => go(1)} aria-label="Étape suivante" className="h-9 w-9 rounded-full border border-white/15 text-muted hover:text-brass-light hover:border-brass/50 transition-colors inline-flex items-center justify-center"><ChevronRight size={18} /></button>
             </div>
         </section>
     );

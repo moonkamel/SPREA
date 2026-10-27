@@ -1,11 +1,11 @@
 import { useEffect, type ReactNode } from 'react';
 import { ArrowRight, Check, ShieldCheck } from 'lucide-react';
-import { Button } from '../ui';
 import { useAccount } from '../account';
 import { navigate } from '../router';
 import { SiteFooter, SiteHeader } from './site';
 import { Screen } from './Screen';
 import { useSeo } from '../seo';
+import { Backdrop, Eyebrow, GlowButton, Reveal } from '../views/home/fx';
 
 // Product walkthrough for professionals ("Visite guidée"): a day with SPREA, from the new
 // DPE of the day to the valuation handed to the owner.
@@ -21,19 +21,22 @@ function Step({ id, kicker, title, children, points, media, reverse = false }: {
 }) {
     return (
         <section id={id} className="scroll-mt-24 max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid gap-10 lg:grid-cols-12 items-center">
-            <div className={`lg:col-span-5 ${reverse ? 'lg:order-2' : ''}`}>
-                <p className="text-sm text-brass tracking-wide">{kicker}</p>
-                <h2 className="mt-3 text-3xl sm:text-4xl text-ink leading-tight">{title}</h2>
-                <div className="mt-5 text-muted leading-relaxed space-y-3">{children}</div>
+            <Reveal className={`lg:col-span-5 ${reverse ? 'lg:order-2' : ''}`}>
+                <p className="text-xs sm:text-sm text-brass tracking-[0.2em] uppercase">{kicker}</p>
+                <h2 className="mt-3 text-2xl sm:text-4xl text-ink leading-tight">{title}</h2>
+                <div className="mt-5 text-[15px] text-muted leading-relaxed space-y-3">{children}</div>
                 <ul className="mt-6 space-y-2.5">
                     {points.map(p => (
-                        <li key={p} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                            <Check size={16} className="shrink-0 mt-0.5 text-brass" /><span>{p}</span>
+                        <li key={p} className="flex items-start gap-3 text-sm text-ink-soft">
+                            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brass/10 ring-1 ring-brass/30"><Check size={12} className="text-brass-light" /></span><span>{p}</span>
                         </li>
                     ))}
                 </ul>
-            </div>
-            <div className={`lg:col-span-7 ${reverse ? 'lg:order-1' : ''}`}>{media}</div>
+            </Reveal>
+            <Reveal delay={0.1} className={`relative lg:col-span-7 ${reverse ? 'lg:order-1' : ''}`}>
+                <div aria-hidden="true" className="absolute -inset-6 rounded-[2.5rem] bg-[radial-gradient(ellipse_at_center,rgba(201,164,92,0.10),transparent_70%)]" />
+                <div className="relative">{media}</div>
+            </Reveal>
         </section>
     );
 }
@@ -55,21 +58,21 @@ export default function DemoPage() {
     const start = () => (me?.is_pro ? navigate('/') : navigate('/tarifs'));
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-canvas overflow-x-clip">
             <SiteHeader />
             <main className="flex-1">
-                <section className="relative overflow-hidden border-b border-line/60">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,164,92,0.12),transparent_60%)] pointer-events-none" />
-                    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-14 text-center">
-                        <p className="text-sm text-brass tracking-wide mb-5">Visite guidée</p>
-                        <h1 className="text-4xl sm:text-5xl leading-[1.1] text-ink">Une journée avec SPREA</h1>
-                        <p className="mt-6 text-lg text-muted">
+                <section className="relative overflow-hidden border-b border-white/[0.06]">
+                    <Backdrop />
+                    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-12 text-center">
+                        <Eyebrow>Visite guidée</Eyebrow>
+                        <h1 className="mt-5 text-[2.1rem] sm:text-5xl leading-[1.08] text-ink">Une journée avec SPREA <span className="block text-brass-light [text-shadow:0_0_40px_rgba(201,164,92,0.45)]">écran par écran.</span></h1>
+                        <p className="mt-5 text-[15px] sm:text-base text-ink-soft/90">
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
                         <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 lg:-mx-28 gap-3 text-left">
                             {[['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['15 h', 'Le dossier acheteur', 'vendre']].map(([h, t, a]) => (
                                 <li key={a}>
-                                    <a href={`#${a}`} className="block rounded-xl border border-line bg-panel px-4 py-3 hover:border-brass/50 transition-colors">
+                                    <a href={`#${a}`} className="block rounded-2xl border border-white/10 bg-panel/60 backdrop-blur px-4 py-3 hover:border-brass/50 hover:shadow-[0_0_30px_-8px_rgba(201,164,92,0.5)] transition-all">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
                                         <span className="block text-sm text-ink-soft mt-1">{t}</span>
                                     </a>
@@ -85,7 +88,7 @@ export default function DemoPage() {
                     <p>Un DPE est obligatoire avant de vendre ou de louer. Quand un propriétaire en fait réaliser un, il prépare souvent un projet : vous le savez dès sa publication par l'ADEME, quelques jours plus tard, souvent avant que le bien n'arrive sur les portails.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="prospecter" kicker="8 h 15 · Prospection" title="Toutes les passoires de votre secteur sur une carte" reverse
                     points={['Toutes les adresses classées E, F ou G, logement par logement', 'Filtres par type de bien et ancienneté du DPE', 'Export CSV pour votre CRM']}
                     media={<Screen src="/demo/map.webp" alt="Carte de prospection : 105 logements classés F ou G dans le centre de Lille" width={1560} height={628} />}>
@@ -93,7 +96,7 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Capture réelle (Lille, DPE publics de l'ADEME), adresses masquées.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="potentiel" kicker="8 h 20 · Biens à fort potentiel" title="Les passoires à fort potentiel, et le suivi de chaque adresse"
                     points={['Classées par potentiel : ce que la rénovation ajoute, fraîcheur du DPE, valeur', 'Filtres par classe, ancienneté du DPE et valeur du bien', 'Suivi partagé dans l\'agence : courrier, relance, rendez-vous, mandat', 'Dossier propriétaire à votre nom pour le premier rendez-vous']}
                     media={
@@ -107,7 +110,7 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Captures réalisées avec des données d'exemple. Réservé à la formule Pro.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="contacter" kicker="8 h 30 · Courrier" title="Un courrier qui donne envie de vous rappeler" reverse
                     points={['Courrier prêt à imprimer, personnalisable', 'QR code unique par logement', 'Page propriétaire à vos couleurs, avec ses chiffres', 'Demandes de rappel avec consentement, dans « Contacts »']}
                     media={
@@ -119,14 +122,14 @@ export default function DemoPage() {
                     <p>En deux clics, un courrier sobre, qui indique l'origine des données et le moyen de s'opposer à tout nouvel envoi : le propriétaire scanne le QR code et découvre ce qu'une rénovation changerait pour son logement, au nom de votre agence. S'il le souhaite, il vous laisse ses coordonnées.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="Le lendemain · Contacts" title="Les propriétaires intéressés arrivent chez vous"
                     points={['Nom, téléphone, email et message', 'Statut « à rappeler » ou « contacté »', 'Consentement horodaté (RGPD)']}
                     media={<Screen src="/demo/contacts.webp" alt="Page Contacts : trois demandes de rappel de propriétaires" width={1600} height={1000} />}>
                     <p>Chaque demande arrive avec l'adresse du logement et le DPE concerné : vous rappelez un propriétaire qui sait déjà ce que vaut son bien et ce que coûteraient les travaux.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="immeubles-rapport" kicker="11 h · Immeubles de rapport" title="Les immeubles entiers détenus par une SCI, avec leur propriétaire" reverse
                     points={['Immeubles de 3 logements ou plus détenus en entier par une SCI ou une société privée', 'Hors copropriétés, bailleurs sociaux et organismes publics', 'Filtre « DPE F ou G » : les propriétaires qui ont une raison de vendre', 'Siège, gérants et autres immeubles de la société']}
                     media={
@@ -140,7 +143,7 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Captures réalisées avec des données d'exemple : noms de sociétés et de dirigeants fictifs.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="11 h 15 · Dossier de cession" title="Un dossier qui donne une raison de vendre maintenant"
                     points={['Logements interdits à la location, avec le calendrier', 'Gel des loyers des logements F et G', 'Travaux à prévoir, à la charge du seul propriétaire', 'Valeur lot par lot, en bloc, et décote liée au DPE', 'Audit énergétique obligatoire pour vendre', 'Courrier à la gérance prêt à imprimer']}
                     media={
@@ -156,7 +159,7 @@ export default function DemoPage() {
                     <p>Vous arrivez chez le gérant de la SCI avec des chiffres, pas avec une simple demande de mandat.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="11 h 30 · Signaux de vente" title="Les SCI qui vont vendre, repérées au BODACC" reverse
                     points={['Dissolution, liquidation, procédure collective, radiation, changement de dirigeant', 'Annonces légales vérifiées chaque semaine pour chaque société propriétaire', 'Contour rouge sur la carte et filtre « signal de vente fort »', 'Lecture par l\'IA : ce que ça implique, qui contacter, à quel horizon']}
                     media={<Screen src="/demo/sig_sheet.webp" alt="Fiche d'un immeuble dont la SCI est en liquidation judiciaire : annonces du BODACC et lecture par l'IA" width={1100} height={1879} />}>
@@ -165,7 +168,7 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Capture réalisée avec des données d'exemple : société, dirigeants et annonces fictifs.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="pv-ag" kicker="12 h · Documents de copropriété" title="Les PV d'AG lus par l'IA en deux minutes"
                     points={['PV d\'AG, carnet d\'entretien, pré-état daté : PDF ou photos', 'Travaux votés et appels de fonds, travaux à venir, procédures, impayés', 'Points de vigilance classés, avec la page de chaque information', 'Questions à poser au syndic et documents manquants', 'Synthèse PDF à vos couleurs pour l\'acheteur ou le notaire']}
                     media={
@@ -179,14 +182,14 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Capture réalisée avec un PV d'AG fictif. Les documents sont supprimés après l'analyse.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="convaincre" kicker="14 h · Rendez-vous" title="Le simulateur : travaux, aides, reste à charge, en direct" reverse
                     points={['Travaux recommandés selon le DPE du logement', 'Nouvelle étiquette, consommation et émissions', 'MaPrimeRénov\', CEE et éco-PTZ selon les barèmes en vigueur', 'Deux scénarios à comparer']}
                     media={<Screen src="/demo/works.webp" alt="Simulateur : choix des travaux et projet de passage de F à C" width={1600} height={1000} />}>
                     <p>Tapez l'adresse : SPREA retrouve le DPE publié par l'ADEME et propose les travaux qui font vraiment gagner des classes. Cochez, décochez : tout se recalcule devant le propriétaire.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="immeuble" kicker="14 h 10 · Copropriété" title="La fiche immeuble : ce que la copropriété va coûter"
                     points={['Registre national des copropriétés : lots, syndic, période de construction', 'DPE collectif et étiquettes des autres appartements', 'Obligations : plan pluriannuel de travaux, DPE collectif', 'Travaux collectifs probables et quote-part de l\'appartement, avant et après aides']}
                     media={<Screen src="/demo/immeuble.webp" alt="Fiche immeuble : copropriété de 20 lots, DPE collectif E, travaux de façade et de chaufferie, quote-part de l'appartement" width={1400} height={1493} />}>
@@ -194,14 +197,14 @@ export default function DemoPage() {
                     <p>Un argument de négociation que vous apportez avant lui, plutôt que de le subir après la visite.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="14 h 20 · Artisans" title="Les artisans RGE les plus proches, travail par travail" reverse
                     points={['Annuaire public de l\'ADEME, mis à jour chaque jour', 'Entreprises qualifiées pour chaque travail retenu, les plus proches d\'abord', 'Rénovation globale et audit énergétique pour les projets d\'ampleur', 'Repris dans le rapport remis au client']}
                     media={<Screen src="/demo/rge.webp" alt="Liste des artisans RGE les plus proches pour chaque travail, avec téléphone et site" width={1400} height={1343} />}>
                     <p>Les aides ne sont versées que pour des travaux réalisés par une entreprise RGE. Le propriétaire repart avec des noms et des numéros de téléphone : son projet devient concret.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="vendre" kicker="15 h · Vendre une passoire" title="Le dossier acheteur : un projet chiffré plutôt qu'une passoire"
                     points={['Le programme de travaux choisi dans le simulateur', 'Calculé à partir du prix du mandat', 'Valeur après travaux étayée par les ventes DVF comparables', 'Loyer de marché et rendement pour les investisseurs', 'Aucun argument contre le prix : vous représentez le vendeur']}
                     media={
@@ -215,7 +218,7 @@ export default function DemoPage() {
                     <p className="text-xs text-faint">Capture réalisée avec des données d'exemple. Réservé à la formule Pro.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="L'argument décisif" title="L'avis de valeur avant / après travaux" reverse
                     points={['Ventes DVF comparables à moins de 500 m, 1 km, 2 km', 'Écart de prix par classe DPE mesuré sur 1,27 million de ventes', 'Ajustement du conseiller (état, étage, extérieur…)', 'PDF à votre nom, à remettre au client']}
                     media={
@@ -227,7 +230,7 @@ export default function DemoPage() {
                     <p>Combien vaut le bien aujourd'hui, combien il vaudrait après travaux, et ce que les travaux rapportent une fois les aides déduites. De quoi fixer un prix juste et le défendre face aux acheteurs.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="À laisser au client" title="Un rapport complet, rédigé pour lui"
                     points={['Synthèse, analyse rédigée, plan de travaux et de financement', 'Valeur verte et calendrier de la loi Climat', 'Fiche immeuble pour les appartements en copropriété', 'Artisans RGE proches pour chaque travail', 'Inclus sans limite dans l\'abonnement']}
                     media={
@@ -240,38 +243,39 @@ export default function DemoPage() {
                     <p>Un document clair et sourcé, qui reste chez le propriétaire et qui porte votre travail : chaque chiffre est expliqué, de la valeur du bien aux artisans à appeler.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step kicker="Pour votre communication" title="L'observatoire de la valeur verte" reverse
                     points={['Mis à jour chaque mois', 'France entière et 90 départements', 'Des chiffres à citer en rendez-vous et sur vos réseaux']}
                     media={<Screen src="/demo/observatoire.webp" alt="Observatoire : écart de prix par classe DPE, maisons et appartements" width={1600} height={1000} />}>
                     <p>En moyenne, d'après nos calculs sur les ventes DVF rapprochées de leur DPE (2022 à 2025), une maison classée G s'est vendue 18 % moins cher qu'une maison classée D comparable. Montrez-le à vos vendeurs.</p>
                 </Step>
 
-                <div className="border-t border-line/60" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
                 <Step id="equipe" kicker="Pour les agences et les réseaux" title="Toute l'agence sur le même outil"
                     points={['Un abonnement, autant de places que d\'agents, une seule facture', 'Invitation par lien, rôles titulaire, responsable et agent', 'Contacts et alertes partagés : aucun propriétaire ne se perd', 'Console réseau pour suivre toutes les agences']}
                     media={<Screen src="/demo/team.webp" alt="Page Équipe : membres de l'agence, rôles, invitations et nombre de places" width={1400} height={1281} />}>
                     <p>Chaque agent prospecte son secteur, et le responsable voit qui rappelle qui. Quand un agent part, ses contacts restent à l'agence.</p>
                 </Step>
 
-                <section className="border-t border-line/60 bg-panel/40">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
-                        <h2 className="text-3xl sm:text-4xl text-ink">Le calcul est vite fait</h2>
-                        <p className="mt-5 text-lg text-muted">
+                <section className="relative overflow-hidden border-t border-white/[0.06]">
+                    <div aria-hidden="true" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-brass/20 blur-[120px]" />
+                    <Reveal className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
+                        <h2 className="text-3xl sm:text-[2.75rem] text-ink leading-[1.1]">Le calcul est vite fait</h2>
+                        <p className="mt-5 text-[15px] sm:text-base text-muted">
                             Sur une vente à 250 000 €, des honoraires de 5 % TTC représentent plus de 10 000 € HT. L'abonnement Solo annuel coûte 790 € TTC :
                             un seul mandat signé grâce à SPREA le rembourse plus de dix fois.
                         </p>
                         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
                             {me?.is_pro
-                                ? <Button onClick={start} className="sm:w-60">Ouvrir le simulateur <ArrowRight size={18} /></Button>
-                                : <Button onClick={() => startSubscription('solo_monthly')} className="sm:w-60">Démarrer à 79 € TTC / mois</Button>}
-                            <Button variant="secondary" onClick={() => navigate('/tarifs')} className="sm:w-60">Formules Agence et Réseau</Button>
+                                ? <GlowButton onClick={start}>Ouvrir le simulateur <ArrowRight size={18} /></GlowButton>
+                                : <GlowButton onClick={() => startSubscription('solo_monthly')}>Démarrer à 79 € TTC / mois <ArrowRight size={18} /></GlowButton>}
+                            <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Formules Agence et Réseau</GlowButton>
                         </div>
                         <p className="mt-5 text-sm text-muted flex items-center justify-center gap-2">
                             <ShieldCheck size={16} className="text-sage" /> Mensuel ou annuel · engagement 12 mois · facture avec TVA
                         </p>
                         <p className="mt-8 text-xs text-faint">Captures réalisées avec des données d'exemple, sauf la carte (DPE publics, adresses masquées).</p>
-                    </div>
+                    </Reveal>
                 </section>
             </main>
             <SiteFooter />

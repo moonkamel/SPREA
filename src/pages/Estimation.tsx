@@ -306,7 +306,7 @@ function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked:
 // --- A sentence read by the AI ---
 
 function AiDescribe({ onFields }: { onFields: (f: Partial<Form>) => void }) {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(true);
     const [text, setText] = useState('');
     const [busy, setBusy] = useState(false);
     const [done, setDone] = useState<number | null>(null);

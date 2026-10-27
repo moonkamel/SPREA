@@ -47,3 +47,6 @@
 
 /* Home: scroll cue under the hero */
 @keyframes scrollcue { 0% { transform: translateY(-100%); } 100% { transform: translateY(250%); } }
+
+/* Home: the day of prospecting, an endless band (two copies of the cards with a trailing gap: -50 % = one copy) */
+@keyframes daymarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }

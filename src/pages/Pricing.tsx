@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Loader2, ShieldCheck, X } from 'lucide-react';
-import { Button, errorDetail, Segmented } from '../ui';
+import { errorDetail } from '../ui';
 import { useAccount, type AgencyOrder, type Plan } from '../account';
 import { Link } from '../router';
-import { PageShell } from './site';
+import { SiteFooter, SiteHeader } from './site';
 import { useSeo } from '../seo';
+import { Backdrop, Eyebrow, GlowButton, Reveal, TiltCard } from '../views/home/fx';
 
 type Billing = 'monthly' | 'yearly';
 
@@ -69,8 +70,8 @@ export default function PricingPage() {
             unit: `${per} · TTC`,
             note: billing === 'yearly' ? 'soit 2 mois offerts' : 'engagement 12 mois',
             cta: me?.is_pro
-                ? <Button disabled className="mt-8 w-full">Abonnement actif</Button>
-                : <Button onClick={() => startSubscription(plan)} className="mt-8 w-full">Démarrer maintenant</Button>,
+                ? <GlowButton disabled className="mt-8 w-full">Abonnement actif</GlowButton>
+                : <GlowButton onClick={() => startSubscription(plan)} className="mt-8 w-full">Démarrer maintenant</GlowButton>,
             highlighted: true,
         },
         {
@@ -81,8 +82,8 @@ export default function PricingPage() {
             unit: `par agent, ${per} · TTC`,
             note: '2 agents minimum · engagement 12 mois',
             cta: me?.is_pro
-                ? <Button variant="secondary" disabled className="mt-8 w-full">Abonnement actif</Button>
-                : <Button variant="secondary" onClick={() => setAgencyOpen(true)} className="mt-8 w-full">Équiper mon agence</Button>,
+                ? <GlowButton variant="ghost" disabled className="mt-8 w-full">Abonnement actif</GlowButton>
+                : <GlowButton variant="ghost" onClick={() => setAgencyOpen(true)} className="mt-8 w-full">Équiper mon agence</GlowButton>,
             highlighted: false,
         },
         {
@@ -92,7 +93,7 @@ export default function PricingPage() {
             price: 'Sur devis',
             unit: 'à partir de 39 € par agent et par mois · TTC',
             note: 'engagement 12 mois',
-            cta: <Button variant="secondary" onClick={() => setQuote('reseau')} className="mt-8 w-full">Demander un devis</Button>,
+            cta: <GlowButton variant="ghost" onClick={() => setQuote('reseau')} className="mt-8 w-full">Demander un devis</GlowButton>,
             highlighted: false,
         },
     ];
@@ -103,37 +104,50 @@ export default function PricingPage() {
     };
 
     return (
-        <PageShell>
-            <section className="text-center max-w-2xl mx-auto mb-10">
-                <p className="text-sm text-brass tracking-wide mb-4">Tarifs</p>
-                <h1 className="text-4xl sm:text-5xl text-ink leading-tight">Un mandat signé rembourse des années d'abonnement</h1>
-                <p className="mt-5 text-lg text-muted">Réservé aux professionnels de l'immobilier. Tous les outils sont inclus dans chaque formule.</p>
-                <div className="mt-8 max-w-xs mx-auto">
-                    <Segmented ariaLabel="Facturation" value={billing} onChange={setBilling}
-                        options={[{ value: 'monthly', label: 'Mensuel' }, { value: 'yearly', label: 'Annuel −2 mois' }]} />
+        <div className="min-h-screen flex flex-col bg-canvas overflow-x-clip">
+            <SiteHeader />
+            <main className="flex-1">
+            <section className="relative overflow-hidden">
+                <Backdrop />
+                <div className="relative text-center max-w-2xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-10">
+                    <Eyebrow>Tarifs · tous les outils inclus</Eyebrow>
+                    <h1 className="mt-5 text-[2.1rem] sm:text-5xl text-ink leading-[1.08]">Un mandat signé rembourse <span className="text-brass-light [text-shadow:0_0_40px_rgba(201,164,92,0.45)]">des années d'abonnement</span></h1>
+                    <p className="mt-5 text-[15px] sm:text-base text-ink-soft/90">Réservé aux professionnels de l'immobilier. Tous les outils sont inclus dans chaque formule.</p>
+                    <div role="radiogroup" aria-label="Facturation" className="mt-8 inline-flex rounded-full border border-white/15 bg-panel/70 p-1 backdrop-blur">
+                        {([['monthly', 'Mensuel'], ['yearly', 'Annuel −2 mois']] as [Billing, string][]).map(([v, l]) => (
+                            <button key={v} type="button" role="radio" aria-checked={billing === v} onClick={() => setBilling(v)}
+                                className={`rounded-full px-5 h-10 text-sm font-semibold transition-all ${billing === v ? 'bg-gradient-to-br from-brass-light via-brass to-brass-dark text-canvas shadow-[0_0_24px_-4px_rgba(201,164,92,0.7)]' : 'text-muted hover:text-ink'}`}>{l}</button>
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {offers.map(o => (
-                    <div key={o.id} className={`rounded-2xl p-7 flex flex-col border bg-panel ${o.highlighted ? 'border-brass/60 shadow-2xl shadow-black/40' : 'border-line'}`}>
-                        <div className="flex items-center justify-between">
-                            <h2 className="font-sans text-sm font-semibold tracking-wide text-brass">{o.name}</h2>
-                            {o.highlighted && <span className="text-[11px] px-2 py-0.5 rounded-full bg-brass text-canvas font-semibold">Démarrage immédiat</span>}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+                {offers.map((o, i) => (
+                    <Reveal key={o.id} delay={i * 0.08} className="h-full">
+                    <TiltCard className="h-full rounded-3xl">
+                    <div className={`relative h-full overflow-hidden rounded-3xl p-7 flex flex-col border ${o.highlighted ? 'border-brass/50 bg-gradient-to-br from-panel via-panel to-[#1a1608] shadow-[0_30px_90px_-30px_rgba(201,164,92,0.5)]' : 'border-white/10 bg-panel/60'}`}>
+                        {o.highlighted && <div aria-hidden="true" className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-brass/20 blur-[70px]" />}
+                        <div className="relative flex items-center justify-between">
+                            <h2 className="font-sans text-xs font-semibold tracking-[0.2em] uppercase text-brass">{o.name}</h2>
+                            {o.highlighted && <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brass text-canvas font-semibold">Démarrage immédiat</span>}
                         </div>
-                        <p className="mt-5 font-serif text-4xl text-ink">{o.price}</p>
-                        <p className="text-sm mt-1 text-faint">{o.unit}</p>
-                        <p className="text-xs mt-1 text-sage">{o.note}</p>
-                        <p className="mt-4 text-sm text-muted">{o.tagline}</p>
-                        <ul className="mt-6 space-y-3 flex-1">
+                        <p className="relative mt-5 font-serif text-[2.6rem] leading-none text-ink">{o.price}</p>
+                        <p className="relative text-sm mt-2 text-faint">{o.unit}</p>
+                        <p className="relative text-xs mt-1 text-sage">{o.note}</p>
+                        <p className="relative mt-4 text-sm text-muted">{o.tagline}</p>
+                        <ul className="relative mt-6 space-y-3 flex-1">
                             {extras[o.id].map(f => (
-                                <li key={f} className="flex items-start gap-2.5 text-sm text-ink">
-                                    <Check size={16} className="shrink-0 mt-0.5 text-brass" /><span>{f}</span>
+                                <li key={f} className="flex items-start gap-3 text-sm text-ink">
+                                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brass/10 ring-1 ring-brass/30"><Check size={12} className="text-brass-light" /></span><span>{f}</span>
                                 </li>
                             ))}
                         </ul>
-                        {o.cta}
+                        <div className="relative">{o.cta}</div>
                     </div>
+                    </TiltCard>
+                    </Reveal>
                 ))}
             </section>
 
@@ -141,22 +155,26 @@ export default function PricingPage() {
                 <ShieldCheck size={16} className="text-sage" /> Engagement 12 mois · Paiement sécurisé par Stripe · Facture avec TVA
             </p>
 
-            <section className="mt-14 rounded-2xl border border-line bg-panel p-7 sm:p-9">
-                <h2 className="text-2xl text-ink">Inclus dans toutes les formules</h2>
+            <Reveal>
+            <section className="mt-14 rounded-3xl border border-white/10 bg-panel/60 p-7 sm:p-9">
+                <p className="text-xs sm:text-sm text-brass tracking-[0.2em] uppercase">Tout est inclus</p>
+                <h2 className="mt-2 text-2xl sm:text-3xl text-ink">Dans toutes les formules</h2>
                 <ul className="mt-6 grid sm:grid-cols-2 gap-x-8 gap-y-3">
                     {INCLUDED.map(f => (
-                        <li key={f} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                            <Check size={16} className="shrink-0 mt-0.5 text-brass" /><span>{f}</span>
+                        <li key={f} className="flex items-start gap-3 text-sm text-ink-soft">
+                            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brass/10 ring-1 ring-brass/30"><Check size={12} className="text-brass-light" /></span><span>{f}</span>
                         </li>
                     ))}
                 </ul>
-                <p className="mt-6 text-sm text-muted">Pas encore convaincu ? <Link to="/demo" className="text-brass underline">Voyez SPREA en action</Link>.</p>
+                <p className="mt-6 text-sm text-muted">Pas encore convaincu ? <Link to="/demo" className="text-brass-light underline">Voyez SPREA en action</Link>.</p>
             </section>
+            </Reveal>
 
-            <section className="max-w-3xl mx-auto mt-16 space-y-3">
-                <h2 className="text-2xl text-ink mb-4">Questions fréquentes</h2>
+            <section className="max-w-3xl mx-auto mt-16">
+                <h2 className="text-2xl sm:text-3xl text-ink mb-5">Questions fréquentes</h2>
+                <div className="divide-y divide-white/[0.08] rounded-3xl border border-white/10 bg-panel/40">
                 {FAQ.map(item => (
-                    <details key={item.q} className="group rounded-xl border border-line bg-panel px-5 py-4">
+                    <details key={item.q} className="group px-5 py-4">
                         <summary className="cursor-pointer list-none flex items-center justify-between gap-4 text-ink">
                             {item.q}
                             <ChevronDown size={18} className="shrink-0 text-faint transition-transform group-open:rotate-180" />
@@ -164,14 +182,18 @@ export default function PricingPage() {
                         <p className="text-sm text-muted mt-3 leading-relaxed">{item.a}</p>
                     </details>
                 ))}
+                </div>
             </section>
+            </div>
+            </main>
 
             {quote && <QuoteDialog offer={quote} onClose={() => setQuote(null)} />}
             {agencyOpen && (
                 <AgencyDialog billing={billing} onClose={() => setAgencyOpen(false)} onQuote={() => { setAgencyOpen(false); setQuote('agence'); }}
                     onConfirm={order => { setAgencyOpen(false); startSubscription(billing === 'monthly' ? 'agence_monthly' : 'agence_yearly', order); }} />
             )}
-        </PageShell>
+            <SiteFooter />
+        </div>
     );
 }
 
@@ -207,7 +229,7 @@ function QuoteDialog({ offer, onClose }: { offer: 'agence' | 'reseau'; onClose: 
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-panel border border-line rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="bg-panel border border-white/10 rounded-3xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.8)] w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
                 <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
                 <h2 className="text-2xl text-ink pr-8">{offer === 'agence' ? 'Équiper mon agence' : 'Devis réseau'}</h2>
                 {status === 'sent' ? (
@@ -229,9 +251,9 @@ function QuoteDialog({ offer, onClose }: { offer: 'agence' | 'reseau'; onClose: 
                         {/* Honeypot */}
                         <input tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} className="hidden" aria-hidden="true" />
                         {error && <p className="text-sm text-coral">{error}</p>}
-                        <Button type="submit" disabled={status === 'sending'} className="w-full">
+                        <GlowButton type="submit" disabled={status === 'sending'} className="w-full">
                             {status === 'sending' && <Loader2 className="animate-spin" size={16} />} Envoyer ma demande
-                        </Button>
+                        </GlowButton>
                         <p className="text-xs text-faint">Vos coordonnées servent uniquement à répondre à votre demande et sont supprimées au bout de 3 ans sans suite.</p>
                     </form>
                 )}
@@ -252,7 +274,7 @@ function AgencyDialog({ billing, onClose, onConfirm, onQuote }: {
     const valid = name.trim().length >= 2 && seats >= 2 && seats <= 50;
     return (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-panel border border-line rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="bg-panel border border-white/10 rounded-3xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.8)] w-full max-w-md p-6 sm:p-8 relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
                 <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
                 <h2 className="text-2xl text-ink pr-8">Équiper mon agence</h2>
                 <form className="mt-6 space-y-4" onSubmit={e => { e.preventDefault(); if (valid) onConfirm({ agency_name: name.trim(), seats }); }}>
@@ -265,7 +287,7 @@ function AgencyDialog({ billing, onClose, onConfirm, onQuote }: {
                         <span className="text-sm text-muted">{seats} × {unit} € TTC</span>
                         <span className="font-serif text-2xl text-ink">{(seats * unit).toLocaleString('fr-FR')} € <span className="font-sans text-xs text-faint">TTC / {billing === 'monthly' ? 'mois' : 'an'}</span></span>
                     </div>
-                    <Button type="submit" disabled={!valid} className="w-full">Continuer</Button>
+                    <GlowButton type="submit" disabled={!valid} className="w-full">Continuer</GlowButton>
                     <p className="text-xs text-faint">Plus de 50 agents, ou besoin d'un bon de commande ? <button type="button" onClick={onQuote} className="underline text-brass">Demandez un devis</button>.</p>
                 </form>
             </div>
