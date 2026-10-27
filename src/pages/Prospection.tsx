@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, TrendingUp } from 'lucide-react';
+import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, TrendingUp, UserSearch } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
 import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
+import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
 import { TourHost, useAutoTour } from '../tour';
@@ -124,6 +125,7 @@ export default function ProspectionPage() {
     const [error, setError] = useState<string | null>(null);
     const [query, setQuery] = useState('');
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
+    const [ownerFor, setOwnerFor] = useState<OwnerTarget | null>(null);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
     const [area, setArea] = useState<Area | null>(null);
     // The first search waits for the starting position
@@ -187,6 +189,7 @@ export default function ProspectionPage() {
                     const dpe = el.dataset.dpe || '';
                     if (el.dataset.action === 'simulate') navigate(`/?dpe=${encodeURIComponent(dpe)}`);
                     else if (el.dataset.action === 'building') setSheet({ near: { lat: Number(el.dataset.lat), lon: Number(el.dataset.lon), address: el.dataset.address || '' } });
+                    else if (el.dataset.action === 'owner') setOwnerFor({ address: el.dataset.address || '', lat: Number(el.dataset.lat), lon: Number(el.dataset.lon) });
                     else setLetterFor({ address: el.dataset.address || '', label: el.dataset.label as DPEClass, dpeNumber: dpe });
                 };
             });
@@ -446,7 +449,8 @@ export default function ProspectionPage() {
                     + (a.dpe.length > 8 ? `<div style="color:#97A1B3">+ ${a.dpe.length - 8} autres</div>` : '')
                     + (first?.number ? `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #25324C"><a href="#" data-action="letter"`
                         + ` data-dpe="${escapeHtml(first.number)}" data-address="${escapeHtml(a.address || '')}" data-label="${a.worst}" style="${link}">`
-                        + 'Courrier avec QR code</a></div>' : ''), { minWidth: 260 });
+                        + 'Courrier avec QR code</a>'
+                        + ` · <a href="#" data-action="owner" data-lat="${a.lat}" data-lon="${a.lon}" data-address="${escapeHtml(a.address || '')}" style="${link}">Connaître le propriétaire</a></div>` : ''), { minWidth: 260 });
                 markers.current.set(a.address || `${a.lat},${a.lon}`, marker);
             } else {
                 marker.bindTooltip(`${n} logement${n > 1 ? 's' : ''} classé${n > 1 ? 's' : ''} ${a.worst}`);
@@ -784,6 +788,10 @@ export default function ProspectionPage() {
                                                     onClick={() => setLetterFor({ address: a.address || '', label: a.worst, dpeNumber: a.dpe![0].number })}>
                                                     <QrCode size={12} />Courrier avec QR code
                                                 </button>
+                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
+                                                    onClick={() => setOwnerFor({ address: a.address || '', lat: a.lat, lon: a.lon })}>
+                                                    <UserSearch size={12} />Connaître le propriétaire
+                                                </button>
                                             </div>
                                         </li>
                                     ))}
@@ -808,6 +816,7 @@ export default function ProspectionPage() {
             </main>
             <SiteFooter />
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
+            {ownerFor && <OwnerRequestDialog target={ownerFor} onClose={() => setOwnerFor(null)} />}
             {dossierFor && <DossierDialog audience="proprietaire" preview={dossierFor}
                 request={{ url: '/api/opportunities/dossier', body: { number: dossierFor.number } }} onClose={() => setDossierFor(null)} />}
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
