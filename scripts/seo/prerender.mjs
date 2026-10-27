@@ -96,19 +96,29 @@ const pages = [];
 
 pages.push(page({
     path: '/',
-    title: "SPREA · L'outil DPE des agents immobiliers : prospection, valeur verte, avis de valeur",
-    description: "Repérez les passoires thermiques de votre secteur, recevez chaque matin les nouveaux DPE et remettez à vos vendeurs un avis de valeur avant / après travaux fondé sur les ventes DVF.",
+    title: "SPREA · Le mandat avant les autres : l'outil DPE des conseillers immobiliers indépendants",
+    description: "Conseiller indépendant ou mandataire : recevez chaque matin les nouveaux DPE de votre secteur, envoyez un courrier en un clic et signez avec un avis de valeur avant / après travaux fondé sur les ventes DVF.",
     jsonld: [SOFTWARE],
     body: `${nav}
-<h1>Trouvez les vendeurs avant les autres. Convainquez-les avec des chiffres.</h1>
-<p>SPREA repère chaque passoire thermique de votre secteur, vous signale les nouveaux DPE chaque matin et transforme un DPE en avis de valeur avant / après travaux.</p>
-<h2>Du DPE au mandat</h2>
+<p>Pour les conseillers immobiliers indépendants</p>
+<h1>Le prochain mandat de votre secteur, repérez-le avant les autres.</h1>
+<p>Pas de vitrine, pas de fichier d'agence, pas de standard qui sonne : votre prospection, c'est vous. SPREA vous signale chaque matin les logements qui viennent de recevoir un DPE, prépare votre courrier et vous arme de chiffres pour le rendez-vous.</p>
+<h2>Une journée avec SPREA</h2>
 ${ul([
-        '<strong>Prospecter</strong> : toutes les adresses classées E, F ou G sur une carte, et chaque matin les DPE publiés la veille dans vos zones.',
-        '<strong>Contacter</strong> : un courrier prêt à imprimer avec un QR code vers la rénovation du logement, à vos couleurs.',
-        '<strong>Convaincre</strong> : travaux, aides, reste à charge et valeur du bien avant et après travaux, appuyée sur les ventes DVF voisines.',
+        '<strong>7 h 30 · Les DPE de la veille</strong> : dans vos communes, les logements qui viennent de recevoir un DPE. Un DPE précède souvent une vente ou une mise en location.',
+        '<strong>8 h 15 · Votre secteur, passoire par passoire</strong> : toutes les adresses classées E, F ou G sur une carte, triées par potentiel.',
+        '<strong>9 h 00 · Un courrier à votre nom</strong> : prêt à imprimer, avec un QR code vers la rénovation du logement.',
+        "<strong>14 h 00 · L'avis de valeur qui fait signer</strong> : travaux, aides, reste à charge et valeur avant / après rénovation, appuyée sur les ventes DVF du quartier.",
+        '<strong>17 h 30 · Le bien F qui ne partait pas</strong> : un dossier acheteur à vos couleurs en deux minutes.',
     ])}
-<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte. Dès 79 € TTC par mois.</p>
+<h2>Pensé pour les indépendants</h2>
+${ul([
+        '<strong>Pas de vitrine ?</strong> Chaque nouveau DPE est une porte à laquelle frapper.',
+        "<strong>Seul face aux agences du coin</strong> : DPE de l'ADEME, ventes DVF de la DGFiP, barèmes d'aides en vigueur.",
+        '<strong>Votre temps, c\'est votre chiffre</strong> : du DPE au courrier en un clic, du rendez-vous au dossier chiffré en deux minutes.',
+        "<strong>Un outil à votre taille</strong> : 79 € TTC par mois en Solo. Un seul mandat signé rembourse des années d'abonnement.",
+    ])}
+<p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte.</p>
 <p><a href="/demo">Faire la visite guidée</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
 }));
 

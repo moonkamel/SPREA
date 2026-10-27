@@ -44,3 +44,6 @@
 .sprea-map .leaflet-tooltip-top::before { border-top-color: #25324C; }
 .sprea-map .leaflet-control-attribution { background: rgba(10, 15, 26, 0.75); color: #6C778C; border-top-left-radius: 8px; }
 .sprea-map .leaflet-control-attribution a { color: #97A1B3; }
+
+/* Home: scroll cue under the hero */
+@keyframes scrollcue { 0% { transform: translateY(-100%); } 100% { transform: translateY(250%); } }
