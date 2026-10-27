@@ -94,48 +94,50 @@ export default function OwnerRequestDialog({ target, onClose }: { target: OwnerT
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-            <Card className="w-full max-w-2xl max-h-[92vh] overflow-y-auto p-6 sm:p-7 relative">
-                <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Connaître le propriétaire">
-                    <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
-                    <h2 className="text-2xl text-ink pr-8">Connaître le propriétaire</h2>
-                    <p className="mt-2 text-sm text-muted">
-                        Toute personne peut demander au centre des impôts fonciers, ou en mairie, le nom et l'adresse du propriétaire
-                        d'un bien précis (article L107 A du Livre des procédures fiscales). La demande est gratuite, ponctuelle,
-                        et limitée à <b className="text-ink">5 par semaine et 10 par mois</b>.
-                    </p>
-                    <p className="mt-3 text-sm text-ink-soft">{target.address}</p>
-                    {error && <p className="mt-4 text-sm text-coral">{error}</p>}
-                    {!parcel && !error && <p className="mt-4 flex items-center gap-2 text-sm text-muted"><Loader2 size={16} className="animate-spin" /> Recherche de la parcelle au cadastre…</p>}
-                    {parcel && (
-                        <>
-                            <div className="mt-4 grid grid-cols-3 gap-3">
-                                {[['Commune', `${parcel.commune || '–'}${parcel.insee ? ` (${parcel.insee})` : ''}`], ['Section', (parcel.section || '–').replace(/^0+/, '')], ['Parcelle', (parcel.numero || '–').replace(/^0+/, '')]].map(([k, v]) => (
-                                    <div key={k} className="rounded-xl border border-line bg-raised px-3 py-2">
-                                        <p className="text-[11px] uppercase tracking-[0.12em] text-faint">{k}</p>
-                                        <p className="text-ink">{v}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <p className="mt-4 text-xs uppercase tracking-[0.12em] text-faint">Votre demande, prête à envoyer</p>
-                            <textarea value={text} onChange={e => setText(e.target.value)} rows={16} aria-label="Demande"
-                                className="mt-2 w-full rounded-xl border border-line bg-raised px-3 py-2 text-sm text-ink font-mono leading-relaxed outline-none focus:border-brass/70" />
-                            <div className="mt-3 flex flex-wrap items-center gap-3">
-                                <Button onClick={print} className="h-10"><Printer size={16} /> Imprimer</Button>
-                                <Button variant="secondary" onClick={copy} className="h-10"><Copy size={16} /> {copied ? 'Copié' : 'Copier le texte'}</Button>
-                                <span className={`text-xs ${count >= MONTHLY_LIMIT ? 'text-coral' : 'text-muted'}`}>
-                                    {count} demande{count > 1 ? 's' : ''} préparée{count > 1 ? 's' : ''} ce mois-ci sur 10 autorisées
-                                </span>
-                            </div>
-                            <p className="mt-4 text-xs text-faint leading-relaxed">
-                                Envoyez-la au centre des impôts fonciers dont dépend la commune, ou déposez-la à la mairie. Complétez
-                                vos nom et adresse s'ils manquent : la demande doit indiquer l'identité du demandeur. Le nom obtenu sert
-                                à contacter ce propriétaire au sujet de ce bien ; il ne doit pas alimenter un fichier de prospection.
-                            </p>
-                        </>
-                    )}
-                </div>
-            </Card>
+        <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+            <div className="w-full max-w-2xl" onClick={e => e.stopPropagation()}>
+                <Card className="max-h-[92vh] overflow-y-auto p-6 sm:p-7 relative">
+                    <div role="dialog" aria-modal="true" aria-label="Connaître le propriétaire">
+                        <button onClick={onClose} className="absolute top-5 right-5 text-faint hover:text-ink" aria-label="Fermer"><X size={20} /></button>
+                        <h2 className="text-2xl text-ink pr-8">Connaître le propriétaire</h2>
+                        <p className="mt-2 text-sm text-muted">
+                            Toute personne peut demander au centre des impôts fonciers, ou en mairie, le nom et l'adresse du propriétaire
+                            d'un bien précis (article L107 A du Livre des procédures fiscales). La demande est gratuite, ponctuelle,
+                            et limitée à <b className="text-ink">5 par semaine et 10 par mois</b>.
+                        </p>
+                        <p className="mt-3 text-sm text-ink-soft">{target.address}</p>
+                        {error && <p className="mt-4 text-sm text-coral">{error}</p>}
+                        {!parcel && !error && <p className="mt-4 flex items-center gap-2 text-sm text-muted"><Loader2 size={16} className="animate-spin" /> Recherche de la parcelle au cadastre…</p>}
+                        {parcel && (
+                            <>
+                                <div className="mt-4 grid grid-cols-3 gap-3">
+                                    {[['Commune', `${parcel.commune || '–'}${parcel.insee ? ` (${parcel.insee})` : ''}`], ['Section', (parcel.section || '–').replace(/^0+/, '')], ['Parcelle', (parcel.numero || '–').replace(/^0+/, '')]].map(([k, v]) => (
+                                        <div key={k} className="rounded-xl border border-line bg-raised px-3 py-2">
+                                            <p className="text-[11px] uppercase tracking-[0.12em] text-faint">{k}</p>
+                                            <p className="text-ink">{v}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="mt-4 text-xs uppercase tracking-[0.12em] text-faint">Votre demande, prête à envoyer</p>
+                                <textarea value={text} onChange={e => setText(e.target.value)} rows={16} aria-label="Demande"
+                                    className="mt-2 w-full rounded-xl border border-line bg-raised px-3 py-2 text-sm text-ink font-mono leading-relaxed outline-none focus:border-brass/70" />
+                                <div className="mt-3 flex flex-wrap items-center gap-3">
+                                    <Button onClick={print} className="h-10"><Printer size={16} /> Imprimer</Button>
+                                    <Button variant="secondary" onClick={copy} className="h-10"><Copy size={16} /> {copied ? 'Copié' : 'Copier le texte'}</Button>
+                                    <span className={`text-xs ${count >= MONTHLY_LIMIT ? 'text-coral' : 'text-muted'}`}>
+                                        {count} demande{count > 1 ? 's' : ''} préparée{count > 1 ? 's' : ''} ce mois-ci sur 10 autorisées
+                                    </span>
+                                </div>
+                                <p className="mt-4 text-xs text-faint leading-relaxed">
+                                    Envoyez-la au centre des impôts fonciers dont dépend la commune, ou déposez-la à la mairie. Complétez
+                                    vos nom et adresse s'ils manquent : la demande doit indiquer l'identité du demandeur. Le nom obtenu sert
+                                    à contacter ce propriétaire au sujet de ce bien ; il ne doit pas alimenter un fichier de prospection.
+                                </p>
+                            </>
+                        )}
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 }
