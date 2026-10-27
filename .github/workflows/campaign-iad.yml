@@ -1,0 +1,44 @@
+name: Prospection (annuaire iad)
+
+# Extracts the iad advisors of a directory page (scripts/campaign/iad_directory.py)
+# and pushes the CSV to the iad-extract branch, to be queued in the files of
+# campaign-suivi. Manual: the directory slug is the end of the page address,
+# e.g. var-83 for https://www.iadfrance.fr/trouver-un-conseiller/var-83.
+on:
+  workflow_dispatch:
+    inputs:
+      town:
+        description: "Annuaire iad (ex. var-83, pg-lyon_69)"
+        required: true
+      ville:
+        description: "Ville affichée quand la fiche n'en donne pas"
+        default: ""
+  push:
+    branches: [claude/hopeful-fermi-re2vn1]
+    paths: [.github/workflows/campaign-iad.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TOWN: ${{ inputs.town || 'var-83' }}
+      VILLE: ${{ inputs.ville || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          mkdir out
+          python -u scripts/campaign/iad_directory.py --town "$TOWN" --ville "$VILLE" --max-pages 200 --out "out/iad_$TOWN.csv" 2>&1 | tee "out/iad_$TOWN.log"
+      - name: Save
+        run: |
+          git fetch -q origin iad-extract && git checkout -q iad-extract || git checkout -q --orphan iad-extract
+          git rm -rqf --cached . >/dev/null 2>&1 || true
+          cp out/* . && git add -f iad_*.csv iad_*.log
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Annuaire iad : $TOWN"
+          git push -q origin HEAD:iad-extract

@@ -2,7 +2,8 @@ name: Prospection (envoi Brevo)
 
 # Daily prospection send through Brevo (scripts/campaign/send_brevo.py):
 # follow-ups due, then new contacts, from the files of the campaign-suivi
-# branch, whose tracking file is updated and pushed back. Weekdays at 9:05
+# branch, whose tracking file is updated and pushed back. 300 a day, the
+# daily cap of the Brevo free plan. Weekdays at 9:05
 # (Paris, winter time), after the replies of the inbox are read.
 on:
   schedule:
@@ -11,7 +12,7 @@ on:
     inputs:
       quota:
         description: "Nombre d'emails au plus"
-        default: "50"
+        default: "300"
       dry_run:
         description: "Essai sans envoi (true / false)"
         default: "false"
@@ -38,7 +39,7 @@ jobs:
       - name: Send
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          QUOTA: ${{ inputs.quota || '50' }}
+          QUOTA: ${{ inputs.quota || '300' }}
           DRY: ${{ inputs.dry_run || 'false' }}
         run: python -u scripts/campaign/send_brevo.py --dir suivi --quota "$QUOTA" $([ "$DRY" = "true" ] && echo --dry-run)
       - name: Save tracking
