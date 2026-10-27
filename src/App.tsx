@@ -9,6 +9,7 @@ import PricingPage from './pages/Pricing';
 import { NotFound } from './pages/site';
 // Leaflet is only loaded on the map page
 const ProspectionPage = lazy(() => import('./pages/Prospection'));
+const CommandPage = lazy(() => import('./pages/Command'));
 const OwnerPage = lazy(() => import('./pages/Owner'));
 const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
@@ -53,6 +54,7 @@ function Pages() {
         '/mentions-legales': <MentionsLegalesPage />,
         '/confidentialite': <ConfidentialitePage />,
         '/prospection': <Suspense fallback={null}><ProspectionPage /></Suspense>,
+        '/command': <Suspense fallback={null}><CommandPage /></Suspense>,
         '/contacts': <Suspense fallback={null}><ContactsPage /></Suspense>,
         '/alertes': <Suspense fallback={null}><AlertsPage /></Suspense>,
         '/observatoire': <Suspense fallback={null}><ObservatoirePage /></Suspense>,

@@ -18,12 +18,12 @@ export function Logo({ onClick }: { onClick?: () => void }) {
             className="flex items-baseline gap-3 group"
         >
             <span className="font-serif text-2xl tracking-tight text-ink group-hover:text-brass-light transition-colors">{LEGAL.brand}</span>
-            <span className="hidden lg:inline text-xs text-faint tracking-wide">L'outil DPE des pros de l'immobilier</span>
+            <span className="hidden xl:inline text-xs text-faint tracking-wide">La prospection immobilière nouvelle génération</span>
         </a>
     );
 }
 
-const NAV_LINK = 'px-2 sm:px-3 py-2 text-sm text-muted hover:text-ink transition-colors';
+const NAV_LINK = 'whitespace-nowrap px-2 sm:px-3 py-2 text-sm text-muted hover:text-ink transition-colors';
 
 // Subscribers see their tools; visitors see the showcase. On small screens,
 // only the links marked as essential stay in the header, the others are in a menu.
@@ -33,7 +33,7 @@ function Nav() {
     const [open, setOpen] = useState(false);
     const menu = useRef<HTMLDivElement>(null);
     const links: [string, string, boolean][] = me?.is_pro
-        ? [['/', 'Simulateur', false], ['/prospection', 'Prospection', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
+        ? [['/command', 'Command', true], ['/prospection', 'Prospection', false], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Visite guidée', true], ['/estimation', 'Estimer un bien', false], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     const hidden = links.some(([, , essential]) => !essential);
@@ -58,7 +58,7 @@ function Nav() {
     return (
         <>
             {links.map(([to, label, essential]) => (
-                <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}`}>{label}</Link>
+                <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}${to === '/command' ? ' !text-brass-light hover:!text-ink' : ''}`}>{label}</Link>
             ))}
             {hidden && (
                 <div ref={menu} className="relative md:hidden">
@@ -193,7 +193,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 export function LegalPage({ title, updated, description, children }: { title: string; updated?: string; description?: string; children: ReactNode }) {
     useSeo({
         title: `${title} · SPREA`,
-        description: description || `${title} de ${LEGAL.brand}, l'outil DPE des professionnels de l'immobilier : prospection, valeur verte et avis de valeur.`,
+        description: description || `${title} de ${LEGAL.brand}, l'outil de prospection immobilière des conseillers indépendants : nouveaux DPE, biens à fort potentiel, courriers, avis de valeur.`,
         path: window.location.pathname,
     });
     return (

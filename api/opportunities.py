@@ -612,6 +612,20 @@ async def get_statuses(numbers: str = Query(..., max_length=4000), user: User = 
                                             "mine": r.get("user_id") == user.id} for r in rows}}
 
 
+@router.get("/prospect-status/all")
+async def pipeline(user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
+    """Every followed address of the agency, latest first: the follow-up board
+    of SPREA Command, with what is due today."""
+    scope = await status_scope(user, store)
+    try:
+        rows = await store.prospect_pipeline(scope)
+    except httpx.HTTPError as e:
+        logger.warning(f"Prospect pipeline unavailable: {type(e).__name__}")
+        return {"items": [], "unavailable": True}
+    return {"items": [{"number": r["dpe_number"], "status": r["status"], "address": r.get("address"),
+                       "updated_at": r.get("updated_at"), "mine": r.get("user_id") == user.id} for r in rows]}
+
+
 class StatusUpdate(BaseModel):
     number: str = Field(..., pattern=r"^[0-9A-Za-z]{10,16}$")
     status: Optional[str] = Field(None, pattern="^(courrier|relance|rendez_vous|mandat|ecarte)$")

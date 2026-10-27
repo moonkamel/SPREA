@@ -50,3 +50,26 @@
 
 /* Home: the day of prospecting, an endless band (two copies of the cards with a trailing gap: -50 % = one copy) */
 @keyframes daymarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* SPREA Command: radar sweep, reticles, HUD tiles */
+@keyframes cmdspin { to { transform: rotate(360deg); } }
+.cmd-sweep { animation: cmdspin 6s linear infinite; transform-origin: 0 0; }
+.cmd-spin-slow { animation: cmdspin 24s linear infinite; }
+.cmd-vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(5, 8, 15, 0.85) 100%); }
+.cmd-map.leaflet-container { background: #0B1322; }
+.cmd-kpi { position: relative; border: 1px solid rgba(201, 164, 92, 0.22); background: rgba(13, 20, 36, 0.8); backdrop-filter: blur(8px); border-radius: 12px; pointer-events: auto; }
+.cmd-kpi::before { content: ""; position: absolute; left: -1px; top: -1px; width: 14px; height: 14px; border-left: 2px solid #C9A45C; border-top: 2px solid #C9A45C; border-top-left-radius: 12px; }
+.cmd-orb { background: radial-gradient(circle, #F5E2B5 0, #C9A45C 30%, rgba(201, 164, 92, 0.15) 62%, transparent 70%); box-shadow: 0 0 22px rgba(201, 164, 92, 0.55); animation: cmdpulse 3s ease-in-out infinite; }
+@keyframes cmdpulse { 50% { box-shadow: 0 0 34px rgba(201, 164, 92, 0.8); } }
+.cmd-reticle { position: relative; width: 60px; height: 60px; cursor: pointer; }
+.cmd-reticle::before { content: ""; position: absolute; inset: 14px; border: 1.4px dashed #E3C98F; border-radius: 50%; animation: cmdspin 12s linear infinite; }
+.cmd-reticle::after { content: ""; position: absolute; inset: 6px; background:
+    linear-gradient(#E3C98F, #E3C98F) center top / 1.5px 8px no-repeat, linear-gradient(#E3C98F, #E3C98F) center bottom / 1.5px 8px no-repeat,
+    linear-gradient(#E3C98F, #E3C98F) left center / 8px 1.5px no-repeat, linear-gradient(#E3C98F, #E3C98F) right center / 8px 1.5px no-repeat; }
+.cmd-reticle i { position: absolute; left: 24px; top: 24px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
+.cmd-reticle b { position: absolute; left: 50px; top: 4px; color: #E3C98F; font-size: 11px; font-weight: 600; text-shadow: 0 1px 3px #000; }
+.cmd-reticle.first::before { inset: 10px; }
+.cmd-reticle.on::before { border-color: #fff; border-style: solid; }
+@media (prefers-reduced-motion: reduce) { .cmd-sweep, .cmd-spin-slow, .cmd-reticle::before, .cmd-orb { animation: none; } }
+.cmd-map .leaflet-top.leaflet-right { top: 64px; }
+@media (min-width: 1280px) { .cmd-map .leaflet-top.leaflet-right { top: 128px; } }

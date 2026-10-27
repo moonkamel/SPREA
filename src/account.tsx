@@ -420,7 +420,7 @@ export function AccountButton({ className = '' }: { className?: string }) {
             className={`h-10 px-4 rounded-xl border border-line text-sm text-ink-soft hover:text-ink hover:border-brass/60 transition-colors flex items-center gap-2 ${className}`}
         >
             <UserIcon size={16} />
-            <span className="hidden sm:inline">{session ? 'Mon compte' : 'Se connecter'}</span>
+            <span className="hidden sm:inline whitespace-nowrap">{session ? 'Mon compte' : 'Se connecter'}</span>
             {me?.is_pro && <span className="px-1.5 py-0.5 rounded bg-brass text-canvas text-[10px] font-semibold">PRO</span>}
         </button>
     );

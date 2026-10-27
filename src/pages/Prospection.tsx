@@ -607,7 +607,12 @@ export default function ProspectionPage() {
             {mode === 'investir' && <TourHost screen="carte" />}
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
                 <div className="mb-6">
-                    <h1 className="text-3xl sm:text-4xl text-ink">Carte de prospection</h1>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h1 className="text-3xl sm:text-4xl text-ink">Carte de prospection</h1>
+                        <Link to="/command" className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-brass/50 bg-brass/10 text-sm text-brass-light hover:bg-brass/20 shadow-[0_0_24px_-6px_rgba(201,164,92,0.5)]">
+                            <Sparkles size={15} />Passer en mode SPREA Command
+                        </Link>
+                    </div>
                     <p className="mt-2 text-muted max-w-3xl">
                         Les logements classés G, F ou E dont le DPE vient d'être réalisé : un DPE récent annonce souvent une vente ou une
                         location. Contactez ces propriétaires les premiers, avec une estimation et un plan de rénovation chiffré.
