@@ -55,11 +55,16 @@ def main():
     # Per day and per email of the sequence: who received, opened (people / proxies), clicked
     by: dict = defaultdict(lambda: defaultdict(set))
     links: Counter = Counter()
+    kinds: Counter = Counter()
     for e in events(key, start.isoformat(), end.isoformat()):
         day = (e.get("date") or "")[:10]
-        tags = e.get("tags") or []
+        # One tag (« tag ») or several (« tags »), depending on the event
+        tags = e.get("tags") or ([e["tag"]] if e.get("tag") else [])
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",")]
         step = next((t for t in tags if t.startswith("mail")), "mail?")
         kind = e.get("event") or ""
+        kinds[kind] += 1
         who = (e.get("email") or "").lower()
         for k in ((day, step), ("total", step), ("total", "tous")):
             by[k][kind].add(who)
@@ -81,8 +86,7 @@ def main():
                      f"{len(s['hardBounces'] | s['softBounces'] | s['blocked'])} |")
     lines += ["", "## Liens cliqués", ""]
     lines += [f"- {n} × {link}" for link, n in links.most_common(20)] or ["Aucun clic pour l'instant."]
-    kinds = Counter(k for v in by.values() for k in v)
-    lines += ["", f"_Types d'événements reçus : {', '.join(sorted(kinds))}_"]
+    lines += ["", "_Événements reçus : " + ", ".join(f"{k} {n}" for k, n in sorted(kinds.items())) + "_"]
     with open(args.out, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines))
