@@ -221,24 +221,31 @@ export default function CommandPage() {
     };
 
     // --- Map ---
-    const mapEl = useRef<HTMLDivElement>(null);
+    // The map's container only exists once the account is known (the page
+    // shows a gate before): the map is created when the container appears
+    const [mapEl, setMapEl] = useState<HTMLDivElement | null>(null);
+    const [mapReady, setMapReady] = useState(false);
+    const centerRef = useRef(center);
+    centerRef.current = center;
     const mapRef = useRef<L.Map | null>(null);
     const layer = useRef<L.LayerGroup | null>(null);
     const [radar, setRadar] = useState<{ x: number; y: number; r: number } | null>(null);
     const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
 
     useEffect(() => {
-        if (!mapEl.current || mapRef.current || !center) return;
-        const map = L.map(mapEl.current, { zoomControl: false, preferCanvas: false, zoomSnap: 0.25, attributionControl: true })
-            .setView([center.lat, center.lon], 14.5);
+        const start = centerRef.current;
+        if (!mapEl || !start) return;
+        const map = L.map(mapEl, { zoomControl: false, preferCanvas: false, zoomSnap: 0.25, attributionControl: true })
+            .setView([start.lat, start.lon], 14.5);
         L.control.zoom({ position: 'topright' }).addTo(map);
         L.tileLayer(TILES, { maxZoom: 19, minZoom: 6, attribution: '© IGN, DPE ADEME, DVF', className: 'sprea-tiles' }).addTo(map);
         layer.current = L.layerGroup().addTo(map);
         mapRef.current = map;
-        const ro = new ResizeObserver(() => { map.invalidateSize(); setSize({ w: mapEl.current!.clientWidth, h: mapEl.current!.clientHeight }); });
-        ro.observe(mapEl.current);
-        return () => { ro.disconnect(); map.remove(); mapRef.current = null; };
-    }, [center]);
+        setMapReady(true);
+        const ro = new ResizeObserver(() => { map.invalidateSize(); setSize({ w: mapEl.clientWidth, h: mapEl.clientHeight }); });
+        ro.observe(mapEl);
+        return () => { ro.disconnect(); map.remove(); mapRef.current = null; layer.current = null; setMapReady(false); };
+    }, [mapEl, !!center]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Radar rings follow the scanned circle on screen
     useEffect(() => {
@@ -253,7 +260,7 @@ export default function CommandPage() {
         place();
         map.on('move zoom resize', place);
         return () => { map.off('move zoom resize', place); };
-    }, [center]);
+    }, [center, mapReady]);
 
     const focus = useCallback((o: Opportunity) => {
         setSelected(o.number);
@@ -295,7 +302,7 @@ export default function CommandPage() {
                 .bindTooltip(`Demande d'estimation · ${esc(l.name)}`).addTo(group);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ranked, selected, leads, focus]);
+    }, [ranked, selected, leads, focus, mapReady]);
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
@@ -470,8 +477,8 @@ export default function CommandPage() {
                 </nav>
 
                 {/* Main */}
-                <section className="relative flex-1 min-h-[52vh] lg:min-h-0 overflow-hidden">
-                    <div ref={mapEl} className={`sprea-map cmd-map absolute inset-0 ${view === 'suivi' ? 'invisible' : ''}`} />
+                <section className="relative flex-1 min-h-0 overflow-hidden">
+                    <div ref={setMapEl} className={`sprea-map cmd-map absolute inset-0 ${view === 'suivi' ? 'invisible' : ''}`} />
                     {view !== 'suivi' && <div className="absolute inset-0 pointer-events-none cmd-vignette" />}
 
                     {view === 'radar' && radar && radar.r > 20 && (
@@ -495,11 +502,11 @@ export default function CommandPage() {
                     {/* Radar HUD */}
                     {view === 'radar' && (
                         <>
-                            <div className="absolute top-3.5 left-3.5 right-3.5 z-[500] grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 pointer-events-none">
+                            <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 sm:right-3.5 z-[500] grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5 pointer-events-none">
                                 <Kpi label="Nouveaux DPE · 7 j" value={kpis.newDpe} sub="classés E, F ou G" />
                                 <Kpi label="Biens à fort potentiel" value={scan ? scan.positive : null} sub={scan ? `sur ${scan.analysed} analysés` : 'analyse en cours'} loading={scanning} />
-                                <Kpi label="Valeur à débloquer" value={scan ? (unlocked >= 1e6 ? `${(unlocked / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} M€` : `${Math.round(unlocked / 1000)} k€`) : null} sub="par la rénovation" loading={scanning} />
-                                <Kpi label="Signaux de vente SCI" value={kpis.signals} sub={kpis.strongSignals ? `${kpis.strongSignals} fort${kpis.strongSignals > 1 ? 's' : ''}` : 'BODACC'} tone={kpis.signals ? 'coral' : undefined} />
+                                <Kpi label="Valeur à débloquer" value={scan ? (unlocked >= 1e6 ? `${(unlocked / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} M€` : `${Math.round(unlocked / 1000)} k€`) : null} sub="par la rénovation" loading={scanning} className="hidden sm:block" />
+                                <Kpi label="Signaux de vente SCI" value={kpis.signals} sub={kpis.strongSignals ? `${kpis.strongSignals} fort${kpis.strongSignals > 1 ? 's' : ''}` : 'BODACC'} tone={kpis.signals ? 'coral' : undefined} className="hidden sm:block" />
                                 <Kpi label="Demandes vendeurs" value={newLeads.length} sub="via l'estimateur" tone={newLeads.length ? 'sage' : undefined} className="hidden xl:block" />
                             </div>
                             {moved && center && (
@@ -508,7 +515,7 @@ export default function CommandPage() {
                                     Scanner ce secteur
                                 </button>
                             )}
-                            <div className="absolute left-3.5 right-3.5 bottom-3.5 z-[500] flex flex-col items-start gap-2.5">
+                            <div className="absolute left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 bottom-2.5 sm:bottom-3.5 z-[500] flex flex-col items-start gap-2.5">
                             <div className="hidden sm:block w-[330px] rounded-xl border border-line bg-[#0D1424]/85 backdrop-blur px-3 py-2.5">
                                 <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Votre pipeline</p>
                                 <div className="mt-1.5 flex gap-1">
@@ -521,11 +528,11 @@ export default function CommandPage() {
                                     ))}
                                 </div>
                             </div>
-                            <div className="self-stretch rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
-                                <Orb />
+                            <div className="self-stretch rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-3.5 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center gap-2 sm:gap-3">
+                                <span className="hidden md:block"><Orb /></span>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Briefing</p>
-                                    <p className="mt-0.5 text-sm text-ink-soft">
+                                    <p className="mt-0.5 text-[13px] sm:text-sm text-ink-soft line-clamp-3 md:line-clamp-none">
                                         {error ? <span className="text-coral">{error}</span>
                                             : scanning ? <>{hello} J'analyse les DPE récents de votre secteur : valeur, travaux, aides et loyer pour chaque logement…</>
                                             : scan && top ? <>{hello} {kpis.newDpe != null && <><b className="text-ink">{kpis.newDpe} nouveau{kpis.newDpe > 1 ? 'x' : ''} DPE</b> E, F ou G dans votre zone ces 7 derniers jours. </>}
@@ -537,8 +544,8 @@ export default function CommandPage() {
                                 </div>
                                 <div className="flex flex-wrap gap-2 md:max-w-[46%] md:justify-end">
                                     {top && <Chip gold onClick={() => focus(top)}>Ouvrir la cible #1</Chip>}
-                                    {due.length > 0 && <Chip onClick={() => setView('suivi')}>Voir les {due.length} relance{due.length > 1 ? 's' : ''}</Chip>}
-                                    {top && <Chip onClick={() => setLetterFor({ address: top.address, label: top.label, dpeNumber: top.number })}>Courrier à la cible #1</Chip>}
+                                    {due.length > 0 && <Chip className="hidden sm:inline-flex" onClick={() => setView('suivi')}>Voir les {due.length} relance{due.length > 1 ? 's' : ''}</Chip>}
+                                    {top && <Chip className="hidden sm:inline-flex" onClick={() => setLetterFor({ address: top.address, label: top.label, dpeNumber: top.number })}>Courrier à la cible #1</Chip>}
                                 </div>
                             </div>
                             </div>
@@ -557,9 +564,9 @@ export default function CommandPage() {
                                     <Chip onClick={backToRadar}><Kbd>Échap</Kbd>Radar</Chip>
                                 </div>
                             </div>
-                            <div className="absolute left-3.5 right-3.5 bottom-3.5 z-[500] rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-4 py-3 flex items-center gap-3">
-                                <Orb />
-                                <div><p className="text-[10px] tracking-[0.16em] uppercase text-faint">Pourquoi maintenant</p><p className="mt-0.5 text-sm text-ink-soft">{why(current.o)}</p></div>
+                            <div className="absolute left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 bottom-2.5 sm:bottom-3.5 z-[500] rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center gap-3">
+                                <span className="hidden md:block"><Orb /></span>
+                                <div><p className="text-[10px] tracking-[0.16em] uppercase text-faint">Pourquoi maintenant</p><p className="mt-0.5 text-[13px] sm:text-sm text-ink-soft line-clamp-3 md:line-clamp-none">{why(current.o)}</p></div>
                             </div>
                         </>
                     )}
@@ -601,7 +608,7 @@ export default function CommandPage() {
                 </section>
 
                 {/* Side panel */}
-                <aside className="lg:w-[392px] shrink-0 max-h-[48vh] lg:max-h-none border-b lg:border-b-0 lg:border-l border-line bg-panel flex flex-col min-h-0">
+                <aside className="lg:w-[392px] shrink-0 max-h-[38vh] lg:max-h-none border-b lg:border-b-0 lg:border-l border-line bg-panel flex flex-col min-h-0">
                     {view === 'radar' && (
                         <>
                             <div className="px-[18px] pt-4 pb-3 border-b border-line">
@@ -666,10 +673,10 @@ function Kpi({ label, value, sub, tone, loading, className = '' }: { label: stri
     );
 }
 
-function Chip({ children, gold, onClick }: { children: React.ReactNode; gold?: boolean; onClick?: () => void }) {
+function Chip({ children, gold, onClick, className = '' }: { children: React.ReactNode; gold?: boolean; onClick?: () => void; className?: string }) {
     return (
         <button type="button" onClick={onClick}
-            className={`h-7 inline-flex items-center gap-1.5 rounded-full border px-2.5 text-xs whitespace-nowrap transition-colors ${gold ? 'border-brass/60 text-brass-light bg-brass/10' : 'border-line text-ink-soft bg-raised hover:border-brass/40'}`}>
+            className={`h-7 inline-flex items-center gap-1.5 rounded-full border px-2.5 text-xs whitespace-nowrap transition-colors ${className} ${gold ? 'border-brass/60 text-brass-light bg-brass/10' : 'border-line text-ink-soft bg-raised hover:border-brass/40'}`}>
             {children}
         </button>
     );
@@ -677,7 +684,14 @@ function Chip({ children, gold, onClick }: { children: React.ReactNode; gold?: b
 
 function TargetRow({ o, score, on, status, onHover, onOpen }: { o: Opportunity; score: number; on: boolean; status?: FollowUp; onHover: () => void; onOpen: () => void }) {
     const ref = useRef<HTMLLIElement>(null);
-    useEffect(() => { if (on) ref.current?.scrollIntoView({ block: 'nearest' }); }, [on]);
+    // Only the list scrolls (scrollIntoView would also move the fixed-height page)
+    useEffect(() => {
+        const el = ref.current, list = el?.parentElement;
+        if (!on || !el || !list) return;
+        const top = el.offsetTop - list.offsetTop;
+        if (top < list.scrollTop) list.scrollTop = top;
+        else if (top + el.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + el.offsetHeight - list.clientHeight;
+    }, [on]);
     return (
         <li ref={ref}>
             <button type="button" onClick={onOpen} onMouseEnter={onHover}
