@@ -6,7 +6,11 @@ prenom.nom format (prenom.nom-compose for compound names), e.g.
 Slugs without that shape (no dot, digits for homonyms) are skipped rather than
 guessed. Writes rows in the prospects_a_contacter.csv format.
 
+The advisor's town is read from the card (« Lyon (69003) »); --ville and --cp
+are the fallback.
+
   python scripts/campaign/iad_directory.py --town pg-lyon_69 --ville Lyon --cp 69000 --out iad_lyon.csv
+  python scripts/campaign/iad_directory.py --town seine-et-marne-77 --ville "Seine-et-Marne" --out iad_77.csv
 """
 import argparse
 import csv
@@ -18,6 +22,8 @@ from typing import Dict
 
 BASE = "https://www.iadfrance.fr"
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
+# Town under the advisor's name on the card: « Lyon (69003) »
+TOWN = re.compile(r">\s*([A-ZÀ-Ý][^<>()]{1,50}?)\s*\((\d{5})\)\s*<")
 SLUG = re.compile(r"^[a-z]+(?:-[a-z]+)*\.[a-z]+(?:-[a-z]+)*$")
 COLUMNS = ["agence", "ville", "email", "email_type", "source_url", "adresse", "code_postal", "siren",
            "date_creation", "source"]
@@ -39,6 +45,7 @@ def main():
     args = ap.parse_args()
 
     names: Dict[str, str] = {}
+    towns: Dict[str, tuple] = {}
     skipped = set()
     for page in range(1, args.max_pages + 1):
         url = f"{BASE}/trouver-un-conseiller/{args.town}" + (f"?page={page}" if page > 1 else "")
@@ -60,6 +67,10 @@ def main():
             # (the payload is deduplicated: the next string can be a shared value like « male »)
             name = m.group(1).strip() if m else ""
             names[slug] = name if " " in name else slug.replace(".", " ").title()
+            card = text.find(f'href="/conseiller-immobilier/{slug}" class=""')
+            t = TOWN.search(text, card, card + 3000) if card >= 0 else None
+            if t:
+                towns[slug] = (t.group(1).strip(), t.group(2))
             new += 1
         print(f"page {page} : {len(slugs)} fiches, {new} nouvelles", flush=True)
         if not new:
@@ -70,9 +81,10 @@ def main():
         w = csv.DictWriter(f, fieldnames=COLUMNS, delimiter=";")
         w.writeheader()
         for slug, name in sorted(names.items()):
-            w.writerow({"agence": name, "ville": args.ville, "email": f"{slug}@iadfrance.fr",
+            ville, cp = towns.get(slug, (args.ville, args.cp))
+            w.writerow({"agence": name, "ville": ville, "email": f"{slug}@iadfrance.fr",
                         "email_type": "déduit (format iad)", "source_url": f"{BASE}/conseiller-immobilier/{slug}",
-                        "adresse": "", "code_postal": args.cp, "siren": "", "date_creation": "",
+                        "adresse": "", "code_postal": cp, "siren": "", "date_creation": "",
                         "source": "annuaire iad (adresse déduite)"})
     print(f"{len(names)} conseillers écrits dans {args.out}, {len(skipped)} fiches ignorées (format ambigu) : "
           f"{', '.join(sorted(skipped))}", flush=True)
