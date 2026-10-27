@@ -13,11 +13,14 @@ jobs:
       - run: |
           mkdir out && cd out
           UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36"
+          curl -sSL -m 30 -A "$UA" -o leadgen.html https://leadgen-dev.avest.fr/ || true
+          curl -sSL -m 30 -A "$UA" -o part.html https://part-de-marche.avest.fr/ || true
+          curl -sSL -m 30 -A "$UA" -o blog_demarchage.html https://www.avest.fr/blog/demarchage-telephonique-webinaire-24-septembre || true
           curl -sSL -m 30 -A "$UA" -o home.html https://www.avest.fr/ || true
           curl -sSL -m 30 -A "$UA" -o sitemap.xml https://www.avest.fr/sitemap.xml || true
           curl -sSL -m 30 -A "$UA" -o robots.txt https://www.avest.fr/robots.txt || true
           # Main pages linked from the home page
-          grep -oE 'href="(https://www\.avest\.fr)?/[a-z0-9/_-]+"' home.html | sed -E 's/href="(https:\/\/www\.avest\.fr)?//; s/"$//' | sort -u | head -40 > links.txt
+          grep -oE 'href="(https://www\.avest\.fr)?/[a-z0-9/_-]+"' home.html | sed -E 's/href="(https:\/\/www\.avest\.fr)?//; s/"$//' | sort -u | head -0 > links.txt
           i=0; while read -r l; do i=$((i+1)); curl -sSL -m 20 -A "$UA" -o "p_$(echo "$l" | tr '/' '_').html" "https://www.avest.fr$l" || true; sleep 1; done < links.txt
           ls -la
           git init -q && git checkout -q -b avest-probe && git add -A && git -c user.name=gh -c user.email=a@b commit -qm avest
