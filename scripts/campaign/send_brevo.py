@@ -59,12 +59,17 @@ FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px;
 NETWORKS = {"iadfrance.fr": "mandataires"}
 
 
-def first_name(address: str) -> str:
-    """« laurie-ann.vieilly@iadfrance.fr » -> « Laurie-Ann » for a network advisor, else ""."""
+def first_name(address: str, name: str = "") -> Optional[str]:
+    """First name of a network advisor (« laurie-ann.vieilly@iadfrance.fr » -> « Laurie-Ann »), "" when the
+    address has only an initial and the name shows none either, None for an agency address."""
     local, _, domain = address.strip().lower().partition("@")
     if domain not in NETWORKS or "." not in local:
-        return ""
-    return "-".join(p[:1].upper() + p[1:] for p in local.split(".")[0].split("-"))
+        return None
+    first = local.split(".")[0]
+    if len(first) < 2:
+        words = name.split()
+        first = words[0].lower() if len(words) > 1 and len(words[0].strip(".")) > 1 else ""
+    return "-".join(p[:1].upper() + p[1:] for p in first.split("-")) if first else ""
 
 
 def nice(text: str) -> str:
@@ -88,8 +93,8 @@ def numbered(items: List[tuple]) -> str:
     return f'<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px; font-size:15px; line-height:22px; color:#1f2937">{rows}</table>'
 
 
-def email(step: int, agence: str, ville: str, campaign: str, prenom: str = "") -> Dict[str, str]:
-    """prenom set: an independent advisor of a network (iad...), addressed by first name, not as an agency."""
+def email(step: int, agence: str, ville: str, campaign: str, prenom: Optional[str] = None) -> Dict[str, str]:
+    """prenom not None: an independent advisor of a network (iad...), addressed by first name when known."""
     a, v = html.escape(agence), html.escape(ville)
     demo = DEMO.format(campaign=campaign)
     if step == 1:
@@ -98,7 +103,7 @@ def email(step: int, agence: str, ville: str, campaign: str, prenom: str = "") -
                          "récent précède souvent une <b>vente ou une mise en location</b> : ce sont autant de propriétaires "
                          "à contacter <b>avant les autres agences</b>.")
                 + '<p style="margin:0 0 8px">Nous avons créé <b>SPREA</b> pour '
-                + ('les conseillers indépendants comme vous :</p>' if prenom else f'les agences comme <b>{a}</b> :</p>')
+                + ('les conseillers indépendants comme vous :</p>' if prenom is not None else f'les agences comme <b>{a}</b> :</p>')
                 + numbered([("Chaque matin, les nouveaux DPE de votre secteur", " sur une carte, adresse par adresse"),
                             ("Un courrier prêt à envoyer", " au propriétaire, en un clic"),
                             ("Un dossier chiffré à lui remettre", " : travaux, aides, valeur avant et après rénovation")])
@@ -122,7 +127,7 @@ def email(step: int, agence: str, ville: str, campaign: str, prenom: str = "") -
         body = (P.format("Le calcul est simple : sur une vente à 250 000 €, les honoraires dépassent <b>10 000 € HT</b>. "
                          "L'abonnement SPREA démarre à <b>79 € TTC par mois</b>. Un seul mandat signé grâce à un DPE repéré "
                          "à temps le rembourse <b>plus de dix fois</b>.")
-                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur {'votre secteur' if prenom else 'le secteur de ' + a}</b> : vous voyez les "
+                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur {'votre secteur' if prenom is not None else 'le secteur de ' + a}</b> : vous voyez les "
                            "propriétaires de vos rues et les immeubles de SCI qui risquent de se vendre, puis vous décidez. "
                            "Répondez simplement avec un créneau.")
                 + BUTTON.format(href=demo, label="Voir la visite guidée (3 minutes) →"))
@@ -217,9 +222,9 @@ def main():
     for kind, row in plan:
         step = int(row["etape"]) + 1 if kind == "relance" else 1
         agence, ville = nice(row["agence"]), nice(row["ville"])
-        prenom = first_name(row["email"])
+        prenom = first_name(row["email"], row["agence"])
         cp = row.get("code_postal") or ""
-        if prenom:
+        if prenom is not None:
             # (follow-ups come from the tracking file, which has the town but no postcode)
             campaign = f"{NETWORKS[row['email'].strip().lower().rpartition('@')[2]]}_{re.sub(r'[^a-z]+', '-', ville.lower())}"
         else:

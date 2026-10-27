@@ -11,7 +11,7 @@ on:
     inputs:
       quota:
         description: "Nombre d'emails au plus"
-        default: "50"
+        default: "100"
       dry_run:
         description: "Essai sans envoi (true / false)"
         default: "false"
@@ -38,7 +38,7 @@ jobs:
       - name: Send
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          QUOTA: ${{ inputs.quota || '50' }}
+          QUOTA: ${{ inputs.quota || '100' }}
           DRY: ${{ inputs.dry_run || 'false' }}
         run: python -u scripts/campaign/send_brevo.py --dir suivi --quota "$QUOTA" $([ "$DRY" = "true" ] && echo --dry-run)
       - name: Save tracking
