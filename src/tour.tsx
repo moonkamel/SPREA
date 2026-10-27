@@ -3,14 +3,15 @@ import { navigate } from './router';
 
 // In-app guided tour: bubbles anchored on the real elements of the screen,
 // one sentence per step, "Passer" at every step, started once on its own and
-// again from the header. Two journeys, for the two uses of the tool:
+// again from the header. Three journeys:
+// - "command": the welcome, SPREA Command, the agent's prospecting cockpit;
 // - "vendre": sell a poorly rated dwelling under mandate with the buyer's file;
 // - "prospecter": find the dwellings of an area, follow them up, win the mandate.
 // A journey may span two screens (the simulator's search, then its results):
 // each screen hosts the steps it can show.
 
-export type TourId = 'vendre' | 'prospecter';
-export type TourScreen = 'simulateur' | 'logement' | 'carte';
+export type TourId = 'command' | 'vendre' | 'prospecter';
+export type TourScreen = 'simulateur' | 'logement' | 'carte' | 'command';
 
 interface TourStep {
     screen: TourScreen;
@@ -19,9 +20,32 @@ interface TourStep {
     title: string;
     text: string;
     note?: string;
+    // Last step of a screen: where the button leads, and what the bubble says about it
+    go?: string;
+    then?: string;
 }
 
 export const TOURS: Record<TourId, { name: string; steps: TourStep[] }> = {
+    command: {
+        name: 'Bienvenue dans SPREA',
+        steps: [
+            { screen: 'simulateur', target: 'home-command', title: 'SPREA Command',
+              text: 'Votre cockpit de prospection : les biens à fort potentiel de votre secteur, chiffrés et classés, et toutes les actions au même endroit.',
+              go: '/command', then: 'La visite continue dans SPREA Command.' },
+            { screen: 'command', target: 'cmd-kpis', title: 'Votre secteur ce matin',
+              text: 'Nouveaux DPE, biens à fort potentiel, valeur à débloquer par la rénovation, signaux de vente des SCI, demandes de vendeurs.' },
+            { screen: 'command', target: 'cmd-targets', title: 'Vos cibles',
+              text: 'Classées par score : ce que la rénovation ajoute à la valeur, la fraîcheur du DPE, l\'urgence pour le propriétaire.',
+              note: 'Au clavier : ↑ ↓ pour choisir, Entrée pour ouvrir.' },
+            { screen: 'command', target: 'cmd-briefing', title: 'Par où commencer',
+              text: 'Le briefing vous donne la priorité du jour. Une cible ouverte montre ses chiffres et toutes les actions : courrier, nom du propriétaire, dossiers.' },
+            { screen: 'command', target: 'cmd-search', title: 'Votre zone',
+              text: 'Tapez une commune ou une adresse pour scanner un autre secteur, ou une commande (⌘ K).' },
+            { screen: 'command', target: 'cmd-suivi', title: 'Le suivi',
+              text: 'De « à contacter » au mandat, avec chaque matin les relances dues et les vendeurs à rappeler.',
+              note: 'Cette visite reste disponible dans le menu « ? » du site.' },
+        ],
+    },
     vendre: {
         name: 'Vendre une passoire',
         steps: [
@@ -89,15 +113,17 @@ export function startTour(id: TourId) {
     const first = TOURS[id].steps[0].screen;
     if (first === 'carte') navigate('/prospection?mode=potentiel');
     else if (first === 'simulateur') navigate('/');
+    else if (first === 'command') navigate('/command');
 }
 
-// Starts a journey the first time its first screen is shown
-export function useAutoTour(id: TourId, enabled: boolean) {
+// Starts a journey the first time one of its screens is shown, at the
+// first step of that screen
+export function useAutoTour(id: TourId, enabled: boolean, step = 0) {
     useEffect(() => {
         if (!enabled || seen(id) || readState()) return;
-        const timer = setTimeout(() => { markSeen(id); writeState({ id, step: 0 }); }, 900);
+        const timer = setTimeout(() => { markSeen(id); writeState({ id, step }); }, 900);
         return () => clearTimeout(timer);
-    }, [id, enabled]);
+    }, [id, enabled, step]);
 }
 
 function useTourState(): TourState | null {
@@ -208,12 +234,12 @@ export function TourHost({ screen }: { screen: TourScreen }) {
                 <p className="mt-1 text-ink font-medium">{step.title}</p>
                 <p className="mt-1 text-sm text-ink-soft leading-relaxed">{step.text}</p>
                 {step.note && <p className="mt-1.5 text-xs text-faint">{step.note}</p>}
-                {leaves && <p className="mt-1.5 text-xs text-faint">La visite reprend sur la fiche du logement.</p>}
+                {leaves && <p className="mt-1.5 text-xs text-faint">{step.then || 'La visite reprend sur la fiche du logement.'}</p>}
                 <div className="mt-3 flex items-center justify-between gap-3">
                     <button type="button" onClick={close} className="text-xs text-muted hover:text-ink">Passer</button>
-                    <button type="button" onClick={leaves ? () => writeState({ ...state, step: state.step + 1 }) : next}
+                    <button type="button" onClick={leaves ? () => { writeState({ ...state, step: state.step + 1 }); if (step.go) navigate(step.go); } : next}
                         className="h-8 px-3 rounded-lg bg-brass text-canvas text-sm font-medium hover:bg-brass-light">
-                        {last ? 'Terminer' : leaves ? 'Compris' : 'Suivant'}
+                        {last ? 'Terminer' : leaves ? (step.go ? 'Ouvrir' : 'Compris') : 'Suivant'}
                     </button>
                 </div>
             </div>

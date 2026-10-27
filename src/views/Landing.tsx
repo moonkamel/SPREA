@@ -19,8 +19,8 @@ const SHORTCUTS = [
 ]
 
 export default function Landing({ loading, error, onSearchAddress, onSearchDpe }: Props) {
-    // Shown to subscribers only: their first visit starts the "sell" journey
-    useAutoTour('vendre', true);
+    // Shown to subscribers only: their first visit starts with SPREA Command
+    useAutoTour('command', true);
     const [mode, setMode] = useState<'address' | 'dpe'>('address');
     const [query, setQuery] = useState('');
     const [dpeNumber, setDpeNumber] = useState('');
@@ -71,7 +71,7 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                                 <Button variant="secondary" className="h-12 px-5" onClick={() => navigate('/prospection')}><MapPin size={16} />Carte de prospection</Button>
                             </div>
                         </div>
-                        <button type="button" onClick={() => navigate('/command')} aria-label="Ouvrir SPREA Command"
+                        <button type="button" data-tour="home-command" onClick={() => navigate('/command')} aria-label="Ouvrir SPREA Command"
                             className="group relative rounded-2xl overflow-hidden border border-brass/30 shadow-[0_30px_80px_-20px_rgba(201,164,92,0.35)] hover:border-brass/60 transition-colors">
                             <img src="/demo/command_radar.webp" alt="SPREA Command : radar du secteur, cibles classées par score et briefing du matin" width={1600} height={1000} className="block w-full h-auto" />
                             <span className="absolute inset-0 bg-gradient-to-t from-canvas/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

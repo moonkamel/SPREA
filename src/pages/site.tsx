@@ -116,7 +116,7 @@ function GuideMenu() {
                         <button key={id} type="button" onClick={() => { setOpen(false); startTour(id); }}
                             className="block w-full text-left rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:text-ink hover:bg-raised">
                             {TOURS[id].name}
-                            <span className="block text-xs text-faint">{id === 'vendre' ? 'Le dossier acheteur d\'un bien sous mandat' : 'Les biens à fort potentiel et leur suivi'}</span>
+                            <span className="block text-xs text-faint">{id === 'command' ? 'Votre cockpit de prospection' : id === 'vendre' ? 'Le dossier acheteur d\'un bien sous mandat' : 'Les biens à fort potentiel et leur suivi'}</span>
                         </button>
                     ))}
                 </div>
