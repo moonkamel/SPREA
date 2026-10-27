@@ -39,6 +39,6 @@ jobs:
         run: |
           git fetch -q origin iad-extract && git checkout -q iad-extract || git checkout -q --orphan iad-extract
           git rm -rqf --cached . >/dev/null 2>&1 || true
-          cp out/* . && git add iad_*.csv iad_*.log
+          cp out/* . && git add -f iad_*.csv iad_*.log
           git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Annuaire iad : $TOWN"
           git push -q origin HEAD:iad-extract
