@@ -1,0 +1,50 @@
+name: Prospection (envoi Brevo)
+
+# Daily prospection send through Brevo (scripts/campaign/send_brevo.py):
+# follow-ups due, then new contacts, from the files of the campaign-suivi
+# branch, whose tracking file is updated and pushed back. Weekdays at 9:05
+# (Paris, winter time), after the replies of the inbox are read.
+on:
+  schedule:
+    - cron: "5 8 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      quota:
+        description: "Nombre d'emails au plus"
+        default: "50"
+      dry_run:
+        description: "Essai sans envoi (true / false)"
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: campaign-send
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: campaign-suivi
+          path: suivi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Send
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          QUOTA: ${{ inputs.quota || '50' }}
+          DRY: ${{ inputs.dry_run || 'false' }}
+        run: python -u scripts/campaign/send_brevo.py --dir suivi --quota "$QUOTA" $([ "$DRY" = "true" ] && echo --dry-run)
+      - name: Save tracking
+        if: always()
+        run: |
+          cd suivi
+          git add prospection-suivi.csv
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Suivi : envoi Brevo du $(date +%F)" || exit 0
+          git push -q origin HEAD:campaign-suivi
