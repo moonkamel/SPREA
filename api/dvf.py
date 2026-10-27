@@ -97,7 +97,8 @@ def parse_sales(text: str, kind: str, year: int) -> List[Dict]:
         sales.append({"price_m2": price_m2, "surface": surface, "price": price, "lat": _float(d.get("latitude")),
                       "lon": _float(d.get("longitude")), "year": year, "quarter": quarter(d.get("date_mutation") or ""),
                       "date": (d.get("date_mutation") or "")[:10], "street": (d.get("adresse_nom_voie") or "").strip(),
-                      "rooms": d.get("nombre_pieces_principales") or None, "commune": d.get("nom_commune")})
+                      "rooms": d.get("nombre_pieces_principales") or None, "commune": d.get("nom_commune"),
+                      "insee": d.get("code_commune")})
     return sales
 
 
