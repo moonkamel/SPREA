@@ -16,6 +16,7 @@ their consent to the SPREA subscriber whose alert zone covers the address.
 import html
 import logging
 import math
+import os
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
@@ -440,22 +441,40 @@ async def advisor_for(store: SupabaseStore, lat: Optional[float], lon: Optional[
     return None
 
 
-def lead_email(row: Dict[str, Any]) -> Dict[str, str]:
+def lead_email(row: Dict[str, Any], unassigned: bool = False) -> Dict[str, str]:
+    """To the advisor whose zone covers the address, or to SPREA when no zone does."""
     e = html.escape
     kind = "Maison" if row["kind"] == "maison" else "Appartement"
+    d = row.get("details") or {}
     value = f"{fmt(row['value'])} €" if row.get("value") else "–"
-    lines = [("Projet", PROJECTS[row["project"]]), ("Bien", f"{kind}, {fmt(row['surface'])} m²"),
-             ("Adresse", row["address"]), ("Estimation en ligne", value),
-             ("Nom", row["name"]), ("Téléphone", row.get("phone") or "–"), ("Email", row.get("email") or "–")]
-    rows = "".join(f"<tr><td style='padding:4px 12px 4px 0;color:#6b7280'>{e(k)}</td><td style='padding:4px 0'><b>{e(str(v))}</b></td></tr>"
+    if row.get("low") and row.get("high"):
+        value += f" (entre {fmt(row['low'])} € et {fmt(row['high'])} €)"
+    condition = {"a_renover": "à rénover", "rafraichir": "à rafraîchir", "bon": "bon état", "refait": "refait à neuf"}.get(d.get("condition"), "")
+    bien = ", ".join(x for x in [f"{kind} de {fmt(row['surface'])} m²", f"{d['rooms']} pièces" if d.get("rooms") else "",
+                                 f"DPE {d['dpe']}" if d.get("dpe") else "", condition] if x)
+    lines = [("Projet", PROJECTS[row["project"]]), ("Bien", bien), ("Adresse", row["address"]),
+             ("Estimation en ligne", value), ("Nom", row["name"]), ("Téléphone", row.get("phone") or "–"),
+             ("Email", row.get("email") or "–")]
+    if row.get("lat") is not None and row.get("lon") is not None:
+        lines.append(("Carte", f"https://www.openstreetmap.org/?mlat={row['lat']}&mlon={row['lon']}#map=17/{row['lat']}/{row['lon']}"))
+    rows = "".join(f"<tr><td style='padding:4px 12px 4px 0;color:#6b7280;vertical-align:top'>{e(k)}</td><td style='padding:4px 0'>"
+                   + (f"<a href='{e(v)}'>Voir sur la carte</a>" if k == "Carte" else f"<b>{e(str(v))}</b>") + "</td></tr>"
                    for k, v in lines)
-    body = (f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#1f2937'><p>Bonjour,</p>"
-            f"<p>Un propriétaire de votre secteur vient d'estimer son bien sur sprea.app et demande à être recontacté.</p>"
-            f"<table>{rows}</table><p>Il a donné son accord pour être appelé. Retrouvez la demande dans "
-            f"<a href='https://sprea.app/contacts'>Contacts</a>.</p><p>L'équipe SPREA</p></div>")
-    text = "Nouvelle demande d'estimation dans votre secteur :\n" + "\n".join(f"{k} : {v}" for k, v in lines)
-    return {"subject": f"Nouveau vendeur à {row.get('city') or 'votre secteur'} : {kind.lower()} de {fmt(row['surface'])} m²",
-            "html": body, "text": text}
+    if unassigned:
+        intro = ("Un propriétaire vient d'estimer son bien sur sprea.app et demande à être recontacté, mais aucun abonné "
+                 "n'a de zone d'alerte qui couvre cette adresse.")
+        outro = ("Il a accepté d'être recontacté par un conseiller immobilier partenaire de SPREA exerçant dans son secteur : "
+                 "vous pouvez transmettre cette demande à un conseiller du secteur.")
+        subject = f"Vendeur sans conseiller à {row.get('city') or 'une commune non couverte'} : {kind.lower()} de {fmt(row['surface'])} m²"
+    else:
+        intro = "Un propriétaire de votre secteur vient d'estimer son bien sur sprea.app et demande à être recontacté."
+        outro = ("Il a donné son accord pour être appelé. Retrouvez la demande dans "
+                 "<a href='https://sprea.app/contacts'>Contacts</a>.")
+        subject = f"Nouveau vendeur à {row.get('city') or 'votre secteur'} : {kind.lower()} de {fmt(row['surface'])} m²"
+    body = (f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#1f2937'><p>Bonjour,</p><p>{e(intro)}</p>"
+            f"<table>{rows}</table><p>{outro if not unassigned else e(outro)}</p><p>L'équipe SPREA</p></div>")
+    text = intro + "\n\n" + "\n".join(f"{k} : {v}" for k, v in lines)
+    return {"subject": subject, "html": body, "text": text}
 
 
 @router.post("/estimate/lead", dependencies=[Depends(lead_limiter)])
@@ -481,6 +500,12 @@ async def estimate_lead(data: LeadRequest, store: SupabaseStore = Depends(store_
     if advisor and advisor.get("email"):
         mail = lead_email(row)
         await send_email(advisor["email"], mail["subject"], mail["html"], mail["text"])
+    elif not advisor:
+        # No subscriber covers the address: SPREA gets it, to pass on to an advisor of the area
+        to = (os.getenv("LEADS_TO") or os.getenv("QUOTES_TO") or "").strip()
+        if to:
+            mail = lead_email(row, unassigned=True)
+            await send_email(to, mail["subject"], mail["html"], mail["text"])
     logger.info(f"Estimator lead received ({'assigned' if advisor else 'unassigned'})")
     return {"received": True, "assigned": bool(advisor)}
 
