@@ -29,8 +29,8 @@ const WHY = [
 
 export default function Home() {
     useSeo({
-        title: 'SPREA · Le mandat avant les autres : l\'outil DPE des conseillers immobiliers indépendants',
-        description: "Conseiller indépendant ou mandataire : recevez chaque matin les nouveaux DPE de votre secteur, envoyez un courrier en un clic et signez avec un avis de valeur avant / après travaux fondé sur les ventes DVF.",
+        title: 'SPREA · La prospection immobilière des conseillers indépendants : le mandat avant les autres',
+        description: "Le cockpit de prospection des conseillers immobiliers indépendants : chaque matin les nouveaux DPE de votre secteur, les biens à fort potentiel chiffrés et classés, le courrier en un clic, la demande du nom du propriétaire et l'avis de valeur avant / après travaux.",
         path: '/',
         // Kept mounted (hidden) under the other routes: only the home page sets these
         active: usePath() === '/',

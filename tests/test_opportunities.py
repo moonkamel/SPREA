@@ -212,7 +212,10 @@ def test_follow_up_shared_by_the_agency(env):
 
     async def clear(scope, number):
         rows.pop((scope, number), None)
+    async def pipeline(scope, limit=500):
+        return sorted((r for (s, _), r in rows.items() if s == scope), key=lambda r: r["updated_at"], reverse=True)
     store.prospect_statuses, store.set_prospect_status, store.clear_prospect_status = statuses, set_status, clear
+    store.prospect_pipeline = pipeline
     assert client.get("/api/prospect-status?numbers=2659E0000001A").status_code == 402
     make_pro(store)
     make_pro(store, BOB)
@@ -224,6 +227,10 @@ def test_follow_up_shared_by_the_agency(env):
     state["user"] = BOB
     got = client.get("/api/prospect-status?numbers=2659E0000001A,bad,2659E0000002B").json()["statuses"]
     assert got == {"2659E0000001A": {"status": "courrier", "updated_at": got["2659E0000001A"]["updated_at"], "mine": False}}
+    client.put("/api/prospect-status", json={"number": "2659E0000002B", "status": "rendez_vous", "address": "3 place de la Victoire"})
+    board = client.get("/api/prospect-status/all").json()["items"]
+    assert [(i["number"], i["status"], i["mine"]) for i in board] == [("2659E0000002B", "rendez_vous", True), ("2659E0000001A", "courrier", False)]
+    assert board[0]["address"] == "3 place de la Victoire"
     client.put("/api/prospect-status", json={"number": "2659E0000001A", "status": None})
     assert client.get("/api/prospect-status?numbers=2659E0000001A").json()["statuses"] == {}
 

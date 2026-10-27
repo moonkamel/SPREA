@@ -304,6 +304,11 @@ class SupabaseStore:
         return await self._request("GET", "prospect_status", params={
             "scope": f"eq.{scope}", "dpe_number": self._in(numbers), "select": "dpe_number,status,user_id,updated_at"})
 
+    async def prospect_pipeline(self, scope: str, limit: int = 500) -> List[Dict[str, Any]]:
+        return await self._request("GET", "prospect_status", params={
+            "scope": f"eq.{scope}", "select": "dpe_number,status,address,user_id,updated_at",
+            "order": "updated_at.desc", "limit": str(limit)})
+
     async def set_prospect_status(self, row: Dict[str, Any]) -> None:
         await self._request("POST", "prospect_status", params={"on_conflict": "scope,dpe_number"}, json=row,
                             prefer="resolution=merge-duplicates,return=minimal")

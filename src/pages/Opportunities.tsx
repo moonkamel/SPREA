@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Download, FileText, Loader2, TrendingUp, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ChevronDown, Download, FileText, Loader2, TrendingUp, X } from 'lucide-react';
 import { useAccount } from '../account';
 import { Button, Card, DpeBadge, errorDetail, eur, type DPEClass } from '../ui';
 
@@ -108,10 +108,23 @@ export function potentialColor(o: Opportunity): string {
     return '#C9A45C';
 }
 
-export function OpportunityList({ scan, statuses, onStatus, onFocus, onDossier }: {
+// With `detail`, a click opens the dwelling in place (the selected one), with
+// everything the agent needs about it; without it, the list stays compact
+export function OpportunityList({ scan, statuses, onStatus, onFocus, onDossier, selected, onSelect, detail }: {
     scan: OpportunityScan; statuses: Record<string, FollowUp>; onStatus: (o: Opportunity, s: FollowUp | '') => void;
     onFocus: (o: Opportunity) => void; onDossier: (o: Opportunity) => void;
+    selected?: string | null; onSelect?: (o: Opportunity | null) => void; detail?: (o: Opportunity) => ReactNode;
 }) {
+    const items = useRef(new Map<string, HTMLLIElement>());
+    // Selected from the map: brought into view in the list
+    useEffect(() => {
+        // Only the list scrolls, not the page
+        const el = selected ? items.current.get(selected) : null;
+        const list = el?.parentElement;
+        if (!el || !list) return;
+        const top = el.offsetTop - list.offsetTop;
+        if (top < list.scrollTop || top + 60 > list.scrollTop + list.clientHeight) list.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+    }, [selected]);
     const sortLabel = SORTS.find(s => s.value === scan.sort)?.label.toLowerCase() || 'plus fort potentiel';
     return (
         <Card className="p-0 overflow-hidden">
@@ -127,9 +140,13 @@ export function OpportunityList({ scan, statuses, onStatus, onFocus, onDossier }
                 <p className="px-4 py-6 text-sm text-muted">Aucun logement chiffrable dans cette zone : élargissez les classes DPE ou déplacez la carte.</p>
             ) : (
                 <ol className="max-h-[60vh] overflow-y-auto divide-y divide-line/70">
-                    {scan.items.map((o, i) => (
-                        <li key={o.number} className="px-4 py-3">
-                            <button type="button" onClick={() => onFocus(o)} className="flex items-start gap-3 text-left w-full">
+                    {scan.items.map((o, i) => {
+                        const open = !!detail && selected === o.number;
+                        return (
+                        <li key={o.number} ref={el => { if (el) items.current.set(o.number, el); else items.current.delete(o.number); }}
+                            className={`px-4 py-3 transition-colors ${open ? 'bg-raised/70' : ''}`}>
+                            <button type="button" aria-expanded={detail ? open : undefined}
+                                onClick={() => { onFocus(o); onSelect?.(open ? null : o); }} className="flex items-start gap-3 text-left w-full">
                                 <span className="w-5 shrink-0 text-xs text-faint tabular-nums pt-1">{i + 1}</span>
                                 <DpeBadge label={o.label} size="sm" />
                                 <span className="min-w-0 flex-1">
@@ -142,7 +159,9 @@ export function OpportunityList({ scan, statuses, onStatus, onFocus, onDossier }
                                     <span className="block text-sm font-medium text-ink tabular-nums">≈ {eur(o.price)}</span>
                                     <span className="block text-[11px] text-faint">{dpeAge(o.dpe_date)}</span>
                                 </span>
+                                {detail && <ChevronDown size={14} className={`mt-1 shrink-0 text-faint transition-transform ${open ? 'rotate-180' : ''}`} />}
                             </button>
+                            {open && detail!(o)}
                             <div className="mt-2 ml-8 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
                                 <select value={statuses[o.number] || ''} onChange={e => onStatus(o, e.target.value as FollowUp | '')}
                                     aria-label={`Suivi de ${o.address}`} data-tour={i === 0 ? 'invest-status' : undefined}
@@ -152,9 +171,15 @@ export function OpportunityList({ scan, statuses, onStatus, onFocus, onDossier }
                                 <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1" onClick={() => onDossier(o)}>
                                     <FileText size={12} />Dossier propriétaire
                                 </button>
+                                {detail && !open && (
+                                    <button type="button" className="text-muted hover:text-ink" onClick={() => { onFocus(o); onSelect?.(o); }}>
+                                        Tout voir
+                                    </button>
+                                )}
                             </div>
                         </li>
-                    ))}
+                        );
+                    })}
                 </ol>
             )}
         </Card>

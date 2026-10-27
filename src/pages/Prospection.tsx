@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bell, Building2, Download, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, TrendingUp, UserSearch } from 'lucide-react';
+import { Bell, Building2, Download, ExternalLink, FileText, Loader2, LocateFixed, Lock, MapPin, QrCode, Search, Sparkles, TrendingUp, UserSearch } from 'lucide-react';
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
-import { Button, Card, DPE_COLORS, DpeBadge, type DPEClass } from '../ui';
+import { Button, Card, DPE_COLORS, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
 import { SiteFooter, SiteHeader } from './site';
 import { TourHost, useAutoTour } from '../tour';
 import LoadingSequence, { BUILDING_STEPS, INVEST_STEPS, PROSPECTION_STEPS } from '../views/LoadingSequence';
-import { DossierDialog, FOLLOW_UPS, FRESHNESS, OpportunityList, SORTS, VALUES, potentialColor, type FollowUp, type Opportunity, type OpportunityScan, type SortKey } from './Opportunities';
+import { DossierDialog, FOLLOW_UPS, FRESHNESS, OpportunityList, SORTS, VALUES, dpeAge, potentialColor, type Audience, type FollowUp, type Opportunity, type OpportunityScan, type SortKey } from './Opportunities';
 
 interface Dpe {
     number: string;
@@ -107,6 +107,58 @@ function toCsv(addresses: Address[]) {
     return rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(';')).join('\n');
 }
 
+type Mode = 'dpe' | 'immeubles' | 'investir';
+
+// Everything about one high-potential dwelling, and every action on it, in place
+function OpportunityTools({ o, onDossier, onLetter, onOwner }: {
+    o: Opportunity; onDossier: (a: Audience) => void; onLetter: () => void; onOwner: () => void;
+}) {
+    const figures: [string, string, string?][] = [
+        ['Valeur aujourd\'hui', `≈ ${eur(o.price)}`],
+        ['Travaux', eurRange(o.works_low, o.works_high)],
+        ['Aides estimées', o.aids ? `− ${eur(o.aids)}` : '–', o.aids ? 'text-sage' : undefined],
+        ['Après travaux', `≈ ${eur(o.resale)}`],
+    ];
+    const action = 'h-8 rounded-lg border border-line bg-panel px-2.5 text-xs text-ink whitespace-nowrap hover:border-brass/60 flex items-center gap-1.5';
+    return (
+        <div className="mt-3 ml-8 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+                {figures.map(([k, v, tone]) => (
+                    <div key={k} className="rounded-lg bg-panel px-2.5 py-2">
+                        <p className="text-[10px] uppercase tracking-[0.1em] text-faint">{k}</p>
+                        <p className={`text-sm font-medium tabular-nums ${tone || 'text-ink'}`}>{v}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="text-xs text-muted space-y-1">
+                {o.value_created > 0 && <p><b className="text-ink">+ {eur(o.value_created)}</b> de valeur créée par la rénovation, aides déduites.</p>}
+                <p>Programme : {o.works_names.join(', ') || '–'} ({o.label} → {o.new_label}).</p>
+                {!!o.rental_now && <p>Location : {o.rental_now}{o.rental_after && o.rental_after !== o.rental_now ? ` ; après travaux : ${o.rental_after.toLowerCase()}` : ''}.</p>}
+                {!!o.rent_month && <p>Loyer de marché ≈ {eur(o.rent_month)} / mois{o.gross_yield ? ` · rendement brut ${o.gross_yield.toLocaleString('fr-FR')} %` : ''}.</p>}
+                <p>{o.kind} · {Math.round(o.surface)} m²{o.period ? ` · construit ${o.period}` : ''} · {dpeAge(o.dpe_date)}.</p>
+                {!!o.risks?.length && <ul className="list-disc pl-4 text-faint">{o.risks.map(r => <li key={r}>{r}</li>)}</ul>}
+            </div>
+            <div>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-faint mb-1.5">Contacter le propriétaire</p>
+                <div className="flex flex-wrap gap-2">
+                    <button type="button" className={action} onClick={onLetter}><QrCode size={13} />Courrier QR code</button>
+                    <button type="button" className={action} onClick={onOwner}><UserSearch size={13} />Connaître le propriétaire</button>
+                </div>
+            </div>
+            <div>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-faint mb-1.5">Convaincre et vendre</p>
+                <div className="flex flex-wrap gap-2">
+                    <button type="button" className={`${action} border-brass/60`} onClick={() => onDossier('proprietaire')}><FileText size={13} />Dossier propriétaire</button>
+                    <button type="button" className={action} onClick={() => onDossier('acheteur')}><FileText size={13} />Dossier acheteur</button>
+                    <button type="button" className={action} onClick={() => navigate(`/?dpe=${encodeURIComponent(o.number)}`)}><MapPin size={13} />Simuler les travaux</button>
+                    <a className={action} target="_blank" rel="noopener noreferrer"
+                        href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${o.lat},${o.lon}`}><ExternalLink size={13} />Voir la façade</a>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ProspectionPage() {
     const { session, me, config, openLogin, authedFetch } = useAccount();
     useSeo({ title: 'Carte de prospection · SPREA', noindex: true });
@@ -133,8 +185,11 @@ export default function ProspectionPage() {
     const [locating, setLocating] = useState(false);
     const [framed, setFramed] = useState(false);
     // 'immeubles': whole buildings held by a single owner (BDNB)
-    const [mode, setMode] = useState<'dpe' | 'immeubles' | 'investir'>(
-        () => (new URLSearchParams(window.location.search).get('mode') === 'potentiel' ? 'investir' : 'dpe'));
+    // The high-potential dwellings first: the most complete view of a property.
+    // Another mode when the link asks for it, or for a subscriber without Pro.
+    const askedMode = useRef(new URLSearchParams(window.location.search).get('mode'));
+    const [mode, setMode] = useState<Mode>(
+        () => (askedMode.current === 'dpe' ? 'dpe' : askedMode.current === 'immeubles' ? 'immeubles' : 'investir'));
     // 'investir': the area's poorly rated dwellings ranked by what the
     // renovation adds, for the agent's prospection (Pro)
     const [sort, setSort] = useState<SortKey>('potentiel');
@@ -143,7 +198,14 @@ export default function ProspectionPage() {
     const [statuses, setStatuses] = useState<Record<string, FollowUp>>({});
     const [invest, setInvest] = useState<OpportunityScan | null>(null);
     const [investArea, setInvestArea] = useState<string | null>(null);
-    const [dossierFor, setDossierFor] = useState<Opportunity | null>(null);
+    // The analysis still covers the visible map when that lies inside the analysed area
+    const investCovers = (key: string | undefined) => {
+        if (!investArea || !key) return false;
+        const [a, b] = [investArea, key].map(k => k.split(',').map(Number));
+        return b[0] >= a[0] && b[1] >= a[1] && b[2] <= a[2] && b[3] <= a[3];
+    };
+    const [dossierFor, setDossierFor] = useState<{ o: Opportunity; audience: Audience } | null>(null);
+    const [selected, setSelected] = useState<string | null>(null);
     const [minLog, setMinLog] = useState('3');
     const [monoDpe, setMonoDpe] = useState<'all' | 'fg'>('all');
     const [monoSignal, setMonoSignal] = useState<'all' | 'any' | 'strong'>('all');
@@ -340,6 +402,7 @@ export default function ProspectionPage() {
             const scan: OpportunityScan = await res.json();
             setInvest(scan);
             setInvestArea(areaKey);
+            setSelected(null);
             loadStatuses(scan.items.map(o => o.number));
         } catch (e) {
             setError((e as Error).message);
@@ -347,6 +410,14 @@ export default function ProspectionPage() {
             setLoading(false);
         }
     }, [areaKey, zoomOk, labels, kind, sort, maxValue, freshness, authedFetch]);
+
+    // The first analysis starts by itself once the map is placed; the next ones on request
+    const autoRan = useRef(false);
+    useEffect(() => {
+        if (autoRan.current || mode !== 'investir' || !me?.is_pro || !session || !ready || !zoomOk || !areaKey || invest || loading) return;
+        autoRan.current = true;
+        runInvest();
+    }, [mode, me?.is_pro, session, ready, zoomOk, areaKey, invest, loading, runInvest]);
 
     // Follow-up of the listed addresses, shared by the agency; the list stays usable without it
     const loadStatuses = async (numbers: string[]) => {
@@ -372,6 +443,10 @@ export default function ProspectionPage() {
             setError("Le suivi n'a pas pu être enregistré, réessayez.");
         }
     };
+
+    useEffect(() => {
+        if (me && !me.is_pro && !askedMode.current) setMode(m => (m === 'investir' ? 'dpe' : m));
+    }, [me]);
 
     const showDetails = !!result && !result.locked;
     useAutoTour('prospecter', mode === 'investir' && !!me?.is_pro);
@@ -399,13 +474,15 @@ export default function ProspectionPage() {
             if (!invest || !zoomOk) return;
             invest.items.forEach((o, i) => {
                 if (o.lat == null || o.lon == null) return;
+                const on = selected === o.number;
                 const marker = L.circleMarker([o.lat, o.lon], {
-                    radius: Math.min(15, 5 + Math.sqrt(Math.max(0, o.value_created ?? 0) / 2000)),
-                    color: i < 3 ? '#E3C98F' : '#0A0F1A', weight: i < 3 ? 3 : 1.5, opacity: 0.95, fillColor: potentialColor(o), fillOpacity: 0.95,
+                    radius: Math.min(15, 5 + Math.sqrt(Math.max(0, o.value_created ?? 0) / 2000)) + (on ? 3 : 0),
+                    color: on ? '#FFFFFF' : i < 3 ? '#E3C98F' : '#0A0F1A', weight: on ? 3.5 : i < 3 ? 3 : 1.5, opacity: 0.95,
+                    fillColor: potentialColor(o), fillOpacity: 0.95,
                 });
                 const follow = FOLLOW_UPS.find(f => f.value === statuses[o.number])?.label;
                 marker.bindTooltip(`${i + 1}. ${escapeHtml(o.address)}<br>${o.label} → ${o.new_label} · valeur ≈ ${o.price.toLocaleString('fr-FR')} €${follow ? `<br>${follow}` : ''}`);
-                marker.on('click', () => setDossierFor(o));
+                marker.on('click', () => setSelected(o.number));
                 marker.addTo(layer);
             });
             return;
@@ -457,7 +534,7 @@ export default function ProspectionPage() {
             }
             marker.addTo(layer);
         }
-    }, [mode, mono, result, invest, statuses, showDetails, zoomOk]);
+    }, [mode, mono, result, invest, statuses, selected, showDetails, zoomOk]);
 
     const locate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -530,24 +607,29 @@ export default function ProspectionPage() {
             {mode === 'investir' && <TourHost screen="carte" />}
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
                 <div className="mb-6">
-                    <h1 className="text-3xl sm:text-4xl text-ink">Carte de prospection</h1>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h1 className="text-3xl sm:text-4xl text-ink">Carte de prospection</h1>
+                        <Link to="/command" className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-brass/50 bg-brass/10 text-sm text-brass-light hover:bg-brass/20 shadow-[0_0_24px_-6px_rgba(201,164,92,0.5)]">
+                            <Sparkles size={15} />Passer en mode SPREA Command
+                        </Link>
+                    </div>
                     <p className="mt-2 text-muted max-w-3xl">
                         Les logements classés G, F ou E dont le DPE vient d'être réalisé : un DPE récent annonce souvent une vente ou une
                         location. Contactez ces propriétaires les premiers, avec une estimation et un plan de rénovation chiffré.
                     </p>
                     <div className="mt-5 inline-flex rounded-xl border border-line bg-raised p-1" role="tablist" aria-label="Que chercher">
-                        {([['dpe', 'Logements à rénover'], ['immeubles', 'Immeubles entiers'], ['investir', 'Biens à fort potentiel']] as const).map(([m, label]) => (
+                        {([['investir', 'Biens à fort potentiel'], ['dpe', 'Tous les DPE récents'], ['immeubles', 'Immeubles entiers']] as const).map(([m, label]) => (
                             <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
-                                className={`h-9 px-4 rounded-lg text-sm transition-colors ${mode === m ? 'bg-brass text-canvas font-medium' : 'text-muted hover:text-ink'}`}>
-                                {label}
+                                className={`h-9 px-4 rounded-lg text-sm transition-colors flex items-center gap-1.5 ${mode === m ? 'bg-brass text-canvas font-medium' : 'text-muted hover:text-ink'}`}>
+                                {m === 'investir' && <Sparkles size={14} />}{label}
                             </button>
                         ))}
                     </div>
                     {mode === 'investir' && (
                         <p className="mt-3 text-sm text-muted max-w-3xl">
-                            Les passoires du secteur classées par potentiel : ce que la rénovation ajoute à leur valeur, la fraîcheur du DPE et la
-                            valeur du bien. Notez où vous en êtes pour chaque adresse, et apportez au propriétaire un dossier à votre nom : valeur
-                            aujourd'hui, travaux et aides, valeur après rénovation.
+                            Les passoires du secteur classées par potentiel, chacune chiffrée : valeur aujourd'hui, travaux et aides, valeur
+                            après rénovation, loyer. Cliquez sur un bien pour tout voir et passer à l'action : courrier, demande du nom du
+                            propriétaire, dossier à votre nom, simulation, suivi.
                         </p>
                     )}
                     {mode === 'immeubles' && (
@@ -712,11 +794,11 @@ export default function ProspectionPage() {
                                 <Card className="p-4">
                                     <div data-tour="invest-analyse"><Button className="h-11 w-full" onClick={runInvest} disabled={loading || !zoomOk || !areaKey}>
                                         {loading ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
-                                        {invest && investArea === areaKey ? 'Relancer l\'analyse' : 'Analyser cette zone'}
+                                        {invest && investCovers(areaKey) ? 'Relancer l\'analyse' : 'Analyser cette zone'}
                                     </Button></div>
                                     <p className="mt-2 text-xs text-faint">
                                         Jusqu'à 150 DPE récents de la zone visible, chacun simulé et valorisé : comptez de 10 à 40 secondes.
-                                        {invest && investArea !== areaKey ? ' La carte a bougé : relancez pour cette zone.' : ''}
+                                        {invest && !investCovers(areaKey) ? ' La carte a bougé : relancez pour cette zone.' : ''}
                                     </p>
                                 </Card>
                             )
@@ -725,7 +807,14 @@ export default function ProspectionPage() {
                         {mode === 'investir' && invest && (
                             <OpportunityList scan={invest} statuses={statuses} onStatus={setStatus}
                                 onFocus={o => mapRef.current?.setView([o.lat, o.lon], Math.max(mapRef.current.getZoom(), 17))}
-                                onDossier={o => setDossierFor(o)} />
+                                onDossier={o => setDossierFor({ o, audience: 'proprietaire' })}
+                                selected={selected} onSelect={o => setSelected(o?.number ?? null)}
+                                detail={o => (
+                                    <OpportunityTools o={o}
+                                        onDossier={audience => setDossierFor({ o, audience })}
+                                        onLetter={() => setLetterFor({ address: o.address, label: o.label, dpeNumber: o.number })}
+                                        onOwner={() => setOwnerFor({ address: o.address, lat: o.lat, lon: o.lon })} />
+                                )} />
                         )}
 
                         {mode === 'immeubles' && mono && (
@@ -817,8 +906,8 @@ export default function ProspectionPage() {
             <SiteFooter />
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
             {ownerFor && <OwnerRequestDialog target={ownerFor} onClose={() => setOwnerFor(null)} />}
-            {dossierFor && <DossierDialog audience="proprietaire" preview={dossierFor}
-                request={{ url: '/api/opportunities/dossier', body: { number: dossierFor.number } }} onClose={() => setDossierFor(null)} />}
+            {dossierFor && <DossierDialog audience={dossierFor.audience} preview={dossierFor.o}
+                request={{ url: '/api/opportunities/dossier', body: { number: dossierFor.o.number } }} onClose={() => setDossierFor(null)} />}
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
         </div>

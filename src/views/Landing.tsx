@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Bell, Building2, Loader2, MapPin, Search, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, Bell, Building2, Loader2, MapPin, Radar, Search, ShieldCheck, Users } from 'lucide-react';
 import { Button, Card, Help, Segmented } from '../ui';
 import { TourHost, useAutoTour } from '../tour';
 import { SiteFooter, SiteHeader } from '../pages/site';
-import { Link } from '../router';
+import { Link, navigate } from '../router';
 
 interface Props {
     loading: boolean;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const SHORTCUTS = [
-    { to: '/prospection?mode=potentiel', icon: MapPin, title: 'Biens à fort potentiel', text: 'Les passoires de votre secteur classées par potentiel, avec le suivi de chaque adresse.' },
+    { to: '/prospection?mode=potentiel', icon: MapPin, title: 'Biens à fort potentiel', text: 'Les passoires de votre secteur chiffrées et classées, avec tous les outils pour chaque adresse.' },
     { to: '/alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
     { to: '/contacts', icon: Users, title: 'Contacts', text: 'Les propriétaires qui ont répondu à vos courriers.' },
 ]
@@ -55,14 +55,38 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
             <TourHost screen="simulateur" />
 
             <main className="flex-1">
+                {/* Prospecting first: the cockpit of the day */}
+                <section className="relative overflow-hidden border-b border-line">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_0%,rgba(201,164,92,0.16),transparent_60%)] pointer-events-none" />
+                    <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 grid gap-8 lg:grid-cols-[1fr_1.25fr] items-center">
+                        <div>
+                            <p className="text-sm text-brass tracking-wide flex items-center gap-2"><Radar size={16} />SPREA Command</p>
+                            <h1 className="mt-4 text-3xl sm:text-[2.6rem] leading-[1.1] text-ink">Vos mandats du jour, <span className="text-brass-light">sur un seul écran.</span></h1>
+                            <p className="mt-4 text-muted">
+                                Le radar de votre secteur chiffre chaque DPE récent et classe les biens par score. Le briefing vous dit qui contacter
+                                en premier ; un clic, et le courrier, le nom du propriétaire et le dossier sont prêts.
+                            </p>
+                            <div className="mt-6 flex flex-wrap gap-3">
+                                <Button className="h-12 px-6" onClick={() => navigate('/command')}>Ouvrir SPREA Command <ArrowRight size={18} /></Button>
+                                <Button variant="secondary" className="h-12 px-5" onClick={() => navigate('/prospection')}><MapPin size={16} />Carte de prospection</Button>
+                            </div>
+                        </div>
+                        <button type="button" onClick={() => navigate('/command')} aria-label="Ouvrir SPREA Command"
+                            className="group relative rounded-2xl overflow-hidden border border-brass/30 shadow-[0_30px_80px_-20px_rgba(201,164,92,0.35)] hover:border-brass/60 transition-colors">
+                            <img src="/demo/command_radar.webp" alt="SPREA Command : radar du secteur, cibles classées par score et briefing du matin" width={1600} height={1000} className="block w-full h-auto" />
+                            <span className="absolute inset-0 bg-gradient-to-t from-canvas/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                    </div>
+                </section>
+
                 {/* Hero */}
                 <section className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,164,92,0.10),transparent_60%)] pointer-events-none" />
-                    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-14 text-center">
+                    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-14 text-center">
                         <p className="text-sm text-brass tracking-wide mb-5">Simulateur</p>
-                        <h1 className="text-4xl sm:text-5xl leading-[1.1] text-ink">
+                        <h2 className="text-4xl sm:text-5xl leading-[1.1] text-ink">
                             Quel logement étudions-nous ?
-                        </h1>
+                        </h2>
                         <p className="mt-6 text-lg text-muted max-w-2xl mx-auto">
                             Le bien que vous vendez ou celui d'un propriétaire à convaincre : travaux, aides, valeur après rénovation, avis de valeur et dossier acheteur en quelques secondes.
                         </p>
