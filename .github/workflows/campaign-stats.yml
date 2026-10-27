@@ -1,0 +1,39 @@
+name: Prospection (statistiques Brevo)
+
+# Figures of the prospection emails (scripts/campaign/brevo_stats.py, read-only
+# on Brevo): per day and per email of the sequence, people's opens apart from
+# those loaded by a proxy, clicks and the links clicked. Pushed to the
+# campaign-stats branch (stats.md). Daily after the send, or on request.
+on:
+  schedule:
+    - cron: "0 17 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Nombre de jours"
+        default: "7"
+  push:
+    branches: ["claude/**"]
+    paths: [".github/workflows/campaign-stats.yml", "scripts/campaign/brevo_stats.py"]
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Statistics
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: mkdir out && python -u scripts/campaign/brevo_stats.py --days "${{ inputs.days || '7' }}" --out out/stats.md
+      - name: Save
+        run: |
+          cd out && cp stats.md "stats-$(date +%F-%H%M).md" && git init -q -b stats && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Statistiques Brevo $(date +%F)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" stats:campaign-stats
