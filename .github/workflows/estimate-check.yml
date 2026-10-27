@@ -1,0 +1,57 @@
+name: estimate check (one-off)
+on:
+  push:
+    branches: [claude/hopeful-fermi-re2vn1]
+    paths: [.github/workflows/estimate-check.yml]
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Estimate real addresses
+        run: |
+          mkdir out
+          cat > /tmp/check.py <<'PY'
+          import asyncio, json, httpx, sys
+          sys.path.insert(0, ".")
+          from api.estimate import EstimateRequest, compute, estimate_dpe
+          from api.dvf import market_price
+          CASES = [
+              ("10 rue Nationale 59000 Lille", "appartement", 62, "D"),
+              ("25 rue de Rivoli 75004 Paris", "appartement", 45, "E"),
+              ("15 rue de la République 69002 Lyon", "appartement", 80, "C"),
+              ("20 cours de l'Intendance 33000 Bordeaux", "appartement", 70, None),
+              ("1 place de l'Église 59780 Baisieux", "maison", 110, "E"),
+              ("2 rue de la Mairie 23200 Aubusson", "maison", 95, "F"),
+          ]
+          async def main():
+              out = []
+              async with httpx.AsyncClient(timeout=20) as c:
+                  for addr, kind, surface, dpe in CASES:
+                      f = (await c.get("https://api-adresse.data.gouv.fr/search/", params={"q": addr, "limit": 1})).json()["features"][0]
+                      p, (lon, lat) = f["properties"], f["geometry"]["coordinates"]
+                      req = EstimateRequest(address=p["label"], insee=p["citycode"], postcode=p["postcode"], city=p["city"],
+                                            lat=lat, lon=lon, kind=kind, surface=surface, dpe=dpe)
+                      m = await market_price(req.insee, "Maison" if kind == "maison" else "Appartement", lat, lon, surface)
+                      r = compute(req, m) if m else None
+                      d = await estimate_dpe(p["label"])
+                      out.append({"address": p["label"], "kind": kind, "surface": surface, "dpe": dpe,
+                                  "result": {k: r[k] for k in ("value", "low", "high", "price_m2", "market_m2", "dpe_effect", "reliability", "trend", "sales", "scope", "period")} if r else None,
+                                  "dpe_found": d["results"][:3]})
+                      print(json.dumps(out[-1], ensure_ascii=False))
+              json.dump(out, open("out/estimates.json", "w"), ensure_ascii=False, indent=1)
+          asyncio.run(main())
+          PY
+          python /tmp/check.py
+      - name: Save
+        if: always()
+        run: |
+          cd out && git init -q && git checkout -q -b estimate-check && git add -A && git -c user.name=gh -c user.email=a@b commit -qm check
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" estimate-check

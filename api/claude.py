@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 # Reading long documents and judging: the most capable Opus
 MODEL = "claude-opus-5-5"
+# Short, latency-sensitive extractions and texts (public estimator)
+FAST_MODEL = "claude-haiku-5-5"
 # Re-runs a request declined by a safety classifier on Anthropic's recommended model
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
@@ -37,9 +39,10 @@ def configured() -> bool:
 
 async def json_call(system: str, content: Union[str, List[Dict[str, Any]]], schema: Dict[str, Any], *,
                     model: str = MODEL, effort: str = "medium", max_tokens: int = 16000,
-                    timeout: float = 240, max_retries: int = 1) -> Dict[str, Any]:
+                    timeout: float = 240, max_retries: int = 1, fallback: bool = True) -> Dict[str, Any]:
     """One request, the answer parsed as JSON. Streamed, so that a long
-    answer on long documents is not cut by the HTTP timeout."""
+    answer on long documents is not cut by the HTTP timeout. fallback=False
+    for models without the server-side fallback (Haiku)."""
     key = os.getenv("ANTHROPIC_API_KEY", "").strip()
     if not key:
         raise ClaudeUnavailable("ANTHROPIC_API_KEY not set")
@@ -53,8 +56,7 @@ async def json_call(system: str, content: Union[str, List[Dict[str, Any]]], sche
             system=system,
             messages=[{"role": "user", "content": content}],
             output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
-            betas=[FALLBACK_BETA],
-            fallbacks="default",
+            **({"betas": [FALLBACK_BETA], "fallbacks": "default"} if fallback else {}),
         ) as stream:
             message = await stream.get_final_message()
     except anthropic.RateLimitError:
