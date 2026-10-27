@@ -135,8 +135,8 @@ export function Reveal({ children, delay = 0, className = '' }: { children: Reac
 }
 
 /** Button with a glow following the cursor (the button itself stays still). */
-export function GlowButton({ children, onClick, variant = 'primary', className = '' }: {
-    children: ReactNode; onClick?: () => void; variant?: 'primary' | 'ghost'; className?: string;
+export function GlowButton({ children, onClick, variant = 'primary', className = '', disabled = false, type = 'button' }: {
+    children: ReactNode; onClick?: () => void; variant?: 'primary' | 'ghost'; className?: string; disabled?: boolean; type?: 'button' | 'submit';
 }) {
     const ref = useRef<HTMLButtonElement>(null);
     const gx = useMotionValue(50), gy = useMotionValue(50);
@@ -150,8 +150,8 @@ export function GlowButton({ children, onClick, variant = 'primary', className =
         ? 'bg-gradient-to-br from-brass-light via-brass to-brass-dark text-canvas shadow-[0_0_0_1px_rgba(227,201,143,0.4),0_8px_30px_-8px_rgba(201,164,92,0.65)] hover:shadow-[0_0_0_1px_rgba(227,201,143,0.75),0_0_48px_0_rgba(201,164,92,0.7)]'
         : 'border border-white/15 bg-white/[0.03] text-ink backdrop-blur hover:border-brass/60 hover:text-brass-light hover:shadow-[0_0_32px_-6px_rgba(201,164,92,0.45)]';
     return (
-        <button ref={ref} type="button" onClick={onClick} onPointerMove={move}
-            className={`group relative inline-flex items-center justify-center gap-2 rounded-full px-7 h-12 font-semibold text-sm transition-[box-shadow,border-color,color] duration-300 ${styles} ${className}`}>
+        <button ref={ref} type={type} onClick={onClick} onPointerMove={move} disabled={disabled}
+            className={`group relative inline-flex items-center justify-center gap-2 rounded-full px-7 h-12 font-semibold text-sm transition-[box-shadow,border-color,color] duration-300 disabled:opacity-50 disabled:pointer-events-none ${styles} ${className}`}>
             <motion.span aria-hidden="true" style={{ background: variant === 'primary' ? glow : ghostGlow }}
                 className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <span className="relative inline-flex items-center gap-2">{children}</span>
@@ -182,5 +182,24 @@ export function TiltCard({ children, className = '' }: { children: ReactNode; cl
             {children}
             <motion.div aria-hidden="true" style={{ background: shine }} className="pointer-events-none absolute inset-0 rounded-[inherit]" />
         </motion.div>
+    );
+}
+
+/** Background of the page heroes: blue and brass glows over a faint grid. */
+export function Backdrop() {
+    return (
+        <>
+            <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_45%_60%_at_80%_20%,rgba(40,120,255,0.18),transparent_70%),radial-gradient(ellipse_55%_50%_at_10%_10%,rgba(201,164,92,0.12),transparent_70%)]" />
+            <div aria-hidden="true" className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]" />
+        </>
+    );
+}
+
+/** Small pill above a page title. */
+export function Eyebrow({ children }: { children: ReactNode }) {
+    return (
+        <p className="inline-flex items-center gap-2 rounded-full border border-brass/30 bg-brass/[0.06] px-4 py-1.5 text-xs sm:text-sm text-brass-light backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-brass-light animate-pulse" /> {children}
+        </p>
     );
 }
