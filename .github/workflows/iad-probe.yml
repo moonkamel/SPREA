@@ -1,4 +1,4 @@
-name: iad probe (one-off)
+name: iad directory (one-off)
 on:
   push:
     branches: [claude/hopeful-fermi-re2vn1]
@@ -6,17 +6,16 @@ on:
 permissions:
   contents: write
 jobs:
-  probe:
+  scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - run: |
-          mkdir out && cd out
-          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36"
-          curl -sS -m 30 -A "$UA" -o robots.txt -w "robots %{http_code}\n" https://www.iadfrance.fr/robots.txt || true
-          curl -sS -m 30 -A "$UA" -o p1.html -w "p1 %{http_code}\n" "https://www.iadfrance.fr/trouver-un-conseiller/pg-lyon_69" || true
-          sleep 2
-          curl -sS -m 30 -A "$UA" -o p2.html -w "p2 %{http_code}\n" "https://www.iadfrance.fr/trouver-un-conseiller/pg-lyon_69?page=2" || true
-          ls -la
-          git init -q && git checkout -q -b iad-probe && git add . && git -c user.name=gh -c user.email=a@b commit -qm probe
+          mkdir out
+          python -u scripts/campaign/iad_directory.py --town pg-lyon_69 --ville Lyon --cp 69000 --out out/iad_lyon.csv
+          cd out && git init -q && git checkout -q -b iad-probe && git add . && git -c user.name=gh -c user.email=a@b commit -qm "iad Lyon"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" iad-probe

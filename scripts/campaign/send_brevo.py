@@ -55,6 +55,18 @@ FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px;
           'Jardin des Plantes, 59000 Lille. Pour ne plus recevoir nos messages, répondez simplement « STOP ».</div>')
 
 
+# Independent advisors of a network: the address is theirs (prenom.nom@domain)
+NETWORKS = {"iadfrance.fr": "mandataires"}
+
+
+def first_name(address: str) -> str:
+    """« laurie-ann.vieilly@iadfrance.fr » -> « Laurie-Ann » for a network advisor, else ""."""
+    local, _, domain = address.strip().lower().partition("@")
+    if domain not in NETWORKS or "." not in local:
+        return ""
+    return "-".join(p[:1].upper() + p[1:] for p in local.split(".")[0].split("-"))
+
+
 def nice(text: str) -> str:
     """« L'IMMOBILIERE DE FACHES » -> « L'Immobiliere de Faches » (accents kept as written)."""
     if any(c.islower() for c in text):
@@ -76,7 +88,8 @@ def numbered(items: List[tuple]) -> str:
     return f'<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px; font-size:15px; line-height:22px; color:#1f2937">{rows}</table>'
 
 
-def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
+def email(step: int, agence: str, ville: str, campaign: str, prenom: str = "") -> Dict[str, str]:
+    """prenom set: an independent advisor of a network (iad...), addressed by first name, not as an agency."""
     a, v = html.escape(agence), html.escape(ville)
     demo = DEMO.format(campaign=campaign)
     if step == 1:
@@ -84,7 +97,8 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
         body = (P.format(f"À {v}, des logements classés <b>F ou G</b> reçoivent chaque mois un <b>nouveau DPE</b>. Un DPE "
                          "récent précède souvent une <b>vente ou une mise en location</b> : ce sont autant de propriétaires "
                          "à contacter <b>avant les autres agences</b>.")
-                + f'<p style="margin:0 0 8px">Nous avons créé <b>SPREA</b> pour les agences comme <b>{a}</b> :</p>'
+                + '<p style="margin:0 0 8px">Nous avons créé <b>SPREA</b> pour '
+                + ('les conseillers indépendants comme vous :</p>' if prenom else f'les agences comme <b>{a}</b> :</p>')
                 + numbered([("Chaque matin, les nouveaux DPE de votre secteur", " sur une carte, adresse par adresse"),
                             ("Un courrier prêt à envoyer", " au propriétaire, en un clic"),
                             ("Un dossier chiffré à lui remettre", " : travaux, aides, valeur avant et après rénovation")])
@@ -108,7 +122,7 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
         body = (P.format("Le calcul est simple : sur une vente à 250 000 €, les honoraires dépassent <b>10 000 € HT</b>. "
                          "L'abonnement SPREA démarre à <b>79 € TTC par mois</b>. Un seul mandat signé grâce à un DPE repéré "
                          "à temps le rembourse <b>plus de dix fois</b>.")
-                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur le secteur de {a}</b> : vous voyez les "
+                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur {'votre secteur' if prenom else 'le secteur de ' + a}</b> : vous voyez les "
                            "propriétaires de vos rues et les immeubles de SCI qui risquent de se vendre, puis vous décidez. "
                            "Répondez simplement avec un créneau.")
                 + BUTTON.format(href=demo, label="Voir la visite guidée (3 minutes) →"))
@@ -118,7 +132,8 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
                 + P.format(f"Si un jour vous voulez voir les <b>nouveaux DPE</b> et les <b>biens à fort potentiel</b> de "
                            f"{v}, la visite guidée reste ici :")
                 + BUTTON.format(href=demo, label="Voir la visite guidée →"))
-    content = (f'<div style="{FONT}">' + P.format("Bonjour,") + body + SIGN_OFF + "</div>" + SIGNATURE + FOOTER)
+    hello = f"Bonjour {html.escape(prenom)}," if prenom else "Bonjour,"
+    content = (f'<div style="{FONT}">' + P.format(hello) + body + SIGN_OFF + "</div>" + SIGNATURE + FOOTER)
     return {"subject": subject, "html": content}
 
 
@@ -202,8 +217,14 @@ def main():
     for kind, row in plan:
         step = int(row["etape"]) + 1 if kind == "relance" else 1
         agence, ville = nice(row["agence"]), nice(row["ville"])
-        campaign = "agences_75" if (row.get("code_postal") or "").startswith("75") or ville.lower() == "paris" else "agences_59"
-        msg = email(step, agence, ville, campaign)
+        prenom = first_name(row["email"])
+        cp = row.get("code_postal") or ""
+        if prenom:
+            # (follow-ups come from the tracking file, which has the town but no postcode)
+            campaign = f"{NETWORKS[row['email'].strip().lower().rpartition('@')[2]]}_{re.sub(r'[^a-z]+', '-', ville.lower())}"
+        else:
+            campaign = "agences_75" if cp.startswith("75") or ville.lower() == "paris" else "agences_59"
+        msg = email(step, agence, ville, campaign, prenom)
         if args.dry_run:
             print(f"[essai] mail {step} -> {row['email']} : {msg['subject']}")
             continue
