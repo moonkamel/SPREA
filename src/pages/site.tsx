@@ -150,6 +150,7 @@ export function SiteFooter({ className = '' }: { className?: string }) {
                     <Link to="/tarifs" className="hover:text-ink">Tarifs</Link>
                     <Link to="/observatoire" className="hover:text-ink">Observatoire</Link>
                     <Link to="/estimation" className="hover:text-ink">Estimation immobilière gratuite</Link>
+                    <Link to="/prix-m2" className="hover:text-ink">Prix m² par commune</Link>
                     <Link to="/cgv" className="hover:text-ink">CGV</Link>
                     <Link to="/mentions-legales" className="hover:text-ink">Mentions légales</Link>
                     <Link to="/confidentialite" className="hover:text-ink">Confidentialité</Link>

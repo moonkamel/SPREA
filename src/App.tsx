@@ -20,6 +20,8 @@ const TeamPage = lazy(() => import('./pages/Team'));
 const JoinPage = lazy(() => import('./pages/Join'));
 const CoproDocsPage = lazy(() => import('./pages/CoproDocs'));
 const EstimationPage = lazy(() => import('./pages/Estimation'));
+const CityPricePage = lazy(() => import('./pages/CityPrice'));
+const CityPriceIndexPage = lazy(() => import('./pages/CityPrice').then(m => ({ default: m.CityPriceIndexPage })));
 import Landing from './views/Landing';
 import Home from './views/Home';
 import Results from './views/Results';
@@ -59,13 +61,17 @@ function Pages() {
         '/rejoindre': <Suspense fallback={null}><JoinPage /></Suspense>,
         '/documents-copro': <Suspense fallback={null}><CoproDocsPage /></Suspense>,
         '/estimation': <Suspense fallback={null}><EstimationPage /></Suspense>,
+        '/prix-m2': <Suspense fallback={null}><CityPriceIndexPage /></Suspense>,
     };
     // Owner page reached from a letter's QR code: /l/<code>
     const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})$/)?.[1];
     // Observatory of one department: /observatoire/<name>-<code> (unknown slug: 404 shown by the page)
     const department = path.match(/^\/observatoire\/([a-z0-9-]+)$/)?.[1];
+    // Price per m2 of one commune: /prix-m2/<name>-<insee>
+    const cityPrice = path.match(/^\/prix-m2\/([a-z0-9-]+-[0-9][0-9ab][0-9]{3})$/)?.[1];
     const page = ownerCode ? <Suspense fallback={null}><OwnerPage code={ownerCode} /></Suspense>
         : department ? <Suspense fallback={null}><ObservatoirePage slug={department} /></Suspense>
+        : cityPrice ? <Suspense fallback={null}><CityPricePage slug={cityPrice} /></Suspense>
         : path === '/' ? null
         : pages[path] ?? <NotFound />;
     return (

@@ -88,7 +88,7 @@ const page = ({ path, title, description, body = '', jsonld = [], noindex = fals
     return path;
 };
 
-const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Visite guidée</a> · <a href="/tarifs">Tarifs</a> · <a href="/estimation">Estimation immobilière gratuite</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
+const nav = `<nav><a href="/">SPREA</a> · <a href="/demo">Visite guidée</a> · <a href="/tarifs">Tarifs</a> · <a href="/estimation">Estimation immobilière gratuite</a> · <a href="/prix-m2">Prix m² par commune</a> · <a href="/observatoire">Observatoire de la valeur verte</a></nav>`;
 const ul = items => `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
 
 // --- Pages ---
@@ -271,6 +271,75 @@ ${poor != null ? `<p>${poor} % des maisons vendues ${esc(where)} étaient class�
     }));
 }
 
+// --- Price per m2 of each commune (scripts/seo/city_prices.py) ---
+
+const prixIndex = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'prix_index.json'), 'utf8'));
+const euro = n => `${int(Math.round(n))} €`;
+const thisYear = new Date().getFullYear();
+if (prixIndex.communes.length) {
+    const byDep = {};
+    for (const r of prixIndex.communes) (byDep[r.d] ||= []).push(r);
+    pages.push(page({
+        path: '/prix-m2',
+        title: 'Prix du m² par commune : prix immobilier de toutes les villes de France | SPREA',
+        description: `Prix au m² des maisons et des appartements dans ${int(prixIndex.communes.length)} communes de France, calculé sur les ventes réelles (DVF) : prix médian, évolution, prix par nombre de pièces.`,
+        jsonld: [BREADCRUMB([['SPREA', '/'], ['Prix m² par commune', '/prix-m2']])],
+        body: `${nav}
+<h1>Prix du m² par commune</h1>
+<p>Le prix médian au m² des maisons et des appartements dans ${int(prixIndex.communes.length)} communes de France, calculé sur les ventes réelles enregistrées par l'administration fiscale (DVF).</p>
+${Object.keys(byDep).sort().map(d => `<h2>${esc(prixIndex.deps[d] || d)} (${d})</h2>${ul(byDep[d].map(r => `<a href="/prix-m2/${r.s}">Prix m² ${esc(r.n)}</a>`))}`).join('\n')}`,
+    }));
+    for (const dep of Object.keys(byDep)) {
+        const file = join(ROOT, 'public', 'prix', `${dep}.json`);
+        let data;
+        try { data = JSON.parse(readFileSync(file, 'utf8')); } catch { continue; }
+        const period = `${data.years[1] ?? data.years[0]}-${data.years[0]}`;
+        for (const c of Object.values(data.communes)) {
+            const apt = c.kinds.appartement, house = c.kinds.maison;
+            const path = `/prix-m2/${c.slug}`;
+            const parent = c.parent ? data.names[c.parent] : null;
+            const head = [apt && `appartements ${euro(apt.m2)}`, house && `maisons ${euro(house.m2)}`].filter(Boolean).join(', ');
+            const evo = f => {
+                const ys = Object.keys(f.years).sort();
+                if (ys.length < 2) return '';
+                const a = f.years[ys[0]].m2, b = f.years[ys[ys.length - 1]].m2, pctv = ((b - a) / a) * 100;
+                return ` Entre ${ys[0]} et ${ys[ys.length - 1]}, le prix médian au m² est passé de ${euro(a)} à ${euro(b)} (${pctv > 0 ? '+' : ''}${pctv.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %).`;
+            };
+            const kindText = (f, what) => f ? `<p><strong>${what}</strong> : ${euro(f.m2)} le m² en prix médian, la moitié des ventes entre ${euro(f.q25)} et ${euro(f.q75)} le m², sur ${int(f.n)} ventes. Bien type : ${f.surface} m² vendu ${euro(f.price)}.${evo(f)}</p>` : '';
+            const rooms = f => f && Object.keys(f.rooms).length ? ul(Object.entries(f.rooms).map(([r, v]) => `${r === '5' ? '5 pièces et plus' : `${r} pièce${r === '1' ? '' : 's'}`} : ${euro(v.price)} (${v.surface} m², ${euro(v.m2)}/m²)`)) : '';
+            const faq = [
+                [`Quel est le prix du m² à ${c.name} ?`, `D'après ${int(c.sales)} ventes réelles (${period}), le prix médian au m² à ${c.name} est de ${head}.`],
+                apt && [`Combien coûte un appartement à ${c.name} ?`, `Un appartement type de ${apt.surface} m² s'y vend autour de ${euro(apt.price)}.`],
+                house && [`Combien coûte une maison à ${c.name} ?`, `Une maison type de ${house.surface} m² s'y vend autour de ${euro(house.price)}.`],
+                [`Comment estimer mon bien à ${c.name} ?`, `L'estimation gratuite de SPREA part des ventes comparables autour de votre adresse et tient compte de l'étiquette énergie, de l'état, de l'étage et des atouts du bien.`],
+            ].filter(Boolean);
+            const near = c.near.filter(x => data.names[x]).map(x => `<a href="/prix-m2/${data.names[x].slug}">Prix m² ${esc(data.names[x].name)}</a>`);
+            const kids = (c.children || []).filter(x => data.names[x]).map(x => `<a href="/prix-m2/${data.names[x].slug}">Prix m² ${esc(data.names[x].name)}</a>`);
+            pages.push(page({
+                path,
+                title: `Prix m² ${c.name} : prix immobilier au m² ${thisYear} (maisons, appartements) | SPREA`,
+                description: `Prix au m² à ${c.name} (${c.dep}) : ${head} le m², d'après ${int(c.sales)} ventes réelles (DVF ${period}). Évolution, prix par nombre de pièces et estimation gratuite.`,
+                jsonld: [
+                    BREADCRUMB([['SPREA', '/'], ['Prix m² par commune', '/prix-m2'], ...(parent ? [[parent.name, `/prix-m2/${parent.slug}`]] : []), [c.name, path]]),
+                    { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+                ],
+                body: `${nav}
+<p><a href="/prix-m2">Prix m² par commune</a> › ${esc(data.depName)} (${c.dep})${parent ? ` › <a href="/prix-m2/${parent.slug}">${esc(parent.name)}</a>` : ''}</p>
+<h1>Prix m² à ${esc(c.name)}</h1>
+<p>Prix médian au m² des ventes réellement enregistrées à ${esc(c.name)} (${period}), d'après la base DVF de la DGFiP : ${int(c.sales)} ventes de maisons et d'appartements.</p>
+${kindText(apt, 'Appartements')}${kindText(house, 'Maisons')}
+${apt && Object.keys(apt.rooms).length ? `<h2>Prix d'un appartement selon le nombre de pièces</h2>${rooms(apt)}` : ''}
+${house && Object.keys(house.rooms).length ? `<h2>Prix d'une maison selon le nombre de pièces</h2>${rooms(house)}` : ''}
+<p><a href="/estimation?commune=${encodeURIComponent(c.name)}">Estimer gratuitement mon bien à ${esc(c.name)}</a></p>
+${kids.length ? `<h2>Prix m² par arrondissement de ${esc(c.name)}</h2>${ul(kids)}` : ''}
+${near.length ? `<h2>${parent ? `Autres arrondissements de ${esc(parent.name)}` : `Prix m² autour de ${esc(c.name)}`}</h2>${ul(near)}` : ''}
+<h2>Questions fréquentes</h2>
+${faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}`,
+            }));
+        }
+    }
+}
+
 // Legal pages: metadata only, the app renders the content
 pages.push(page({ path: '/cgv', title: 'Conditions générales de vente · SPREA' }));
 pages.push(page({ path: '/mentions-legales', title: 'Mentions légales · SPREA' }));
@@ -278,7 +347,7 @@ pages.push(page({ path: '/confidentialite', title: 'Politique de confidentialit�
 
 // --- Sitemap and robots ---
 
-const priority = p => (p === '/' ? '1.0' : ['/demo', '/tarifs', '/observatoire'].includes(p) ? '0.9' : p.startsWith('/observatoire/') ? '0.7' : '0.3');
+const priority = p => (p === '/' ? '1.0' : ['/demo', '/tarifs', '/observatoire'].includes(p) ? '0.9' : p.startsWith('/observatoire/') ? '0.7' : p === '/estimation' || p === '/prix-m2' ? '0.9' : p.startsWith('/prix-m2/') ? '0.6' : '0.3');
 writeFileSync(join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages.map(p => `  <url><loc>${SITE}${p}</loc><lastmod>${obs.updated}</lastmod><priority>${priority(p)}</priority></url>`).join('\n')}
