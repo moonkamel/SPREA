@@ -479,10 +479,11 @@ export default function CommandPage() {
                 {/* Main */}
                 <section className="relative flex-1 min-h-0 overflow-hidden">
                     <div ref={setMapEl} className={`sprea-map cmd-map absolute inset-0 ${view === 'suivi' ? 'invisible' : ''}`} />
-                    {view !== 'suivi' && <div className="absolute inset-0 pointer-events-none cmd-vignette" />}
+                    {/* Above the map tiles (Leaflet panes: tiles 200, shapes 400, markers 600) */}
+                    {view !== 'suivi' && <div className="absolute inset-0 z-[405] pointer-events-none cmd-vignette" />}
 
                     {view === 'radar' && radar && radar.r > 20 && (
-                        <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" aria-hidden>
+                        <svg className="absolute inset-0 z-[410] pointer-events-none" width="100%" height="100%" aria-hidden>
                             <g transform={`translate(${radar.x} ${radar.y})`}>
                                 {[1, 0.66, 0.33].map((k, i) => (
                                     <circle key={k} r={radar.r * k} fill="none" stroke="#C9A45C" strokeOpacity={i ? 0.16 : 0.5} strokeWidth={i ? 1 : 1.6} strokeDasharray={i ? undefined : '6 6'} />
