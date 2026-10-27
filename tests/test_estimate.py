@@ -179,7 +179,16 @@ def test_lead_goes_to_the_subscriber_whose_zone_covers_the_address(client):
     assert client.patch(f"/api/estimate-leads/{row['id']}", json={"status": "closed"}).status_code == 404
 
 
-def test_lead_without_covering_zone_is_kept_unassigned(client):
+def test_lead_without_covering_zone_is_kept_unassigned_and_sent_to_sprea(client, monkeypatch):
+    monkeypatch.delenv("LEADS_TO", raising=False)
+    monkeypatch.delenv("QUOTES_TO", raising=False)
     r = client.post("/api/estimate/lead", json=lead(email="marie@exemple.fr", phone=None))
     assert r.json() == {"received": True, "assigned": False}
     assert client.store.leads[0]["assigned_user_id"] is None and client.sent == []
+    # With an address for SPREA, the unassigned request is emailed there, with its details
+    monkeypatch.setenv("QUOTES_TO", "contact@sprea.app")
+    client.post("/api/estimate/lead", json=lead(estimate={**BASE, "dpe": "E", "rooms": 3}))
+    mail = client.sent[-1]
+    assert mail["to"] == "contact@sprea.app" and "sans conseiller" in mail["subject"]
+    assert "06 12 34 56 78" in mail["text"] and "DPE E" in mail["text"] and "3 pièces" in mail["text"]
+    assert "openstreetmap.org" in mail["text"] and "entre 170" in mail["text"]
