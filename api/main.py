@@ -56,6 +56,7 @@ try:
     from api.alerts import router as alerts_router
     from api.valuation import router as valuation_router
     from api.estimate import router as estimate_router
+    from api.cadastre import router as cadastre_router
     from api.observatoire import router as observatoire_router
     from api.quotes import router as quotes_router
     from api.teams import router as teams_router
@@ -72,6 +73,7 @@ except ImportError:
     from alerts import router as alerts_router
     from valuation import router as valuation_router
     from estimate import router as estimate_router
+    from cadastre import router as cadastre_router
     from observatoire import router as observatoire_router
     from quotes import router as quotes_router
     from teams import router as teams_router
@@ -197,6 +199,7 @@ app.include_router(contacts_router)
 app.include_router(alerts_router)
 app.include_router(valuation_router)
 app.include_router(estimate_router)
+app.include_router(cadastre_router)
 app.include_router(observatoire_router)
 app.include_router(quotes_router)
 app.include_router(teams_router)
