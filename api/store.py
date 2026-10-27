@@ -170,6 +170,18 @@ class SupabaseStore:
 
     # --- DPE alerts ---
 
+    async def create_estimate_lead(self, row: Dict[str, Any]) -> Dict[str, Any]:
+        rows = await self._request("POST", "estimate_leads", json=row, prefer="return=representation")
+        return rows[0] if rows else row
+
+    async def list_estimate_leads(self, user_id: str) -> List[Dict[str, Any]]:
+        return await self._request("GET", "estimate_leads", params={
+            "assigned_user_id": f"eq.{user_id}", "select": "*", "order": "created_at.desc", "limit": "500"})
+
+    async def update_estimate_lead(self, user_id: str, lead_id: str, fields: Dict[str, Any]) -> List[Dict[str, Any]]:
+        return await self._request("PATCH", "estimate_leads", params={"id": f"eq.{lead_id}", "assigned_user_id": f"eq.{user_id}"},
+                                   json=fields, prefer="return=representation")
+
     async def list_zones(self, user_id: str) -> List[Dict[str, Any]]:
         return await self._request("GET", "alert_zones", params={
             "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.asc"})

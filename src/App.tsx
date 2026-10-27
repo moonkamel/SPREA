@@ -19,6 +19,7 @@ const DemoPage = lazy(() => import('./pages/Demo'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const JoinPage = lazy(() => import('./pages/Join'));
 const CoproDocsPage = lazy(() => import('./pages/CoproDocs'));
+const EstimationPage = lazy(() => import('./pages/Estimation'));
 import Landing from './views/Landing';
 import Home from './views/Home';
 import Results from './views/Results';
@@ -57,6 +58,7 @@ function Pages() {
         '/equipe': <Suspense fallback={null}><TeamPage /></Suspense>,
         '/rejoindre': <Suspense fallback={null}><JoinPage /></Suspense>,
         '/documents-copro': <Suspense fallback={null}><CoproDocsPage /></Suspense>,
+        '/estimation': <Suspense fallback={null}><EstimationPage /></Suspense>,
     };
     // Owner page reached from a letter's QR code: /l/<code>
     const ownerCode = path.match(/^\/l\/([A-Za-z0-9]{8})$/)?.[1];

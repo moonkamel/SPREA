@@ -103,12 +103,20 @@ export function AgentPageForm({ initial, onSaved }: { initial: AgentPageData; on
     );
 }
 
+interface EstimateLead {
+    id: string; created_at: string; consent_at: string; status: Lead['status']; name: string; phone?: string | null; email?: string | null;
+    address: string; city?: string | null; kind: 'appartement' | 'maison'; surface: number; value?: number | null; project: string;
+    details?: { rooms?: number | null; dpe?: string | null; condition?: string };
+}
+const PROJECT_LABELS: Record<string, string> = { vendre_3m: 'Vendre sous 3 mois', vendre_12m: "Vendre dans l'année", reflexion: 'En réflexion', curiosite: 'Simple curiosité' };
+
 export default function ContactsPage() {
     const { session, me, config, openLogin, authedFetch } = useAccount();
     useSeo({ title: 'Contacts · SPREA', noindex: true });
     const [page, setPage] = useState<AgentPageData>({});
     const [leads, setLeads] = useState<Lead[]>([]);
     const [links, setLinks] = useState<LinkStat[]>([]);
+    const [estimates, setEstimates] = useState<EstimateLead[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -116,8 +124,9 @@ export default function ContactsPage() {
         if (!session) { setLoading(false); return; }
         setLoading(true);
         try {
-            const [p, l] = await Promise.all([authedFetch('/api/agent-page'), authedFetch('/api/leads')]);
+            const [p, l, e] = await Promise.all([authedFetch('/api/agent-page'), authedFetch('/api/leads'), authedFetch('/api/estimate-leads')]);
             if (p.ok) setPage(await p.json());
+            if (e.ok) setEstimates((await e.json()).leads);
             if (l.ok) {
                 const data = await l.json();
                 setLeads(data.leads);
@@ -145,7 +154,15 @@ export default function ContactsPage() {
         if (res.ok) setLeads(ls => ls.filter(l => l.id !== lead.id));
     };
 
+    const setEstimateStatus = async (lead: EstimateLead, status: string) => {
+        const res = await authedFetch(`/api/estimate-leads/${lead.id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }),
+        });
+        if (res.ok) setEstimates(ls => ls.map(l => (l.id === lead.id ? { ...l, status: status as Lead['status'] } : l)));
+    };
+
     const newCount = leads.filter(l => l.status === 'new').length;
+    const newEstimates = estimates.filter(l => l.status === 'new').length;
 
     return (
         <div className="min-h-screen flex flex-col bg-canvas">
@@ -213,6 +230,45 @@ export default function ContactsPage() {
                             <p className="mt-4 text-xs text-faint">
                                 Vous êtes responsable de ces données (CGV, article 14). Supprimez une demande dès qu'elle n'est plus utile, et au plus tard 3 ans après le dernier contact.
                             </p>
+                        </Card>
+
+                        <Card className="p-5 sm:p-6">
+                            <h2 className="text-xl text-ink">Vendeurs de votre secteur {newEstimates > 0 && <span className="ml-2 rounded-full bg-brass px-2 py-0.5 text-xs text-canvas">{newEstimates} à rappeler</span>}</h2>
+                            <p className="mt-1 text-sm text-muted">
+                                Les propriétaires qui ont estimé leur bien sur <Link to="/estimation" className="underline text-brass-light">sprea.app/estimation</Link> dans
+                                l'une de vos zones d'alerte et demandé à être rappelés par un conseiller du secteur.
+                            </p>
+                            {estimates.length === 0 ? (
+                                <p className="mt-3 text-sm text-muted">
+                                    Aucune demande pour l'instant. Les demandes arrivent dans les communes couvertes par vos{' '}
+                                    <Link to="/alertes" className="underline text-brass-light">zones d'alerte</Link>.
+                                </p>
+                            ) : (
+                                <ul className="mt-4 divide-y divide-line/70">
+                                    {estimates.map(l => (
+                                        <li key={l.id} className="py-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="text-ink font-medium">{l.name} <span className="ml-2 rounded-full border border-brass/40 px-2 py-0.5 text-xs text-brass-light">{PROJECT_LABELS[l.project] || l.project}</span></p>
+                                                <p className="text-sm text-muted">{l.address} · {date(l.created_at)}</p>
+                                                <p className="text-sm text-ink-soft">
+                                                    {l.kind === 'maison' ? 'Maison' : 'Appartement'} de {Math.round(l.surface)} m²
+                                                    {l.details?.rooms ? ` · ${l.details.rooms} p.` : ''}{l.details?.dpe ? ` · DPE ${l.details.dpe}` : ''}
+                                                    {l.value ? ` · estimé ${l.value.toLocaleString('fr-FR')} €` : ''}
+                                                </p>
+                                                <div className="mt-1 flex flex-wrap gap-4 text-sm">
+                                                    {l.phone && <a href={`tel:${l.phone.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-1.5 text-brass-light"><Phone size={14} />{l.phone}</a>}
+                                                    {l.email && <a href={`mailto:${l.email}`} className="flex items-center gap-1.5 text-brass-light"><Mail size={14} />{l.email}</a>}
+                                                </div>
+                                                <p className="mt-1 text-xs text-faint">Consentement donné le {date(l.consent_at)}</p>
+                                            </div>
+                                            <select value={l.status} onChange={e => setEstimateStatus(l, e.target.value)} aria-label="Statut"
+                                                className="h-9 rounded-lg border border-line bg-raised px-2 text-sm text-ink shrink-0">
+                                                {STATUS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                            </select>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </Card>
 
                         <Card className="p-5 sm:p-6">
