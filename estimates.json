@@ -1,0 +1,194 @@
+[
+ {
+  "address": "10 Rue des Stations 59000 Lille",
+  "kind": "appartement",
+  "surface": 62,
+  "dpe": "D",
+  "result": {
+   "value": 249000,
+   "low": 232000,
+   "high": 267000,
+   "price_m2": 4022,
+   "market_m2": 4081,
+   "dpe_effect": -1.5,
+   "reliability": {
+    "score": 5,
+    "label": "Très élevée"
+   },
+   "trend": {
+    "pct": -3.2,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 234,
+   "scope": "à moins de 500 m",
+   "period": "2024-2025"
+  },
+  "dpe_found": [
+   {
+    "kind": "maison",
+    "surface": 117,
+    "dpe": "D",
+    "year": null,
+    "date": "2025-07-28"
+   }
+  ]
+ },
+ {
+  "address": "25 Rue de Rivoli 75004 Paris",
+  "kind": "appartement",
+  "surface": 45,
+  "dpe": "E",
+  "result": {
+   "value": 569000,
+   "low": 528000,
+   "high": 609000,
+   "price_m2": 12634,
+   "market_m2": 12723,
+   "dpe_effect": -0.7,
+   "reliability": {
+    "score": 5,
+    "label": "Très élevée"
+   },
+   "trend": {
+    "pct": 2.7,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 260,
+   "scope": "à moins de 500 m",
+   "period": "2024-2025"
+  },
+  "dpe_found": []
+ },
+ {
+  "address": "Rue de la République 69002 Lyon",
+  "kind": "appartement",
+  "surface": 80,
+  "dpe": "C",
+  "result": {
+   "value": 412000,
+   "low": 381000,
+   "high": 444000,
+   "price_m2": 5151,
+   "market_m2": 4991,
+   "dpe_effect": 3.2,
+   "reliability": {
+    "score": 5,
+    "label": "Très élevée"
+   },
+   "trend": {
+    "pct": 0.4,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 105,
+   "scope": "à moins de 500 m",
+   "period": "2024-2025"
+  },
+  "dpe_found": [
+   {
+    "kind": "appartement",
+    "surface": 51,
+    "dpe": "D",
+    "year": 1900,
+    "date": "2026-08-07"
+   },
+   {
+    "kind": "appartement",
+    "surface": 98,
+    "dpe": "C",
+    "year": null,
+    "date": "2026-07-23"
+   },
+   {
+    "kind": "appartement",
+    "surface": 24,
+    "dpe": "E",
+    "year": null,
+    "date": "2026-06-29"
+   }
+  ]
+ },
+ {
+  "address": "20 Cours de l'Intendance 33000 Bordeaux",
+  "kind": "appartement",
+  "surface": 70,
+  "dpe": null,
+  "result": {
+   "value": 342000,
+   "low": 313000,
+   "high": 370000,
+   "price_m2": 4879,
+   "market_m2": 4879,
+   "dpe_effect": null,
+   "reliability": {
+    "score": 4,
+    "label": "Élevée"
+   },
+   "trend": {
+    "pct": -2.7,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 220,
+   "scope": "à moins de 500 m",
+   "period": "2024-2025"
+  },
+  "dpe_found": []
+ },
+ {
+  "address": "1 Rue de l'Église 59780 Baisieux",
+  "kind": "maison",
+  "surface": 110,
+  "dpe": "E",
+  "result": {
+   "value": 274000,
+   "low": 244000,
+   "high": 305000,
+   "price_m2": 2493,
+   "market_m2": 2639,
+   "dpe_effect": -5.5,
+   "reliability": {
+    "score": 5,
+    "label": "Très élevée"
+   },
+   "trend": {
+    "pct": 1.1,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 58,
+   "scope": "à moins de 500 m",
+   "period": "2022-2025"
+  },
+  "dpe_found": []
+ },
+ {
+  "address": "Allee Jean Marie Couturier 23200 Aubusson",
+  "kind": "maison",
+  "surface": 95,
+  "dpe": "F",
+  "result": {
+   "value": 65500,
+   "low": 55500,
+   "high": 75000,
+   "price_m2": 688,
+   "market_m2": 713,
+   "dpe_effect": -3.5,
+   "reliability": {
+    "score": 3,
+    "label": "Bonne"
+   },
+   "trend": {
+    "pct": -0.2,
+    "from": "2024T4",
+    "to": "2025T4"
+   },
+   "sales": 27,
+   "scope": "à moins de 500 m",
+   "period": "2022-2025"
+  },
+  "dpe_found": []
+ }
+]
