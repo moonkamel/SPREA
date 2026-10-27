@@ -1,56 +1,119 @@
-﻿agence;ville;email;email_type;source_url;adresse;code_postal;siren;date_creation
-QUADRA IMMOBILIER D'ENTREPRISE;BONDUES;contact@quadra.immo;contact général;https://quadra.immo/mentions-legales/;23 PARC DE L'AERODROME;59910;938077468;2024-11-20
-OVALIE IMMO;TOURCOING;agence.ovalie.immo@gmail.com;contact général;https://quoideneuf-ici.com/agence/ovalieimmo/;104 RUE DE LILLE;59200;932516339;2024-09-09
-MC IMMOBILIER;LA BASSEE;agence@mcimmobilier5962.fr;contact général;https://www.mcimmobilier5962.fr/;7 RUE D'ESTAIRES;59480;931029797;2024-08-19
-L'IMMOBILIERE DE FACHES;FACHES-THUMESNIL;contact@limmobilieredefaches.com;contact général;https://www.limmobilieredefaches.com/politique-de-confidentialite,121;32 B RUE EDOUARD VAILLANT;59155;931353932;2024-08-01
-L'IMMOBILIERE DE LA DEULE;ANNŒULLIN;contact@immodeladeule.fr;contact général;https://immodeladeule.fr/;21 RUE PIERRE OGEE;59112;931430540;2024-07-25
-IMMOCLEF;LA MADELEINE;thais.mantel@immoclef.fr;contact général;https://www.immoclef.fr/contact.html;78 RUE DU PRESIDENT GEORGES POMPIDOU;59110;931535082;2024-07-25
-BRESSAN IMMOBILIER;HEM;agence@bressan-immobilier.fr;contact général;https://www.bressan-immobilier.fr/;6 PLACE DE LA REPUBLIQUE;59510;930916614;2024-07-10
-MAES IMMOBILIER;WAMBRECHIES;agence@maesimmobilier.fr;contact général;https://www.maesimmobilier.fr/;74 B RUE DE QUESNOY;59118;929834489;2024-07-01
-NEXJA;QUESNOY-SUR-DEULE;contactnexja@gmail.com;contact général;https://www.nexja.fr/content/7/qui-sommes-nous.html;51 RUE DE LA PREVOTE;59890;924783095;2024-03-01
-SIGNATURESPRIVEES;LA MADELEINE;contact@signaturesprivees.com;contact général;https://www.signaturesprivees.com/contact;81 RUE DU PRE CATELAN;59110;981517865;2023-11-10
-L'IMMOBILIERE DE FOURNES;FOURNES-EN-WEPPES;contact@limmobilieredefournes.fr;contact général;https://limmobilieredefournes.fr/fr/;1102 RUE FAIDHERBE;59134;979628385;2023-09-18
-HELENE LOUIS IMMOBILIER;SANTES;contact@helene-louis-immobilier.com;contact général;https://www.helene-louis-immobilier.com/contact;54 RUE DU MARECHAL FOCH;59211;979577038;2023-09-14
-VASTIMMO;TOURCOING;agence@vastimmo.fr;contact général;https://www.vastimmo.fr/politique-de-confidentialite,121;178 RUE NATIONALE;59200;953707478;2023-07-01
-ILO IMMO - GAELLE LOISON;ERQUINGHEM-LYS;contact@ilo-immo.com;contact général;https://www.ilo-immo.com/agences/erquinghem-lys/2;1400 RUE D'ARMENTIERES;59193;921997920;2022-11-30
-LES DENICHEURS;LILLE;warren.lesdenicheurs@gmail.com;contact général;https://www.mpi-immo.com/agence-immobiliere-aniche.html;51 BOULEVARD DE STRASBOURG;59000;922206032;2022-11-02
-BONTE IMMO;MOUVAUX;contact@bonteimmo.com;contact général;https://bonteimmo.com/fr/;2 BOULEVARD DE LA MARNE;59420;919703736;2022-09-23
-NBBS - AGENCE IMMOBILIERE;CROIX;contact@nbbs-immobilier.fr;contact général;https://nbbs-immobilier.fr/contact/;79 RUE DE LA GARE;59170;918826272;2022-08-23
-SERENITY IMMOBILIER;LOOS;reseau.serenity@gmail.com;contact général;https://www.serenityimmobilier.fr/pourquoi-nous-choisir,108;92 RUE DU MARECHAL FOCH;59120;915329494;2022-07-01
-EPIM;SAINT-ANDRE-LEZ-LILLE;contact@epim-immobilier.fr;contact général;https://www.epim-immobilier.fr/;12 RUE DE L'EGLISE;59350;914187000;2022-05-30
-AB TRANSACTION;LILLE;contact@ab-lille.fr;contact général;https://www.ab-lille.fr/page/nous-contacter-fr_18.htm;157 RUE LEON GAMBETTA (LILLE);59000;914881594;2022-05-23
-LA CENSE IMMOBILIER;CHERENG;chereng@immo-lacense.com;contact général;https://www.immo-lacense.com/catalog/contact_us.php;121 ROUTE NATIONALE;59152;913657664;2022-05-16
-VDOUBLEV IMMOBILIER;LILLE;contact@vdoublev.com;contact général;https://www.vdoublev.com/;339 RUE LEON GAMBETTA;59000;913137659;2022-04-13
-LES NOUVELLES PEPITES;CROIX;lesnouvellespepites@gmail.com;contact général;https://www.lesnouvellespepitesimmo.fr/recrutement-conseiller-immobilier-lille,120;117 RUE JEAN JAURES;59170;910471010;2022-02-01
-EKIMO;HEM;contact.ekimo@gmail.com;contact général;https://ekimo-immobilier.com/recrutement-ekimo-immobilier/;166 RUE DE LA LIONDERIE;59510;895113702;2021-02-24
-NORCAB;BEAUCAMPS-LIGNY;contact@norcab.fr;contact général;https://www.norcab.fr/;42 RUE DU BRULLE;59134;894269638;2021-02-15
-PIERRES DU NORD IMMOBILIER;MARCQ-EN-BARŒUL;contact@pierresdunordimmobilier.fr;contact général;https://www.pierresdunordimmobilier.fr/;165 AVENUE DE LA MARNE;59700;892152901;2020-12-15
-DEHIBA IMMOBILIER LILLE;LILLE;contact@dehiba-immobilier.fr;contact général;https://dehiba-immobilier.fr/acheter-bien-lille/;36 FACADE DE L'ESPLANADE;59800;885120071;2020-07-08
-CROIX IMMO;CROIX;david.cabusat@croix-immobilier.fr;responsable ventes;https://www.croix-immobilier.fr/;3 RUE DU PROFESSEUR LANGEVIN;59170;849034244;2019-05-15
-LOGEHOME;MARCQ-EN-BARŒUL;contact@logehome.fr;contact général;https://www.logehome.fr/toutes-nos-maisons-en-vente-a-marcq-en-baroeul-et-ses-environs;298 BOULEVARD CLEMENCEAU;59700;842966509;2018-09-21
-MA1930;TOURCOING;contact@ma1930.com;contact général;https://ma1930.com/lagence/;80 RUE SAINT BLAISE;59200;842456014;2018-09-04
-JACQUEMARS IMMOBILIER;LILLE;remi.rembauville@jacquemarsimmobilier.fr;contact général;https://www.jacquemarsimmobilier.fr/;61 RUE JACQUEMARS GIELEE;59800;839430493;2018-04-17
-PRECISION PATRIMOINE;WAMBRECHIES;contact@precision-patrimoine.com;contact général;https://precision-patrimoine.com/mentions-legales/;150 AVENUE DE L'ESPACE;59118;832454490;2017-10-03
-LACOMBLEZ IMMOBILIER;LILLE;contact@lacomblezimmobilier.com;contact général;https://www.lacomblezimmobilier.com/;74 B BOULEVARD MONTEBELLO;59000;832421382;2017-10-01
-DIVIDOM NORD DE FRANCE;LILLE;hello@dividom.com;contact général;https://www.dividom.com/contact;207 AVENUE WILLY BRANDT;59777;831325394;2017-07-21
-PROJECIA;WATTRELOS;contact@projecia.fr;contact général;https://projecia.fr/mentions_legales/;130 RUE DES TROIS PIERRES;59150;830894119;2017-07-10
-VACHERAND IMMOBILIER;LILLE;contact-lille@vacherand.fr;contact général;https://www.vacherand.fr/mentions-legales;18 AVENUE DU PEUPLE BELGE;59800;829807635;2017-06-01
-CENTAURE IMMOBILIER;MARQUETTE-LEZ-LILLE;contact@centaureimmo.fr;contact général;https://www.centaureimmo.fr/fr/politique-de-confidentialite,121;9 AVENUE INDUSTRIELLE;59520;828074203;2017-03-01
-KUB;VILLENEUVE-D'ASCQ;contact@kubpatrimoine.fr;contact général;https://kubpatrimoine.fr/;119 RUE LA FONTAINE;59650;824413686;2017-01-03
-IMMOBILIERE DE RONCQ;RONCQ;immobilierederoncq@gmail.com;contact général;https://www.immobilierederoncq.com/content/2/qui-sommes.html;465 B RUE DE LILLE;59223;818999211;2016-01-30
-SERENISIMMO;LILLE;contact@serenisimmo.fr;contact général;https://www.serenisimmo.fr/;122 RUE NATIONALE;59000;812100691;2015-07-01
-RE/MAX METROPOLE;LILLE;immobilier.leroy@gmail.com;contact général;https://www.immoregion.fr/agence-immobiliere/leroy-immo/hellemmes/233849;343 RUE PIERRE LEGRAND;59800;810156414;2015-03-10
-S.B.I;MARCQ-EN-BARŒUL;contact@stephanie-bossaert-immobilier.fr;contact général;https://www.stephanie-bossaert-immobilier.fr/catalog/contact_us.php;101 RUE DE LA RIANDERIE;59700;807476478;2014-10-13
-CAZE;WAMBRECHIES;contact@groupecaze.com;contact général;https://groupecaze.com/mentions-legales/;99 RUE DE L'UNION;59118;804623346;2014-09-11
-AGENCE DE LA MADELEINE;LA MADELEINE;contact@agencedelamadeleine.com;contact général;https://www.agencedelamadeleine.com/;16 RUE DU GENERAL DE GAULLE;59110;804677284;2014-09-01
-CABINET GLV IMMOBILIER;LILLE;contact@glv-immobilier.fr;contact général;https://www.glv-immobilier.fr/catalog/contact_us.php?form=1;118 RUE DE SOLFERINO;59000;800393977;2014-01-01
-SANDEVOIR;ROUBAIX;contact@cabinet-sandevoir.com;contact général;https://www.cabinet-sandevoir.com/;12 GRAND PLACE;59100;798005575;2013-11-01
-EXPERT IMMOBILIER;LILLE;contact@l-expertise.com;contact général;https://www.l-expertise.com/contact/;83 RUE JACQUEMARS GIELEE;59800;797919834;2013-10-16
-LITTLE SUITE;LILLE;contact@littlesuite.fr;contact général;https://www.littlesuite.fr/;19 RUE DE LA BARRE;59800;751016148;2012-05-01
-MAVIMMOBILIER;BONDUES;contact@mavimmobilier.fr;contact général;https://www.mavimmobilier.fr/;1 RUE DU BOSQUIEL;59910;537948531;2012-01-01
-AXONOR;LILLE;contact@axonor-immo.fr;contact général;https://www.axonor-immo.fr/;102 RUE PIERRE LEGRAND;59800;538758624;2012-01-01
-ORPI FOURNES EN WEPPES;FOURNES-EN-WEPPES;conseil.transaction.immo@orpi.com;service ventes;https://www.orpi.com/agences-immobilieres/recherche/;2000 RUE FAIDHERBE;59134;537579781;2011-11-01
-ABITA;LILLE;abitaimmolille@gmail.com;contact général;https://abitaimmolille.odoo.com/;25 RUE DU FAISAN;59800;534902572;2011-08-03
-BEFFROI PATRIMOINE;LILLE;contact@beffroipatrimoine.fr;contact général;https://www.beffroipatrimoine.fr/mentions-legales/;679 AVENUE DE LA REPUBLIQUE (LILLE);59800;531468445;2011-03-29
-ITINERAIRE IMMOBILIER;LILLE;contact@itineraireimmobilier.com;contact général;https://www.itineraireimmobilier.com/;50 RUE ALPHONSE LEROY;59800;524328820;2010-09-01
-LEMAIRE BRIFFAULT IMMOBILIER;LILLE;agence@lemairebriffault-immobilier.fr;contact général;https://www.lemairebriffault-immobilier.fr/politique-de-confidentialite,121;84 BOULEVARD DE LA LIBERTE;59800;524394780;2010-09-01
+﻿agence;ville;email;email_type;source_url;adresse;code_postal;siren;date_creation;source
+QUADRA IMMOBILIER D'ENTREPRISE;BONDUES;contact@quadra.immo;contact général;https://quadra.immo/mentions-legales/;23 PARC DE L'AERODROME;59910;938077468;2024-11-20;Sirene + site de l'agence
+OVALIE IMMO;TOURCOING;agence.ovalie.immo@gmail.com;contact général;https://quoideneuf-ici.com/agence/ovalieimmo/;104 RUE DE LILLE;59200;932516339;2024-09-09;Sirene + site de l'agence
+MC IMMOBILIER;LA BASSEE;agence@mcimmobilier5962.fr;contact général;https://www.mcimmobilier5962.fr/;7 RUE D'ESTAIRES;59480;931029797;2024-08-19;Sirene + site de l'agence
+L'IMMOBILIERE DE FACHES;FACHES-THUMESNIL;contact@limmobilieredefaches.com;contact général;https://www.limmobilieredefaches.com/politique-de-confidentialite,121;32 B RUE EDOUARD VAILLANT;59155;931353932;2024-08-01;Sirene + site de l'agence
+L'IMMOBILIERE DE LA DEULE;ANNŒULLIN;contact@immodeladeule.fr;contact général;https://immodeladeule.fr/;21 RUE PIERRE OGEE;59112;931430540;2024-07-25;Sirene + site de l'agence
+IMMOCLEF;LA MADELEINE;thais.mantel@immoclef.fr;contact général;https://www.immoclef.fr/contact.html;78 RUE DU PRESIDENT GEORGES POMPIDOU;59110;931535082;2024-07-25;Sirene + site de l'agence
+BRESSAN IMMOBILIER;HEM;agence@bressan-immobilier.fr;contact général;https://www.bressan-immobilier.fr/;6 PLACE DE LA REPUBLIQUE;59510;930916614;2024-07-10;Sirene + site de l'agence
+MAES IMMOBILIER;WAMBRECHIES;agence@maesimmobilier.fr;contact général;https://www.maesimmobilier.fr/;74 B RUE DE QUESNOY;59118;929834489;2024-07-01;Sirene + site de l'agence
+NEXJA;QUESNOY-SUR-DEULE;contactnexja@gmail.com;contact général;https://www.nexja.fr/content/7/qui-sommes-nous.html;51 RUE DE LA PREVOTE;59890;924783095;2024-03-01;Sirene + site de l'agence
+SIGNATURESPRIVEES;LA MADELEINE;contact@signaturesprivees.com;contact général;https://www.signaturesprivees.com/contact;81 RUE DU PRE CATELAN;59110;981517865;2023-11-10;Sirene + site de l'agence
+L'IMMOBILIERE DE FOURNES;FOURNES-EN-WEPPES;contact@limmobilieredefournes.fr;contact général;https://limmobilieredefournes.fr/fr/;1102 RUE FAIDHERBE;59134;979628385;2023-09-18;Sirene + site de l'agence
+HELENE LOUIS IMMOBILIER;SANTES;contact@helene-louis-immobilier.com;contact général;https://www.helene-louis-immobilier.com/contact;54 RUE DU MARECHAL FOCH;59211;979577038;2023-09-14;Sirene + site de l'agence
+VASTIMMO;TOURCOING;agence@vastimmo.fr;contact général;https://www.vastimmo.fr/politique-de-confidentialite,121;178 RUE NATIONALE;59200;953707478;2023-07-01;Sirene + site de l'agence
+ILO IMMO - GAELLE LOISON;ERQUINGHEM-LYS;contact@ilo-immo.com;contact général;https://www.ilo-immo.com/agences/erquinghem-lys/2;1400 RUE D'ARMENTIERES;59193;921997920;2022-11-30;Sirene + site de l'agence
+LES DENICHEURS;LILLE;warren.lesdenicheurs@gmail.com;contact général;https://www.mpi-immo.com/agence-immobiliere-aniche.html;51 BOULEVARD DE STRASBOURG;59000;922206032;2022-11-02;Sirene + site de l'agence
+BONTE IMMO;MOUVAUX;contact@bonteimmo.com;contact général;https://bonteimmo.com/fr/;2 BOULEVARD DE LA MARNE;59420;919703736;2022-09-23;Sirene + site de l'agence
+NBBS - AGENCE IMMOBILIERE;CROIX;contact@nbbs-immobilier.fr;contact général;https://nbbs-immobilier.fr/contact/;79 RUE DE LA GARE;59170;918826272;2022-08-23;Sirene + site de l'agence
+SERENITY IMMOBILIER;LOOS;reseau.serenity@gmail.com;contact général;https://www.serenityimmobilier.fr/pourquoi-nous-choisir,108;92 RUE DU MARECHAL FOCH;59120;915329494;2022-07-01;Sirene + site de l'agence
+EPIM;SAINT-ANDRE-LEZ-LILLE;contact@epim-immobilier.fr;contact général;https://www.epim-immobilier.fr/;12 RUE DE L'EGLISE;59350;914187000;2022-05-30;Sirene + site de l'agence
+AB TRANSACTION;LILLE;contact@ab-lille.fr;contact général;https://www.ab-lille.fr/page/nous-contacter-fr_18.htm;157 RUE LEON GAMBETTA (LILLE);59000;914881594;2022-05-23;Sirene + site de l'agence
+LA CENSE IMMOBILIER;CHERENG;chereng@immo-lacense.com;contact général;https://www.immo-lacense.com/catalog/contact_us.php;121 ROUTE NATIONALE;59152;913657664;2022-05-16;Sirene + site de l'agence
+VDOUBLEV IMMOBILIER;LILLE;contact@vdoublev.com;contact général;https://www.vdoublev.com/;339 RUE LEON GAMBETTA;59000;913137659;2022-04-13;Sirene + site de l'agence
+LES NOUVELLES PEPITES;CROIX;lesnouvellespepites@gmail.com;contact général;https://www.lesnouvellespepitesimmo.fr/recrutement-conseiller-immobilier-lille,120;117 RUE JEAN JAURES;59170;910471010;2022-02-01;Sirene + site de l'agence
+EKIMO;HEM;contact.ekimo@gmail.com;contact général;https://ekimo-immobilier.com/recrutement-ekimo-immobilier/;166 RUE DE LA LIONDERIE;59510;895113702;2021-02-24;Sirene + site de l'agence
+NORCAB;BEAUCAMPS-LIGNY;contact@norcab.fr;contact général;https://www.norcab.fr/;42 RUE DU BRULLE;59134;894269638;2021-02-15;Sirene + site de l'agence
+PIERRES DU NORD IMMOBILIER;MARCQ-EN-BARŒUL;contact@pierresdunordimmobilier.fr;contact général;https://www.pierresdunordimmobilier.fr/;165 AVENUE DE LA MARNE;59700;892152901;2020-12-15;Sirene + site de l'agence
+DEHIBA IMMOBILIER LILLE;LILLE;contact@dehiba-immobilier.fr;contact général;https://dehiba-immobilier.fr/acheter-bien-lille/;36 FACADE DE L'ESPLANADE;59800;885120071;2020-07-08;Sirene + site de l'agence
+CROIX IMMO;CROIX;david.cabusat@croix-immobilier.fr;responsable ventes;https://www.croix-immobilier.fr/;3 RUE DU PROFESSEUR LANGEVIN;59170;849034244;2019-05-15;Sirene + site de l'agence
+LOGEHOME;MARCQ-EN-BARŒUL;contact@logehome.fr;contact général;https://www.logehome.fr/toutes-nos-maisons-en-vente-a-marcq-en-baroeul-et-ses-environs;298 BOULEVARD CLEMENCEAU;59700;842966509;2018-09-21;Sirene + site de l'agence
+MA1930;TOURCOING;contact@ma1930.com;contact général;https://ma1930.com/lagence/;80 RUE SAINT BLAISE;59200;842456014;2018-09-04;Sirene + site de l'agence
+JACQUEMARS IMMOBILIER;LILLE;remi.rembauville@jacquemarsimmobilier.fr;contact général;https://www.jacquemarsimmobilier.fr/;61 RUE JACQUEMARS GIELEE;59800;839430493;2018-04-17;Sirene + site de l'agence
+PRECISION PATRIMOINE;WAMBRECHIES;contact@precision-patrimoine.com;contact général;https://precision-patrimoine.com/mentions-legales/;150 AVENUE DE L'ESPACE;59118;832454490;2017-10-03;Sirene + site de l'agence
+LACOMBLEZ IMMOBILIER;LILLE;contact@lacomblezimmobilier.com;contact général;https://www.lacomblezimmobilier.com/;74 B BOULEVARD MONTEBELLO;59000;832421382;2017-10-01;Sirene + site de l'agence
+DIVIDOM NORD DE FRANCE;LILLE;hello@dividom.com;contact général;https://www.dividom.com/contact;207 AVENUE WILLY BRANDT;59777;831325394;2017-07-21;Sirene + site de l'agence
+PROJECIA;WATTRELOS;contact@projecia.fr;contact général;https://projecia.fr/mentions_legales/;130 RUE DES TROIS PIERRES;59150;830894119;2017-07-10;Sirene + site de l'agence
+VACHERAND IMMOBILIER;LILLE;contact-lille@vacherand.fr;contact général;https://www.vacherand.fr/mentions-legales;18 AVENUE DU PEUPLE BELGE;59800;829807635;2017-06-01;Sirene + site de l'agence
+CENTAURE IMMOBILIER;MARQUETTE-LEZ-LILLE;contact@centaureimmo.fr;contact général;https://www.centaureimmo.fr/fr/politique-de-confidentialite,121;9 AVENUE INDUSTRIELLE;59520;828074203;2017-03-01;Sirene + site de l'agence
+KUB;VILLENEUVE-D'ASCQ;contact@kubpatrimoine.fr;contact général;https://kubpatrimoine.fr/;119 RUE LA FONTAINE;59650;824413686;2017-01-03;Sirene + site de l'agence
+IMMOBILIERE DE RONCQ;RONCQ;immobilierederoncq@gmail.com;contact général;https://www.immobilierederoncq.com/content/2/qui-sommes.html;465 B RUE DE LILLE;59223;818999211;2016-01-30;Sirene + site de l'agence
+SERENISIMMO;LILLE;contact@serenisimmo.fr;contact général;https://www.serenisimmo.fr/;122 RUE NATIONALE;59000;812100691;2015-07-01;Sirene + site de l'agence
+RE/MAX METROPOLE;LILLE;immobilier.leroy@gmail.com;contact général;https://www.immoregion.fr/agence-immobiliere/leroy-immo/hellemmes/233849;343 RUE PIERRE LEGRAND;59800;810156414;2015-03-10;Sirene + site de l'agence
+S.B.I;MARCQ-EN-BARŒUL;contact@stephanie-bossaert-immobilier.fr;contact général;https://www.stephanie-bossaert-immobilier.fr/catalog/contact_us.php;101 RUE DE LA RIANDERIE;59700;807476478;2014-10-13;Sirene + site de l'agence
+CAZE;WAMBRECHIES;contact@groupecaze.com;contact général;https://groupecaze.com/mentions-legales/;99 RUE DE L'UNION;59118;804623346;2014-09-11;Sirene + site de l'agence
+AGENCE DE LA MADELEINE;LA MADELEINE;contact@agencedelamadeleine.com;contact général;https://www.agencedelamadeleine.com/;16 RUE DU GENERAL DE GAULLE;59110;804677284;2014-09-01;Sirene + site de l'agence
+CABINET GLV IMMOBILIER;LILLE;contact@glv-immobilier.fr;contact général;https://www.glv-immobilier.fr/catalog/contact_us.php?form=1;118 RUE DE SOLFERINO;59000;800393977;2014-01-01;Sirene + site de l'agence
+SANDEVOIR;ROUBAIX;contact@cabinet-sandevoir.com;contact général;https://www.cabinet-sandevoir.com/;12 GRAND PLACE;59100;798005575;2013-11-01;Sirene + site de l'agence
+EXPERT IMMOBILIER;LILLE;contact@l-expertise.com;contact général;https://www.l-expertise.com/contact/;83 RUE JACQUEMARS GIELEE;59800;797919834;2013-10-16;Sirene + site de l'agence
+LITTLE SUITE;LILLE;contact@littlesuite.fr;contact général;https://www.littlesuite.fr/;19 RUE DE LA BARRE;59800;751016148;2012-05-01;Sirene + site de l'agence
+MAVIMMOBILIER;BONDUES;contact@mavimmobilier.fr;contact général;https://www.mavimmobilier.fr/;1 RUE DU BOSQUIEL;59910;537948531;2012-01-01;Sirene + site de l'agence
+AXONOR;LILLE;contact@axonor-immo.fr;contact général;https://www.axonor-immo.fr/;102 RUE PIERRE LEGRAND;59800;538758624;2012-01-01;Sirene + site de l'agence
+ORPI FOURNES EN WEPPES;FOURNES-EN-WEPPES;conseil.transaction.immo@orpi.com;service ventes;https://www.orpi.com/agences-immobilieres/recherche/;2000 RUE FAIDHERBE;59134;537579781;2011-11-01;Sirene + site de l'agence
+ABITA;LILLE;abitaimmolille@gmail.com;contact général;https://abitaimmolille.odoo.com/;25 RUE DU FAISAN;59800;534902572;2011-08-03;Sirene + site de l'agence
+BEFFROI PATRIMOINE;LILLE;contact@beffroipatrimoine.fr;contact général;https://www.beffroipatrimoine.fr/mentions-legales/;679 AVENUE DE LA REPUBLIQUE (LILLE);59800;531468445;2011-03-29;Sirene + site de l'agence
+ITINERAIRE IMMOBILIER;LILLE;contact@itineraireimmobilier.com;contact général;https://www.itineraireimmobilier.com/;50 RUE ALPHONSE LEROY;59800;524328820;2010-09-01;Sirene + site de l'agence
+LEMAIRE BRIFFAULT IMMOBILIER;LILLE;agence@lemairebriffault-immobilier.fr;contact général;https://www.lemairebriffault-immobilier.fr/politique-de-confidentialite,121;84 BOULEVARD DE LA LIBERTE;59800;524394780;2010-09-01;Sirene + site de l'agence
+Haussmann Prestige Paris;Paris;a.ferri@haussmannprestige.com;contact général;http://www.haussmannprestige.com;231 Rue Saint-Honoré;75001;;;scrap.io Google Maps
+Talvan's International - Real Estate In Paris & France;Paris;sylvain@talvans.com;contact général;https://www.talvans.com;8 Quai Louis Blériot;75016;;;scrap.io Google Maps
+Paris Luxury Homes;Paris;contact@parisluxuryhomes.fr;contact général;http://www.parisluxuryhomes.fr;8 Pl. des Victoires;75002;;;scrap.io Google Maps
+Paris-Housing - Denicourt Immobilier;Paris;agent@paris-housing.com;contact général;https://www.paris-housing.com;2 Rue de l'Exposition;75007;;;scrap.io Google Maps
+De Lachaise Immobilier;Paris;contact@delachaiseimmo.fr;contact général;http://www.delachaiseimmobilier.fr;26 Rue Monge;75005;;;scrap.io Google Maps
+At home real estate, real estate Saint Martin Canal;Paris;contact@agenceathome.com;contact général;https://www.agenceathome.com/fr;11 Rue Eugène Varlin;75010;;;scrap.io Google Maps
+Paris Rental;Paris;contact@parisrental.com;contact général;https://www.parisrental.com;57 Rue de l'Université;75007;;;scrap.io Google Maps
+56Paris Real Estate;Paris;contact@56paris.com;contact général;https://www.56paris.com;56 Rue de Verneuil;75007;;;scrap.io Google Maps
+Lodgis;Paris;contact@lodgis.com;contact général;https://www.lodgis.com;Rue de Choiseul;75002;;;scrap.io Google Maps
+PARIS SEINE IMMOBILIER - Agence Saint-Honoré;Paris;vente@paris-seine-immobilier.com;service ventes;http://www.paris-seine-immobilier.com;49 Rue Saint-Roch;75001;;;scrap.io Google Maps
+John Taylor Paris;Paris;contact@john-taylor.com;contact général;https://www.john-taylor.com;7 Rdpt des Champs-Élysées Marcel-Dassault;75008;;;scrap.io Google Maps
+Paris Property Group;Paris;contact@parispropertygroup.com;contact général;http://www.parispropertygroup.com;153 Rue de Grenelle;75007;;;scrap.io Google Maps
+Patrimoine Immobilier By Rent Your Paris - Location / Vente / Gestion;Paris;contact@rentyourparis.com;contact général;https://patrimoine-immo.com;29 Rue des Petits Champs;75001;;;scrap.io Google Maps
+Engel & Völkers Paris Champs-Élysées;Paris;paris.leads@engelvoelkers.com;service ventes;https://www.engelvoelkers.com/fr/fr/shops/paris;170 Rue du Faubourg Saint-Honoré;75008;;;scrap.io Google Maps
+LUXURY PROPERTIES | The French Luxury Real Estate Society;Paris;contact@luxuryproperties.fr;contact général;https://luxuryproperties.fr;179 Bd Haussmann;75008;;;scrap.io Google Maps
+Eiffel Housing;Paris;info@eiffel-housing.com;contact général;http://www.eiffel-housing.com/?utm_source=gmb;91 Rue du Faubourg Saint-Honoré;75008;;;scrap.io Google Maps
+AGENCE IMMOBILIERE PARIS - IMOP - Agence Imop;Paris;contact@imop.fr;contact général;https://www.imop.fr;105 Bd de Sébastopol;75002;;;scrap.io Google Maps
+Coldwell Banker Paris;Paris;contact@medimmoconso.fr;contact général;https://www.coldwellbankerprestige.fr;8 Rue Lamennais;75008;;;scrap.io Google Maps
+Agence CENTURY 21 Chaumont Laumière | Agence immobilière Paris 19;Paris;chaumont@century21france.fr;contact général;https://www.century21chaumont.com/?utm_source=google_business&utm_medium=bouton_fiche_agence&utm_campaign=century-21chaumont;81 Av. Jean Jaurès;75019;;;scrap.io Google Maps
+Agence Locadelo;Paris;deloslocadelo@gmail.com;contact général;https://www.locadelo.fr/fr;6 Rue d'Armaillé;75017;;;scrap.io Google Maps
+Agence Immobilière CENTURY 21 Olympiades - Paris 13;Paris;olympiadesgestion@century21.fr;contact général;https://www.century21-olympiades-paris-13.com/?utm_source=google_business&utm_medium=bouton_fiche_agence&utm_campaign=century-21-olympiades-paris-13;72 Rue de Tolbiac;75013;;;scrap.io Google Maps
+Espaces Atypiques Paris Rive Droite - Paris Est – Agence immobilière;Paris;contact@espaces-atypiques.com;contact général;https://www.espaces-atypiques.com/paris-rive-droite/?utm_campaign=GoogleMyBusiness&utm_medium=Local&utm_source=Google;13 Rue de Turenne;75004;;;scrap.io Google Maps
+Paris Corporate Housing;Paris;contact@pariscorporatehousing.com;contact général;http://www.pariscorporatehousing.com;133 Bd Haussmann;75008;;;scrap.io Google Maps
+Daniel Féau 5th;Paris;notif.leads.5eme@danielfeau.com;service ventes;https://danielfeau.com/fr/detail-agence-immobiliere/3156;111 Rue Monge;75005;;;scrap.io Google Maps
+Vaneau 16ème Auteuil - Passy;Paris;contact@vaneau.fr;contact général;http://www.vaneau.fr;6 Rue Donizetti;75016;;;scrap.io Google Maps
+Agence Immobilière Paris 17 - Square's International Monceau;Paris;customer@squares-international.com;contact général;https://www.squares-international.com/fr/contact/details/2/agence-immobiliere-monceau;82 Rue Jouffroy d'Abbans;75017;;;scrap.io Google Maps
+Paris Attitude;Paris;mail@parisattitude.com;contact général;https://www.parisattitude.com;21 Rue Vauvenargues;75018;;;scrap.io Google Maps
+Agence Nestenn Immobilier Paris 17 - Batignolles;Paris;contact@nestenn.com;contact général;https://immobilier-paris-17.nestenn.com;17 Rue des Moines;75017;;;scrap.io Google Maps
+Nicolay Real Estate Paris;Paris;arnaud@nicolay.paris;contact général;http://www.nicolay.paris;8 Rue du Bouquet de Longchamp;75116;;;scrap.io Google Maps
+DWM Immobilier;Paris;info@cielparisien.com;contact général;http://www.dwmimmo.com;6 Rue de Miromesnil;75008;;;scrap.io Google Maps
+George V District;Paris;contact@district-immo.com;contact général;https://www.district-immo.com/agences/george-v;9 Rue de la Tremoille;75008;;;scrap.io Google Maps
+Junot;Paris;passy@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-passy-16-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-passy-la-muette-16e;67 Av. Paul Doumer;75016;;;scrap.io Google Maps
+Agence Immobilière Paris 3 - Junot Marais;Paris;marais@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-marais-3-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-marais-3e;5 Rue de Bretagne;75003;;;scrap.io Google Maps
+Vendôme Exclusive Properties;Paris;contact@vendomeexclusiveproperties.com;contact général;http://www.vendomeexclusiveproperties.com;10 Pl. Vendôme;75001;;;scrap.io Google Maps
+Junot;Paris;cherchemidi@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-6-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-paris-6;28 Rue du Cherche-Midi;75006;;;scrap.io Google Maps
+BARNES Montmartre;Paris;j.watson@barnes-international.com;contact général;https://www.barnes-international.com;89 R. des Martyrs;75018;;;scrap.io Google Maps
+Moriss Immobilier - Passy;Paris;paris16@morissimmobilier.com;contact général;https://www.morissimmobilier.com/agences/agence-immobiliere-passy;12 Rue de Passy;75116;;;scrap.io Google Maps
+Daniel Féau 9ème & Butte Montmartre - Agence immobilière Paris 9;Paris;notif.leads.9eme@danielfeau.com;service ventes;https://danielfeau.com/fr/detail-agence-immobiliere/3160;52 R. des Martyrs;75009;;;scrap.io Google Maps
+Agent sur Mesure;Paris;contact@agentsurmesure.fr;contact général;https://www.agentsurmesure.fr/?utm_source=gmb;49 Bd Saint-Germain;75005;;;scrap.io Google Maps
+Junot;Paris;asargsjan@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-location-gestion-18-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-location-gestion-18e;23 bis Av. Junot;75018;;;scrap.io Google Maps
+Agence Immobilière Paris 9 - Junot Martyrs;Paris;martyrs@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-martyrs-9-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-martyrs-9e;62 R. des Martyrs;75009;;;scrap.io Google Maps
+Agence Immobilière Paris 17 - Junot Monceau;Paris;monceau@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-monceau-17-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-monceau-17e;2 Av. de Villiers;75017;;;scrap.io Google Maps
+Connexion Immobilier Saint Vincent – Votre agence immobilière Paris 10e;Paris;eb@connexion.immo;contact général;https://connexion.immo;85 Rue d'Hauteville;75010;;;scrap.io Google Maps
+Agence Immobilière - Hosman;Paris;jean.malou@gmail.com;contact général;https://www.hosman.co;32 Rue de Trévise;75009;;;scrap.io Google Maps
+Nicolas URBAIN Immobilier;Paris;nicolas@nicolasurbain.com;contact général;http://www.nicolasurbain.com;14 Rue Claude Lorrain;75016;;;scrap.io Google Maps
+Propriétés Parisiennes Sotheby's International Realty;Paris;sothebysir8@proprietesparisiennes.com;contact général;https://www.proprietesparisiennes-sothebysrealty.com/?utm_source=google&utm_medium=organic&utm_campaign=GMB;124 Rue du Faubourg Saint-Honoré;75008;;;scrap.io Google Maps
+Maëlys Real Estate;Paris;contact@maelysimmobilier.com;contact général;http://www.maelysimmobilier.com;9 Rue de l'Odéon;75006;;;scrap.io Google Maps
+Capital Partners - Real Estate Agency;Paris;vente@capitale-partners.com;service ventes;http://capitale-partners.com;20 bis Rue La Boétie;75008;;;scrap.io Google Maps
+Cabinet SETI;Paris;camille.rivart@gmail.com;contact général;http://seloger.com;69 Ave Parmentier;75011;;;scrap.io Google Maps
+Palais Royal Immobilier;Paris;mail@palaisroyalimmobilier.com;contact général;https://www.palaisroyalimmobilier.com;38 Rue de Richelieu;75001;;;scrap.io Google Maps
+Luxury Real Estate Cedric Korb;Paris;contact@cedrickorb.fr;contact général;http://www.cedrickorb.fr;3 Rue de Belloy;75116;;;scrap.io Google Maps
+Agence Immobilière Laforêt Prestige Paris 7;Paris;paris7tour-eiffel@laforet.com;contact général;http://www.laforet.com/agence-immobiliere/paris7tour-eiffel;31 Av. Rapp;75007;;;scrap.io Google Maps
+Daniel Féau Passy;Paris;notif.leads.passy@danielfeau.com;service ventes;https://danielfeau.com/fr/detail-agence-immobiliere/3194;77 Av. Paul Doumer;75116;;;scrap.io Google Maps
+Daniel Féau Saint-Germain-des-Prés;Paris;notif.leads.stgermain@danielfeau.com;service ventes;https://danielfeau.com/fr/detail-agence-immobiliere/3193;21 Rue Bonaparte;75006;;;scrap.io Google Maps
+Agence Immobilière Paris 18 - Junot Montmartre;Paris;retail@junot.fr;service ventes;https://www.junot.fr/fr/agences/junot-montmartre-18-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-montmartre-18e;27 Av. Junot;75018;;;scrap.io Google Maps
+Agence Immobilière Paris 18 - Junot Abbesses;Paris;abbesses@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-abbesses-18-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-abbesses-18e;19 Rue Lepic;75018;;;scrap.io Google Maps
+Generation Immo Paris 12;Paris;infos@generation-immo.fr;contact général;http://www.generation-immo.fr;13 Rue de Wattignies;75012;;;scrap.io Google Maps
+Agence Immobilière Paris 9 et 10 - Junot;Paris;junot10@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-9-et-10-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-paris-10;31 Rue du Faubourg Poissonnière;75009;;;scrap.io Google Maps
+Agence immobilière l’Adresse de Prestige Paris 7 Rue Cler;Paris;contact.mcp.paris@gmail.com;contact général;https://www.ladresse.com/agence/l-adresse-de-prestige-paris-7-rue-cler/383?utm_source=gmb;51 Rue Cler;75007;;;scrap.io Google Maps
+ARCHIK;Paris;arcachon@archik.fr;contact général;https://archik.fr;14 Rue de Montmorency;75003;;;scrap.io Google Maps
+DAVID MATTON IMMOBILIER;Paris;paris@davidmattonimmobilier.com;contact général;http://www.davidmattonimmobilier.com;11 Av. Mozart;75116;;;scrap.io Google Maps
+Agence Immobilière Paris 7 - Junot Grenelle;Paris;grenelle@junot.fr;contact général;https://www.junot.fr/fr/agences/junot-grenelle-7-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-grenelle-7e;196 Rue de Grenelle;75007;;;scrap.io Google Maps
+Catherine PIGUET - ALMA IMMOBILIER;Paris;contact@alma-immobilier.fr;contact général;http://www.alma-immobilier.com;3 Rue du Faubourg Saint-Honoré;75008;;;scrap.io Google Maps
