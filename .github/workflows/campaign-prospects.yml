@@ -17,9 +17,6 @@ on:
       limit:
         description: "Nombre d'agences dont on cherche l'email"
         default: "300"
-  push:
-    paths:
-      - ".github/workflows/campaign-prospects.yml"
 
 permissions:
   contents: write
@@ -45,7 +42,7 @@ jobs:
         timeout-minutes: 240
         env:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
-          MAX_QUERIES: "900"
+          MAX_QUERIES: "1800"  # Brave free plan: 2 000 a month
           LIMIT: ${{ inputs.limit || '300' }}
         run: |
           timeout 230m python -u scripts/campaign/find_emails.py --agencies agences.csv --limit $LIMIT --out emails.csv || true

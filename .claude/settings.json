@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Zoho__ZohoMail_sendEmail",
+      "mcp__Zoho__ZohoMail_listEmails",
+      "mcp__Zoho__ZohoMail_SearchEmails",
+      "mcp__Zoho__ZohoMail_getMessageContent",
+      "mcp__Zoho__ZohoMail_getMessageDetails"
+    ]
+  }
+}

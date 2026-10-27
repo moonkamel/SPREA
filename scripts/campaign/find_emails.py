@@ -50,7 +50,7 @@ NETWORKS = ("iadfrance", "safti", "capifrance", "optimhome", "efficity", "bskimm
 FREE_MAIL = ("gmail.com", "hotmail.fr", "hotmail.com", "orange.fr", "wanadoo.fr", "free.fr", "outlook.fr",
              "outlook.com", "yahoo.fr", "yahoo.com", "laposte.net", "sfr.fr", "neuf.fr", "live.fr", "icloud.com",
              "bbox.fr", "aol.com", "numericable.fr")
-BAD_LOCAL = ("webmaster", "dpo", "rgpd", "privacy", "noreply", "no-reply", "nepasrepondre", "recrutement", "jobs",
+BAD_LOCAL = ("webmaster", "dpo", "dpd", "rgpd", "privacy", "donneespersonnelles", "donnees", "cnil", "protection", "informatique-et-libertes", "libertes", "noreply", "no-reply", "nepasrepondre", "recrutement", "jobs",
              "support", "abuse", "postmaster", "admin", "hostmaster", "sentry", "example", "votre", "nom", "email",
              "exemple", "test", "wordpress", "comptabilite", "compta", "facturation", "juridique", "presse", "rh")
 BAD_DOMAIN = ("sentry", "wix", "example", "domain", "votredomaine", "monsite", "email.com", "ovh", "o2switch",
@@ -343,6 +343,24 @@ def rank(agency: Dict, email: str, context: str, site: str, network: bool) -> Op
     return (4, "contact général")
 
 
+GENERIC_LOCAL = re.compile(r"^(contact|accueil|info|infos|agence|agences|bonjour|hello|immo|immobilier|secretariat|direction|"
+                           r"vente|ventes|transaction|transactions|commercial|location|locations|gestion|syndic|copro)")
+
+
+def other_branch(agency: Dict, email: str) -> bool:
+    """A network or multi-agency site: « lagnieu@ » is another branch than the
+    Roubaix agency. A plain-word local part that is neither a usual mailbox,
+    nor the officer, nor this agency's town is taken for another branch."""
+    local = email.partition("@")[0].lower()
+    if not re.fullmatch(r"[a-z\-]+", local) or GENERIC_LOCAL.match(local):
+        return False
+    flat = local.replace("-", "")
+    town = re.sub(r"[^a-z]", "", norm(agency["town"]))
+    if flat in town or (town and town in flat):
+        return False
+    return not any(last in flat for last in officer_parts(agency)) and not any(t in flat for t in name_tokens(agency))
+
+
 def site_links(base: str, page: str) -> List[str]:
     links = []
     for href, label in re.findall(r'<a[^>]+href="([^"#]+)"[^>]*>(.*?)</a>', page, re.S | re.I):
@@ -381,9 +399,14 @@ def scan_site(agency: Dict, url: str) -> Optional[Dict]:
             return None
     site = host(first.url)
     best = None
-    for u, p in pages:
+    # Addresses of the pages about this agency first: a page of another branch
+    # of the same site only counts when no page of this one shows an address
+    about = [(u, p) for u, p in pages if matches(agency, p)] if not network else pages
+    for u, p in about + [x for x in pages if x not in about]:
+        if best and (u, p) not in about:
+            break
         for email, context in emails_in(p):
-            if not plausible(email):
+            if not plausible(email) or other_branch(agency, email):
                 continue
             r = rank(agency, email, context, site, network)
             if r and (best is None or r[0] < best[0]):

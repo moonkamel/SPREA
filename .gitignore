@@ -10,3 +10,6 @@ __pycache__/
 !.env.example
 audit.json
 .claude/worktrees/
+
+# Prospect lists (kept on the campaign-suivi branch, not in the code)
+prospects_*.csv
