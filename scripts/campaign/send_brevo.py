@@ -206,6 +206,7 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                     ("Les immeubles entiers détenus par une SCI", ", leur gérant, et les SCI en liquidation ou dissolution (BODACC)"),
                     ("Les propriétaires de votre secteur qui demandent à être rappelés", ", depuis l'estimateur gratuit de sprea.app")])
                 + group("Les contacter", [
+                    ("Connaître le propriétaire d'un bien repéré", " : SPREA retrouve la parcelle au cadastre et prépare la demande officielle au service des impôts fonciers, prête à envoyer"),
                     ("Un courrier à votre nom en un clic", ", avec un QR code : le propriétaire découvre ce que vaut son bien et vous laisse ses coordonnées, avec son accord"),
                     ("Les demandes de rappel", " réunies dans vos contacts, consentement horodaté")])
                 + group("Signer et vendre", [
