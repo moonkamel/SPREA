@@ -195,7 +195,7 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                  f"<b>{price['m']:,} €/m²</b> pour une maison".replace(",", "\u202f") if price.get("m") else ""]
         m2 = " et ".join(x for x in parts if x)
     if step == 1:
-        subject = f"{prenom + ', p' if prenom else 'P'}rospecter {ville} sans appeler à froid"
+        subject = f"{prenom + ', q' if prenom else 'Q'}ui va vendre à {ville} ce mois-ci ?"
         preview = "Repérer les vendeurs, les contacter, signer le mandat : tout SPREA en un message."
         body = (P.format("Depuis le 11 août, appeler un particulier pour le prospecter suppose <b>son accord préalable</b> : "
                          "la pige téléphonique, c'est fini. <b>Le courrier, lui, reste permis.</b>")
