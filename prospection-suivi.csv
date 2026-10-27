@@ -62,7 +62,7 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 ;Haussmann Prestige Paris;Paris;a.ferri@haussmannprestige.com;1;2026-10-27;en cours;http://www.haussmannprestige.com
 ;Talvan's International - Real Estate In Paris & France;Paris;sylvain@talvans.com;1;2026-10-27;en cours;https://www.talvans.com
 ;Paris Luxury Homes;Paris;contact@parisluxuryhomes.fr;1;2026-10-27;en cours;http://www.parisluxuryhomes.fr
-;Paris-Housing - Denicourt Immobilier;Paris;agent@paris-housing.com;1;2026-10-27;en cours;https://www.paris-housing.com
+;Paris-Housing - Denicourt Immobilier;Paris;agent@paris-housing.com;1;2026-10-27;rebond;https://www.paris-housing.com
 ;De Lachaise Immobilier;Paris;contact@delachaiseimmo.fr;1;2026-10-27;en cours;http://www.delachaiseimmobilier.fr
 ;At home real estate, real estate Saint Martin Canal;Paris;contact@agenceathome.com;1;2026-10-27;en cours;https://www.agenceathome.com/fr
 ;Paris Rental;Paris;contact@parisrental.com;1;2026-10-27;en cours;https://www.parisrental.com
@@ -122,3 +122,7 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 ;DAVID MATTON IMMOBILIER;Paris;paris@davidmattonimmobilier.com;1;2026-10-27;en cours;http://www.davidmattonimmobilier.com
 ;Agence Immobilière Paris 7 - Junot Grenelle;Paris;grenelle@junot.fr;1;2026-10-27;en cours;https://www.junot.fr/fr/agences/junot-grenelle-7-eme-arrondissement-paris?utm_source=google&utm_medium=organic&utm_campaign=local&utm_content=junot-grenelle-7e
 ;Catherine PIGUET - ALMA IMMOBILIER;Paris;contact@alma-immobilier.fr;1;2026-10-27;en cours;http://www.alma-immobilier.com
+;Albin Quicampoix;Lyon;albin.quicampoix@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/albin.quicampoix
+;Camille Pesnel;Lyon;camille.pesnel@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/camille.pesnel
+;Charles Abbas-Abadi;Lyon;charles.abbas-abadi@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/charles.abbas-abadi
+;Laurie-Ann Vieilly;Lyon;laurie-ann.vieilly@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurie-ann.vieilly
