@@ -140,7 +140,7 @@ export default function ConfidentialitePage() {
             </LegalSection>
 
             <LegalSection title="Cookies et stockage local">
-                <p>Le site n'utilise ni cookie publicitaire, ni outil de mesure d'audience. Il enregistre dans votre navigateur uniquement des éléments strictement nécessaires, exemptés de consentement :</p>
+                <p>Le site n'utilise aucun cookie publicitaire. La fréquentation est mesurée avec Vercel Web Analytics, sans cookie ni identifiant conservé d'un jour à l'autre : seules des statistiques agrégées et anonymes sont produites (pages vues, pays, type d'appareil), exemptées de consentement. Le site enregistre dans votre navigateur uniquement des éléments strictement nécessaires, exemptés de consentement :</p>
                 <ul className="list-disc pl-5 space-y-1">
                     <li>votre session de connexion (Supabase), tant que vous êtes connecté ;</li>
                     <li>la simulation en attente lorsque vous vous connectez pour obtenir un rapport, effacée une fois le rapport demandé.</li>
