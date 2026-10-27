@@ -57,7 +57,7 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 537579781;ORPI FOURNES EN WEPPES;FOURNES-EN-WEPPES;conseil.transaction.immo@orpi.com;1;2026-10-27;en cours;https://www.orpi.com/agences-immobilieres/recherche/
 534902572;ABITA;LILLE;abitaimmolille@gmail.com;1;2026-10-27;en cours;https://abitaimmolille.odoo.com/
 531468445;BEFFROI PATRIMOINE;LILLE;contact@beffroipatrimoine.fr;1;2026-10-27;en cours;https://www.beffroipatrimoine.fr/mentions-legales/
-524328820;ITINERAIRE IMMOBILIER;LILLE;contact@itineraireimmobilier.com;1;2026-10-27;en cours;https://www.itineraireimmobilier.com/
+524328820;ITINERAIRE IMMOBILIER;LILLE;contact@itineraireimmobilier.com;1;2026-10-27;STOP;https://www.itineraireimmobilier.com/
 524394780;LEMAIRE BRIFFAULT IMMOBILIER;LILLE;agence@lemairebriffault-immobilier.fr;1;2026-10-27;en cours;https://www.lemairebriffault-immobilier.fr/politique-de-confidentialite,121
 ;Haussmann Prestige Paris;Paris;a.ferri@haussmannprestige.com;1;2026-10-27;en cours;http://www.haussmannprestige.com
 ;Talvan's International - Real Estate In Paris & France;Paris;sylvain@talvans.com;1;2026-10-27;en cours;https://www.talvans.com
@@ -126,3 +126,45 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 ;Camille Pesnel;Lyon;camille.pesnel@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/camille.pesnel
 ;Charles Abbas-Abadi;Lyon;charles.abbas-abadi@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/charles.abbas-abadi
 ;Laurie-Ann Vieilly;Lyon;laurie-ann.vieilly@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurie-ann.vieilly
+;Adrien Treton;Lyon;adrien.treton@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/adrien.treton
+;Alexandre Cozon;Lyon;alexandre.cozon@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/alexandre.cozon
+;Alexia Sanchez;Lyon;alexia.sanchez@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/alexia.sanchez
+;Aline Bachian;Lyon;aline.bachian@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/aline.bachian
+;Audrey Posokhow;Lyon;audrey.posokhow@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/audrey.posokhow
+;Aurélie Demore;Lyon;aurelie.demore@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/aurelie.demore
+;Blandine Cucherat;Lyon;blandine.cucherat@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/blandine.cucherat
+;Camille Heiles;Lyon;camille.heiles@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/camille.heiles
+;Carole Vigne;Lyon;carole.vigne@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/carole.vigne
+;Céline Poméon;Lyon;celine.pomeon@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/celine.pomeon
+;Christelle Laignel;Lyon;christelle.laignel@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/christelle.laignel
+;Christophe Hutin;Lyon;christophe.hutin@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/christophe.hutin
+;Claire ROZIER;Lyon;claire.rozier@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/claire.rozier
+;Elodie Abrami;Lyon;elodie.abrami@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.abrami
+;Elodie Robelin;Lyon;elodie.robelin@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.robelin
+;Fabien Torrecillas;Lyon;fabien.torrecillas@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabien.torrecillas
+;Fanny Fayard;Lyon;fanny.fayard@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/fanny.fayard
+;Fanny Hauduroy;Lyon;fanny.hauduroy@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/fanny.hauduroy
+;Gabriel Brard;Lyon;gabriel.brard@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/gabriel.brard
+;Gaël Sergere;Lyon;gael.sergere@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/gael.sergere
+;Gaetan Prot;Lyon;gaetan.prot@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/gaetan.prot
+;Guillaume Gibeaux;Lyon;guillaume.gibeaux@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/guillaume.gibeaux
+;Hélène De Fournas De La Brosse;Lyon;helene.defournas@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/helene.defournas
+;Juliette Balz;Lyon;juliette.balz@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/juliette.balz
+;Killiann Bure;Lyon;killiann.bure@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/killiann.bure
+;Lucie Nadaud;Lyon;lucie.nadaud@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/lucie.nadaud
+;Ludovic Chalindar;Lyon;ludovic.chalindar@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludovic.chalindar
+;Marina Filippenkova;Lyon;marina.filippenkova@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/marina.filippenkova
+;Maxime Cimiotta;Lyon;maxime.cimiotta@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/maxime.cimiotta
+;Pia Garnier;Lyon;pia.garnier@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/pia.garnier
+;Pierric Hoel;Lyon;pierric.hoel@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/pierric.hoel
+;Sabine Sardain;Lyon;sabine.sardain@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/sabine.sardain
+;Sandrine Dorier;Lyon;sandrine.dorier@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/sandrine.dorier
+;Skander Hammami;Lyon;skander.hammami@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/skander.hammami
+;Soumeya Mehadji;Lyon;soumeya.mehadji@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/soumeya.mehadji
+;Stéphanie Latamene;Lyon;stephanie.latamene@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/stephanie.latamene
+;Stephanie Patruno;Lyon;stephanie.patruno@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/stephanie.patruno
+;Sylvain Brunel;Lyon;sylvain.brunel@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/sylvain.brunel
+;Sylvie Bonhomme;Lyon;sylvie.bonhomme@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/sylvie.bonhomme
+;Sylvie Nachon;Lyon;sylvie.nachon@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/sylvie.nachon
+;Tanguy De Quillacq;Lyon;tanguy.de-quillacq@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/tanguy.de-quillacq
+;Valérie Cote;Lyon;valerie.cote@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/valerie.cote
