@@ -1,4 +1,4 @@
-name: iad directory (one-off)
+name: iad test delivery (one-off)
 on:
   push:
     branches: [claude/hopeful-fermi-re2vn1]
@@ -6,16 +6,20 @@ on:
 permissions:
   contents: write
 jobs:
-  scrape:
+  events:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: |
+      - env:
+          KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          sleep 90
           mkdir out
-          python -u scripts/campaign/iad_directory.py --town pg-lyon_69 --ville Lyon --cp 69000 --out out/iad_lyon.csv
-          cd out && git init -q && git checkout -q -b iad-probe && git add . && git -c user.name=gh -c user.email=a@b commit -qm "iad Lyon"
+          for e in albin.quicampoix camille.pesnel charles.abbas-abadi laurie-ann.vieilly; do
+            curl -sS -H "api-key: $KEY" -H "accept: application/json" \
+              "https://api.brevo.com/v3/smtp/statistics/events?email=$e@iadfrance.fr&days=1&limit=50" \
+              | python3 -c "import json,sys; d=json.load(sys.stdin); print('$e', [(x.get('event'), x.get('reason','')) for x in d.get('events',[])])" >> out/events.txt
+          done
+          cat out/events.txt
+          cd out && git init -q && git checkout -q -b iad-probe && git add . && git -c user.name=gh -c user.email=a@b commit -qm events
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" iad-probe
