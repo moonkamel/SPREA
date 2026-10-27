@@ -93,8 +93,8 @@ def numbered(items: List[tuple]) -> str:
     return f'<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px; font-size:15px; line-height:22px; color:#1f2937">{rows}</table>'
 
 
-def email(step: int, agence: str, ville: str, campaign: str, prenom: Optional[str] = None) -> Dict[str, str]:
-    """prenom not None: an independent advisor of a network (iad...), addressed by first name when known."""
+def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
+    """Sequence for agencies (independent advisors get advisor_email)."""
     a, v = html.escape(agence), html.escape(ville)
     demo = DEMO.format(campaign=campaign)
     if step == 1:
@@ -102,8 +102,7 @@ def email(step: int, agence: str, ville: str, campaign: str, prenom: Optional[st
         body = (P.format(f"À {v}, des logements classés <b>F ou G</b> reçoivent chaque mois un <b>nouveau DPE</b>. Un DPE "
                          "récent précède souvent une <b>vente ou une mise en location</b> : ce sont autant de propriétaires "
                          "à contacter <b>avant les autres agences</b>.")
-                + '<p style="margin:0 0 8px">Nous avons créé <b>SPREA</b> pour '
-                + ('les conseillers indépendants comme vous :</p>' if prenom is not None else f'les agences comme <b>{a}</b> :</p>')
+                + f'<p style="margin:0 0 8px">Nous avons créé <b>SPREA</b> pour les agences comme <b>{a}</b> :</p>'
                 + numbered([("Chaque matin, les nouveaux DPE de votre secteur", " sur une carte, adresse par adresse"),
                             ("Un courrier prêt à envoyer", " au propriétaire, en un clic"),
                             ("Un dossier chiffré à lui remettre", " : travaux, aides, valeur avant et après rénovation")])
@@ -127,7 +126,7 @@ def email(step: int, agence: str, ville: str, campaign: str, prenom: Optional[st
         body = (P.format("Le calcul est simple : sur une vente à 250 000 €, les honoraires dépassent <b>10 000 € HT</b>. "
                          "L'abonnement SPREA démarre à <b>79 € TTC par mois</b>. Un seul mandat signé grâce à un DPE repéré "
                          "à temps le rembourse <b>plus de dix fois</b>.")
-                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur {'votre secteur' if prenom is not None else 'le secteur de ' + a}</b> : vous voyez les "
+                + P.format(f"Nous vous proposons <b>20 minutes en visio, sur le secteur de {a}</b> : vous voyez les "
                            "propriétaires de vos rues et les immeubles de SCI qui risquent de se vendre, puis vous décidez. "
                            "Répondez simplement avec un créneau.")
                 + BUTTON.format(href=demo, label="Voir la visite guidée (3 minutes) →"))
@@ -137,8 +136,106 @@ def email(step: int, agence: str, ville: str, campaign: str, prenom: Optional[st
                 + P.format(f"Si un jour vous voulez voir les <b>nouveaux DPE</b> et les <b>biens à fort potentiel</b> de "
                            f"{v}, la visite guidée reste ici :")
                 + BUTTON.format(href=demo, label="Voir la visite guidée →"))
+    content = (f'<div style="{FONT}">' + P.format("Bonjour,") + body + SIGN_OFF + "</div>" + SIGNATURE + FOOTER)
+    return {"subject": subject, "html": content}
+
+
+# --- Sequence for independent advisors ---
+
+SITE = "https://sprea.app"
+UTM = "utm_source=email&amp;utm_medium=prospection&amp;utm_campaign={campaign}&amp;utm_content=mail{step}"
+PRICES_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "src", "data", "prix_index.json")
+_prices: Optional[Dict[str, List[Dict]]] = None
+
+
+def plain(text: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFD", text).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", " ", t.replace("saint", "st")).strip()
+
+
+def city_prices(ville: str, cp: str = "") -> Optional[Dict]:
+    """Median price per m2 of the town (the « Prix m² » pages), matched on its name and, when known, its department."""
+    global _prices
+    if _prices is None:
+        _prices = {}
+        try:
+            for r in json.load(open(PRICES_PATH, encoding="utf-8"))["communes"]:
+                _prices.setdefault(plain(r["n"]), []).append(r)
+        except (OSError, ValueError, KeyError):
+            pass
+    found = _prices.get(plain(ville)) or []
+    if cp:
+        dep = cp[:3] if cp.startswith("97") else cp[:2]
+        found = [r for r in found if r["d"] == dep] or found
+    # Homonyms without a postcode: the town with the most sales
+    return max(found, key=lambda r: r["k"]) if found else None
+
+
+def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Optional[Dict] = None) -> Dict[str, str]:
+    """For an independent advisor (iad...), by first name when known. Each email
+    gives something useful to open: the prices of their town, the estimator their
+    sellers use, the demo."""
+    v = html.escape(ville)
+    utm = UTM.format(campaign=campaign, step=step)
+    demo = f"{SITE}/demo?{utm}"
+    prices_link = f"{SITE}/prix-m2/{price['s']}?{utm}" if price else None
+    m2 = None
+    if price:
+        parts = [f"<b>{price['a']:,} €/m²</b> pour un appartement".replace(",", "\u202f") if price.get("a") else "",
+                 f"<b>{price['m']:,} €/m²</b> pour une maison".replace(",", "\u202f") if price.get("m") else ""]
+        m2 = " et ".join(x for x in parts if x)
+    if step == 1:
+        subject = f"{prenom + ', p' if prenom else 'P'}rospecter {ville} sans appeler à froid"
+        preview = "Les DPE de la veille, un courrier en un clic, et des propriétaires qui vous rappellent."
+        body = (P.format("Depuis le 11 août, appeler un particulier pour le prospecter suppose <b>son accord préalable</b> : "
+                         "la pige téléphonique, c'est fini. <b>Le courrier, lui, reste permis.</b>")
+                + '<p style="margin:0 0 8px">SPREA est pensé pour les conseillers indépendants qui prospectent seuls :</p>'
+                + numbered([("Chaque matin, les nouveaux DPE de vos communes.", " Un DPE précède souvent une vente ou une mise en location."),
+                            ("Un courrier à votre nom en un clic,", " avec un QR code : le propriétaire découvre ce que vaut son bien et vous laisse ses coordonnées, avec son accord."),
+                            ("Un avis de valeur avant / après travaux", " appuyé sur les ventes réelles du quartier, pour signer le mandat.")])
+                + BUTTON.format(href=demo, label="Voir comment ça marche (3 min) →")
+                + (P.format(f"Au passage, à {v} en ce moment : {m2}. "
+                            f'<a href="{prices_link}" style="color:#8a6d2f; font-weight:bold">Le détail par nombre de pièces et l\'évolution sur 3 ans</a>.')
+                   if m2 else "")
+                + P.format("Une question ? Répondez simplement à ce mail."))
+    elif step == 2:
+        subject = f"Les propriétaires de {ville} qui demandent à être rappelés"
+        preview = "Ils estiment leur bien en ligne, et demandent un conseiller du secteur."
+        estimator = f"{SITE}/estimation?commune={html.escape(ville)}&amp;{utm}"
+        body = (P.format("Un complément à notre message de la semaine dernière.")
+                + P.format("Les propriétaires peuvent estimer gratuitement leur bien sur <b>sprea.app</b>. Quand l'un d'eux "
+                           "habite votre secteur et demande à être recontacté, <b>sa demande vous est transmise</b> : adresse, "
+                           "surface, estimation, projet (vendre sous 3 mois, dans l'année…) et téléphone.")
+                + P.format("Il a donné son accord : <b>vous l'appelez en toute légalité</b>, et vous arrivez au rendez-vous "
+                           "avec un avis de valeur chiffré plutôt qu'avec une simple carte de visite.")
+                + BUTTON.format(href=estimator, label=f"Essayer l'estimateur sur une adresse de {v} →")
+                + P.format("C'est exactement ce que voient les vendeurs de votre secteur."))
+    elif step == 3:
+        subject = f"{prenom + ', l' if prenom else 'L'}e calcul tient en une ligne"
+        preview = "Une seule commission couvre des années d'abonnement."
+        body = (P.format("Sur une vente à 250 000 €, la commission dépasse souvent <b>10 000 €</b>. SPREA Solo coûte "
+                         "<b>79 € TTC par mois</b>, tous les outils inclus : alertes DPE, carte des passoires, courriers, "
+                         "avis de valeur, dossiers acheteur, demandes des vendeurs de votre secteur.")
+                + P.format("Autrement dit, <b>votre part sur une seule vente</b> rentrée grâce à un DPE repéré à temps "
+                           "couvre plusieurs années d'abonnement.")
+                + P.format("Nous vous proposons <b>20 minutes en visio, sur vos propres rues</b> : les DPE récents, les passoires, "
+                           "les immeubles de SCI qui risquent de se vendre. Ensuite, vous décidez. Répondez simplement avec un créneau.")
+                + BUTTON.format(href=f"{SITE}/tarifs?{utm}", label="Voir les formules →"))
+    else:
+        subject = "Nous ne vous relancerons plus"
+        preview = f"Les prix de {ville} restent en accès libre."
+        body = (P.format("Ce sera notre dernier message à ce sujet.")
+                + (P.format(f"Les prix au m² de {v}, mis à jour chaque mois à partir des ventes réelles, restent en accès "
+                            f'libre : <a href="{prices_link}" style="color:#8a6d2f; font-weight:bold">les prix de {v}</a>. '
+                            "De quoi argumenter en rendez-vous, abonné ou pas.") if prices_link else "")
+                + P.format("Et si un jour vous voulez prospecter sans appeler à froid, la visite guidée reste ici :")
+                + BUTTON.format(href=demo, label="Voir la visite guidée →"))
     hello = f"Bonjour {html.escape(prenom)}," if prenom else "Bonjour,"
-    content = (f'<div style="{FONT}">' + P.format(hello) + body + SIGN_OFF + "</div>" + SIGNATURE + FOOTER)
+    # Preview line shown by the mail client next to the subject
+    hidden = (f'<div style="display:none; max-height:0; overflow:hidden; mso-hide:all">{html.escape(preview)}'
+              + "&nbsp;&zwnj;" * 40 + "</div>")
+    content = hidden + f'<div style="{FONT}">' + P.format(hello) + body + SIGN_OFF + "</div>" + SIGNATURE + FOOTER
     return {"subject": subject, "html": content}
 
 
@@ -229,7 +326,10 @@ def main():
             campaign = f"{NETWORKS[row['email'].strip().lower().rpartition('@')[2]]}_{re.sub(r'[^a-z]+', '-', ville.lower())}"
         else:
             campaign = "agences_75" if cp.startswith("75") or ville.lower() == "paris" else "agences_59"
-        msg = email(step, agence, ville, campaign, prenom)
+        if prenom is not None:
+            msg = advisor_email(step, prenom, ville, campaign, city_prices(ville, cp))
+        else:
+            msg = email(step, agence, ville, campaign)
         if args.dry_run:
             print(f"[essai] mail {step} -> {row['email']} : {msg['subject']}")
             continue

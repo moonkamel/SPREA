@@ -90,3 +90,12 @@ Texte brut, sans image : c'est ce qui passe le mieux les filtres anti-spam.
 - Envoi en semaine, entre 8 h et 10 h.
 - Avant chaque envoi quotidien : lecture des réponses de la veille dans la boîte contact@sprea.app ; toute agence qui a répondu (STOP ou autre) sort de la séquence.
 - Suivi dans `prospection-suivi.csv` : agence, email, étape (1 à 4), date du dernier envoi, statut (en cours, répondu, STOP, rebond).
+
+## Séquence des conseillers indépendants (iad…)
+
+Envoyée par `scripts/campaign/send_brevo.py` (`advisor_email`) aux adresses des réseaux de conseillers, au prénom quand il est connu, avec les prix au m² de leur commune (pages /prix-m2) quand elle a une page.
+
+1. **« {Prénom}, prospecter {ville} sans appeler à froid »** : depuis le 11 août, l'appel de prospection suppose l'accord préalable du particulier ; le courrier reste permis. Les nouveaux DPE de la veille, le courrier avec QR code, l'avis de valeur avant / après travaux. Bouton : visite guidée. Lien : prix au m² de la commune.
+2. **« Les propriétaires de {ville} qui demandent à être rappelés »** : l'estimateur gratuit de sprea.app ; les demandes de rappel du secteur sont transmises au conseiller abonné, avec le consentement du propriétaire. Bouton : l'estimateur, commune pré-remplie.
+3. **« {Prénom}, le calcul tient en une ligne »** : 79 € TTC par mois contre une commission ; 20 minutes en visio sur ses rues. Bouton : tarifs.
+4. **« Nous ne vous relancerons plus »** : les prix de la commune restent en accès libre ; la visite guidée.
