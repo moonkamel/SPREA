@@ -172,6 +172,15 @@ def city_prices(ville: str, cp: str = "") -> Optional[Dict]:
     return max(found, key=lambda r: r["k"]) if found else None
 
 
+def group(title: str, items: List[tuple]) -> str:
+    """A titled list of features (advisor emails)."""
+    rows = "".join(f'<tr><td style="padding:3px 8px 3px 0; vertical-align:top; color:#b8913f">•</td>'
+                   f'<td style="padding:3px 0"><b>{b}</b>{rest}</td></tr>' for b, rest in items)
+    return (f'<p style="margin:0 0 4px; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:#8a6d2f; '
+            f'font-weight:bold">{title}</p><table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px; '
+            f'font-size:14px; line-height:21px; color:#1f2937">{rows}</table>')
+
+
 def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Optional[Dict] = None) -> Dict[str, str]:
     """For an independent advisor (iad...), by first name when known. Each email
     gives something useful to open: the prices of their town, the estimator their
@@ -187,14 +196,24 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
         m2 = " et ".join(x for x in parts if x)
     if step == 1:
         subject = f"{prenom + ', p' if prenom else 'P'}rospecter {ville} sans appeler à froid"
-        preview = "Les DPE de la veille, un courrier en un clic, et des propriétaires qui vous rappellent."
+        preview = "Repérer les vendeurs, les contacter, signer le mandat : tout SPREA en un message."
         body = (P.format("Depuis le 11 août, appeler un particulier pour le prospecter suppose <b>son accord préalable</b> : "
                          "la pige téléphonique, c'est fini. <b>Le courrier, lui, reste permis.</b>")
-                + '<p style="margin:0 0 8px">SPREA est pensé pour les conseillers indépendants qui prospectent seuls :</p>'
-                + numbered([("Chaque matin, les nouveaux DPE de vos communes.", " Un DPE précède souvent une vente ou une mise en location."),
-                            ("Un courrier à votre nom en un clic,", " avec un QR code : le propriétaire découvre ce que vaut son bien et vous laisse ses coordonnées, avec son accord."),
-                            ("Un avis de valeur avant / après travaux", " appuyé sur les ventes réelles du quartier, pour signer le mandat.")])
-                + BUTTON.format(href=demo, label="Voir comment ça marche (3 min) →")
+                + P.format("SPREA est pensé pour les conseillers indépendants qui prospectent seuls. Tout est inclus :")
+                + group("Repérer les vendeurs", [
+                    ("Les nouveaux DPE de vos communes, chaque matin", " : un DPE précède souvent une vente ou une mise en location"),
+                    ("La carte des passoires E, F, G", ", classées par potentiel, avec le suivi de chaque adresse"),
+                    ("Les immeubles entiers détenus par une SCI", ", leur gérant, et les SCI en liquidation ou dissolution (BODACC)"),
+                    ("Les propriétaires de votre secteur qui demandent à être rappelés", ", depuis l'estimateur gratuit de sprea.app")])
+                + group("Les contacter", [
+                    ("Un courrier à votre nom en un clic", ", avec un QR code : le propriétaire découvre ce que vaut son bien et vous laisse ses coordonnées, avec son accord"),
+                    ("Les demandes de rappel", " réunies dans vos contacts, consentement horodaté")])
+                + group("Signer et vendre", [
+                    ("L'avis de valeur avant / après travaux", ", appuyé sur les ventes réelles du quartier"),
+                    ("Le simulateur de rénovation", " : travaux, aides, reste à charge, en direct devant le propriétaire"),
+                    ("Le dossier acheteur", " : la passoire qui ne part pas devient un projet chiffré"),
+                    ("Les PV d'AG lus par l'IA", ", la fiche de la copropriété, les artisans RGE et un rapport PDF à vos couleurs")])
+                + BUTTON.format(href=demo, label="Voir tout en 3 minutes →")
                 + (P.format(f"Au passage, à {v} en ce moment : {m2}. "
                             f'<a href="{prices_link}" style="color:#8a6d2f; font-weight:bold">Le détail par nombre de pièces et l\'évolution sur 3 ans</a>.')
                    if m2 else "")
