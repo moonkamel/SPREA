@@ -1,0 +1,57 @@
+name: Demo screenshots
+
+# Captures of SPREA Command for the demo page (/demo#command), with the real
+# IGN map, which the development sandbox cannot load. The site is built here
+# and the API answered with illustrative data (scripts/demo/command-shots.cjs);
+# the images are committed back to the branch that ran the workflow.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths:
+      - "scripts/demo/**"
+      - ".github/workflows/demo-shots.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --no-save --no-package-lock playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Capture
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          npx wait-on -t 60000 http://localhost:4173 2>/dev/null || sleep 10
+          mkdir -p shots
+          node scripts/demo/command-shots.cjs http://localhost:4173 shots
+      - name: Convert to WebP
+        run: |
+          pip install -q pillow
+          python3 - <<'PY'
+          from PIL import Image
+          for n in ("radar", "cible", "suivi"):
+              im = Image.open(f"shots/command-{n}.png").convert("RGB").resize((1600, 1000), Image.LANCZOS)
+              im.save(f"public/demo/command_{n}.webp", "WEBP", quality=84, method=6)
+          PY
+      - name: Commit the images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/demo/command_*.webp
+          git diff --cached --quiet && exit 0
+          git commit -qm "Demo: SPREA Command screenshots with the IGN map"
+          git push -q origin "HEAD:${GITHUB_REF_NAME}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shots
+          path: shots

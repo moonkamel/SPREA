@@ -54,7 +54,7 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     const errors = [];
     p.on('pageerror', e => errors.push(e.message));
     await p.addInitScript(([c]) => {
-        localStorage.setItem('sb-localhost-auth-token', JSON.stringify({ access_token: 'x.eyJzdWIiOiJ1In0.x', token_type: 'bearer', expires_in: 3600,
+        localStorage.setItem(`sb-${location.hostname.split('.')[0]}-auth-token`, JSON.stringify({ access_token: 'x.eyJzdWIiOiJ1In0.x', token_type: 'bearer', expires_in: 3600,
             expires_at: Math.floor(Date.now() / 1000) + 3600, refresh_token: 'r', user: { id: 'u', email: 'demo@sprea.app', aud: 'authenticated' } }));
         sessionStorage.setItem('sprea-command-center', JSON.stringify({ lat: c.lat, lon: c.lon, label: 'Tourcoing' }));
         localStorage.setItem('sprea-command-goal', '5');
@@ -72,12 +72,20 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
         if (u.includes('/api/agent-page')) return json({ agent_name: 'Tarik Lakel', agency_name: 'SPREA Immobilier' });
         return json({});
     });
+    // The map tiles (IGN) must be there before each capture
+    const tiles = async () => {
+        await p.waitForFunction(() => document.querySelectorAll('.leaflet-tile-loaded').length >= 12, null, { timeout: 30000 }).catch(() => {});
+        await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+        await p.waitForTimeout(1500);
+    };
     await p.goto(`${base}/command`, { waitUntil: 'domcontentloaded' });
-    await p.waitForTimeout(6000);
+    await p.waitForTimeout(4000);
+    await tiles();
     await p.screenshot({ path: `${out}/command-radar.png` });
     await p.keyboard.press('Enter').catch(() => {});
     await p.getByText('Ouvrir la cible #1').click();
-    await p.waitForTimeout(3500);
+    await p.waitForTimeout(2500);
+    await tiles();
     await p.screenshot({ path: `${out}/command-cible.png` });
     await p.getByRole('button', { name: /Suivi/ }).first().click();
     await p.waitForTimeout(1200);
