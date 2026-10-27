@@ -59,7 +59,7 @@ function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
     const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
     const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
     return (
-        <section ref={ref} className="relative lg:min-h-[min(calc(100svh-4rem),46rem)] flex flex-col lg:flex-row lg:items-center overflow-hidden">
+        <section ref={ref} className="relative lg:h-[calc(100svh-4rem)] lg:min-h-[30rem] lg:max-h-[50rem] flex flex-col lg:flex-row lg:items-center overflow-hidden">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_72%_50%,rgba(40,120,255,0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_15%_30%,rgba(201,164,92,0.10),transparent_70%)]" />
             <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
             {/* The house sits on the right on large screens, above the text on small ones */}
@@ -72,13 +72,14 @@ function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
                     </svg>
                 )}
             </div>
-            <motion.div style={{ y, opacity: fade }} className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 pb-14 lg:py-14">
+            <motion.div style={{ y, opacity: fade }} className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 pb-14 lg:py-[3vh]">
                 <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
                     className="inline-flex items-center gap-2 rounded-full border border-brass/30 bg-brass/[0.06] px-4 py-1.5 text-xs sm:text-sm text-brass-light tracking-wide backdrop-blur">
                     <span className="h-1.5 w-1.5 rounded-full bg-brass-light animate-pulse" /> Pour les conseillers immobiliers indépendants
                 </motion.p>
-                <h1 className="mt-5 max-w-[34rem] xl:max-w-[38rem] text-[2.1rem] leading-[1.08] sm:text-5xl lg:text-[3.1rem] xl:text-[3.5rem] text-ink [perspective:800px]">
-                    <KineticLine text="Le prochain mandat de votre secteur," delay={0.15} />
+                <h1 className="mt-5 lg:mt-[2.2vh] max-w-[36rem] xl:max-w-[42rem] text-[2.1rem] leading-[1.08] sm:text-5xl lg:text-[clamp(2.1rem,6.2vh+0.5vw,3.5rem)] text-ink [perspective:800px]">
+                    <span className="block"><KineticLine text="Le prochain mandat" delay={0.15} /></span>
+                    <span className="block"><KineticLine text="de votre secteur," delay={0.45} /></span>
                     <span className="block mt-2 text-brass-light [text-shadow:0_0_40px_rgba(201,164,92,0.45)]">
                         <KineticLine text="repérez-le avant" delay={0.75} />
                     </span>
@@ -89,18 +90,18 @@ function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
                     </span>
                 </h1>
                 <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3, duration: 0.7 }}
-                    className="mt-5 max-w-lg text-[15px] sm:text-base text-ink-soft/90 leading-relaxed">
+                    className="mt-5 lg:mt-[2.2vh] max-w-xl lg:max-w-[min(36rem,42vw)] text-[15px] sm:text-base text-ink-soft/90 leading-relaxed">
                     Pas de vitrine, pas de fichier d'agence, pas de standard qui sonne : votre prospection, c'est vous.
                     SPREA vous signale chaque matin les logements qui viennent de recevoir un DPE, prépare votre courrier
                     et vous arme de chiffres pour le rendez-vous.
                 </motion.p>
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.7 }}
-                    className="mt-8 flex flex-col sm:flex-row gap-3">
+                    className="mt-8 lg:mt-[3.4vh] flex flex-col sm:flex-row gap-3">
                     <GlowButton onClick={() => navigate('/demo')}>Voir la visite guidée <ArrowRight size={18} /></GlowButton>
                     <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Solo · 79 € TTC / mois</GlowButton>
                 </motion.div>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
-                    className="mt-5 text-xs text-faint flex items-center gap-2">
+                    className="mt-5 lg:mt-[2.2vh] text-xs text-faint flex items-center gap-2">
                     <ShieldCheck size={14} className="text-sage" /> Données publiques sourcées : ADEME, DGFiP, barèmes d'aides en vigueur
                 </motion.p>
             </motion.div>
