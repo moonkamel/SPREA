@@ -3,14 +3,10 @@ name: City prices data
 # Price per m2 of each commune from DVF (scripts/seo/city_prices.py), for the
 # public « Prix m² à <commune> » pages. Monthly (the 7th) or on demand, it
 # opens a pull request updating src/data/prix_index.json and public/prix/.
-# Pushed from the working branch, it writes the files to the prix-data branch.
 on:
   workflow_dispatch:
   schedule:
     - cron: "47 4 7 * *"
-  push:
-    branches: [claude/hopeful-fermi-re2vn1]
-    paths: [.github/workflows/city-prices.yml]
 
 permissions:
   contents: write
@@ -60,15 +56,7 @@ jobs:
           path: parts
           merge-multiple: true
       - run: python scripts/seo/city_prices.py combine --in parts --index src/data/prix_index.json --out public/prix
-      - name: Save to the prix-data branch
-        if: github.event_name == 'push'
-        run: |
-          mkdir /tmp/out && cp -r public/prix src/data/prix_index.json /tmp/out/
-          cd /tmp/out && git init -q && git checkout -q -b prix-data && git add -A
-          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "City prices"
-          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" prix-data
       - name: Open a pull request
-        if: github.event_name != 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

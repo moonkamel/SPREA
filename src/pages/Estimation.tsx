@@ -247,7 +247,8 @@ export default function EstimationPage() {
 // --- Address with the Base Adresse Nationale autocomplete ---
 
 function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked: Place | null }) {
-    const [q, setQ] = useState('');
+    // From a « Prix m² à <commune> » page: the commune is typed, the owner adds the street
+    const [q, setQ] = useState(() => { const c = new URLSearchParams(window.location.search).get('commune'); return c ? `${c.slice(0, 60)} ` : ''; });
     const [list, setList] = useState<Place[]>([]);
     const [active, setActive] = useState(0);
     const [chosen, setChosen] = useState('');
@@ -273,7 +274,7 @@ function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked:
             <form onSubmit={e => { e.preventDefault(); if (list[active]) choose(list[active]); }}
                 className="flex items-center gap-3 rounded-2xl border border-white/15 bg-panel/80 backdrop-blur px-4 h-16 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] focus-within:border-brass/70 focus-within:shadow-[0_0_0_4px_rgba(201,164,92,0.15)] transition-all">
                 <Search size={20} className="text-brass shrink-0" />
-                <input autoFocus aria-label="Adresse du bien" placeholder="Adresse du bien : 12 rue de la Paix, Lille" value={q}
+                <input autoFocus onFocus={e => e.currentTarget.setSelectionRange(0, 0)} aria-label="Adresse du bien" placeholder="Adresse du bien : 12 rue de la Paix, Lille" value={q}
                     onChange={e => setQ(e.target.value)}
                     onKeyDown={e => {
                         if (e.key === 'ArrowDown') { e.preventDefault(); setActive(a => Math.min(a + 1, list.length - 1)); }
