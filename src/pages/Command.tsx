@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Eye, FileText, Load
 import { useAccount } from '../account';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
+import { TourHost, useAutoTour } from '../tour';
 import { Button, DPE_COLORS, eur, eurRange, type DPEClass } from '../ui';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
@@ -122,6 +123,8 @@ export default function CommandPage() {
     const [moved, setMoved] = useState(false);
 
     const pro = !!me?.is_pro;
+    // First visit straight to Command: the welcome tour from its Command steps
+    useAutoTour('command', pro, 1);
     const statuses = useMemo(() => Object.fromEntries(pipeline.map(p => [p.number, p.status])) as Record<string, FollowUp>, [pipeline]);
 
     // Where to start: the last area, else the visitor's town (from their IP address)
@@ -412,11 +415,12 @@ export default function CommandPage() {
 
     return (
         <div className="h-[100dvh] flex flex-col bg-canvas text-ink overflow-hidden">
+            <TourHost screen="command" />
             {/* Top bar */}
             <header className="h-14 shrink-0 flex items-center gap-3 sm:gap-5 px-3 sm:px-5 border-b border-line bg-gradient-to-b from-[#0D1424] to-canvas">
                 <Link to="/" className="font-serif text-[21px] font-semibold tracking-wide">SPREA</Link>
                 <span className="hidden md:inline text-xs text-muted">Command · <b className="font-medium text-brass-light">{center?.label || '…'}</b> · rayon 1,5 km</span>
-                <div className="relative flex-1 max-w-xl mx-auto">
+                <div className="relative flex-1 max-w-xl mx-auto" data-tour="cmd-search">
                     <div className="h-9 flex items-center gap-2.5 rounded-[10px] border border-line bg-raised/60 px-3 shadow-[inset_0_0_24px_rgba(201,164,92,0.06)] focus-within:border-brass/60">
                         <Search size={15} className="text-muted shrink-0" />
                         <input ref={input} value={query} onChange={e => { setQuery(e.target.value); setCursor(0); setPaletteOpen(true); }}
@@ -458,7 +462,7 @@ export default function CommandPage() {
                         ['cible', Star, 'Cible', () => { const t = current?.o || ranked[0]?.o; if (t) focus(t); }],
                         ['suivi', Workflow, 'Suivi', () => setView('suivi')],
                     ] as const).map(([v, Icon, label, go]) => (
-                        <button key={v} type="button" onClick={go} aria-current={view === v ? 'page' : undefined}
+                        <button key={v} type="button" onClick={go} aria-current={view === v ? 'page' : undefined} data-tour={v === 'suivi' ? 'cmd-suivi' : undefined}
                             className={`relative w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] ${view === v ? 'text-brass-light bg-brass/10 lg:shadow-[inset_2px_0_0_#C9A45C]' : 'text-faint hover:text-ink'}`}>
                             <Icon size={19} strokeWidth={1.6} />{label}
                             {v === 'suivi' && due.length > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-coral text-[9px] text-white flex items-center justify-center">{due.length}</span>}
@@ -503,7 +507,7 @@ export default function CommandPage() {
                     {/* Radar HUD */}
                     {view === 'radar' && (
                         <>
-                            <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 sm:right-3.5 z-[500] grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5 pointer-events-none">
+                            <div data-tour="cmd-kpis" className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 sm:right-3.5 z-[500] grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5 pointer-events-none">
                                 <Kpi label="Nouveaux DPE · 7 j" value={kpis.newDpe} sub="classés E, F ou G" />
                                 <Kpi label="Biens à fort potentiel" value={scan ? scan.positive : null} sub={scan ? `sur ${scan.analysed} analysés` : 'analyse en cours'} loading={scanning} />
                                 <Kpi label="Valeur à débloquer" value={scan ? (unlocked >= 1e6 ? `${(unlocked / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} M€` : `${Math.round(unlocked / 1000)} k€`) : null} sub="par la rénovation" loading={scanning} className="hidden sm:block" />
@@ -529,7 +533,7 @@ export default function CommandPage() {
                                     ))}
                                 </div>
                             </div>
-                            <div className="self-stretch rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-3.5 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center gap-2 sm:gap-3">
+                            <div data-tour="cmd-briefing" className="self-stretch rounded-2xl border border-brass/30 bg-[#0D1424]/90 backdrop-blur px-3.5 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center gap-2 sm:gap-3">
                                 <span className="hidden md:block"><Orb /></span>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Briefing</p>
@@ -612,7 +616,7 @@ export default function CommandPage() {
                 <aside className="lg:w-[392px] shrink-0 max-h-[38vh] lg:max-h-none border-b lg:border-b-0 lg:border-l border-line bg-panel flex flex-col min-h-0">
                     {view === 'radar' && (
                         <>
-                            <div className="px-[18px] pt-4 pb-3 border-b border-line">
+                            <div data-tour="cmd-targets" className="px-[18px] pt-4 pb-3 border-b border-line">
                                 <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Cibles prioritaires</p>
                                 <h2 className="text-[19px] text-ink">{scan ? `${targets.length} bien${targets.length > 1 ? 's' : ''}, ${{ score: 'triés par score', fresh: 'les plus récents d\'abord', value: 'par valeur créée', todo: 'pas encore contactés' }[sortBy]}` : 'Analyse du secteur…'}</h2>
                                 <div className="mt-2.5 flex flex-wrap gap-1.5">
