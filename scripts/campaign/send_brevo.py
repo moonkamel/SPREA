@@ -46,10 +46,10 @@ SIGNATURE = ('<table cellpadding="0" cellspacing="0" border="0" style="font-fami
              'color:#1f2937; font-size:13px; line-height:18px; margin:4px 0 0"><tr><td style="border-left:3px solid '
              '#c9a45c; padding-left:12px"><div style="font-family:Georgia, \'Times New Roman\', serif; font-size:20px; '
              'line-height:24px; font-weight:bold; color:#0a0f1a; letter-spacing:0.5px">SPREA</div><div style="color:'
-             '#8a6d2f; font-size:12px">L\'outil DPE des pros de l\'immobilier</div><div style="margin-top:6px">'
+             '#8a6d2f; font-size:12px">La prospection immobilière nouvelle génération</div><div style="margin-top:6px">'
              'contact@sprea.app · <a href="https://sprea.app" style="color:#8a6d2f; font-weight:bold; text-decoration:'
-             'none">sprea.app</a></div><div style="color:#6b7280; font-size:11px; margin-top:4px">Prospection des '
-             'passoires thermiques · Simulateur de rénovation · Avis de valeur</div></td></tr></table>')
+             'none">sprea.app</a></div><div style="color:#6b7280; font-size:11px; margin-top:4px">SPREA Command · '
+             'Biens à fort potentiel · Avis de valeur</div></td></tr></table>')
 FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px; line-height:16px; color:#9ca3af; '
           'border-top:1px solid #e5e7eb; padding-top:8px; margin-top:20px; max-width:580px">SPREA EI, 239b rue du '
           'Jardin des Plantes, 59000 Lille. Pour ne plus recevoir nos messages, répondez simplement « STOP ».</div>')
@@ -201,6 +201,7 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                          "la pige téléphonique, c'est fini. <b>Le courrier, lui, reste permis.</b>")
                 + P.format("SPREA est pensé pour les conseillers indépendants qui prospectent seuls. Tout est inclus :")
                 + group("Repérer les vendeurs", [
+                    ("SPREA Command, votre cockpit de prospection", " : chaque matin, les biens à fort potentiel de votre secteur, chiffrés et classés par score"),
                     ("Les nouveaux DPE de vos communes, chaque matin", " : un DPE précède souvent une vente ou une mise en location"),
                     ("La carte des passoires E, F, G", ", classées par potentiel, avec le suivi de chaque adresse"),
                     ("Les immeubles entiers détenus par une SCI", ", leur gérant, et les SCI en liquidation ou dissolution (BODACC)"),
