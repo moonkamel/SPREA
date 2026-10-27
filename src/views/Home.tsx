@@ -55,9 +55,12 @@ export default function Home() {
 
 function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
     const [ref, on] = useOnScreen<HTMLElement>();
-    const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-    const y = useTransform(scrollYProgress, [0, 1], [0, 140]);
-    const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+    // From the window's scroll, not the section's: the home page stays mounted (hidden)
+    // under the other routes, and a progress measured while hidden would keep the
+    // title faded out when coming back to it
+    const { scrollY } = useScroll();
+    const y = useTransform(scrollY, [0, 700], [0, 140]);
+    const fade = useTransform(scrollY, [0, 560], [1, 0]);
     return (
         <section ref={ref} className="relative lg:h-[calc(100svh-4rem)] lg:min-h-[30rem] lg:max-h-[50rem] flex flex-col lg:flex-row lg:items-center overflow-hidden">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_72%_50%,rgba(40,120,255,0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_15%_30%,rgba(201,164,92,0.10),transparent_70%)]" />
