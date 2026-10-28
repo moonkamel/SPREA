@@ -1,0 +1,44 @@
+name: Prospection (annuaire Safti)
+
+# Safti advisors of the public « trouver un conseiller » directory
+# (scripts/campaign/safti_directory.py), pushed to the safti-extract branch
+# to be queued in the files of campaign-suivi. Without the script yet, saves
+# the robots.txt and sample pages to read the page layout.
+on:
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "Nombre de pages"
+        default: "182"
+  push:
+    branches: ["claude/**"]
+    paths: [".github/workflows/campaign-safti.yml", "scripts/campaign/safti_directory.py"]
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Extract
+        run: |
+          mkdir out
+          if [ -f scripts/campaign/safti_directory.py ]; then
+            python -u scripts/campaign/safti_directory.py --pages "${{ inputs.pages || '182' }}" --out out/safti.csv 2>&1 | tee out/safti.log
+          else
+            UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
+            curl -s -A "$UA" https://www.safti.fr/robots.txt -o out/robots.txt
+            for p in 1 2 182; do curl -s -A "$UA" -H "Accept-Language: fr-FR" "https://www.safti.fr/trouver-un-conseiller?page=$p" -o "out/page$p.html"; sleep 2; done
+            ls -la out
+          fi
+      - name: Save
+        run: |
+          cd out && git init -q -b safti && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Annuaire Safti $(date +%F)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" safti:safti-extract

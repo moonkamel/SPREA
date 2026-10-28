@@ -3,12 +3,13 @@ name: Prospection (annuaire iad)
 # Extracts the iad advisors of a directory page (scripts/campaign/iad_directory.py)
 # and pushes the CSV to the iad-extract branch, to be queued in the files of
 # campaign-suivi. Manual: the directory slug is the end of the page address,
-# e.g. var-83 for https://www.iadfrance.fr/trouver-un-conseiller/var-83.
+# e.g. var-83 for https://www.iadfrance.fr/trouver-un-conseiller/var-83;
+# several slugs separated by spaces are read one after the other.
 on:
   workflow_dispatch:
     inputs:
       town:
-        description: "Annuaire iad (ex. var-83, pg-lyon_69)"
+        description: "Annuaire(s) iad, séparés par des espaces (ex. var-83 pg-lyon_69)"
         required: true
       ville:
         description: "Ville affichée quand la fiche n'en donne pas"
@@ -23,9 +24,9 @@ permissions:
 jobs:
   extract:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     env:
-      TOWN: ${{ inputs.town || 'var-83' }}
+      TOWN: ${{ inputs.town || 'essonne-91 yvelines-78 loire-atlantique-44 hauts-de-seine-92 val-d-oise-95 bouches-du-rhone-13 alpes-maritimes-06 val-de-marne-94 paris-75 charente-maritime-17 moselle-57 herault-34 haute-garonne-31 pyrenees-orientales-66 gard-30' }}
       VILLE: ${{ inputs.ville || '' }}
     steps:
       - uses: actions/checkout@v4
@@ -34,11 +35,13 @@ jobs:
           python-version: "3.12"
       - run: |
           mkdir out
-          python -u scripts/campaign/iad_directory.py --town "$TOWN" --ville "$VILLE" --max-pages 200 --out "out/iad_$TOWN.csv" 2>&1 | tee "out/iad_$TOWN.log"
+          for t in $TOWN; do
+            python -u scripts/campaign/iad_directory.py --town "$t" --ville "$VILLE" --max-pages 200 --out "out/iad_$t.csv" 2>&1 | tee "out/iad_$t.log" || true
+          done
       - name: Save
         run: |
           git fetch -q origin iad-extract && git checkout -q iad-extract || git checkout -q --orphan iad-extract
           git rm -rqf --cached . >/dev/null 2>&1 || true
           cp out/* . && git add -f iad_*.csv iad_*.log
-          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Annuaire iad : $TOWN"
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Annuaire iad : $(echo $TOWN | wc -w) annuaire(s)"
           git push -q origin HEAD:iad-extract

@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta
@@ -56,7 +57,7 @@ FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px;
 
 
 # Independent advisors of a network: the address is theirs (prenom.nom@domain)
-NETWORKS = {"iadfrance.fr": "mandataires"}
+NETWORKS = {"iadfrance.fr": "mandataires", "safti.fr": "safti"}
 
 
 def first_name(address: str, name: str = "") -> Optional[str]:
@@ -66,6 +67,10 @@ def first_name(address: str, name: str = "") -> Optional[str]:
     if domain not in NETWORKS or "." not in local:
         return None
     first = local.split(".")[0]
+    # The name as written keeps the accents the address drops (« agnes » -> « Agnès »)
+    shown = name.split()[0] if name.split() else ""
+    if len(first) >= 2 and unicodedata.normalize("NFKD", shown).encode("ascii", "ignore").decode().lower() == first:
+        return shown[:1].upper() + shown[1:]
     if len(first) < 2:
         words = name.split()
         first = words[0].lower() if len(words) > 1 and len(words[0].strip(".")) > 1 else ""
