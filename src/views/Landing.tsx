@@ -13,13 +13,13 @@ interface Props {
 }
 
 const SHORTCUTS = [
-    { to: '/prospection?mode=potentiel', icon: MapPin, title: 'Biens à fort potentiel', text: 'Les passoires de votre secteur chiffrées et classées, avec tous les outils pour chaque adresse.' },
+    { to: '/prospection?mode=dpe', icon: MapPin, title: 'Tous les DPE récents', text: 'Chaque DPE E, F, G de la carte, avec le courrier, le propriétaire et la simulation.' },
     { to: '/alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
     { to: '/contacts', icon: Users, title: 'Contacts', text: 'Les propriétaires qui ont répondu à vos courriers.' },
 ]
 
 export default function Landing({ loading, error, onSearchAddress, onSearchDpe }: Props) {
-    // Shown to subscribers only: their first visit starts with SPREA Command
+    // Shown to subscribers only: their first visit starts with Prospection
     useAutoTour('command', true);
     const [mode, setMode] = useState<'address' | 'dpe'>('address');
     const [query, setQuery] = useState('');
@@ -60,20 +60,20 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_0%,rgba(201,164,92,0.16),transparent_60%)] pointer-events-none" />
                     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 grid gap-8 lg:grid-cols-[1fr_1.25fr] items-center">
                         <div>
-                            <p className="text-sm text-brass tracking-wide flex items-center gap-2"><Radar size={16} />SPREA Command</p>
+                            <p className="text-sm text-brass tracking-wide flex items-center gap-2"><Radar size={16} />Prospection</p>
                             <h1 className="mt-4 text-3xl sm:text-[2.6rem] leading-[1.1] text-ink">Vos mandats du jour, <span className="text-brass-light">sur un seul écran.</span></h1>
                             <p className="mt-4 text-muted">
                                 Le radar de votre secteur chiffre chaque DPE récent et classe les biens par score. Le briefing vous dit qui contacter
-                                en premier ; un clic, et le courrier, le nom du propriétaire et le dossier sont prêts.
+                                en premier ; un clic, et le courrier, le nom du propriétaire et le dossier sont prêts. Sur le même écran : tous
+                                les DPE récents de la carte et les immeubles entiers.
                             </p>
                             <div className="mt-6 flex flex-wrap gap-3">
-                                <Button className="h-12 px-6" onClick={() => navigate('/command')}>Ouvrir SPREA Command <ArrowRight size={18} /></Button>
-                                <Button variant="secondary" className="h-12 px-5" onClick={() => navigate('/prospection')}><MapPin size={16} />Carte de prospection</Button>
+                                <Button className="h-12 px-6" onClick={() => navigate('/prospection')}>Ouvrir la prospection <ArrowRight size={18} /></Button>
                             </div>
                         </div>
-                        <button type="button" data-tour="home-command" onClick={() => navigate('/command')} aria-label="Ouvrir SPREA Command"
+                        <button type="button" data-tour="home-command" onClick={() => navigate('/prospection')} aria-label="Ouvrir la prospection"
                             className="group relative rounded-2xl overflow-hidden border border-brass/30 shadow-[0_30px_80px_-20px_rgba(201,164,92,0.35)] hover:border-brass/60 transition-colors">
-                            <img src="/demo/command_radar.webp" alt="SPREA Command : radar du secteur, cibles classées par score et briefing du matin" width={1600} height={1000} className="block w-full h-auto" />
+                            <img src="/demo/command_radar.webp" alt="Prospection : radar du secteur, cibles classées par score et briefing du matin" width={1600} height={1000} className="block w-full h-auto" />
                             <span className="absolute inset-0 bg-gradient-to-t from-canvas/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                     </div>

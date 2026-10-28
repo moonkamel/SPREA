@@ -51,7 +51,7 @@
 /* Home: the day of prospecting, an endless band (two copies of the cards with a trailing gap: -50 % = one copy) */
 @keyframes daymarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* SPREA Command: radar sweep, reticles, HUD tiles */
+/* Prospection: radar sweep, reticles, HUD tiles */
 @keyframes cmdspin { to { transform: rotate(360deg); } }
 .cmd-sweep { animation: cmdspin 6s linear infinite; transform-origin: 0 0; }
 .cmd-spin-slow { animation: cmdspin 24s linear infinite; }
@@ -73,3 +73,4 @@
 @media (prefers-reduced-motion: reduce) { .cmd-sweep, .cmd-spin-slow, .cmd-reticle::before, .cmd-orb { animation: none; } }
 .cmd-map .leaflet-top.leaflet-right { top: 64px; }
 @media (min-width: 1280px) { .cmd-map .leaflet-top.leaflet-right { top: 128px; } }
+.cmd-select { height: 2.25rem; border-radius: 0.6rem; border: 1px solid rgba(201, 164, 92, 0.22); background: rgba(13, 20, 36, 0.85); padding: 0 0.6rem; font-size: 0.8rem; color: #ECEFF4; backdrop-filter: blur(8px); }

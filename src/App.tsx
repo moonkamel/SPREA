@@ -7,9 +7,8 @@ import ConfidentialitePage from './pages/Confidentialite';
 import MentionsLegalesPage from './pages/MentionsLegales';
 import PricingPage from './pages/Pricing';
 import { NotFound } from './pages/site';
-// Leaflet is only loaded on the map page
+// Leaflet is only loaded on the prospection page
 const ProspectionPage = lazy(() => import('./pages/Prospection'));
-const CommandPage = lazy(() => import('./pages/Command'));
 const OwnerPage = lazy(() => import('./pages/Owner'));
 const ContactsPage = lazy(() => import('./pages/Contacts'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
@@ -42,7 +41,9 @@ export default function App() {
 function Pages() {
     const rawPath = usePath();
     // "/tarifs/" -> "/tarifs"
-    const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') || '/' : rawPath;
+    // /command was the cockpit's address before it became Prospection
+    const trimmed = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') || '/' : rawPath;
+    const path = trimmed === '/command' ? '/prospection' : trimmed;
     useEffect(() => {
         if (path === rawPath) return;
         window.history.replaceState(window.history.state, '', `${path}${window.location.search}${window.location.hash}`);
@@ -54,7 +55,6 @@ function Pages() {
         '/mentions-legales': <MentionsLegalesPage />,
         '/confidentialite': <ConfidentialitePage />,
         '/prospection': <Suspense fallback={null}><ProspectionPage /></Suspense>,
-        '/command': <Suspense fallback={null}><CommandPage /></Suspense>,
         '/contacts': <Suspense fallback={null}><ContactsPage /></Suspense>,
         '/alertes': <Suspense fallback={null}><AlertsPage /></Suspense>,
         '/observatoire': <Suspense fallback={null}><ObservatoirePage /></Suspense>,

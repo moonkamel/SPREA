@@ -615,7 +615,7 @@ async def get_statuses(numbers: str = Query(..., max_length=4000), user: User = 
 @router.get("/prospect-status/all")
 async def pipeline(user: User = Depends(current_user), store: SupabaseStore = Depends(store_dep)):
     """Every followed address of the agency, latest first: the follow-up board
-    of SPREA Command, with what is due today."""
+    of the Prospection dashboard, with what is due today."""
     scope = await status_scope(user, store)
     try:
         rows = await store.prospect_pipeline(scope)

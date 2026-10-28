@@ -70,7 +70,7 @@ export default function DemoPage() {
                             De la publication d'un DPE au rendez-vous chez le propriétaire : voici comment SPREA vous fait gagner des mandats, écran par écran.
                         </p>
                         <ol className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 lg:-mx-36 gap-3 text-left">
-                            {[['7 h 45', 'SPREA Command', 'command'], ['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['15 h', 'Le dossier acheteur', 'vendre']].map(([h, t, a]) => (
+                            {[['7 h 45', 'Prospection', 'prospection'], ['8 h', 'Les nouveaux DPE', 'alertes'], ['8 h 15', 'La carte du secteur', 'prospecter'], ['8 h 30', 'Le courrier', 'contacter'], ['11 h', 'Les immeubles', 'immeubles-rapport'], ['12 h', "Les PV d'AG", 'pv-ag'], ['14 h', 'Le rendez-vous', 'convaincre'], ['15 h', 'Le dossier acheteur', 'vendre']].map(([h, t, a]) => (
                                 <li key={a}>
                                     <a href={`#${a}`} className="block rounded-2xl border border-white/10 bg-panel/60 backdrop-blur px-4 py-3 hover:border-brass/50 hover:shadow-[0_0_30px_-8px_rgba(201,164,92,0.5)] transition-all">
                                         <span className="block font-serif text-xl text-brass">{h}</span>
@@ -82,34 +82,35 @@ export default function DemoPage() {
                     </div>
                 </section>
 
-                <section id="command" className="scroll-mt-24 relative overflow-hidden border-b border-white/[0.06]">
+                <section id="prospection" className="scroll-mt-24 relative overflow-hidden border-b border-white/[0.06]">
                     <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(201,164,92,0.16),transparent_60%)]" />
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
                         <Reveal className="max-w-3xl mx-auto text-center">
-                            <Eyebrow>7 h 45 · SPREA Command</Eyebrow>
-                            <h2 className="mt-5 text-3xl sm:text-5xl leading-[1.08] text-ink">Votre cockpit de prospection. <span className="block text-brass-light [text-shadow:0_0_40px_rgba(201,164,92,0.45)]">Un café, un écran, vos mandats du jour.</span></h2>
+                            <Eyebrow>7 h 45 · Prospection</Eyebrow>
+                            <h2 className="mt-5 text-3xl sm:text-5xl leading-[1.08] text-ink">Votre tableau de bord de prospection. <span className="block text-brass-light [text-shadow:0_0_40px_rgba(201,164,92,0.45)]">Un café, un écran, vos mandats du jour.</span></h2>
                             <p className="mt-5 text-[15px] sm:text-base text-ink-soft/90">
                                 Le radar de votre secteur balaie chaque DPE récent, le chiffre et classe les biens par score. Un briefing vous dit où frapper
                                 en premier. Un clic verrouille la cible : valeur, travaux, aides, valeur après rénovation, et toutes les actions à portée
-                                de clavier. Le tableau de suivi vous rappelle chaque relance et chaque vendeur à rappeler.
+                                de clavier. Le tableau de suivi vous rappelle chaque relance et chaque vendeur à rappeler. Sur le même écran, tous les DPE récents de la
+                                carte et les immeubles entiers détenus par une société.
                             </p>
                         </Reveal>
                         <Reveal delay={0.1} className="relative mt-10">
                             <div aria-hidden="true" className="absolute -inset-8 rounded-[3rem] bg-[radial-gradient(ellipse_at_center,rgba(201,164,92,0.14),transparent_70%)]" />
-                            <div className="relative"><Screen src="/demo/command_radar.webp" alt="SPREA Command, le radar : nouveaux DPE, biens à fort potentiel, valeur à débloquer, cibles classées par score et briefing du matin" width={1600} height={1000} /></div>
+                            <div className="relative"><Screen src="/demo/command_radar.webp" alt="Prospection, le radar : nouveaux DPE, biens à fort potentiel, valeur à débloquer, cibles classées par score et briefing du matin" width={1600} height={1000} /></div>
                         </Reveal>
                         <div className="mt-6 grid gap-6 lg:grid-cols-2">
                             <Reveal delay={0.05}>
-                                <Screen src="/demo/command_cible.webp" alt="SPREA Command, cible verrouillée : valeur, travaux, aides et valeur après travaux autour du bien, actions au clavier" width={1600} height={1000} />
+                                <Screen src="/demo/command_cible.webp" alt="Prospection, cible verrouillée : valeur, travaux, aides et valeur après travaux autour du bien, actions au clavier" width={1600} height={1000} />
                                 <p className="mt-3 text-sm text-ink-soft"><b className="text-ink font-medium">La cible verrouillée.</b> Les chiffres du bien autour de lui, « pourquoi maintenant », et une touche par action : C courrier, P propriétaire, D dossier, S simulation.</p>
                             </Reveal>
                             <Reveal delay={0.1}>
-                                <Screen src="/demo/command_suivi.webp" alt="SPREA Command, suivi : à contacter, courrier, relance, rendez-vous, mandat, et les actions du jour" width={1600} height={1000} />
+                                <Screen src="/demo/command_suivi.webp" alt="Prospection, suivi : à contacter, courrier, relance, rendez-vous, mandat, et les actions du jour" width={1600} height={1000} />
                                 <p className="mt-3 text-sm text-ink-soft"><b className="text-ink font-medium">Le suivi.</b> De « à contacter » au mandat, partagé avec votre agence ; chaque matin, les relances dues, les vendeurs à rappeler, les rendez-vous à préparer.</p>
                             </Reveal>
                         </div>
                         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <GlowButton onClick={() => navigate(me?.is_pro ? '/command' : '/tarifs')}>{me?.is_pro ? 'Ouvrir SPREA Command' : 'Essayer SPREA Command'}<ArrowRight size={16} /></GlowButton>
+                            <GlowButton onClick={() => navigate(me?.is_pro ? '/prospection' : '/tarifs')}>{me?.is_pro ? 'Ouvrir la prospection' : 'Essayer la prospection'}<ArrowRight size={16} /></GlowButton>
                             <p className="text-xs text-faint">Captures réalisées avec des données d'exemple. Inclus dans la formule Pro.</p>
                         </div>
                     </div>
@@ -122,7 +123,7 @@ export default function DemoPage() {
                 </Step>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6"><div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" /></div>
-                <Step id="prospecter" kicker="8 h 15 · Prospection" title="Toutes les passoires de votre secteur sur une carte" reverse
+                <Step id="prospecter" kicker="8 h 15 · Tous les DPE" title="Toutes les passoires de votre secteur sur une carte" reverse
                     points={['Toutes les adresses classées E, F ou G, logement par logement', 'Filtres par type de bien et ancienneté du DPE', 'Export CSV pour votre CRM']}
                     media={<Screen src="/demo/map.webp" alt="Carte de prospection : 105 logements classés F ou G dans le centre de Lille" width={1560} height={628} />}>
                     <p>Les propriétaires bailleurs de logements classés F et G doivent rénover pour continuer à louer, et ces biens se vendent moins cher : ce sont vos futurs vendeurs.</p>
