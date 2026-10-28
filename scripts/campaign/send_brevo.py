@@ -49,7 +49,7 @@ SIGNATURE = ('<table cellpadding="0" cellspacing="0" border="0" style="font-fami
              'line-height:24px; font-weight:bold; color:#0a0f1a; letter-spacing:0.5px">SPREA</div><div style="color:'
              '#8a6d2f; font-size:12px">La prospection immobilière nouvelle génération</div><div style="margin-top:6px">'
              'contact@sprea.app · <a href="https://sprea.app" style="color:#8a6d2f; font-weight:bold; text-decoration:'
-             'none">sprea.app</a></div><div style="color:#6b7280; font-size:11px; margin-top:4px">SPREA Command · '
+             'none">sprea.app</a></div><div style="color:#6b7280; font-size:11px; margin-top:4px">Prospection · '
              'Biens à fort potentiel · Avis de valeur</div></td></tr></table>')
 FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px; line-height:16px; color:#9ca3af; '
           'border-top:1px solid #e5e7eb; padding-top:8px; margin-top:20px; max-width:580px">Pour ne plus recevoir nos '
@@ -206,9 +206,9 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                          "la pige téléphonique, c'est fini. <b>Le courrier, lui, reste permis.</b>")
                 + P.format("SPREA est pensé pour les conseillers indépendants qui prospectent seuls. Tout est inclus :")
                 + group("Repérer les vendeurs", [
-                    ("SPREA Command, votre cockpit de prospection", " : chaque matin, les biens à fort potentiel de votre secteur, chiffrés et classés par score"),
+                    ("Prospection, votre tableau de bord", " : chaque matin, les biens à fort potentiel de votre secteur, chiffrés et classés par score"),
                     ("Les nouveaux DPE de vos communes, chaque matin", " : un DPE précède souvent une vente ou une mise en location"),
-                    ("La carte des passoires E, F, G", ", classées par potentiel, avec le suivi de chaque adresse"),
+                    ("Sur le même écran, tous les DPE E, F, G récents", ", avec le suivi de chaque adresse"),
                     ("Les immeubles entiers détenus par une SCI", ", leur gérant, et les SCI en liquidation ou dissolution (BODACC)"),
                     ("Les propriétaires de votre secteur qui demandent à être rappelés", ", depuis l'estimateur gratuit de sprea.app")])
                 + group("Les contacter", [

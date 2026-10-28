@@ -33,7 +33,7 @@ function Nav() {
     const [open, setOpen] = useState(false);
     const menu = useRef<HTMLDivElement>(null);
     const links: [string, string, boolean][] = me?.is_pro
-        ? [['/command', 'Command', true], ['/prospection', 'Prospection', false], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
+        ? [['/prospection', 'Prospection', true], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Visite guidée', true], ['/estimation', 'Estimer un bien', false], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     const hidden = links.some(([, , essential]) => !essential);
@@ -58,7 +58,7 @@ function Nav() {
     return (
         <>
             {links.map(([to, label, essential]) => (
-                <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}${to === '/command' ? ' !text-brass-light hover:!text-ink' : ''}`}>{label}</Link>
+                <Link key={to} to={to} className={`${essential ? '' : 'hidden md:inline '}${NAV_LINK}${to === '/prospection' ? ' !text-brass-light hover:!text-ink' : ''}`}>{label}</Link>
             ))}
             {hidden && (
                 <div ref={menu} className="relative md:hidden">
@@ -116,7 +116,7 @@ function GuideMenu() {
                         <button key={id} type="button" onClick={() => { setOpen(false); startTour(id); }}
                             className="block w-full text-left rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:text-ink hover:bg-raised">
                             {TOURS[id].name}
-                            <span className="block text-xs text-faint">{id === 'command' ? 'Votre cockpit de prospection' : id === 'vendre' ? 'Le dossier acheteur d\'un bien sous mandat' : 'Les biens à fort potentiel et leur suivi'}</span>
+                            <span className="block text-xs text-faint">{id === 'command' ? 'Votre tableau de bord de prospection' : 'Le dossier acheteur d\'un bien sous mandat'}</span>
                         </button>
                     ))}
                 </div>

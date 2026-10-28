@@ -3,15 +3,15 @@ import { navigate } from './router';
 
 // In-app guided tour: bubbles anchored on the real elements of the screen,
 // one sentence per step, "Passer" at every step, started once on its own and
-// again from the header. Three journeys:
-// - "command": the welcome, SPREA Command, the agent's prospecting cockpit;
-// - "vendre": sell a poorly rated dwelling under mandate with the buyer's file;
-// - "prospecter": find the dwellings of an area, follow them up, win the mandate.
+// again from the header. Two journeys:
+// - "command": the welcome, then Prospection, the agent's one prospecting
+//   dashboard (the id stays "command" so the agents who saw it are not shown it again);
+// - "vendre": sell a poorly rated dwelling under mandate with the buyer's file.
 // A journey may span two screens (the simulator's search, then its results):
 // each screen hosts the steps it can show.
 
-export type TourId = 'command' | 'vendre' | 'prospecter';
-export type TourScreen = 'simulateur' | 'logement' | 'carte' | 'command';
+export type TourId = 'command' | 'vendre';
+export type TourScreen = 'simulateur' | 'logement' | 'prospection';
 
 interface TourStep {
     screen: TourScreen;
@@ -29,19 +29,21 @@ export const TOURS: Record<TourId, { name: string; steps: TourStep[] }> = {
     command: {
         name: 'Bienvenue dans SPREA',
         steps: [
-            { screen: 'simulateur', target: 'home-command', title: 'SPREA Command',
+            { screen: 'simulateur', target: 'home-command', title: 'Prospection',
               text: 'Votre cockpit de prospection : les biens à fort potentiel de votre secteur, chiffrés et classés, et toutes les actions au même endroit.',
-              go: '/command', then: 'La visite continue dans SPREA Command.' },
-            { screen: 'command', target: 'cmd-kpis', title: 'Votre secteur ce matin',
+              go: '/prospection', then: 'La visite continue dans Prospection.' },
+            { screen: 'prospection', target: 'cmd-kpis', title: 'Votre secteur ce matin',
               text: 'Nouveaux DPE, biens à fort potentiel, valeur à débloquer par la rénovation, signaux de vente des SCI, demandes de vendeurs.' },
-            { screen: 'command', target: 'cmd-targets', title: 'Vos cibles',
+            { screen: 'prospection', target: 'cmd-targets', title: 'Vos cibles',
               text: 'Classées par score : ce que la rénovation ajoute à la valeur, la fraîcheur du DPE, l\'urgence pour le propriétaire.',
               note: 'Au clavier : ↑ ↓ pour choisir, Entrée pour ouvrir.' },
-            { screen: 'command', target: 'cmd-briefing', title: 'Par où commencer',
+            { screen: 'prospection', target: 'cmd-briefing', title: 'Par où commencer',
               text: 'Le briefing vous donne la priorité du jour. Une cible ouverte montre ses chiffres et toutes les actions : courrier, nom du propriétaire, dossiers.' },
-            { screen: 'command', target: 'cmd-search', title: 'Votre zone',
+            { screen: 'prospection', target: 'cmd-search', title: 'Votre zone',
               text: 'Tapez une commune ou une adresse pour scanner un autre secteur, ou une commande (⌘ K).' },
-            { screen: 'command', target: 'cmd-suivi', title: 'Le suivi',
+            { screen: 'prospection', target: 'cmd-layers', title: 'Toute la carte',
+              text: 'Tous les DPE récents de la carte, filtrés, avec alerte quotidienne et export CSV, puis les immeubles entiers détenus par une société.' },
+            { screen: 'prospection', target: 'cmd-suivi', title: 'Le suivi',
               text: 'De « à contacter » au mandat, avec chaque matin les relances dues et les vendeurs à rappeler.',
               note: 'Cette visite reste disponible dans le menu « ? » du site.' },
         ],
@@ -58,19 +60,6 @@ export const TOURS: Record<TourId, { name: string; steps: TourStep[] }> = {
             { screen: 'logement', target: 'sell-dossier', title: 'Le dossier acheteur',
               text: 'Partagez-le avec vos acquéreurs : ils ne voient plus une passoire, mais un projet chiffré.',
               note: 'Estimations indicatives, à confirmer par devis.' },
-        ],
-    },
-    prospecter: {
-        name: 'Prospecter',
-        steps: [
-            { screen: 'carte', target: 'invest-map', title: 'Votre secteur', text: 'Placez la carte sur votre zone de prospection.' },
-            { screen: 'carte', target: 'invest-analyse', title: "L'analyse",
-              text: 'Nous repérons les DPE E, F et G récents de la zone. Comptez 10 à 40 secondes.' },
-            { screen: 'carte', target: 'invest-filters', title: 'Vos priorités',
-              text: 'Les biens sont classés par potentiel : DPE récent, classe, valeur. Filtrez selon vos critères.' },
-            { screen: 'carte', target: 'invest-status', title: 'Le suivi',
-              text: 'Notez où vous en êtes pour chaque adresse : courrier, relance, rendez-vous, mandat.',
-              note: 'Le dossier propriétaire vous servira de support au rendez-vous.' },
         ],
     },
 };
@@ -111,9 +100,8 @@ export function startTour(id: TourId) {
     markSeen(id);
     writeState({ id, step: 0 });
     const first = TOURS[id].steps[0].screen;
-    if (first === 'carte') navigate('/prospection?mode=potentiel');
-    else if (first === 'simulateur') navigate('/');
-    else if (first === 'command') navigate('/command');
+    if (first === 'simulateur') navigate('/');
+    else if (first === 'prospection') navigate('/prospection');
 }
 
 // Starts a journey the first time one of its screens is shown, at the

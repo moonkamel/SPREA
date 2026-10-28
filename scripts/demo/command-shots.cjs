@@ -1,4 +1,4 @@
-// Screenshots of SPREA Command for the demo page, on illustrative data
+// Screenshots of the Prospection dashboard for the demo page, on illustrative data
 // (fictitious addresses and figures, real map). Usage:
 //   node scripts/demo/command-shots.cjs http://localhost:4173 public/demo
 const { chromium } = require('playwright');
@@ -33,6 +33,13 @@ const items = streets.map((s, i) => {
         rental_after: 'Louable sans limite', risks: [`Prix estimé sur ${30 + i * 3} ventes à moins de 500 m`],
     };
 });
+// Every recent DPE of the map and the whole buildings, same fictitious streets
+const addresses = items.map((o, i) => ({ address: o.address, lat: o.lat, lon: o.lon, worst: o.label,
+    dpe: [{ number: o.number, label: o.label, kind: o.kind, surface: o.surface, date: o.dpe_date, period: o.period, detail: null }] }));
+const buildings = items.slice(0, 6).map((o, i) => ({ id: `b${i}`, address: o.address, lat: o.lat + 0.001, lon: o.lon - 0.001, nb_log: 4 + i * 2,
+    levels: 3 + (i % 3), year_built: 1900 + i * 9, owner: { siren: '', name: `SCI EXEMPLE ${i + 1}`, legal_form: 'SCI', city: 'Tourcoing' }, owner_share: 1,
+    dpe_label: i % 2 ? 'F' : 'E', dpe_date: o.dpe_date, dpe_count: 2 + i, dpe_fg: i % 3, last_sale_date: null, last_sale_price: null, last_sale_units: null,
+    signal_score: [72, 55, 40, 30, 20, 12][i], signal_level: ['fort', 'moyen', 'moyen', 'faible', 'faible', 'faible'][i] }));
 const scan = { profile: 'bailleur', sort: 'potentiel', analysed: 143, valued: 96, positive: 37, items };
 const iso = n => new Date(Date.now() - n * 86400000).toISOString();
 const pipeline = [
@@ -66,8 +73,8 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
         if (u.includes('/api/me')) return json({ id: 'u', email: 'demo@sprea.app', is_pro: true, subscription_status: 'active', plan: 'pro' });
         if (u.includes('/api/opportunities')) return json(scan);
         if (u.includes('/api/prospect-status/all')) return json({ items: pipeline });
-        if (u.includes('/api/prospection')) return json({ locked: false, addresses: [], dwellings: 14, total: 14, truncated: false });
-        if (u.includes('/api/monopro')) return json({ buildings: [{ signal_level: 'fort' }, { signal_level: 'moyen' }, { signal_level: 'moyen' }], truncated: false });
+        if (u.includes('/api/prospection')) return json({ locked: false, addresses, dwellings: addresses.length, total: addresses.length, truncated: false });
+        if (u.includes('/api/monopro')) return json({ buildings, truncated: false });
         if (u.includes('/api/estimate-leads')) return json({ leads });
         if (u.includes('/api/agent-page')) return json({ agent_name: 'Tarik Lakel', agency_name: 'SPREA Immobilier' });
         return json({});
@@ -78,7 +85,7 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
         await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
         await p.waitForTimeout(1500);
     };
-    await p.goto(`${base}/command`, { waitUntil: 'domcontentloaded' });
+    await p.goto(`${base}/prospection`, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(4000);
     await tiles();
     await p.screenshot({ path: `${out}/command-radar.png` });
@@ -90,6 +97,12 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     await p.getByRole('button', { name: /Suivi/ }).first().click();
     await p.waitForTimeout(1200);
     await p.screenshot({ path: `${out}/command-suivi.png` });
+    for (const [name, label] of [['dpe', 'DPE'], ['immeubles', 'Immeubles']]) {
+        await p.getByRole('button', { name: label, exact: true }).click();
+        await p.waitForTimeout(2500);
+        await tiles();
+        await p.screenshot({ path: `${out}/command-${name}.png` });
+    }
     if (errors.length) { console.error(errors); process.exitCode = 1; }
     await b.close();
 })();
