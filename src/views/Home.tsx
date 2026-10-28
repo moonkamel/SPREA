@@ -151,7 +151,7 @@ function Day() {
                 <h2 className="mt-3 text-2xl sm:text-4xl text-ink max-w-2xl leading-tight">Du café du matin au mandat signé.</h2>
             </div>
             <div className={`group mt-8 sm:mt-10 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)] ${reduce ? 'overflow-x-auto' : ''}`}>
-                <div className={`flex w-max gap-5 pr-5 ${reduce ? '' : 'animate-[daymarquee_110s_linear_infinite] group-hover:[animation-play-state:paused]'}`}
+                <div className={`flex w-max gap-5 pr-5 ${reduce ? '' : 'animate-[daymarquee_55s_linear_infinite] group-hover:[animation-play-state:paused]'}`}
                     style={on ? undefined : { animationPlayState: 'paused' }}>
                     {/* Twice the cards: the band loops on the second copy */}
                     {(reduce ? DAY : [...DAY, ...DAY]).map((d, i) => (

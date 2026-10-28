@@ -52,8 +52,8 @@ SIGNATURE = ('<table cellpadding="0" cellspacing="0" border="0" style="font-fami
              'none">sprea.app</a></div><div style="color:#6b7280; font-size:11px; margin-top:4px">SPREA Command · '
              'Biens à fort potentiel · Avis de valeur</div></td></tr></table>')
 FOOTER = ('<div style="font-family:Arial, Helvetica, sans-serif; font-size:11px; line-height:16px; color:#9ca3af; '
-          'border-top:1px solid #e5e7eb; padding-top:8px; margin-top:20px; max-width:580px">SPREA EI, 239b rue du '
-          'Jardin des Plantes, 59000 Lille. Pour ne plus recevoir nos messages, répondez simplement « STOP ».</div>')
+          'border-top:1px solid #e5e7eb; padding-top:8px; margin-top:20px; max-width:580px">Pour ne plus recevoir nos '
+          'messages, répondez simplement « STOP ».</div>')
 
 
 # Independent advisors of a network: the address is theirs (prenom.nom@domain)
