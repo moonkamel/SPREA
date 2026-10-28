@@ -55,7 +55,7 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 537948531;MAVIMMOBILIER;BONDUES;contact@mavimmobilier.fr;1;2026-10-27;en cours;https://www.mavimmobilier.fr/
 538758624;AXONOR;LILLE;contact@axonor-immo.fr;1;2026-10-27;en cours;https://www.axonor-immo.fr/
 537579781;ORPI FOURNES EN WEPPES;FOURNES-EN-WEPPES;conseil.transaction.immo@orpi.com;1;2026-10-27;en cours;https://www.orpi.com/agences-immobilieres/recherche/
-534902572;ABITA;LILLE;abitaimmolille@gmail.com;1;2026-10-27;en cours;https://abitaimmolille.odoo.com/
+534902572;ABITA;LILLE;abitaimmolille@gmail.com;1;2026-10-27;STOP;https://abitaimmolille.odoo.com/
 531468445;BEFFROI PATRIMOINE;LILLE;contact@beffroipatrimoine.fr;1;2026-10-27;en cours;https://www.beffroipatrimoine.fr/mentions-legales/
 524328820;ITINERAIRE IMMOBILIER;LILLE;contact@itineraireimmobilier.com;1;2026-10-27;STOP;https://www.itineraireimmobilier.com/
 524394780;LEMAIRE BRIFFAULT IMMOBILIER;LILLE;agence@lemairebriffault-immobilier.fr;1;2026-10-27;en cours;https://www.lemairebriffault-immobilier.fr/politique-de-confidentialite,121
@@ -369,3 +369,303 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 ;Cyril Angélique;Servon;cyril.angelique@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/cyril.angelique
 ;Cyril Magne;Chambry;cyril.magne@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/cyril.magne
 ;Cyrille Tourville;Moissy-Cramayel;cyrille.tourville@iadfrance.fr;1;2026-10-27;en cours;https://www.iadfrance.fr/conseiller-immobilier/cyrille.tourville
+;Damien Bouvry;Claye-Souilly;damien.bouvry@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/damien.bouvry
+;Daphné Brakha;Dampmart;daphne.brakha@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/daphne.brakha
+;David Azoulay;Pringy;david.azoulay@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.azoulay
+;David Bottalico;Montceaux-lès-Meaux;david.bottalico@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.bottalico
+;David Coget;Pommeuse;david.coget@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.coget
+;David De-Oliveira;Magny-le-Hongre;david.de-oliveira@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.de-oliveira
+;David Geoffroy;Lorrez-le-Bocage-Préaux;david.geoffroy@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.geoffroy
+;David Marinovic;Villeparisis;david.marinovic@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.marinovic
+;David Martial;Lieusaint;david.martial@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/david.martial
+;Déborah Bernard;Lieusaint;deborah.bernard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/deborah.bernard
+;Déborah Sola;Villeparisis;deborah.sola@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/deborah.sola
+;Delphine Dealberto;La Ferté-sous-Jouarre;delphine.dealberto@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/delphine.dealberto
+;Delphine Duhaillier;Crisenoy;delphine.duhaillier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/delphine.duhaillier
+;Delphine Gendre;Tournan-en-Brie;delphine.gendre@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/delphine.gendre
+;Delphine Pouget;Champs-sur-Marne;delphine.pouget@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/delphine.pouget
+;Delphine Tellier;Saint-Pierre-lès-Nemours;delphine.tellier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/delphine.tellier
+;Denis Davenel;Guermantes;denis.davenel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/denis.davenel
+;Denise Morin;Couilly-Pont-aux-Dames;denise.morin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/denise.morin
+;Didier Aveline;Saint-Fargeau-Ponthierry;didier.aveline@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/didier.aveline
+;Didier Novack;Samois-sur-Seine;didier.novack@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/didier.novack
+;Dominique EDARD;Villiers-sous-Grez;dominique.edard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dominique.edard
+;Dorian Biron;Bussy-Saint-Georges;dorian.biron@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dorian.biron
+;Dorian Przybos;Souppes-sur-Loing;dorian.przybos@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dorian.przybos
+;Dorothée Barbier;Champs-sur-Marne;dorothee.barbier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dorothee.barbier
+;Dorothée Civit;Bois-le-Roi;dorothee.civit@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dorothee.civit
+;Dris Larbi;Férolles-Attilly;dris.larbi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dris.larbi
+;Driss Saïdani;Brie-Comte-Robert;driss.saidani@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/driss.saidani
+;Dylan Nicouleau;Saint-Mammès;dylan.nicouleau@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/dylan.nicouleau
+;E Bouret;Magny-le-Hongre;e.bouret@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/e.bouret
+;Ecaterina Gorea;Chelles;ecaterina.gorea@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ecaterina.gorea
+;Eddy Salomon;Tigeaux;eddy.salomon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eddy.salomon
+;Edouard-Lise Maugalem;Lagny-sur-Marne;edouard-lise.maugalem@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/edouard-lise.maugalem
+;El Mokhtar Igran;Courtry;el-mokhtar.igran@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/el-mokhtar.igran
+;Elena Cojocaru;Savigny-le-Temple;elena.cojocaru@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elena.cojocaru
+;Eleonore Costa;Chailly-en-Bière;eleonore.costa@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eleonore.costa
+;Eliés Hadjami;Lieusaint;elies.hadjami@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elies.hadjami
+;Elisabeth Lacoste;Collégien;elisabeth.lacoste@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elisabeth.lacoste
+;Elodie Danza;Vaux-le-Pénil;elodie.danza@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.danza
+;Elodie Delamare;Champagne-sur-Seine;elodie.delamare@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.delamare
+;Elodie Marquet;Fontainebleau;elodie.marquet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.marquet
+;Elodie Pavard;Brie-Comte-Robert;elodie.pavard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/elodie.pavard
+;Emilia Da Rocha;Chailly-en-Bière;emilia.darocha@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilia.darocha
+;Emilie Conan;Magny-le-Hongre;emilie.conan@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.conan
+;Emilie Degrage;Brie-Comte-Robert;emilie.degrage@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.degrage
+;Emilie Desmontier;Dammartin-sur-Tigeaux;emilie.desmontier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.desmontier
+;Emilie Dhraief;Flagy;emilie.dhraief@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.dhraief
+;Emilie Gatti;Meaux;emilie.gatti@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.gatti
+;Émilie Moysan;Nandy;emilie.moysan@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.moysan
+;Emilie Nadal;Montévrain;emilie.nadal@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.nadal
+;Emilie Parret;Vert-Saint-Denis;emilie.parret@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emilie.parret
+;Emma Bailly;Brie-Comte-Robert;emma.bailly@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/emma.bailly
+;Enora Butez;Montigny-sur-Loing;enora.butez@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/enora.butez
+;Enrick Roulier;Fontainebleau;enrick.roulier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/enrick.roulier
+;Enzo Catel;Le Châtelet-en-Brie;enzo.catel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/enzo.catel
+;Eric Biesse;Serris;eric.biesse@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.biesse
+;Eric Carvin;Brie-Comte-Robert;eric.carvin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.carvin
+;Eric Dalmayrac;Saint-Pierre-lès-Nemours;eric.dalmayrac@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.dalmayrac
+;Eric Fenczyszyn;Montereau-Fault-Yonne;eric.fenczyszyn@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.fenczyszyn
+;Eric Le Naour;Boissy-le-Châtel;eric.le-naour@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.le-naour
+;Eric Massé;Mortcerf;eric.masse@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eric.masse
+;Estelle Charvet;Égreville;estelle.charvet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/estelle.charvet
+;Estelle Malard;Lagny-sur-Marne;estelle.malard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/estelle.malard
+;Eugenie Gamba;Fontenay-Trésigny;eugenie.gamba@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eugenie.gamba
+;Evan Lopes;Torcy;evan.lopes@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/evan.lopes
+;Evangeline Jouffreau;Beautheil;evangeline.jouffreau@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/evangeline.jouffreau
+;Eve Bensiam;Vaudoy-en-Brie;eve.bensiam@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/eve.bensiam
+;Fabien Chiche;Gretz-Armainvilliers;fabien.chiche@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabien.chiche
+;Fabien Da Rocha;Perthes;fabien.darocha@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabien.darocha
+;Fabien Siabas;Jouarre;fabien.siabas@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabien.siabas
+;Fabienne Bompoint;Fontainebleau;fabienne.bompoint@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabienne.bompoint
+;Fabrice Anasthase;Lagny-sur-Marne;fabrice.anasthase@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabrice.anasthase
+;Fabrice Duval;Boissise-le-Roi;fabrice.duval@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabrice.duval
+;Fabrice Valeriani;Samois-sur-Seine;fabrice.valeriani@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fabrice.valeriani
+;Fanny Carriere;Boutigny;fanny.carriere@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fanny.carriere
+;Fanny Moiroud;Ussy-sur-Marne;fanny.moiroud@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fanny.moiroud
+;Fanny Tissier;Dammartin-sur-Tigeaux;fanny.tissier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fanny.tissier
+;Farah Maneta;Presles-en-Brie;farah.maneta@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/farah.maneta
+;Farid Ammarkhodja;Montereau-Fault-Yonne;farid.ammarkhodja@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/farid.ammarkhodja
+;Fatima Bouddour;Chelles;fatima.bouddour@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fatima.bouddour
+;Fatima Rodrigues Freitas;Saint-Siméon;fatima.rodrigues-freitas@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fatima.rodrigues-freitas
+;Fatima Tlemçani;Le Mée-sur-Seine;fatima.tlemcani@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/fatima.tlemcani
+;Filipe Henriques;Rozay-en-Brie;filipe.henriques@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/filipe.henriques
+;Flavie Dubois;Limoges-Fourches;flavie.dubois@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/flavie.dubois
+;Florence CALBA;Guignes;florence.calba@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florence.calba
+;Florence Delubes;Meaux;florence.delubes@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florence.delubes
+;Florence Mathon;Marles-en-Brie;florence.mathon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florence.mathon
+;Florian Bodevin;Soignolles-en-Brie;florian.bodevin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florian.bodevin
+;Florian Détré;Boissy-le-Châtel;florian.detre@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florian.detre
+;Floriane Alexieff;Vaires-sur-Marne;floriane.alexieff@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/floriane.alexieff
+;Floriane Bonnet;Chevry-Cossigny;floriane.bonnet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/floriane.bonnet
+;Florine Brémont;Tournan-en-Brie;florine.bremont@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florine.bremont
+;Florine Gobillot;Combs-la-Ville;florine.gobillot@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/florine.gobillot
+;Francine Flamant;Chenoise;francine.flamant@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/francine.flamant
+;Francis Lecoq;Mauperthuis;francis.lecoq@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/francis.lecoq
+;Franck Duval;Le Châtelet-en-Brie;franck.duval@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/franck.duval
+;Franck Heurtematte;Brie-Comte-Robert;franck.heurtematte@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/franck.heurtematte
+;Franck Schiavi;Moret Loing et Orvanne;franck.schiavi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/franck.schiavi
+;François Colbert;Moissy-Cramayel;francois.colbert@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/francois.colbert
+;Françoise Schiefer;Gretz-Armainvilliers;francoise.schiefer@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/francoise.schiefer
+;Frédéric Amary;Roissy-en-Brie;frederic.amary@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.amary
+;Frédéric Benoit;Le Mée-sur-Seine;frederic.benoit@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.benoit
+;Frédéric Bouguet;Quincy-Voisins;frederic.bouguet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.bouguet
+;Frederic Damasse;La Chapelle-la-Reine;frederic.damasse@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.damasse
+;Frédéric Fischer;Chelles;frederic.fischer@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.fischer
+;Frédéric Jarry;Montereau-Fault-Yonne;frederic.jarry@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederic.jarry
+;Frederick Carreira;Rozay-en-Brie;frederick.carreira@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederick.carreira
+;Frédérika DOYERE;Moissy-Cramayel;frederika.doyere@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederika.doyere
+;Frédérique Elice;Le Mée-sur-Seine;frederique.elice@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederique.elice
+;Frederique Letendre;La Ferté-sous-Jouarre;frederique.letendre@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/frederique.letendre
+;Lydie Gaboriau;Gouvernes;gaboriau.lydie@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gaboriau.lydie
+;Gabriel Edling;Lagny-sur-Marne;gabriel.edling@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gabriel.edling
+;Gabrielle Le Moël;Presles-en-Brie;gabrielle.le-moel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gabrielle.le-moel
+;Gaëlle Edwige;Villevaudé;gaelle.edwige@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gaelle.edwige
+;Gary Elgaire;Trilport;gary.elgaire@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gary.elgaire
+;Geoffroy Perruchet;Moret Loing et Orvanne;geoffroy.perruchet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/geoffroy.perruchet
+;Georges Dazy;Le Mée-sur-Seine;georges.dazy@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/georges.dazy
+;Georges Rial;Couilly-Pont-aux-Dames;georges.rial@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/georges.rial
+;Géraldine Le Quéré-Bottard;Saint-Thibault-des-Vignes;geraldine.le-quere-bottard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/geraldine.le-quere-bottard
+;Ghizlan Taneste;Bannost-Villegagnon;ghizlan.taneste@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ghizlan.taneste
+;Giulia Bugeia;Lagny-sur-Marne;giulia.bugeia@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/giulia.bugeia
+;Gladys Aoues;Nemours;gladys.aoues@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gladys.aoues
+;David GONCALVES;Chelles;goncalves.david@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/goncalves.david
+;Gregoire Sulon;Moret Loing et Orvanne;gregoire.sulon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregoire.sulon
+;Grégory Aiello;Saâcy-sur-Marne;gregory.aiello@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.aiello
+;Gregory Comte;Coupvray;gregory.comte@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.comte
+;Gregory Drouin;Nemours;gregory.drouin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.drouin
+;Grégory Farges;Saint-Pierre-lès-Nemours;gregory.farges@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.farges
+;Gregory Petit;Brie-Comte-Robert;gregory.petit@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.petit
+;Gregory Rosier;Combs-la-Ville;gregory.rosier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.rosier
+;Grégory Vilocy;Cesson;gregory.vilocy@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gregory.vilocy
+;Guillaume Barat;Fontainebleau;guillaume.barat@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/guillaume.barat
+;Guillaume Cuisinet;Crégy-lès-Meaux;guillaume.cuisinet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/guillaume.cuisinet
+;Gurpreet Lal;Penchard;gurpreet.lal@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/gurpreet.lal
+;Hacène Krouri;Meaux;hacene.krouri@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hacene.krouri
+;Hacene Ziad;Meaux;hacene.ziad@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hacene.ziad
+;Hadjar Hassi;Vert-Saint-Denis;hadjar.hassi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hadjar.hassi
+;Hajiba Moudakkir;Montévrain;hajiba.moudakkir@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hajiba.moudakkir
+;Hamara Zeghoudi;Courtry;hamara.zeghoudi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hamara.zeghoudi
+;Hassan Amasraoui;Chelles;hassan.amasraoui@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hassan.amasraoui
+;Helena De Freitas;Dammarie-les-Lys;helena.defreitas@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/helena.defreitas
+;Hélène Hernandez;Grisy-Suisnes;helene.hernandez@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/helene.hernandez
+;Helle Buus;Magny-le-Hongre;helle.buus@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/helle.buus
+;Hervé Berthault;Noisy-sur-École;herve.berthault@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/herve.berthault
+;Herve Huyghe;Coulommiers;herve.huyghe@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/herve.huyghe
+;Hugo Joly;La Houssaye-en-Brie;hugo.joly@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hugo.joly
+;Hugo Matias;Pontault-Combault;hugo.matias@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/hugo.matias
+;Huiya Huang;Chelles;huiya.huang@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/huiya.huang
+;Ida Adelaïde;Pringy;ida.adelaide@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ida.adelaide
+;Inès Corbière;Meaux;ines.corbiere@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ines.corbiere
+;Inès Falchi;Le Châtelet-en-Brie;ines.falchi-le-bars@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ines.falchi-le-bars
+;Ines Almeida De Oliveira;Ozoir-la-Ferrière;ines.oliveira@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ines.oliveira
+;Ingrid Gautier;Saint-Pierre-lès-Nemours;ingrid.gautier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ingrid.gautier
+;Ioan Radu;La Ferté-sous-Jouarre;ioan.radu@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ioan.radu
+;Isabel Juliano;Montigny-sur-Loing;isabel.juliano@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabel.juliano
+;Isabelle Blanchard;Saint-Pathus;isabelle.blanchard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.blanchard
+;Isabelle Delaye;Pomponne;isabelle.delaye@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.delaye
+;Isabelle Kundolf-Grange;Nanteuil-lès-Meaux;isabelle.kundolf-grange@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.kundolf-grange
+;Isabelle Lozahic;Montévrain;isabelle.lozahic@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.lozahic
+;Isabelle Venard;Le Plessis-Placy;isabelle.venard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.venard
+;Isabelle Vonkat;Livry-sur-Seine;isabelle.vonkat@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.vonkat
+;Jacqueline Mégret-Petit;Bois-le-Roi;jacqueline.megret-petit@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jacqueline.megret-petit
+;Jacques Leunis;Meaux;jacques.leunis@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jacques.leunis
+;Jawad Tourabi;Chessy;jawad.tourabi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jawad.tourabi
+;Jean-Christophe Chague;Claye-Souilly;jean-christophe.chague@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean-christophe.chague
+;Jean-Christophe Ripoll;Villiers-sur-Morin;jean-christophe.ripoll@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean-christophe.ripoll
+;Jean-Marc Fournier;Lagny-sur-Marne;jean-marc.fournier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean-marc.fournier
+;Jean-Paul CALICO;Meaux;jean-paul.calico@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean-paul.calico
+;Jean Bontillot;Vaux-le-Pénil;jean.bontillot@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean.bontillot
+;Jean Da Rocha Ferreira;Pringy;jean.darocha@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jean.darocha
+;Jeanine Martins;Lésigny;jeanine.martins@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jeanine.martins
+;Jennifer Airault;Montigny-Lencoup;jennifer.airault@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jennifer.airault
+;Jennifer Hatton;Varennes-sur-Seine;jennifer.hatton@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jennifer.hatton
+;Jennifer Juban;Beaumont-du-Gâtinais;jennifer.juban@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jennifer.juban
+;Jennifer Millon;Meaux;jennifer.millon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jennifer.millon
+;Jennifer Niaré;Rozay-en-Brie;jennifer.niare@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jennifer.niare
+;Jeremy Calvez;Combs-la-Ville;jeremy.calvez@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jeremy.calvez
+;Jérémy Kartahadimadja;Ozoir-la-Ferrière;jeremy.karta@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jeremy.karta
+;Jerome Cyprien;Lieusaint;jerome.cyprien@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jerome.cyprien
+;Jérôme Gaze;Ferrières-en-Brie;jerome.gaze@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jerome.gaze
+;Jérôme Molinier;Le Mée-sur-Seine;jerome.molinier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jerome.molinier
+;Jérome Sargnon;Saint-Mammès;jerome.sargnon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jerome.sargnon
+;Jessica Aveline;Combs-la-Ville;jessica.aveline@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jessica.aveline
+;Jessica Bourdin;Montereau-Fault-Yonne;jessica.bourdin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jessica.bourdin
+;Jessica Notarianni-Dolle;Crouy-sur-Ourcq;jessica.notarianni-dolle@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jessica.notarianni-dolle
+;Jessie Germenon;Villeparisis;jessie.germenon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jessie.germenon
+;Jihane Lahmar;Lognes;jihane.lahmar@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jihane.lahmar
+;Jimmy Amory;Pontault-Combault;jimmy.amory@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jimmy.amory
+;Jimmy Bosselut;Villenoy;jimmy.bosselut@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jimmy.bosselut
+;Jiwon Jung;Serris;jiwon.jung@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jiwon.jung
+;Jocelin Seyni;Claye-Souilly;jocelin.seyni@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jocelin.seyni
+;Joffrey SELLIER;Crécy-la-Chapelle;joffrey.sellier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/joffrey.sellier
+;Johan Cabasset;Roissy-en-Brie;johan.cabasset@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/johan.cabasset
+;Johan Mboungou;Meaux;johan.mboungou@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/johan.mboungou
+;Johann Dagher;Chevry-Cossigny;johann.dagher@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/johann.dagher
+;Johanna Civallero;Quincy-Voisins;johanna.civallero@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/johanna.civallero
+;Johanna Sebihi;Dammarie-les-Lys;johanna.sebihi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/johanna.sebihi
+;John Cury;Montereau-Fault-Yonne;john.cury@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/john.cury
+;John Lienard;Bois-le-Roi;john.lienard@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/john.lienard
+;John Offken;Pontault-Combault;john.offken@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/john.offken
+;Jonathan AUGIS;Magny-le-Hongre;jonathan.augis@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jonathan.augis
+;Jonathan Habechian;Chauconin-Neufmontiers;jonathan.habechian@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jonathan.habechian
+;Jordan Parot;Saint-Fargeau-Ponthierry;jordan.parot@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jordan.parot
+;Jorge Martins;Mormant;jorge.martins@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jorge.martins
+;José Alonso Outerelo;Bois-le-Roi;jose.alonso@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jose.alonso
+;Jose Cordeiro;Pommeuse;jose.cordeiro@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jose.cordeiro
+;Joséphine Gerault;Rebais;josephine.gerault@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/josephine.gerault
+;Juan Gonzalez Garrido;Chelles;juan.gonzalezgarrido@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/juan.gonzalezgarrido
+;Jules Hardy;Meaux;jules.hardy@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jules.hardy
+;Julie Aurel;Pontault-Combault;julie.aurel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julie.aurel
+;Julie Bouyerden;Magny-le-Hongre;julie.bouyerden@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julie.bouyerden
+;Julie Haskins;Armentières-en-Brie;julie.haskins@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julie.haskins
+;Julie Laine;Héricy;julie.laine@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julie.laine
+;Julie Rouault;Mareuil-lès-Meaux;julie.rouault@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julie.rouault
+;Julien Boulanger;Villeneuve-sur-Bellot;julien.boulanger@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.boulanger
+;Julien Brunel;Lagny-sur-Marne;julien.brunel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.brunel
+;Julien Desouches;Vaux-le-Pénil;julien.desouches@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.desouches
+;Julien Formantin;Coupvray;julien.formantin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.formantin
+;Julien Gatti;Meaux;julien.gatti@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.gatti
+;Julien Hijosa;Cesson;julien.hijosa@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.hijosa
+;Julien KOCHER;Quincy-Voisins;julien.kocher@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.kocher
+;Julien Lautric;Armentières-en-Brie;julien.lautric@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.lautric
+;Julien Petit;Moret Loing et Orvanne;julien.petit@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.petit
+;Julien Pradeau;Grez-sur-Loing;julien.pradeau@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.pradeau
+;Julien Prévot;Champagne-sur-Seine;julien.prevot@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.prevot
+;Julien Tassin;Gretz-Armainvilliers;julien.tassin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julien.tassin
+;Julieta Avakov;Noisiel;julieta.avakov@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/julieta.avakov
+;Jun Li;Collégien;jun.li@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/jun.li
+;Justin Fradetal;Samois-sur-Seine;justin.fradetal@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/justin.fradetal
+;Kalifa Diagne;Chalifert;kalifa.diagne@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kalifa.diagne
+;Kamel Selhami;Mitry-Mory;kamel.selhami@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kamel.selhami
+;Karen Logan;Fontainebleau;karen.logan@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karen.logan
+;Karine Aydin;Melun;karine.aydin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karine.aydin
+;Karine Bastide;Pontault-Combault;karine.bastide@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karine.bastide
+;Karine Delannoy;Lagny-sur-Marne;karine.delannoy@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karine.delannoy
+;Karine Manceau;Bailly-Romainvilliers;karine.manceau@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karine.manceau
+;Karine Rogers;Magny-le-Hongre;karine.rogers@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/karine.rogers
+;Kelly De Seixas;Isles-lès-Villenoy;kelly.deseixas@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kelly.deseixas
+;Kerlous Maksimous;Saint-Pathus;kerlous.maksimous@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kerlous.maksimous
+;Kevin Chevrier;Coulommiers;kevin.chevrier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kevin.chevrier
+;Kévin Da Silva;Gretz-Armainvilliers;kevin.da-silva@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kevin.da-silva
+;Kevin Farhang;Claye-Souilly;kevin.farhang@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kevin.farhang
+;Kevin Noelzil;Meaux;kevin.noelzil@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kevin.noelzil
+;Khadiza Salaoudine;Villeneuve-Saint-Denis;khadiza.salaoudine@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/khadiza.salaoudine
+;Kheira Mercier;Vert-Saint-Denis;kheira.mercier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kheira.mercier
+;Killian Goyaux;Cesson;killian.goyaux@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/killian.goyaux
+;Kojo Baiden-Amissah;Bailly-Romainvilliers;kojo.baiden-amissah@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kojo.baiden-amissah
+;Kristen Lesschaeve;Coutevroult;kristen.lesschaeve@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/kristen.lesschaeve
+;Laetitia Belmokhtar;Saint-Germain-sur-Morin;laetitia.belmokhtar@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laetitia.belmokhtar
+;Laetitia PIERRE;Meaux;laetitia.pierre@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laetitia.pierre
+;Laetitia Rodrigues;Ozoir-la-Ferrière;laetitia.rodrigues@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laetitia.rodrigues
+;Laetitia Violet;Meaux;laetitia.violet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laetitia.violet
+;Laetitia Zilli;Meaux;laetitia.zilli@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laetitia.zilli
+;Laura BEAUBIGNY;Esbly;laura.beaubigny@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.beaubigny
+;Laura Bouëtel;Servon;laura.bouetel@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.bouetel
+;Laura Fauconnier;Villeparisis;laura.fauconnier@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.fauconnier
+;Laura Gea;Provins;laura.gea@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.gea
+;Laura Juban;Champagne-sur-Seine;laura.juban@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.juban
+;Laura VELASQUEZ;Chessy;laura.velasquez@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laura.velasquez
+;Laure Keuleyan;Montigny-sur-Loing;laure.keuleyan@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laure.keuleyan
+;Laure Simon;Crécy-la-Chapelle;laure.simon@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laure.simon
+;Laureline Henriet;Meaux;laureline.henriet@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laureline.henriet
+;Lauren Artemoff;Lagny-sur-Marne;lauren.artemoff@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lauren.artemoff
+;Laurence LIBRATTI;Fontainebleau;laurence.libratti@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurence.libratti
+;Laurence Lods;Mareuil-lès-Meaux;laurence.lods@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurence.lods
+;Laurence Verget;Armentières-en-Brie;laurence.verget@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurence.verget
+;Laurent Acquart;Lagny-sur-Marne;laurent.acquart@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurent.acquart
+;Laurent Constantin;Charny;laurent.constantin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurent.constantin
+;Laurent Coursolle;Montévrain;laurent.coursolle@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurent.coursolle
+;Laurianne Baron;Bray-sur-Seine;laurianne.baron@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/laurianne.baron
+;Léa Allaert;Lésigny;lea.allaert@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lea.allaert
+;Leandra Da Silva Gonçalves;Ozoir-la-Ferrière;leandra.dasilva@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/leandra.dasilva
+;Leila Siby;Torcy;leila.siby@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/leila.siby
+;Leni Terzi;Ozoir-la-Ferrière;leni.terzi@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/leni.terzi
+;Leslie Armand;Bagneaux-sur-Loing;leslie.armand@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/leslie.armand
+;Lionel Soares;Lieusaint;lionel.soares@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lionel.soares
+;Loïc Brin;Brou-sur-Chantereine;loic.brin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/loic.brin
+;Loïc Magne;Magny-le-Hongre;loic.magne@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/loic.magne
+;Loïc Razafindramboa;Champs-sur-Marne;loic.raza@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/loic.raza
+;Loreen Arnaud;Chanteloup-en-Brie;loreen.arnaud@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/loreen.arnaud
+;Lorraine Mbella;Savigny-le-Temple;lorraine.mbella@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lorraine.mbella
+;Louise Duhan;Meaux;louise.duhan@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/louise.duhan
+;Louiza Khemache;Dammartin-sur-Tigeaux;louiza.khemache@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/louiza.khemache
+;Luca Bigorgne;Chessy;luca.bigorgne@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/luca.bigorgne
+;Lucas Fernandes;Brie-Comte-Robert;lucas.fernandes@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lucas.fernandes
+;Lucie Dos Santos Lopes;Mouroux;lucie.dossantoslopes@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lucie.dossantoslopes
+;Lucie Humily;Avon;lucie.humily@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lucie.humily
+;Lucilia Rocha Lopes;Brie-Comte-Robert;lucilia.rocha@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lucilia.rocha
+;Ludivine Caparros;Perthes;ludivine.caparros@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludivine.caparros
+;Ludivine Lansement;Lieusaint;ludivine.lansement@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludivine.lansement
+;Ludivine Tytgat;Serris;ludivine.tytgat@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludivine.tytgat
+;Ludovic De Temmerman;Blandy;ludovic.detemmerman@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludovic.detemmerman
+;Ludovic Robin;Villiers-sur-Morin;ludovic.robin@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/ludovic.robin
+;Luminita Ciobanu;Meaux;luminita.ciobanu@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/luminita.ciobanu
+;Lydie Bourse;Lorrez-le-Bocage-Préaux;lydie.bourse@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lydie.bourse
+;Lydie Honoré;Meaux;lydie.honore@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lydie.honore
+;Lydie Lespinas;Donnemarie-Dontilly;lydie.lespinas@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lydie.lespinas
+;Lynda Chich;Nangis;lynda.chich@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lynda.chich
+;Lysandre-Ceccarel Doualla Dit Mbella;Meaux;lysandre.doualla@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/lysandre.doualla
+;Maëlia Guéveneux;Brie-Comte-Robert;maelia.gueveneux@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/maelia.gueveneux
+;Magali Herbette;Quincy-Voisins;magali.herbette@iadfrance.fr;1;2026-10-28;en cours;https://www.iadfrance.fr/conseiller-immobilier/magali.herbette
