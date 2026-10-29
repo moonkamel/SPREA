@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import QRCode from 'qrcode';
-import { ArrowDown, ArrowUp, Copy, Footprints, Loader2, Map as MapIcon, Printer, QrCode, Route, Trash2, UserSearch, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Footprints, Loader2, Map as MapIcon, Printer, QrCode, Route, Trash2, UserSearch } from 'lucide-react';
 import { useAccount } from '../account';
-import { Button, Card, eur, type DPEClass } from '../ui';
+import { Button, type DPEClass } from '../ui';
 import { letterText } from './LetterDialog';
 import { errorDetail, type AgentPageData } from './Contacts';
 
-// Tools of the Prospection dashboard: who is likely to sell (signals), the
-// sales of the area with the « votre voisin a vendu » letter, and the
+// Tools of the Prospection dashboard: who is likely to sell (signals) and the
 // letterbox round (optimised order, letters printed in one go).
 
 export interface SignalReason { points: number; label: string; kind: string }
@@ -19,16 +18,10 @@ export interface SignalItem {
     near_sales: number; near_sale: { date: string; price_m2: number; street: string | null } | null;
 }
 export interface SignalsResult { items: SignalItem[]; total: number; truncated: boolean; dvf_since: number | null; strong: number }
-export interface SaleItem {
-    date: string; price: number; surface: number; price_m2: number; kind: string; street: string | null; number: string | null;
-    commune: string | null; lat: number; lon: number; rooms: string | null;
-}
-export interface SalesResult { sales: SaleItem[]; latest: string | null; truncated: boolean }
 export interface TourStop { key: string; address: string; lat: number; lon: number; label?: DPEClass | null; dpeNumber?: string | null }
 
 export const SIGNAL_COLORS = { fort: '#FF6B4A', moyen: '#E3C98F', faible: '#6C778C' } as const;
 
-const month = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 const shortDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('fr-FR') : '');
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
@@ -293,130 +286,3 @@ export function SignalsPanel({ data, loading, zoomOk, filter, onFilter, onFocus,
     );
 }
 
-// --- Sales ---
-
-export function SalesPanel({ data, loading, zoomOk, months, onMonths, onFocus, onNeighbours }: {
-    data: SalesResult | null;
-    loading: boolean;
-    zoomOk: boolean;
-    months: number;
-    onMonths: (m: number) => void;
-    onFocus: (s: SaleItem) => void;
-    onNeighbours: (s: SaleItem) => void;
-}) {
-    return (
-        <div className="flex-1 overflow-y-auto">
-            <div className="px-[18px] pt-4 pb-3 border-b border-line">
-                <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Ventes récentes</p>
-                <h2 className="text-[19px] text-ink">{!zoomOk ? 'Zoomez sur un quartier' : loading && !data ? 'Chargement…' : `${data?.sales.length ?? 0} ventes sur la carte`}</h2>
-                <p className="mt-1 text-xs text-faint">
-                    Chaque vente donne une raison d'écrire aux voisins : « une maison de votre rue s'est vendue ».
-                    {data?.latest ? ` Dernière vente publiée : ${shortDate(data.latest)}.` : ''}
-                </p>
-                <div className="mt-2.5 flex gap-1.5">
-                    {[6, 12, 24].map(m => (
-                        <button key={m} type="button" onClick={() => onMonths(m)}
-                            className={`h-7 px-2.5 rounded-full border text-xs ${months === m ? 'border-brass/60 bg-brass/10 text-brass-light' : 'border-line text-muted hover:text-ink'}`}>{m} mois</button>
-                    ))}
-                </div>
-            </div>
-            <ul className="divide-y divide-line/70">
-                {(data?.sales || []).slice(0, 200).map((s, i) => (
-                    <li key={`${s.date}-${s.lat}-${i}`} className="px-[18px] py-3">
-                        <button type="button" onClick={() => onFocus(s)} className="w-full text-left flex items-baseline justify-between gap-3">
-                            <span className="min-w-0">
-                                <span className="block text-sm text-ink truncate">{s.street ? titleCase(s.street) : 'Adresse non publiée'}</span>
-                                <span className="block text-xs text-faint">{s.kind} · {Math.round(s.surface)} m²{s.rooms ? ` · ${s.rooms} p.` : ''} · {month(s.date)}</span>
-                            </span>
-                            <span className="text-right shrink-0">
-                                <span className="block text-sm text-ink tabular-nums">{eur(s.price)}</span>
-                                <span className="block text-[11px] text-brass-light tabular-nums">{eur(s.price_m2)} /m²</span>
-                            </span>
-                        </button>
-                        <button type="button" onClick={() => onNeighbours(s)} className="mt-1.5 text-xs text-brass-light hover:text-ink flex items-center gap-1">
-                            <QrCode size={12} />Courrier aux voisins
-                        </button>
-                    </li>
-                ))}
-            </ul>
-            <p className="px-[18px] py-3 text-[11px] text-faint border-t border-line">
-                Source : Demandes de valeurs foncières (DVF, DGFiP), publiées deux fois par an : les ventes des derniers mois n'y figurent pas encore.
-            </p>
-        </div>
-    );
-}
-
-const SMALL_WORDS = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'et', 'sur', 'sous', 'en', 'aux', 'au']);
-export const titleCase = (s: string) => s.toLowerCase().split(' ')
-    .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.replace(/(^|['-])([a-zà-ÿ])/g, (_m, a, b) => a + b.toUpperCase())))
-    .join(' ').replace(/\b([DL])'/g, (m) => m.toLowerCase());
-
-// --- « Votre voisin a vendu » ---
-
-export function neighbourText(s: SaleItem, agency: AgentPageData, url: string) {
-    const signature = [agency.agent_name, agency.agency_name, agency.phone, agency.email].filter(Boolean).join('\n');
-    const what = s.kind === 'Maison' ? 'Une maison' : 'Un appartement';
-    const street = s.street ? `de la ${titleCase(s.street)}` : 'de votre quartier';
-    return `Madame, Monsieur,
-
-${what} ${street} s'est vendu${s.kind === 'Maison' ? 'e' : ''} en ${month(s.date)}, autour de ${eur(Math.round(s.price_m2 / 10) * 10)} le m².
-
-Vous êtes-vous déjà demandé ce que vaut votre bien aujourd'hui ? Je connais les ventes de votre rue et de votre quartier, et je peux vous en donner une estimation précise, gratuite et sans engagement de vendre.
-
-Pour une première estimation en ligne, scannez le QR code ci-joint ou rendez-vous sur :
-${url}
-
-Vous pouvez aussi m'appeler directement : je me déplace chez vous en trente minutes pour affiner le prix.
-
-${signature}
-
-Ce courrier est distribué aux logements de la rue : nous ne connaissons pas votre identité. La vente citée provient des données publiques DVF (DGFiP), sans indication de l'adresse exacte ni du prix du bien. Responsable du traitement : ${agency.agency_name || agency.agent_name || "l'agence signataire"}. Pour ne plus recevoir de courrier de notre part, indiquez-le-nous (${agency.email || agency.phone || "l'agence"}). Vous pouvez aussi saisir la CNIL (cnil.fr).`;
-}
-
-export function NeighbourLetterDialog({ sale, onClose }: { sale: SaleItem; onClose: () => void }) {
-    const { authedFetch } = useAccount();
-    const [agency, setAgency] = useState<AgentPageData | null>(null);
-    const [qr, setQr] = useState<string | null>(null);
-    const [copies, setCopies] = useState(20);
-    const [copied, setCopied] = useState(false);
-    const url = `${window.location.origin}/estimation${sale.commune ? `?commune=${encodeURIComponent(sale.commune)}` : ''}`;
-    useEffect(() => {
-        authedFetch('/api/agent-page').then(r => (r.ok ? r.json() : {})).then(setAgency).catch(() => setAgency({}));
-        QRCode.toDataURL(url, { margin: 1, width: 600, errorCorrectionLevel: 'M' }).then(setQr).catch(() => setQr(null));
-    }, [authedFetch, url]);
-    const text = agency ? neighbourText(sale, agency, url) : '';
-    return (
-        <div className="fixed inset-0 z-[1000] bg-canvas/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true">
-            <Card className="w-full max-w-2xl p-5 sm:p-6 relative my-auto">
-                <button type="button" onClick={onClose} className="absolute top-4 right-4 text-faint hover:text-ink" aria-label="Fermer"><X size={18} /></button>
-                <h2 className="text-xl text-ink pr-8">Courrier aux voisins</h2>
-                <p className="mt-1 text-sm text-muted">{sale.kind} vendu{sale.kind === 'Maison' ? 'e' : ''} en {month(sale.date)} {sale.street ? `· ${titleCase(sale.street)}` : ''} · {eur(sale.price_m2)} /m²</p>
-                {!agency || !qr ? <Loader2 className="mt-4 animate-spin text-brass" /> : (
-                    <div className="mt-4 grid sm:grid-cols-[1fr_170px] gap-5">
-                        <textarea readOnly value={text} aria-label="Texte du courrier" className="h-80 w-full rounded-xl border border-line bg-raised p-3 text-sm text-ink-soft" />
-                        <div className="text-center">
-                            <img src={qr} alt="QR code vers l'estimation en ligne" className="w-full rounded-lg bg-white p-2" />
-                            <p className="mt-2 text-xs text-faint">Estimation en ligne : les demandes de votre zone d'alerte arrivent dans vos Leads.</p>
-                        </div>
-                        <div className="sm:col-span-2 flex flex-wrap items-center gap-2">
-                            <label className="text-sm text-muted flex items-center gap-2">Exemplaires
-                                <input type="number" min={1} max={300} value={copies} onChange={e => setCopies(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
-                                    className="w-20 h-10 rounded-[10px] border border-line bg-raised px-2 text-ink" />
-                            </label>
-                            <Button className="h-10" onClick={() => printPages('Courrier aux voisins', Array.from({ length: copies }, () => letterPage(text, qr)))}>
-                                <Printer size={14} />Imprimer
-                            </Button>
-                            <Button variant="secondary" className="h-10" onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* unavailable */ } }}>
-                                <Copy size={14} />{copied ? 'Texte copié' : 'Copier le texte'}
-                            </Button>
-                        </div>
-                        <p className="sm:col-span-2 text-xs text-faint">
-                            Ni l'adresse exacte ni le prix du bien vendu n'apparaissent : seulement la rue, le mois et le prix au m², pour respecter
-                            les conditions de réutilisation des données DVF.
-                        </p>
-                    </div>
-                )}
-            </Card>
-        </div>
-    );
-}

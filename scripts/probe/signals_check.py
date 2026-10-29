@@ -40,11 +40,6 @@ async def main():
     print("  répartition des raisons:", collections.Counter(r["kind"] for x in res["items"] for r in x["reasons"]))
     for x in res["items"][:5]:
         print("  ", x["score"], x["address"], [r["label"][:40] for r in x["reasons"]])
-    t = time.time()
-    sales = await signals.area_sales(BBOX, 12)
-    print(f"Ventes 12 mois: {len(sales['sales'])}, dernière {sales['latest']}, {time.time() - t:.1f}s")
-    for x in sales["sales"][:3]:
-        print("  ", x["date"], x["kind"], x["street"], x["price_m2"])
 
 
 asyncio.run(main())

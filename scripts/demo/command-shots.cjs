@@ -116,7 +116,7 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     await p.getByRole('button', { name: /Suivi/ }).first().click();
     await p.waitForTimeout(1200);
     await p.screenshot({ path: `${out}/command-suivi.png` });
-    for (const [name, label] of [['dpe', 'Récents'], ['immeubles', 'Immeubles'], ['alertes', 'Alertes'], ['signaux', 'Signaux'], ['ventes', 'Ventes']]) {
+    for (const [name, label] of [['dpe', 'Récents'], ['immeubles', 'Immeubles'], ['alertes', 'Alertes'], ['signaux', 'Signaux']]) {
         await p.getByRole('button', { name: label, exact: true }).click();
         await p.waitForTimeout(2500);
         await tiles();
