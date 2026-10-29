@@ -1,0 +1,27 @@
+INFO:httpx:HTTP Request: GET https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?bbox=3.04%2C50.625%2C3.075%2C50.645&size=4000&select=numero_dpe%2Cdate_etablissement_dpe%2Cetiquette_dpe%2Ctype_batiment%2Csurface_habitable_logement%2Cadresse_ban%2Cidentifiant_ban%2Ccode_insee_ban%2C_geopoint%2Cperiode_construction%2Ccomplement_adresse_logement%2Cnumero_etage_appartement&sort=-date_etablissement_dpe&qs=etiquette_dpe%3A%28A+OR+B+OR+C+OR+D+OR+E+OR+F+OR+G%29+AND+date_etablissement_dpe%3A%5B2024-10-30+TO+%2A%5D "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2022/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2026/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2025/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2024/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2023/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2021/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2020/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2026/communes/59/59350.csv "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2020/communes/59/59350.csv "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2024/communes/59/59350.csv "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2022/communes/59/59350.csv "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2025/communes/59/59350.csv "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2023/communes/59/59350.csv "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2021/communes/59/59350.csv "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?bbox=3.04%2C50.625%2C3.075%2C50.645&size=4000&select=numero_dpe%2Cdate_etablissement_dpe%2Cetiquette_dpe%2Ctype_batiment%2Csurface_habitable_logement%2Cadresse_ban%2Cidentifiant_ban%2Ccode_insee_ban%2C_geopoint%2Cperiode_construction%2Ccomplement_adresse_logement%2Cnumero_etage_appartement&sort=-date_etablissement_dpe&qs=etiquette_dpe%3A%28A+OR+B+OR+C+OR+D+OR+E+OR+F+OR+G%29+AND+date_etablissement_dpe%3A%5B2024-10-29+TO+%2A%5D "HTTP/1.1 200 OK"
+ADEME: 1867 adresses, total 10719, tronqué True, 0.8s
+  dates DPE: min ['2026-02-16'] max ['2026-10-25'] par mois: [('2026-03', 394), ('2026-04', 372), ('2026-05', 395), ('2026-06', 467), ('2026-07', 453), ('2026-08', 739), ('2026-09', 550), ('2026-10', 328)]
+  communes: [('59350', 1858), ('old59350', 9)]
+DVF 59350: 18569 ventes depuis 2021, 2.6s, avec numéro: 18525
+Signaux: 1867 adresses, forts 205, DVF depuis 2021, 1.0s
+  répartition des raisons: Counter({'dpe': 400, 'near': 398, 'rental': 274, 'building': 186, 'held': 72})
+   75 156 Rue de Solférino 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "4 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible', '20 ventes à moins de 150 m en 18 mois : ']
+   75 1 Rue des Frères Vaillant 59000 Lille ['DPE de moins de 3 mois : souvent le prem', "6 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible', '17 ventes à moins de 150 m en 18 mois : ']
+   75 97 Rue Ratisbonne 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "3 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible', '18 ventes à moins de 150 m en 18 mois : ']
+   75 Rue Jean Bart (Lille) 59000 Lille ['DPE de moins de 3 mois : souvent le prem', "5 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible', '14 ventes à moins de 150 m en 18 mois : ']
+   75 119 Rue Jacquemars Gielée 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "4 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible', '18 ventes à moins de 150 m en 18 mois : ']
