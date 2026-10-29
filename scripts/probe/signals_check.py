@@ -25,7 +25,7 @@ async def main():
     insee = collections.Counter(a.get("insee") for a in found["addresses"])
     print("  communes:", insee.most_common(5))
     import httpx
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
         for c, _ in [x for x in insee.most_common(3) if x[0] and x[0][:1].isdigit()][:1]:
             t = time.time()
             try:
