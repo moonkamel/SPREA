@@ -26,7 +26,7 @@ async def main():
     print("  communes:", insee.most_common(5))
     import httpx
     async with httpx.AsyncClient(timeout=60) as client:
-        for c, _ in insee.most_common(2):
+        for c, _ in [x for x in insee.most_common(3) if x[0] and x[0][:1].isdigit()][:1]:
             t = time.time()
             try:
                 data = await signals.commune_sales(client, c, date.today())
@@ -38,8 +38,13 @@ async def main():
     res = await signals.area_signals(BBOX, None)
     print(f"Signaux: {res['total']} adresses, forts {res['strong']}, DVF depuis {res['dvf_since']}, {time.time() - t:.1f}s")
     print("  répartition des raisons:", collections.Counter(r["kind"] for x in res["items"] for r in x["reasons"]))
-    for x in res["items"][:8]:
+    for x in res["items"][:5]:
         print("  ", x["score"], x["address"], [r["label"][:40] for r in x["reasons"]])
+    t = time.time()
+    sales = await signals.area_sales(BBOX, 12)
+    print(f"Ventes 12 mois: {len(sales['sales'])}, dernière {sales['latest']}, {time.time() - t:.1f}s")
+    for x in sales["sales"][:3]:
+        print("  ", x["date"], x["kind"], x["street"], x["price_m2"])
 
 
 asyncio.run(main())

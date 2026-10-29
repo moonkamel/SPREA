@@ -126,7 +126,33 @@ def months_between(a: str, today: date) -> Optional[float]:
         return None
 
 
-def score_address(a: Dict[str, Any], sales: List[Dict[str, Any]], since: Optional[int],
+CELL = 0.002   # about 150 to 220 m: a sale within NEAR_M is in the same or a next cell
+
+
+class SalesIndex:
+    """The sales of a commune by address, and the recent ones by map cell:
+    thousands of addresses are scored against tens of thousands of sales."""
+
+    def __init__(self, sales: List[Dict[str, Any]], today: date):
+        self.by_key: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+        self.cells: Dict[Tuple[int, int], List[Dict[str, Any]]] = {}
+        for sl in sales:
+            number, street = sale_key(sl)
+            if number and street:
+                self.by_key.setdefault((number, street), []).append(sl)
+            if sl.get("lat") and sl.get("lon") and (months_between(sl.get("date"), today) or 99) <= 18:
+                self.cells.setdefault((int(sl["lat"] / CELL), int(sl["lon"] / CELL)), []).append(sl)
+
+    def at(self, number: str, street: str) -> List[Dict[str, Any]]:
+        return self.by_key.get((number, street), []) if number and street else []
+
+    def near(self, lat: float, lon: float) -> List[Dict[str, Any]]:
+        i, j = int(lat / CELL), int(lon / CELL)
+        return [sl for di in (-1, 0, 1) for dj in (-1, 0, 1) for sl in self.cells.get((i + di, j + dj), [])
+                if distance_m(lat, lon, sl["lat"], sl["lon"]) <= NEAR_M]
+
+
+def score_address(a: Dict[str, Any], sales: "SalesIndex", since: Optional[int],
                   buildings: List[Dict[str, Any]], today: date) -> Dict[str, Any]:
     reasons: List[Dict[str, Any]] = []
 
@@ -158,7 +184,7 @@ def score_address(a: Dict[str, Any], sales: List[Dict[str, Any]], since: Optiona
 
     house = all((d.get("kind") or "").lower().startswith("maison") for d in dpe)
     number, street = split_address(a.get("address") or "")
-    here = [s for s in sales if number and sale_key(s) == (number, street)] if street else []
+    here = sales.at(number, street)
     last_sale = max(here, key=lambda s: s.get("date") or "", default=None)
     long_held = False
     if house and since:
@@ -169,8 +195,7 @@ def score_address(a: Dict[str, Any], sales: List[Dict[str, Any]], since: Optiona
             long_held = years >= 4
             if long_held:
                 add(15, f"Aucune vente enregistrée depuis {since} : propriétaire depuis au moins {years} ans", "held")
-    near = [s for s in sales if s.get("lat") and s.get("lon") and (months_between(s.get("date"), today) or 99) <= 18
-            and distance_m(a["lat"], a["lon"], s["lat"], s["lon"]) <= NEAR_M and s not in here]
+    near = [s for s in sales.near(a["lat"], a["lon"]) if not any(s is h for h in here)]
     if len(near) >= 3:
         add(10, f"{len(near)} ventes à moins de {NEAR_M} m en 18 mois : la rue bouge", "near")
     elif near:
@@ -223,9 +248,11 @@ async def area_signals(bbox: str, store: Optional[SupabaseStore], today: Optiona
         except httpx.HTTPError:
             buildings = []
     items = []
+    indexes = {c: SalesIndex(d["sales"], today) for c, d in by_commune.items()}
+    empty = SalesIndex([], today)
     for a in addresses:
-        data = by_commune.get(a.get("insee") or "", {"sales": [], "since": None})
-        items.append(score_address(a, data["sales"], data["since"], buildings, today))
+        data = by_commune.get(a.get("insee") or "", {"since": None})
+        items.append(score_address(a, indexes.get(a.get("insee") or "", empty), data["since"], buildings, today))
     items.sort(key=lambda x: x.get("dpe_date") or "", reverse=True)
     items.sort(key=lambda x: -x["score"])
     since = min((d["since"] for d in by_commune.values() if d.get("since")), default=None)
