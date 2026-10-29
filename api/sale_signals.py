@@ -3,6 +3,14 @@ BODACC (Bulletin officiel des annonces civiles et commerciales, DILA, open
 data): dissolution, liquidation, insolvency proceedings, removal from the
 register, change of management, a death mentioned in the notices.
 
+Only the events that come before a sale count. A company is wound up in
+this order: dissolution, liquidation (the liquidator sells the buildings),
+closing of the liquidation, removal from the register. Closing and removal
+come after the sale; a court-ordered liquidation or transfer plan is sold
+by the liquidator, often at auction, not through an agent. Those events are
+shown, flagged as late, but score nothing; and a building sold (DVF) after
+the events loses its signal (scripts/monopro/signals.py).
+
 - classify() and score() turn the notices of a company into dated events and
   a 0-100 score; scripts/monopro/signals.py runs them on every owner of the
   monopro_buildings table (weekly) and stores the result (014_monopro_signals.sql);
@@ -29,34 +37,35 @@ FIELDS = "id,dateparution,familleavis_lib,commercant,listepersonnes,jugement,mod
 
 # Weight of each kind of event in the score
 WEIGHTS = {
-    "liquidation_judiciaire": 60,
-    "plan_cession": 50,
     "dissolution": 55,
-    "liquidation_amiable": 45,
-    "redressement": 45,
-    "deces": 40,
-    "cloture": 35,
+    "liquidation_amiable": 50,
+    "redressement": 40,
+    "deces": 45,
     "sauvegarde": 30,
     "cessation": 30,
-    "radiation": 30,
     "dirigeant": 20,
+    # After the sale, or sold by the liquidator: shown, not counted
+    "liquidation_judiciaire": 0,
+    "plan_cession": 0,
+    "cloture": 0,
+    "radiation": 0,
 }
 LABELS = {
-    "liquidation_judiciaire": "Liquidation judiciaire",
-    "plan_cession": "Plan de cession",
+    "liquidation_judiciaire": "Liquidation judiciaire (vente par le liquidateur)",
+    "plan_cession": "Plan de cession (vente ordonnée par le tribunal)",
     "dissolution": "Dissolution de la société",
     "liquidation_amiable": "Société en liquidation amiable",
     "redressement": "Redressement judiciaire",
     "deces": "Décès mentionné dans une annonce",
-    "cloture": "Clôture de la procédure collective",
+    "cloture": "Clôture de la liquidation (en général après la vente)",
     "sauvegarde": "Procédure de sauvegarde",
     "cessation": "Cessation d'activité",
-    "radiation": "Radiation du registre",
+    "radiation": "Radiation du registre (en général après la vente)",
     "dirigeant": "Changement de dirigeant",
 }
 STRONG, MEDIUM = 50, 25
-# Events that end the company
-CLOSED = {"radiation", "cloture"}
+# Events that come after the sale, or a sale the agent has no part in
+LATE = {kind for kind, weight in WEIGHTS.items() if weight == 0}
 
 
 def _json(value: Any) -> Dict[str, Any]:
@@ -110,8 +119,8 @@ def classify(record: Dict[str, Any]) -> List[Dict[str, Any]]:
         kinds.append("deces")
     elif "partant" in administration or "démission" in administration or "nomination du gérant" in administration:
         kinds.append("dirigeant")
-    return [{"date": record.get("dateparution"), "kind": k, "label": LABELS[k], "url": record.get("url_complete")}
-            for k in dict.fromkeys(kinds)]
+    return [{"date": record.get("dateparution"), "kind": k, "label": LABELS[k], "url": record.get("url_complete"),
+             "late": k in LATE} for k in dict.fromkeys(kinds)]
 
 
 def recency(day: Optional[str], today: date) -> float:
@@ -123,19 +132,30 @@ def recency(day: Optional[str], today: date) -> float:
 
 
 def score(events: List[Dict[str, Any]], today: date) -> Dict[str, Any]:
-    """The strongest recent event, plus a part of the others; events older
-    than six years are left out."""
+    """The strongest recent event that comes before a sale, plus a part of
+    the others; events older than six years are left out. « since » is the
+    date of the first event counted: a building sold after it has most likely
+    been sold because of it."""
     kept = sorted((e for e in events if recency(e.get("date"), today) > 0), key=lambda e: e.get("date") or "", reverse=True)
     # The same kind of event counts once (its latest notice)
     latest = list({e["kind"]: e for e in reversed(kept)}.values())
-    weights = sorted((WEIGHTS[e["kind"]] * recency(e.get("date"), today) for e in latest), reverse=True)
+    counted = [e for e in latest if WEIGHTS[e["kind"]] > 0]
+    weights = sorted((WEIGHTS[e["kind"]] * recency(e.get("date"), today) for e in counted), reverse=True)
     value = round(min(100, (weights[0] + 0.3 * sum(weights[1:])) if weights else 0))
-    if kept and any(e["kind"] in CLOSED and e.get("date") == kept[0].get("date") for e in kept):
-        # Company closed: the building has most likely already been sold or
-        # handed to the partners
-        value = min(value, MEDIUM + 10)
+    late = bool(kept) and any(e["kind"] in LATE and e.get("date") == kept[0].get("date") for e in kept)
+    if late:
+        # The company is being closed or sold by a liquidator: the buildings
+        # are most likely sold or handed over already
+        value = 0
+    since = min((e.get("date") or "" for e in counted), default="") or None
     level = "fort" if value >= STRONG else "moyen" if value >= MEDIUM else "faible" if value else None
-    return {"score": value, "level": level, "events": kept[:15]}
+    return {"score": value, "level": level, "events": kept[:15], "since": since if value else None,
+            "late": late}
+
+
+def sold_since(last_sale_date: Optional[str], since: Optional[str]) -> bool:
+    """The building was sold (DVF) on or after the first event counted."""
+    return bool(last_sale_date and since and str(last_sale_date)[:10] >= since[:10])
 
 
 # --- Claude: what it means for this building ---

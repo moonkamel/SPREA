@@ -66,7 +66,6 @@ try:
     from api.copro_docs import router as copro_docs_router
     from api.opportunities import router as opportunities_router
     from api.signals import router as signals_router
-    from api.listings import router as listings_router
 except ImportError:
     from ratelimit import search_limiter, simulate_limiter, ai_limiter
     from auth import current_user
@@ -85,7 +84,6 @@ except ImportError:
     from copro_docs import router as copro_docs_router
     from opportunities import router as opportunities_router
     from signals import router as signals_router
-    from listings import router as listings_router
 
 @app.get("/")
 async def root():
@@ -213,7 +211,6 @@ app.include_router(monopro_router)
 app.include_router(copro_docs_router)
 app.include_router(opportunities_router)
 app.include_router(signals_router)
-app.include_router(listings_router)
 
 if __name__ == "__main__":
     import uvicorn

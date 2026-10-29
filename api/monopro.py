@@ -221,11 +221,11 @@ async def monopro_sheet(building_id: str, user: User = Depends(current_user), st
         portfolio = [{"id": b["id"], "address": b.get("address"), "nb_log": b["nb_log"], "dpe_label": b.get("dpe_label"),
                       "lat": b["lat"], "lon": b["lon"]} for b in others if b["id"] != building_id][:PORTFOLIO_LIMIT]
         company = await fetch_company(siren)
-    signal = await owner_signal(store, siren) if siren else None
+    signal = await owner_signal(store, siren, building.get("last_sale_date")) if siren else None
     return {**building_summary(building, owners), "company": company, "portfolio": portfolio, "signal": signal}
 
 
-async def owner_signal(store: SupabaseStore, siren: str) -> Optional[Dict[str, Any]]:
+async def owner_signal(store: SupabaseStore, siren: str, last_sale_date: Optional[str] = None) -> Optional[Dict[str, Any]]:
     try:
         row = await store.monopro_signal(siren)
     except httpx.HTTPError as e:
@@ -234,7 +234,13 @@ async def owner_signal(store: SupabaseStore, siren: str) -> Optional[Dict[str, A
     if not row:
         return None
     fresh = row.get("summary_key") == sale_signals.explain_key(row.get("events") or [])
-    return {"score": row["score"], "level": row.get("level"), "events": row.get("events") or [],
+    # Read again with the current rules: late events count nothing, and a
+    # building sold after the events keeps no signal
+    events = [{**e, "late": e.get("kind") in sale_signals.LATE} for e in row.get("events") or []]
+    current = sale_signals.score(events, date.today())
+    sold = sale_signals.sold_since(last_sale_date, current.get("since"))
+    return {"score": 0 if sold else current["score"], "level": None if sold else current["level"], "events": events,
+            "late": current["late"], "sold_after": last_sale_date if sold else None,
             "checked_on": row.get("checked_on"), "summary": row.get("summary") if fresh else None,
             "can_explain": claude.configured()}
 

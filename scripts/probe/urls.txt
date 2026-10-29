@@ -1,5 +1,1 @@
-se_llms https://docs.stream.estate/llms.txt
-se_properties https://docs.stream.estate/api-reference/endpoint/properties/get_collection.md
-se_property https://docs.stream.estate/api-reference/endpoint/properties/get_single.md
-se_concepts https://docs.stream.estate/api-reference/concepts.md
-se_faq https://docs.stream.estate/api-reference/faq.md
+bodacc_familles https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/facets?facet=familleavis_lib

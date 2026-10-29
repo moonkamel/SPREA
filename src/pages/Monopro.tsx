@@ -37,8 +37,11 @@ interface SignalSummary { titre: string; lecture: string; approche: string; prob
 interface Signal {
     score: number;
     level: SignalLevel | null;
-    events: { date: string | null; kind: string; label: string; url: string | null }[];
+    events: { date: string | null; kind: string; label: string; url: string | null; late?: boolean }[];
     checked_on: string | null;
+    // The company is being closed or sold by a liquidator / the building was sold after the events
+    late?: boolean;
+    sold_after?: string | null;
     summary: SignalSummary | null;
     can_explain: boolean;
 }
@@ -93,7 +96,7 @@ function SignalPanel({ buildingId, signal }: { buildingId: string; signal: Signa
             <ul className="mt-2 space-y-1 text-sm">
                 {signal.events.slice(0, 6).map((e, i) => (
                     <li key={i} className="flex items-center justify-between gap-3">
-                        <span className="text-ink-soft">{e.label}</span>
+                        <span className={e.late ? 'text-faint' : 'text-ink-soft'}>{e.label}</span>
                         <span className="shrink-0 text-xs text-faint">
                             {dateFr(e.date)}
                             {e.url && <a href={e.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-brass-light hover:underline">annonce</a>}
@@ -101,6 +104,13 @@ function SignalPanel({ buildingId, signal }: { buildingId: string; signal: Signa
                     </li>
                 ))}
             </ul>
+            {(signal.sold_after || signal.late) && (
+                <p className="mt-2 text-xs text-muted">
+                    {signal.sold_after
+                        ? `Immeuble vendu le ${dateFr(signal.sold_after)}, après ces annonces : le signal est éteint.`
+                        : 'Société en clôture, radiée ou vendue par un liquidateur : l\'immeuble est probablement déjà vendu ou transmis.'}
+                </p>
+            )}
             <div className="mt-3 border-t border-line/60 pt-3">
                 <p className="text-xs text-faint flex items-center gap-1.5"><Sparkles size={12} className="text-brass" />Lecture par l'IA</p>
                 {summary ? (

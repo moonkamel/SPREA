@@ -23,7 +23,7 @@ from typing import Dict, List, Optional
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 
-from api.sale_signals import BODACC_URL, FIELDS, classify, score  # noqa: E402
+from api.sale_signals import BODACC_URL, FIELDS, classify, score, sold_since  # noqa: E402
 from import_bdnb import Rest  # noqa: E402
 
 WORKERS = 6
@@ -103,15 +103,25 @@ def main():
     # Replaced as a whole: a company whose events got old loses its signal.
     # The explanations already written stay when the events have not changed.
     for i in range(0, len(found), 500):
-        rest.call("POST", "monopro_signals?on_conflict=siren", json.dumps(found[i:i + 500]).encode(),
+        rows = [{k: v for k, v in s.items() if k not in ("since", "late")} for s in found[i:i + 500]]
+        rest.call("POST", "monopro_signals?on_conflict=siren", json.dumps(rows).encode(),
                   "resolution=merge-duplicates,return=minimal")
     rest.call("DELETE", f"monopro_signals?checked_on=lt.{today.isoformat()}")
     rest.call("PATCH", "monopro_buildings?signal_score=not.is.null",
               json.dumps({"signal_score": None, "signal_level": None}).encode())
+    # A building sold after the events has most likely been sold because of
+    # them: it keeps no signal
+    sold = 0
     for s in found:
-        rest.call("PATCH", f"monopro_buildings?owner_siren=eq.{s['siren']}",
-                  json.dumps({"signal_score": s["score"], "signal_level": s["level"]}).encode())
-    log("Enregistré.")
+        buildings = json.loads(rest.call("GET", f"monopro_buildings?owner_siren=eq.{s['siren']}&select=id,last_sale_date",
+                                         prefer="count=none") or b"[]")
+        for b in buildings:
+            if sold_since(b.get("last_sale_date"), s.get("since")):
+                sold += 1
+                continue
+            rest.call("PATCH", f"monopro_buildings?id=eq.{urllib.parse.quote(b['id'])}",
+                      json.dumps({"signal_score": s["score"], "signal_level": s["level"]}).encode())
+    log(f"Enregistré ({sold} immeubles vendus depuis les événements, sans signal).")
 
 
 if __name__ == "__main__":
