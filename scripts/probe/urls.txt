@@ -1,0 +1,1 @@
+bodacc_familles https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/facets?facet=familleavis_lib

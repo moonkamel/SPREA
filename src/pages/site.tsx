@@ -33,7 +33,7 @@ function Nav() {
     const [open, setOpen] = useState(false);
     const menu = useRef<HTMLDivElement>(null);
     const links: [string, string, boolean][] = me?.is_pro
-        ? [['/prospection', 'Prospection', true], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/alertes', 'Alertes', false], ['/contacts', 'Contacts', false],
+        ? [['/prospection', 'Prospection', true], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Visite guidée', true], ['/estimation', 'Estimer un bien', false], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
     const hidden = links.some(([, , essential]) => !essential);

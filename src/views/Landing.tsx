@@ -14,7 +14,7 @@ interface Props {
 
 const SHORTCUTS = [
     { to: '/prospection?mode=dpe', icon: MapPin, title: 'Tous les DPE récents', text: 'Chaque DPE E, F, G de la carte, avec le courrier, le propriétaire et la simulation.' },
-    { to: '/alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
+    { to: '/prospection?mode=alertes', icon: Bell, title: 'Alertes', text: 'Chaque matin, les nouveaux DPE publiés dans vos zones.' },
     { to: '/contacts', icon: Users, title: 'Contacts', text: 'Les propriétaires qui ont répondu à vos courriers.' },
 ]
 

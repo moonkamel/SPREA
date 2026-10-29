@@ -457,14 +457,26 @@ def test_bodacc_events_and_score():
     assert sale_signals.classify(ORDINARY) == []
     # No names kept: kind, label, date, link only
     for e in sale_signals.classify(LIQUIDATION) + sale_signals.classify(DISSOLUTION):
-        assert set(e) == {"date", "kind", "label", "url"} and "Dupont" not in str(e)
+        assert set(e) == {"date", "kind", "label", "url", "late"} and "Dupont" not in str(e)
     today = _d(2026, 10, 10)
+    # Dissolution, then a court-ordered liquidation: the liquidator sells,
+    # the agent comes too late
     events = [e for r in (LIQUIDATION, DISSOLUTION, ORDINARY) for e in sale_signals.classify(r)]
     s = sale_signals.score(events, today)
-    assert s["level"] == "fort" and s["score"] >= 60 and s["events"][0]["kind"] == "liquidation_judiciaire"
+    assert s["score"] == 0 and s["level"] is None and s["late"] and s["events"][0]["kind"] == "liquidation_judiciaire"
+    # Dissolution alone: before the sale, strong
+    s = sale_signals.score(sale_signals.classify({**DISSOLUTION, "dateparution": "2026-06-01"}), today)
+    assert s["level"] == "fort" and s["since"] == "2026-06-01" and not s["late"]
     # Old events weigh less, very old ones not at all
     assert sale_signals.score(sale_signals.classify(DEATH), today)["level"] == "moyen"
-    assert sale_signals.score(sale_signals.classify({**DEATH, "dateparution": "2015-01-01"}), today) == {"score": 0, "level": None, "events": []}
+    assert sale_signals.score(sale_signals.classify({**DEATH, "dateparution": "2015-01-01"}), today) == \
+        {"score": 0, "level": None, "events": [], "since": None, "late": False}
+
+
+def test_building_sold_after_the_events():
+    assert sale_signals.sold_since("2026-08-02", "2026-06-01")
+    assert not sale_signals.sold_since("2019-03-01", "2026-06-01")
+    assert not sale_signals.sold_since(None, "2026-06-01") and not sale_signals.sold_since("2026-08-02", None)
 
 
 def test_signal_on_the_sheet_and_explained_once(env, monkeypatch):
@@ -477,7 +489,7 @@ def test_signal_on_the_sheet_and_explained_once(env, monkeypatch):
         return None
     monkeypatch.setattr(monopro, "fetch_company", no_company)
     today = _d.today()
-    events = [{"date": today.isoformat(), "kind": "liquidation_judiciaire", "label": "Liquidation judiciaire", "url": "https://www.bodacc.fr/a1"}]
+    events = [{"date": today.isoformat(), "kind": "dissolution", "label": "Dissolution de la société", "url": "https://www.bodacc.fr/a1"}]
     store.signals["444315543"] = {"siren": "444315543", "score": 60, "level": "fort", "events": events, "checked_on": today.isoformat()}
     answer = {"titre": "Société en liquidation judiciaire : l'immeuble sera vendu par le liquidateur.",
               "lecture": "La vente des actifs est conduite par le liquidateur.", "approche": "Contactez le liquidateur.",
@@ -489,11 +501,16 @@ def test_signal_on_the_sheet_and_explained_once(env, monkeypatch):
     assert client.post("/api/monopro/bdnb-bg-AAAA/signal/explain").json()["titre"].startswith("Société en liquidation")
     assert len(mock.requests) == 1 and store.summaries == ["444315543"]
     sent = mock.requests[0]["body"]["messages"][0]["content"]
-    assert "Liquidation judiciaire" in sent and "bodacc.fr" not in sent
+    assert "Dissolution de la société" in sent and "bodacc.fr" not in sent
     assert client.get("/api/monopro/bdnb-bg-AAAA").json()["signal"]["summary"]["probabilite"] == "forte"
     # New events: the explanation is written again
     store.signals["444315543"]["events"] = events + [{"date": today.isoformat(), "kind": "deces", "label": "Décès", "url": None}]
     assert client.get("/api/monopro/bdnb-bg-AAAA").json()["signal"]["summary"] is None
+    # Building sold after the events: no signal any more on its sheet
+    BUILDINGS[0]["last_sale_date"], before = today.isoformat(), BUILDINGS[0].get("last_sale_date")
+    gone = client.get("/api/monopro/bdnb-bg-AAAA").json()["signal"]
+    assert gone["level"] is None and gone["sold_after"] == today.isoformat()
+    BUILDINGS[0]["last_sale_date"] = before
     # Building without an identified owner
     assert client.post("/api/monopro/bdnb-bg-BBBB/signal/explain").status_code == 404
     BUILDINGS[0]["signal_score"] = 60
@@ -502,19 +519,18 @@ def test_signal_on_the_sheet_and_explained_once(env, monkeypatch):
     BUILDINGS[0].pop("signal_score")
 
 
-def test_closed_company_signal_is_capped():
+def test_closed_company_has_no_signal():
     today = _d(2026, 10, 10)
     events = [{"date": "2024-05-01", "kind": "radiation", "label": "Radiation du registre", "url": None},
               {"date": "2024-05-01", "kind": "radiation", "label": "Radiation du registre", "url": None},
               {"date": "2024-01-01", "kind": "dissolution", "label": "Dissolution de la société", "url": None}]
-    assert sale_signals.score(events, today)["level"] == "moyen"
-    # Closed last month too: the building is likely gone already
-    recent = [{**e, "date": "2026-09-15"} for e in events]
-    assert sale_signals.score(recent, today)["level"] == "moyen"
+    # Removed from the register after the dissolution: sold already
+    assert sale_signals.score(events, today)["score"] == 0
     # Liquidation and removal published the same day, in any order
     same_day = [{"date": "2026-09-13", "kind": "liquidation_amiable", "label": "", "url": None},
                 {"date": "2026-09-13", "kind": "radiation", "label": "", "url": None},
                 {"date": "2026-08-16", "kind": "dissolution", "label": "", "url": None}]
-    assert sale_signals.score(same_day, today)["level"] == "moyen"
+    assert sale_signals.score(same_day, today)["score"] == 0
+    assert sale_signals.score(list(reversed(same_day)), today)["score"] == 0
     # Dissolution under way, not closed yet: strong
     assert sale_signals.score(events[2:3] + [{**events[2], "date": "2026-06-01"}], today)["level"] == "fort"

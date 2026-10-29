@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AccountProvider, useAccount } from './account';
-import { usePath } from './router';
+import { navigate, usePath } from './router';
 import CgvPage from './pages/Cgv';
 import ConfidentialitePage from './pages/Confidentialite';
 import MentionsLegalesPage from './pages/MentionsLegales';
@@ -133,6 +133,7 @@ function useSimulation(input: object | null, attempt: number, setSim: (s: Simula
 // The tools are for subscribers; visitors get the showcase
 function Gate() {
     const { config, session, me } = useAccount();
+    useProspectionFirst(!!me?.is_pro);
     // Account still loading (or unreachable: show the showcase after a while)
     const [waited, setWaited] = useState(false);
     useEffect(() => {
@@ -143,6 +144,20 @@ function Gate() {
         return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-faint" /></div>;
     }
     return me?.is_pro ? <Simulator /> : <Home />;
+}
+
+// A subscriber lands on Prospection: the first time the home page opens in a
+// visit (or right after signing in); the simulator stays one click away
+const LANDED_KEY = 'sprea-landed';
+function useProspectionFirst(pro: boolean) {
+    useEffect(() => {
+        if (!pro || window.location.pathname !== '/' || window.location.search) return;
+        try {
+            if (sessionStorage.getItem(LANDED_KEY)) return;
+            sessionStorage.setItem(LANDED_KEY, '1');
+        } catch { /* storage blocked: go anyway, once per load */ }
+        navigate('/prospection');
+    }, [pro]);
 }
 
 function Simulator() {

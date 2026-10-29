@@ -7,9 +7,11 @@ import { Button, Card, DpeBadge, errorDetail, Switch, type DPEClass } from '../u
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import { SiteFooter, SiteHeader } from './site';
 
-interface Zone {
+export interface Zone {
     id: string;
     name: string;
+    lat: number;
+    lon: number;
     radius_m: number;
     labels: string;
     kind: string | null;
@@ -37,9 +39,17 @@ interface Hit {
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-export default function AlertsPage() {
+// The alerts of the agent (and of their agency): zones checked each morning
+// and the new DPE found there. Shown in the Prospection dashboard
+// (compact, beside the map) and on /alertes.
+export function AlertsPanel({ compact = false, reload = 0, onZones, onZone }: {
+    compact?: boolean;
+    // Bumped by the dashboard after it created a zone
+    reload?: number;
+    onZones?: (zones: Zone[]) => void;
+    onZone?: (zone: Zone) => void;
+}) {
     const { session, me, config, openLogin, authedFetch } = useAccount();
-    useSeo({ title: 'Alertes · SPREA', noindex: true });
     const [zones, setZones] = useState<Zone[]>([]);
     const [hits, setHits] = useState<Hit[]>([]);
     const [emailEnabled, setEmailEnabled] = useState(false);
@@ -70,7 +80,8 @@ export default function AlertsPage() {
         }
     }, [session, authedFetch]);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => { load(); }, [load, reload]);
+    useEffect(() => { onZones?.(zones); }, [zones, onZones]);
 
     const updateZone = async (zone: Zone, fields: Partial<Zone>) => {
         setActionError(null);
@@ -112,18 +123,12 @@ export default function AlertsPage() {
     const zoneName = (id: string) => zones.find(z => z.id === id)?.name || '';
     const locked = subscribersOnly || (me && !me.is_pro);
 
+    // Beside the map the cards are plain sections, laid out in one column
+    const Box = compact ? Section : Card;
+    const pad = compact ? 'px-[18px] py-4' : 'p-5 sm:p-6';
+    const row = compact ? 'flex flex-col gap-2' : 'flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between';
     return (
-        <div className="min-h-screen flex flex-col bg-canvas">
-            <SiteHeader />
-            <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
-                <div>
-                    <h1 className="text-3xl sm:text-4xl text-ink">Alertes nouveaux DPE</h1>
-                    <p className="mt-2 text-muted max-w-3xl">
-                        Chaque matin, les DPE nouvellement publiés par l'ADEME dans vos secteurs. Un DPE est obligatoire avant de vendre ou de louer :
-                        un nouveau DPE signale souvent un propriétaire qui prépare une mise en vente.
-                    </p>
-                </div>
-
+        <div className={compact ? 'divide-y divide-line' : 'space-y-6'}>
                 {!session ? (
                     <Card className="p-5">
                         <p className="text-ink font-medium">Connectez-vous pour voir vos alertes</p>
@@ -138,21 +143,21 @@ export default function AlertsPage() {
                     <Loader2 className="animate-spin text-brass" />
                 ) : (
                     <>
-                        {error && <Card className="p-4 text-sm text-coral">{error}</Card>}
-                        <Card className="p-5 sm:p-6">
-                            <h2 className="text-xl text-ink">Vos zones</h2>
+                        {error && <Box className={`${pad} text-sm text-coral`}>{error}</Box>}
+                        <Box className={pad}>
+                            <h2 className={compact ? 'text-[17px] text-ink' : 'text-xl text-ink'}>Vos zones</h2>
                             {actionError && <p role="alert" className="mt-2 text-sm text-coral">{actionError}</p>}
                             {zones.length === 0 ? (
                                 <p className="mt-3 text-sm text-muted">
-                                    Aucune zone. Sur la <Link to="/prospection" className="underline text-brass-light">carte de prospection</Link>,
-                                    placez-vous sur un quartier puis cliquez sur « Créer une alerte sur cette zone ».
+                                    Aucune zone. {compact ? 'Placez la carte sur un quartier puis cliquez sur « Créer une alerte ici ».' : <>Dans <Link to="/prospection?mode=alertes" className="underline text-brass-light">Prospection</Link>,
+                                    placez la carte sur un quartier puis cliquez sur « Créer une alerte ici ».</>}
                                 </p>
                             ) : (
                                 <ul className="mt-3 divide-y divide-line/70">
                                     {zones.map(z => (
-                                        <li key={z.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                                        <li key={z.id} className={`py-3 ${row}`}>
                                             <div>
-                                                <p className="text-ink">{z.name}{z.mine === false && z.owner && <span className="text-xs text-faint"> · zone de {z.owner}</span>}</p>
+                                                <p className="text-ink">{onZone ? <button type="button" onClick={() => onZone(z)} className="hover:text-brass-light text-left">{z.name}</button> : z.name}{z.mine === false && z.owner && <span className="text-xs text-faint"> · zone de {z.owner}</span>}</p>
                                                 <p className="text-xs text-faint">
                                                     Rayon {z.radius_m >= 1000 ? `${(z.radius_m / 1000).toFixed(1).replace('.', ',')} km` : `${z.radius_m} m`} ·
                                                     classes {z.labels.replace(/,/g, ', ')}{z.kind ? ` · ${z.kind}s` : ''}
@@ -171,11 +176,11 @@ export default function AlertsPage() {
                             {!emailEnabled && zones.length > 0 && (
                                 <p className="mt-3 text-xs text-faint">L'envoi d'emails n'est pas encore activé sur SPREA : les nouveaux DPE apparaissent ici chaque matin.</p>
                             )}
-                        </Card>
+                        </Box>
 
-                        <Card className="p-5 sm:p-6">
+                        <Box className={pad}>
                             <div className="flex flex-wrap items-center justify-between gap-3">
-                                <h2 className="text-xl text-ink flex items-center gap-2"><Bell size={18} className="text-brass" />Nouveaux DPE</h2>
+                                <h2 className={`${compact ? 'text-[17px]' : 'text-xl'} text-ink flex items-center gap-2`}><Bell size={18} className="text-brass" />Nouveaux DPE</h2>
                                 {zones.length > 1 && (
                                     <select value={zoneFilter} onChange={e => setZoneFilter(e.target.value)} aria-label="Zone"
                                         className="h-9 rounded-lg border border-line bg-raised px-2 text-sm text-ink">
@@ -191,7 +196,7 @@ export default function AlertsPage() {
                                     <p className="text-sm text-brass capitalize">{day(g.day)} · {g.hits.length} DPE</p>
                                     <ul className="mt-2 divide-y divide-line/70">
                                         {g.hits.map(h => (
-                                            <li key={h.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                                            <li key={h.id} className={`py-3 ${row}`}>
                                                 <div className="flex items-start gap-3 min-w-0">
                                                     <DpeBadge label={h.label} size="sm" />
                                                     <div className="min-w-0">
@@ -203,7 +208,7 @@ export default function AlertsPage() {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-4 text-xs shrink-0 ml-10 sm:ml-0">
+                                                <div className={`flex gap-4 text-xs shrink-0 ml-10 ${compact ? '' : 'sm:ml-0'}`}>
                                                     <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1"
                                                         onClick={() => navigate(`/?dpe=${encodeURIComponent(h.dpe_number)}`)}>
                                                         <MapPin size={12} />Simuler
@@ -224,12 +229,34 @@ export default function AlertsPage() {
                                 Source : DPE des logements existants, ADEME (Licence Ouverte), publiés avec quelques jours de délai. Usage soumis à l'article 14 des CGV.
                                 Résultats conservés 6 mois.
                             </p>
-                        </Card>
+                        </Box>
                     </>
                 )}
+            {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
+        </div>
+    );
+}
+
+function Section({ className = '', children }: { className?: string; children: React.ReactNode }) {
+    return <section className={className}>{children}</section>;
+}
+
+export default function AlertsPage() {
+    useSeo({ title: 'Alertes · SPREA', noindex: true });
+    return (
+        <div className="min-h-screen flex flex-col bg-canvas">
+            <SiteHeader />
+            <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+                <div>
+                    <h1 className="text-3xl sm:text-4xl text-ink">Alertes nouveaux DPE</h1>
+                    <p className="mt-2 text-muted max-w-3xl">
+                        Chaque matin, les DPE nouvellement publiés par l'ADEME dans vos secteurs. Un DPE est obligatoire avant de vendre ou de louer :
+                        un nouveau DPE signale souvent un propriétaire qui prépare une mise en vente.
+                    </p>
+                </div>
+                <AlertsPanel />
             </main>
             <SiteFooter />
-            {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
         </div>
     );
 }

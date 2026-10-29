@@ -1,0 +1,32 @@
+name: Probe (lecture d'API publiques)
+
+# Reads the public URLs listed in scripts/probe/urls.txt from a GitHub runner
+# (outside the development sandbox) and pushes the answers to the probe-results
+# branch. Read-only.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths: ["scripts/probe/urls.txt", ".github/workflows/probe.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch
+        run: |
+          mkdir out
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            curl -sS -m 30 -A "SPREA probe" "$url" | head -c 60000 > "out/$name.txt" || echo "erreur" > "out/$name.txt"
+          done < scripts/probe/urls.txt
+      - name: Save
+        run: |
+          cd out && git init -q -b probe && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Probe $(date +%F-%H%M)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" probe:probe-results
