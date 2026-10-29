@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Flame, Loader2, Receipt, Route, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Flame, Hourglass, Loader2, Receipt, Route, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
 import { useAccount } from '../account';
 import { toProperty, type PropertyData } from '../model';
 import { Link, navigate } from '../router';
@@ -9,8 +9,8 @@ import { useSeo } from '../seo';
 import { TourHost, useAutoTour } from '../tour';
 import { Button, DPE_COLORS, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
 import { AlertsPanel, type Zone } from './Alerts';
-import { NeighbourLetterDialog, SIGNAL_COLORS, SalesPanel, SignalsPanel, TourPanel, loadTour, saveTour, titleCase,
-    type SaleItem, type SalesResult, type SignalsResult, type TourStop } from './ProspectionTools';
+import { ListingsPanel, NeighbourLetterDialog, SIGNAL_COLORS, SalesPanel, SignalsPanel, TourPanel, loadTour, saveTour, titleCase,
+    type ListingsFilter, type ListingsResult, type SaleItem, type SalesResult, type SignalsResult, type TourStop } from './ProspectionTools';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
@@ -22,7 +22,7 @@ import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type FollowUp, type O
 // target with every figure and every action, and the follow-up board with
 // what is due today. Built only on SPREA's data: nothing here is made up.
 
-type View = 'radar' | 'signaux' | 'dpe' | 'immeubles' | 'ventes' | 'alertes' | 'fiche' | 'tournee' | 'cible' | 'suivi';
+type View = 'radar' | 'signaux' | 'dpe' | 'immeubles' | 'ventes' | 'invendus' | 'alertes' | 'fiche' | 'tournee' | 'cible' | 'suivi';
 interface Center { lat: number; lon: number; label: string }
 interface PipelineItem { number: string; status: FollowUp; address: string | null; updated_at: string | null; mine: boolean }
 interface EstimateLead { id: string; name: string; address: string; city: string | null; lat: number | null; lon: number | null; project: string; status: string; phone: string | null; created_at: string }
@@ -161,7 +161,7 @@ export default function ProspectionPage() {
     const [view, setView] = useState<View>(() => {
         const mode = params.current.get('mode');
         if (linked.current || mode === 'immeubles') return 'immeubles';
-        return (['dpe', 'alertes', 'fiche', 'signaux', 'ventes', 'tournee'] as const).find(m => m === mode) || 'radar';
+        return (['dpe', 'alertes', 'fiche', 'signaux', 'ventes', 'invendus', 'tournee'] as const).find(m => m === mode) || 'radar';
     });
     const [center, setCenter] = useState<Center | null>(() => {
         if (linked.current) return { lat: linked.current.lat, lon: linked.current.lon, label: 'Immeuble' };
@@ -189,6 +189,9 @@ export default function ProspectionPage() {
     const [salesData, setSalesData] = useState<SalesResult | null>(null);
     const [salesMonths, setSalesMonths] = useState(12);
     const [toolLoading, setToolLoading] = useState(false);
+    const [listingsData, setListingsData] = useState<ListingsResult | null>(null);
+    const [listingsFilter, setListingsFilter] = useState<ListingsFilter>({ minDays: 60, mode: 'anciennes', privateOnly: false });
+    const [listingsError, setListingsError] = useState<string | null>(null);
     const [tour, setTour] = useState<TourStop[]>(loadTour);
     const [neighbourFor, setNeighbourFor] = useState<SaleItem | null>(null);
     const salesRef = useRef<SaleItem[]>([]);
@@ -459,29 +462,33 @@ export default function ProspectionPage() {
     // Signals and sales of the visible map, loaded once per area
     const loadedTool = useRef<Record<string, string>>({});
     useEffect(() => {
-        if ((view !== 'signaux' && view !== 'ventes') || !pro || !zoomOk || !area) return;
-        const key = view === 'signaux' ? area.key : `${area.key}|${salesMonths}`;
+        if ((view !== 'signaux' && view !== 'ventes' && view !== 'invendus') || !pro || !zoomOk || !area) return;
+        const lf = listingsFilter;
+        const key = view === 'signaux' ? area.key : view === 'ventes' ? `${area.key}|${salesMonths}` : `${area.key}|${lf.mode}|${lf.minDays}|${lf.privateOnly}`;
         if (loadedTool.current[view] === key) return;
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             setToolLoading(true);
             setError(null);
             try {
-                const res = await authedFetch(view === 'signaux' ? `/api/signals?bbox=${area.key}` : `/api/sales?bbox=${area.key}&months=${salesMonths}`,
-                    { signal: controller.signal });
+                const url = view === 'signaux' ? `/api/signals?bbox=${area.key}`
+                    : view === 'ventes' ? `/api/sales?bbox=${area.key}&months=${salesMonths}`
+                    : `/api/listings?bbox=${area.key}&mode=${lf.mode}&min_days=${lf.minDays}&private=${lf.privateOnly}`;
+                const res = await authedFetch(url, { signal: controller.signal });
                 if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Le chargement a échoué.');
                 const data = await res.json();
                 loadedTool.current[view] = key;
-                if (view === 'signaux') setSignalsData(data);
+                if (view === 'invendus') { setListingsData(data); setListingsError(null); }
+                else if (view === 'signaux') setSignalsData(data);
                 else { salesRef.current = data.sales; setSalesData(data); }
             } catch (e) {
-                if ((e as Error).name !== 'AbortError') setError((e as Error).message);
+                if ((e as Error).name !== 'AbortError') { if (view === 'invendus') setListingsError((e as Error).message); else setError((e as Error).message); }
             } finally {
                 setToolLoading(false);
             }
         }, 600);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [view, pro, zoomOk, area, salesMonths, authedFetch]);
+    }, [view, pro, zoomOk, area, salesMonths, listingsFilter, authedFetch]);
     const delivered = async (stops: TourStop[]) => {
         for (const st of stops) if (st.dpeNumber) await setStatus({ number: st.dpeNumber, address: st.address }, 'courrier');
         setTour(t => t.filter(x => !stops.some(st => st.key === x.key)));
@@ -601,6 +608,17 @@ export default function ProspectionPage() {
             });
             return;
         }
+        if (view === 'invendus') {
+            if (!listingsData || !zoomOk) return;
+            for (const l of listingsData.items) {
+                L.circleMarker([l.lat, l.lon], { radius: 7, color: l.drop_pct != null ? '#FF6B4A' : '#E3C98F', weight: 2.5, fillColor: '#0D1424', fillOpacity: 0.9 })
+                    .bindTooltip(`${esc(l.kind)}${l.surface ? ` ${Math.round(l.surface)} m²` : ''} · ${l.price ? eur(l.price) : ''}<br>`
+                        + `${l.days_online != null ? `En ligne depuis ${l.days_online} jours` : ''}${l.drop_pct != null ? ` · ${String(l.drop_pct).replace('.', ',')} %` : ''}${l.private ? ' · particulier' : ''}`)
+                    .on('click', () => { if (l.url) window.open(l.url, '_blank', 'noopener'); })
+                    .addTo(group);
+            }
+            return;
+        }
         if (view === 'tournee') {
             if (tour.length > 1) L.polyline(tour.map(t => [t.lat, t.lon] as [number, number]), { color: '#C9A45C', weight: 3, opacity: 0.85, dashArray: '6 6' }).addTo(group);
             tour.forEach((t, i) => {
@@ -667,7 +685,7 @@ export default function ProspectionPage() {
                 .bindTooltip(`Demande d'estimation · ${esc(l.name)}`).addTo(group);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results, signalsData, signalFilter, salesData, tour]);
+    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results, signalsData, signalFilter, salesData, tour, listingsData]);
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
@@ -825,6 +843,7 @@ export default function ProspectionPage() {
                         ['dpe', MapPin, 'Récents', () => showMap('dpe')],
                         ['immeubles', Building2, 'Immeubles', () => showMap('immeubles')],
                         ['ventes', Receipt, 'Ventes', () => showMap('ventes')],
+                        ['invendus', Hourglass, 'Invendus', () => showMap('invendus')],
                         ['alertes', Bell, 'Alertes', () => showMap('alertes')],
                         ['fiche', FileSearch, 'DPE', () => showMap('fiche')],
                         ['tournee', Route, 'Tournée', () => showMap('tournee')],
@@ -991,12 +1010,13 @@ export default function ProspectionPage() {
                         </>
                     )}
 
-                    {(view === 'signaux' || view === 'ventes') && (
+                    {(view === 'signaux' || view === 'ventes' || view === 'invendus') && (
                         <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
                             <span className="cmd-kpi px-3 py-1.5 text-xs text-ink tabular-nums flex items-center gap-2">
                                 {toolLoading && <Loader2 size={13} className="animate-spin text-brass-light" />}
                                 {!zoomOk ? 'Rapprochez-vous pour afficher la zone'
                                     : view === 'signaux' ? (signalsData ? `${signalsData.total} adresses · ${signalsData.strong} signaux forts` : 'Analyse des adresses (10 à 30 s)')
+                                    : view === 'invendus' ? (listingsData ? `${listingsData.items.length} annonces · cercle rouge : prix en baisse` : 'Recherche des annonces')
                                     : salesData ? `${salesData.sales.length} ventes en ${salesMonths} mois` : 'Chargement des ventes'}
                             </span>
                             {view === 'signaux' && (
@@ -1111,6 +1131,11 @@ export default function ProspectionPage() {
                     {view === 'ventes' && (
                         <SalesPanel data={salesData} loading={toolLoading} zoomOk={zoomOk} months={salesMonths} onMonths={setSalesMonths}
                             onFocus={sl => mapRef.current?.flyTo([sl.lat, sl.lon], 18, { duration: 0.6 })} onNeighbours={setNeighbourFor} />
+                    )}
+                    {view === 'invendus' && (
+                        <ListingsPanel data={listingsData} loading={toolLoading} error={listingsError} zoomOk={zoomOk} filter={listingsFilter} onFilter={setListingsFilter}
+                            onFocus={l => mapRef.current?.flyTo([l.lat, l.lon], 17, { duration: 0.6 })} inTour={inTour}
+                            onTour={l => addStop({ key: `${l.lat},${l.lon}`, address: `${l.kind}${l.surface ? ` ${Math.round(l.surface)} m²` : ''} · ${l.city || ''} (annonce)`, lat: l.lat, lon: l.lon })} />
                     )}
                     {view === 'tournee' && (
                         <TourPanel stops={tour} onChange={setTour} onFocus={st => mapRef.current?.flyTo([st.lat, st.lon], 18, { duration: 0.6 })}

@@ -421,3 +421,91 @@ export function NeighbourLetterDialog({ sale, onClose }: { sale: SaleItem; onClo
     );
 }
 
+
+// --- Listings that do not sell (Stream Estate feed) ---
+
+export interface ListingItem {
+    id: string; lat: number; lon: number; city: string | null; zipcode: string | null; insee: string | null;
+    kind: string; title: string | null; price: number | null; surface: number | null; rooms: number | null; price_m2: number | null;
+    energy: DPEClass | null; first_seen: string | null; days_online: number | null; drops: number; drop_pct: number | null;
+    private: boolean; portals: number; no_agency: boolean; url: string | null; picture: string | null;
+}
+export interface ListingsResult { items: ListingItem[]; hidden_no_agency: number; truncated: boolean }
+export interface ListingsFilter { minDays: number; mode: 'anciennes' | 'baisse'; privateOnly: boolean }
+
+export function ListingsPanel({ data, loading, error, zoomOk, filter, onFilter, onFocus, inTour, onTour }: {
+    data: ListingsResult | null;
+    loading: boolean;
+    error: string | null;
+    zoomOk: boolean;
+    filter: ListingsFilter;
+    onFilter: (f: ListingsFilter) => void;
+    onFocus: (l: ListingItem) => void;
+    inTour: (key: string) => boolean;
+    onTour: (l: ListingItem) => void;
+}) {
+    const chip = (on: boolean) => `h-7 px-2.5 rounded-full border text-xs ${on ? 'border-brass/60 bg-brass/10 text-brass-light' : 'border-line text-muted hover:text-ink'}`;
+    return (
+        <div className="flex-1 overflow-y-auto">
+            <div className="px-[18px] pt-4 pb-3 border-b border-line">
+                <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Biens qui ne se vendent pas</p>
+                <h2 className="text-[19px] text-ink">
+                    {!zoomOk ? 'Zoomez sur un quartier' : loading && !data ? 'Recherche des annonces…' : data ? `${data.items.length} annonce${data.items.length > 1 ? 's' : ''}` : '…'}
+                </h2>
+                <p className="mt-1 text-xs text-faint">Un vendeur dont le bien ne part pas cherche souvent une autre agence ou un meilleur prix : proposez-lui un avis de valeur.</p>
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <button type="button" className={chip(filter.mode === 'anciennes')} onClick={() => onFilter({ ...filter, mode: 'anciennes' })}>En ligne depuis longtemps</button>
+                    <button type="button" className={chip(filter.mode === 'baisse')} onClick={() => onFilter({ ...filter, mode: 'baisse' })}>Prix en baisse</button>
+                    <button type="button" className={chip(filter.privateOnly)} onClick={() => onFilter({ ...filter, privateOnly: !filter.privateOnly })}>Particuliers</button>
+                </div>
+                {filter.mode === 'anciennes' && (
+                    <div className="mt-1.5 flex gap-1.5">
+                        {[60, 90, 180].map(d => (
+                            <button key={d} type="button" className={chip(filter.minDays === d)} onClick={() => onFilter({ ...filter, minDays: d })}>+{d} jours</button>
+                        ))}
+                    </div>
+                )}
+                {error && <p role="alert" className="mt-2 text-xs text-coral">{error}</p>}
+            </div>
+            <ul className="divide-y divide-line/70">
+                {(data?.items || []).map(l => {
+                    const key = `${l.lat},${l.lon}`;
+                    return (
+                        <li key={l.id} className="px-[18px] py-3">
+                            <button type="button" onClick={() => onFocus(l)} className="flex items-start gap-3 text-left w-full">
+                                {l.picture
+                                    ? <img src={l.picture} alt="" loading="lazy" className="h-14 w-16 shrink-0 rounded-lg object-cover bg-raised" />
+                                    : <span className="h-14 w-16 shrink-0 rounded-lg bg-raised" />}
+                                <span className="min-w-0 flex-1">
+                                    <span className="flex items-baseline justify-between gap-2">
+                                        <span className="text-sm text-ink truncate">{l.kind}{l.rooms ? ` ${l.rooms} p.` : ''}{l.surface ? ` · ${Math.round(l.surface)} m²` : ''}</span>
+                                        <span className="text-sm text-ink tabular-nums shrink-0">{l.price ? eur(l.price) : '–'}</span>
+                                    </span>
+                                    <span className="block text-xs text-faint">{[l.city, l.price_m2 ? `${eur(l.price_m2)} /m²` : null, l.energy ? `DPE ${l.energy}` : null].filter(Boolean).join(' · ')}</span>
+                                    <span className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
+                                        {l.days_online != null && <span className="px-1.5 rounded bg-brass/10 text-brass-light">En ligne depuis {l.days_online} j</span>}
+                                        {l.drop_pct != null && <span className="px-1.5 rounded bg-coral/10 text-coral">{String(l.drop_pct).replace('.', ',')} % ({l.drops} baisse{l.drops > 1 ? 's' : ''})</span>}
+                                        {l.private && <span className="px-1.5 rounded bg-raised text-muted">Particulier</span>}
+                                        {l.portals > 1 && <span className="px-1.5 rounded bg-raised text-muted">{l.portals} annonces</span>}
+                                    </span>
+                                </span>
+                            </button>
+                            <div className="mt-2 ml-[76px] flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
+                                {l.url && <a href={l.url} target="_blank" rel="noreferrer" className="text-brass-light hover:text-ink">Voir l'annonce</a>}
+                                <button type="button" disabled={inTour(key)} onClick={() => onTour(l)}
+                                    className="text-muted hover:text-ink disabled:text-faint flex items-center gap-1"><Route size={12} />{inTour(key) ? 'Dans la tournée' : 'Tournée'}</button>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+            {data && (
+                <p className="px-[18px] py-3 text-[11px] text-faint border-t border-line">
+                    Annonces des portails et agences regroupées par bien (Stream Estate).
+                    {data.hidden_no_agency ? ` ${data.hidden_no_agency} annonce${data.hidden_no_agency > 1 ? 's' : ''} « agences s'abstenir » masquée${data.hidden_no_agency > 1 ? 's' : ''}.` : ''}
+                    {data.truncated ? ' Zone dense : zoomez pour tout voir.' : ''} Les coordonnées des vendeurs ne sont pas reprises : passez par l'annonce.
+                </p>
+            )}
+        </div>
+    );
+}
