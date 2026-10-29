@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: ["claude/**"]
-    paths: ["scripts/probe/urls.txt", ".github/workflows/probe.yml"]
+    paths: ["scripts/probe/**", ".github/workflows/probe.yml"]
 
 permissions:
   contents: write
@@ -25,6 +25,13 @@ jobs:
             [ -z "$name" ] && continue
             curl -sS -m 30 -A "SPREA probe" "$url" | head -c 60000 > "out/$name.txt" || echo "erreur" > "out/$name.txt"
           done < scripts/probe/urls.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Signals check
+        run: |
+          pip install -q -r requirements.txt >/dev/null 2>&1 || pip install -q httpx fastapi pydantic
+          timeout 280 python scripts/probe/signals_check.py > out/signals_check.txt 2>&1 || true
       - name: Save
         run: |
           cd out && git init -q -b probe && git add -A
