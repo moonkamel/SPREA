@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Loader2, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Flame, Loader2, Receipt, Route, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
 import { useAccount } from '../account';
 import { toProperty, type PropertyData } from '../model';
 import { Link, navigate } from '../router';
@@ -9,6 +9,8 @@ import { useSeo } from '../seo';
 import { TourHost, useAutoTour } from '../tour';
 import { Button, DPE_COLORS, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
 import { AlertsPanel, type Zone } from './Alerts';
+import { NeighbourLetterDialog, SIGNAL_COLORS, SalesPanel, SignalsPanel, TourPanel, loadTour, saveTour, titleCase,
+    type SaleItem, type SalesResult, type SignalsResult, type TourStop } from './ProspectionTools';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
@@ -20,7 +22,7 @@ import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type FollowUp, type O
 // target with every figure and every action, and the follow-up board with
 // what is due today. Built only on SPREA's data: nothing here is made up.
 
-type View = 'radar' | 'dpe' | 'immeubles' | 'alertes' | 'fiche' | 'cible' | 'suivi';
+type View = 'radar' | 'signaux' | 'dpe' | 'immeubles' | 'ventes' | 'alertes' | 'fiche' | 'tournee' | 'cible' | 'suivi';
 interface Center { lat: number; lon: number; label: string }
 interface PipelineItem { number: string; status: FollowUp; address: string | null; updated_at: string | null; mine: boolean }
 interface EstimateLead { id: string; name: string; address: string; city: string | null; lat: number | null; lon: number | null; project: string; status: string; phone: string | null; created_at: string }
@@ -159,7 +161,7 @@ export default function ProspectionPage() {
     const [view, setView] = useState<View>(() => {
         const mode = params.current.get('mode');
         if (linked.current || mode === 'immeubles') return 'immeubles';
-        return mode === 'dpe' || mode === 'alertes' || mode === 'fiche' ? mode : 'radar';
+        return (['dpe', 'alertes', 'fiche', 'signaux', 'ventes', 'tournee'] as const).find(m => m === mode) || 'radar';
     });
     const [center, setCenter] = useState<Center | null>(() => {
         if (linked.current) return { lat: linked.current.lat, lon: linked.current.lon, label: 'Immeuble' };
@@ -181,6 +183,19 @@ export default function ProspectionPage() {
     // Daily alerts: zones drawn on the map, list reloaded once a zone is created
     const [alertZones, setAlertZones] = useState<Zone[]>([]);
     const [alertsReload, setAlertsReload] = useState(0);
+    // Who is likely to sell, the sales of the area, the letterbox round
+    const [signalsData, setSignalsData] = useState<SignalsResult | null>(null);
+    const [signalFilter, setSignalFilter] = useState<'all' | 'fort' | 'held' | 'fresh'>('all');
+    const [salesData, setSalesData] = useState<SalesResult | null>(null);
+    const [salesMonths, setSalesMonths] = useState(12);
+    const [toolLoading, setToolLoading] = useState(false);
+    const [tour, setTour] = useState<TourStop[]>(loadTour);
+    const [neighbourFor, setNeighbourFor] = useState<SaleItem | null>(null);
+    const salesRef = useRef<SaleItem[]>([]);
+    const addStop = useCallback((st: TourStop) => setTour(t => (t.some(x => x.key === st.key) ? t : [...t, st])), []);
+    const addStopRef = useRef(addStop);
+    const inTour = (key: string) => tour.some(x => x.key === key);
+    useEffect(() => saveTour(tour), [tour]);
     // One dwelling looked up by address or DPE number
     const [fiche, setFiche] = useState<{ results: PropertyData[]; loading: boolean; error: string | null }>({ results: [], loading: false, error: null });
     const [scan, setScan] = useState<OpportunityScan | null>(null);
@@ -336,6 +351,12 @@ export default function ProspectionPage() {
                     if (d.action === 'simulate') navigate(`/?dpe=${encodeURIComponent(d.dpe || '')}`);
                     else if (d.action === 'building') setSheet({ near: { lat: Number(d.lat), lon: Number(d.lon), address: d.address || '' } });
                     else if (d.action === 'owner') setOwnerFor({ address: d.address || '', lat: Number(d.lat), lon: Number(d.lon) });
+                    else if (d.action === 'tour') {
+                        addStopRef.current({ key: `${d.lat},${d.lon}`, address: d.address || '', lat: Number(d.lat), lon: Number(d.lon),
+                            label: (d.label || null) as DPEClass | null, dpeNumber: d.dpe || null });
+                        el.textContent = 'Dans la tournée';
+                    }
+                    else if (d.action === 'neighbours') { const sale = salesRef.current[Number(d.idx)]; if (sale) setNeighbourFor(sale); }
                     else setLetterFor({ address: d.address || '', label: d.label as DPEClass, dpeNumber: d.dpe || '' });
                 };
             });
@@ -434,6 +455,43 @@ export default function ProspectionPage() {
         setTimeout(() => dpeMarkers.current.get(a.address || `${a.lat},${a.lon}`)?.openPopup(), 300);
     };
     const showMap = (v: View) => { setView(v); setSelected(null); };
+
+    // Signals and sales of the visible map, loaded once per area
+    const loadedTool = useRef<Record<string, string>>({});
+    useEffect(() => {
+        if ((view !== 'signaux' && view !== 'ventes') || !pro || !zoomOk || !area) return;
+        const key = view === 'signaux' ? area.key : `${area.key}|${salesMonths}`;
+        if (loadedTool.current[view] === key) return;
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            setToolLoading(true);
+            setError(null);
+            try {
+                const res = await authedFetch(view === 'signaux' ? `/api/signals?bbox=${area.key}` : `/api/sales?bbox=${area.key}&months=${salesMonths}`,
+                    { signal: controller.signal });
+                if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Le chargement a échoué.');
+                const data = await res.json();
+                loadedTool.current[view] = key;
+                if (view === 'signaux') setSignalsData(data);
+                else { salesRef.current = data.sales; setSalesData(data); }
+            } catch (e) {
+                if ((e as Error).name !== 'AbortError') setError((e as Error).message);
+            } finally {
+                setToolLoading(false);
+            }
+        }, 600);
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [view, pro, zoomOk, area, salesMonths, authedFetch]);
+    const delivered = async (stops: TourStop[]) => {
+        for (const st of stops) if (st.dpeNumber) await setStatus({ number: st.dpeNumber, address: st.address }, 'courrier');
+        setTour(t => t.filter(x => !stops.some(st => st.key === x.key)));
+    };
+    // Opening the round frames its stops
+    useEffect(() => {
+        if (view !== 'tournee' || !tour.length || !mapRef.current) return;
+        mapRef.current.fitBounds(L.latLngBounds(tour.map(t => L.latLng(t.lat, t.lon))), { padding: [60, 60], maxZoom: 17 });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [view]);
     // Opening the alerts frames their zones, once per visit of the view
     const framed = useRef(false);
     useEffect(() => {
@@ -512,6 +570,46 @@ export default function ProspectionPage() {
             }
             return;
         }
+        if (view === 'signaux') {
+            if (!signalsData || !zoomOk) return;
+            const link = 'color:#E3C98F;font-weight:600;text-decoration:none;cursor:pointer';
+            for (const it of [...signalsData.items].reverse()) {
+                const shown = signalFilter === 'all' || (signalFilter === 'fort' ? it.level === 'fort' : signalFilter === 'held' ? it.long_held
+                    : it.reasons.some(r => r.kind === 'dpe' && r.points >= 28));
+                if (!shown) continue;
+                const reasons = it.reasons.map(r => `<li style="margin:2px 0"><b style="color:${r.points < 0 ? '#FF6B4A' : '#E3C98F'}">${r.points > 0 ? '+' : ''}${r.points}</b> ${esc(r.label)}</li>`).join('');
+                const data = `data-lat="${it.lat}" data-lon="${it.lon}" data-address="${esc(it.address)}" data-dpe="${esc(it.dpe_number || '')}" data-label="${it.label || ''}"`;
+                L.circleMarker([it.lat, it.lon], { radius: 4 + it.score / 12, color: '#0A0F1A', weight: 1.5, fillColor: SIGNAL_COLORS[it.level], fillOpacity: 0.9 })
+                    .bindPopup(`<b>${esc(it.address)}</b><div style="margin-top:2px;color:${SIGNAL_COLORS[it.level]}">Probabilité de vente : ${it.score}/100</div>`
+                        + `<ul style="margin:6px 0 0;padding-left:14px">${reasons}</ul>`
+                        + `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #25324C"><a href="#" data-action="tour" ${data} style="${link}">${inTour(`${it.lat},${it.lon}`) ? 'Dans la tournée' : 'Ajouter à la tournée'}</a>`
+                        + (it.dpe_number && it.label ? ` · <a href="#" data-action="letter" data-dpe="${esc(it.dpe_number)}" data-address="${esc(it.address)}" data-label="${it.label}" style="${link}">Courrier</a>` : '')
+                        + ` · <a href="#" data-action="owner" ${data} style="${link}">Propriétaire</a></div>`, { minWidth: 280 })
+                    .addTo(group);
+            }
+            return;
+        }
+        if (view === 'ventes') {
+            if (!salesData || !zoomOk) return;
+            const link = 'color:#E3C98F;font-weight:600;text-decoration:none;cursor:pointer';
+            salesData.sales.forEach((sl, i) => {
+                L.circleMarker([sl.lat, sl.lon], { radius: 6, color: '#E3C98F', weight: 2, fillColor: '#0D1424', fillOpacity: 0.9 })
+                    .bindPopup(`<b>${esc(sl.street ? titleCase(sl.street) : 'Adresse non publiée')}</b><br>${esc(sl.kind)} · ${Math.round(sl.surface)} m² · ${formatDate(sl.date)}`
+                        + `<br><b>${eur(sl.price)}</b> · ${eur(sl.price_m2)} /m²`
+                        + `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #25324C"><a href="#" data-action="neighbours" data-idx="${i}" style="${link}">Courrier aux voisins</a></div>`)
+                    .addTo(group);
+            });
+            return;
+        }
+        if (view === 'tournee') {
+            if (tour.length > 1) L.polyline(tour.map(t => [t.lat, t.lon] as [number, number]), { color: '#C9A45C', weight: 3, opacity: 0.85, dashArray: '6 6' }).addTo(group);
+            tour.forEach((t, i) => {
+                L.marker([t.lat, t.lon], { icon: L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13],
+                    html: `<div style="width:26px;height:26px;border-radius:50%;background:#0D1424;border:2px solid #E3C98F;color:#E3C98F;font:600 12px Inter,sans-serif;display:flex;align-items:center;justify-content:center">${i + 1}</div>` }) })
+                    .bindTooltip(esc(t.address)).addTo(group);
+            });
+            return;
+        }
         if (view === 'alertes') {
             for (const z of alertZones) {
                 if (z.lat == null || z.lon == null) continue;
@@ -569,7 +667,7 @@ export default function ProspectionPage() {
                 .bindTooltip(`Demande d'estimation · ${esc(l.name)}`).addTo(group);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results]);
+    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results, signalsData, signalFilter, salesData, tour]);
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
@@ -720,19 +818,23 @@ export default function ProspectionPage() {
 
             <div className="flex-1 min-h-0 flex flex-col-reverse lg:flex-row">
                 {/* Rail */}
-                <nav className="shrink-0 flex lg:flex-col items-center justify-start sm:justify-around lg:justify-start gap-1 sm:gap-1.5 overflow-x-auto lg:overflow-visible lg:w-[68px] border-t lg:border-t-0 lg:border-r border-line bg-[#0B1120] py-1.5 lg:pt-3.5" aria-label="Vues">
+                <nav className="shrink-0 flex lg:flex-col items-center justify-start sm:justify-around lg:justify-start gap-1 sm:gap-1.5 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:w-[68px] border-t lg:border-t-0 lg:border-r border-line bg-[#0B1120] py-1.5 lg:pt-3.5" aria-label="Vues">
                     {([
                         ['radar', Radar, 'Radar', () => backToRadar()],
+                        ['signaux', Flame, 'Signaux', () => showMap('signaux')],
                         ['dpe', MapPin, 'Récents', () => showMap('dpe')],
                         ['immeubles', Building2, 'Immeubles', () => showMap('immeubles')],
+                        ['ventes', Receipt, 'Ventes', () => showMap('ventes')],
                         ['alertes', Bell, 'Alertes', () => showMap('alertes')],
                         ['fiche', FileSearch, 'DPE', () => showMap('fiche')],
+                        ['tournee', Route, 'Tournée', () => showMap('tournee')],
                         ['cible', Star, 'Cible', () => { const t = current?.o || ranked[0]?.o; if (t) focus(t); }],
                         ['suivi', Workflow, 'Suivi', () => setView('suivi')],
                     ] as const).map(([v, Icon, label, go]) => (
                         <button key={v} type="button" onClick={go} aria-current={view === v ? 'page' : undefined} data-tour={v === 'suivi' ? 'cmd-suivi' : v === 'dpe' ? 'cmd-layers' : undefined}
                             className={`relative shrink-0 w-[46px] sm:w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] ${view === v ? 'text-brass-light bg-brass/10 lg:shadow-[inset_2px_0_0_#C9A45C]' : 'text-faint hover:text-ink'}`}>
                             <Icon size={19} strokeWidth={1.6} />{label}
+                            {v === 'tournee' && tour.length > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-brass text-[9px] text-canvas flex items-center justify-center">{tour.length}</span>}
                             {v === 'suivi' && due.length > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-coral text-[9px] text-white flex items-center justify-center">{due.length}</span>}
                         </button>
                     ))}
@@ -889,6 +991,23 @@ export default function ProspectionPage() {
                         </>
                     )}
 
+                    {(view === 'signaux' || view === 'ventes') && (
+                        <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
+                            <span className="cmd-kpi px-3 py-1.5 text-xs text-ink tabular-nums flex items-center gap-2">
+                                {toolLoading && <Loader2 size={13} className="animate-spin text-brass-light" />}
+                                {!zoomOk ? 'Rapprochez-vous pour afficher la zone'
+                                    : view === 'signaux' ? (signalsData ? `${signalsData.total} adresses · ${signalsData.strong} signaux forts` : 'Analyse des adresses (10 à 30 s)')
+                                    : salesData ? `${salesData.sales.length} ventes en ${salesMonths} mois` : 'Chargement des ventes'}
+                            </span>
+                            {view === 'signaux' && (
+                                <span className="cmd-kpi px-3 py-1.5 text-xs text-muted flex items-center gap-3">
+                                    {(['fort', 'moyen', 'faible'] as const).map(l => (
+                                        <span key={l} className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SIGNAL_COLORS[l] }} />{l}</span>
+                                    ))}
+                                </span>
+                            )}
+                        </div>
+                    )}
                     {view === 'alertes' && (
                         <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 z-[500] flex flex-wrap items-center gap-2">
                             <button type="button" onClick={createAlert} disabled={!mapReady}
@@ -982,6 +1101,21 @@ export default function ProspectionPage() {
                             </p>
                         </>
                     )}
+                    {view === 'signaux' && (
+                        <SignalsPanel data={signalsData} loading={toolLoading} zoomOk={zoomOk} filter={signalFilter} onFilter={setSignalFilter}
+                            onFocus={it => mapRef.current?.flyTo([it.lat, it.lon], 18, { duration: 0.6 })} inTour={inTour}
+                            onTour={it => addStop({ key: `${it.lat},${it.lon}`, address: it.address, lat: it.lat, lon: it.lon, label: it.label, dpeNumber: it.dpe_number })}
+                            onLetter={it => setLetterFor({ address: it.address, label: it.label as DPEClass, dpeNumber: it.dpe_number! })}
+                            onOwner={it => setOwnerFor({ address: it.address, lat: it.lat, lon: it.lon })} />
+                    )}
+                    {view === 'ventes' && (
+                        <SalesPanel data={salesData} loading={toolLoading} zoomOk={zoomOk} months={salesMonths} onMonths={setSalesMonths}
+                            onFocus={sl => mapRef.current?.flyTo([sl.lat, sl.lon], 18, { duration: 0.6 })} onNeighbours={setNeighbourFor} />
+                    )}
+                    {view === 'tournee' && (
+                        <TourPanel stops={tour} onChange={setTour} onFocus={st => mapRef.current?.flyTo([st.lat, st.lon], 18, { duration: 0.6 })}
+                            onDelivered={delivered} />
+                    )}
                     {view === 'alertes' && (
                         <div className="flex-1 overflow-y-auto">
                             <div className="px-[18px] pt-4 pb-3 border-b border-line">
@@ -1033,6 +1167,13 @@ export default function ProspectionPage() {
                                                 <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
                                                     onClick={() => setLetterFor({ address: r.address, label: r.label as DPEClass, dpeNumber: r.ademe_dpe_number! })}>
                                                     <QrCode size={12} />Courrier
+                                                </button>
+                                            )}
+                                            {r.latitude != null && r.longitude != null && (
+                                                <button type="button" className="text-muted hover:text-ink disabled:text-faint flex items-center gap-1" disabled={inTour(`${r.latitude},${r.longitude}`)}
+                                                    onClick={() => addStop({ key: `${r.latitude},${r.longitude}`, address: r.address, lat: r.latitude!, lon: r.longitude!,
+                                                        label: (r.label || null) as DPEClass | null, dpeNumber: r.ademe_dpe_number || null })}>
+                                                    <Route size={12} />{inTour(`${r.latitude},${r.longitude}`) ? 'Dans la tournée' : 'Tournée'}
                                                 </button>
                                             )}
                                             {r.latitude != null && r.longitude != null && (
@@ -1095,6 +1236,10 @@ export default function ProspectionPage() {
                                                     <Calculator size={12} />Simuler la rénovation
                                                 </button>
                                             )}
+                                            <button type="button" className="text-muted hover:text-ink disabled:text-faint flex items-center gap-1" disabled={inTour(`${a.lat},${a.lon}`)}
+                                                onClick={() => addStop({ key: `${a.lat},${a.lon}`, address: a.address || '', lat: a.lat, lon: a.lon, label: a.worst, dpeNumber: a.dpe![0].number })}>
+                                                <Route size={12} />{inTour(`${a.lat},${a.lon}`) ? 'Dans la tournée' : 'Tournée'}
+                                            </button>
                                             <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
                                                 onClick={() => setLetterFor({ address: a.address || '', label: a.worst, dpeNumber: a.dpe![0].number })}>
                                                 <QrCode size={12} />Courrier
@@ -1144,6 +1289,7 @@ export default function ProspectionPage() {
             </div>
 
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
+            {neighbourFor && <NeighbourLetterDialog sale={neighbourFor} onClose={() => setNeighbourFor(null)} />}
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
             {ownerFor && <OwnerRequestDialog target={ownerFor} onClose={() => setOwnerFor(null)} />}

@@ -76,6 +76,17 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
         if (u.includes('/api/prospection')) return json({ locked: false, addresses, dwellings: addresses.length, total: addresses.length, truncated: false });
         if (u.includes('/api/monopro')) return json({ buildings, truncated: false });
         if (u.includes('/api/estimate-leads')) return json({ leads });
+        if (u.includes('/api/signals')) return json({ total: items.length, truncated: false, dvf_since: 2021, strong: 5,
+            items: items.map((o, i) => { const score = Math.max(12, 88 - i * 5); return { address: o.address, lat: o.lat, lon: o.lon, insee: '59599',
+                score, level: score >= 60 ? 'fort' : score >= 35 ? 'moyen' : 'faible', label: o.label, dpe_date: o.dpe_date, dwellings: 1, kind: o.kind,
+                surface: o.surface, dpe_number: o.number, long_held: i % 2 === 0, last_sale: null, near_sales: i % 3, near_sale: null,
+                reasons: [{ points: 35, label: 'DPE de moins de 3 mois : souvent le premier signe d\'une vente ou d\'une location', kind: 'dpe' },
+                    { points: 15, label: 'Classé G : plus de nouveau bail possible depuis 2025', kind: 'rental' },
+                    ...(i % 2 === 0 ? [{ points: 15, label: 'Aucune vente enregistrée depuis 2021 : propriétaire depuis au moins 5 ans', kind: 'held' }] : [])] }; }) });
+        if (u.includes('/api/sales')) return json({ latest: day(150), truncated: false, sales: items.slice(0, 12).map((o, i) => ({
+            date: day(150 + i * 20), price: o.price, surface: o.surface, price_m2: Math.round(o.price / o.surface), kind: o.kind,
+            street: o.address.replace(/^\d+ /, '').replace(/ 59200.*$/, '').toUpperCase(), number: null, commune: 'Tourcoing',
+            lat: o.lat + 0.0006, lon: o.lon - 0.0006, rooms: '4' })) });
         if (u.includes('/api/alerts')) return json({ email_enabled: true, zones: [
             { id: 'z1', name: 'Tourcoing centre', lat: C.lat, lon: C.lon, radius_m: 900, labels: 'F,G', kind: null, email: true, active: true, last_checked_on: day(0), mine: true },
             { id: 'z2', name: 'Blanc Seau', lat: C.lat + 0.008, lon: C.lon - 0.012, radius_m: 600, labels: 'E,F,G', kind: 'maison', email: false, active: true, last_checked_on: day(0), mine: true }],
@@ -105,7 +116,7 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     await p.getByRole('button', { name: /Suivi/ }).first().click();
     await p.waitForTimeout(1200);
     await p.screenshot({ path: `${out}/command-suivi.png` });
-    for (const [name, label] of [['dpe', 'Récents'], ['immeubles', 'Immeubles'], ['alertes', 'Alertes']]) {
+    for (const [name, label] of [['dpe', 'Récents'], ['immeubles', 'Immeubles'], ['alertes', 'Alertes'], ['signaux', 'Signaux'], ['ventes', 'Ventes']]) {
         await p.getByRole('button', { name: label, exact: true }).click();
         await p.waitForTimeout(2500);
         await tiles();
@@ -116,6 +127,14 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     await p.keyboard.press('Enter');
     await p.waitForTimeout(2500);
     await p.screenshot({ path: `${out}/command-fiche.png` });
+    await p.getByRole('button', { name: 'Signaux', exact: true }).click();
+    await p.waitForTimeout(1500);
+    for (let i = 0; i < 6; i++) await p.locator('aside').getByRole('button', { name: 'Tournée', exact: true }).first().click().catch(() => {});
+    await p.locator('nav').getByRole('button', { name: /Tournée/ }).click();
+    await p.waitForTimeout(800);
+    await p.getByRole('button', { name: "Optimiser l'ordre" }).click().catch(() => {});
+    await p.waitForTimeout(1500);
+    await p.screenshot({ path: `${out}/command-tournee.png` });
     if (errors.length) { console.error(errors); process.exitCode = 1; }
     await b.close();
 })();
