@@ -1,0 +1,3 @@
+bodacc_familles https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/facets?facet=familleavis_lib
+bodacc_succession https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/records?where=search(%22succession%22)&limit=3
+bodacc_datasets https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets?limit=20&select=dataset_id
