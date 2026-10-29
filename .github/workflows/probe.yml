@@ -25,6 +25,13 @@ jobs:
             [ -z "$name" ] && continue
             curl -sS -m 30 -A "SPREA probe" "$url" | head -c 60000 > "out/$name.txt" || echo "erreur" > "out/$name.txt"
           done < scripts/probe/urls.txt
+      - name: Stream Estate (secret STREAM_ESTATE_API_KEY, if set)
+        env:
+          KEY: ${{ secrets.STREAM_ESTATE_API_KEY }}
+        run: |
+          [ -z "$KEY" ] && { echo "absent" > out/se_api.txt; exit 0; }
+          curl -sS -m 30 "https://api.stream.estate/documents/properties?itemsPerPage=2&includedZipcodes[]=59000&transactionType=0" \
+            -H "X-API-KEY: $KEY" -H "Content-Type: application/json" | head -c 60000 > out/se_api.txt || echo erreur > out/se_api.txt
       - name: Save
         run: |
           cd out && git init -q -b probe && git add -A
