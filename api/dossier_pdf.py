@@ -2,13 +2,13 @@
 cover with brass corner marks (the dashboard's tiles), then light pages that
 print well.
 
-- Owner (« Dossier propriétaire »): what makes an owner call for a visit.
-  Their own address and figures first; the sales next to them (the comparables
-  are what convinces, far more than an opinion); a value given as a range the
-  visit will narrow down; what the DPE changes for them, measured on the
-  department's sales and the legal calendar; the three options in figures;
-  then one low-commitment step (a free visit, no obligation to sell) with the
-  advisor's contact and a QR code to call.
+- Owner (« Avis de valeur préparatoire »): an estate agent's market analysis,
+  no works. Their address and value first; a synthesis; the commune's market
+  (median price, trend, number of sales, nearby communes); the comparable
+  sales on a price axis; how the value is built and what the visit will
+  settle; the DPE in the sale (price gaps measured in the department, legal
+  file, rentals); the pricing strategy; then one low-commitment step (a free
+  visit, no obligation to sell) with the advisor's contact and a QR code.
 - Buyer (« Dossier acheteur »): projecting into the project. Before / after
   (class, consumption, energy bill), the works item by item with what each
   treats, how the site unfolds, the financing month by month, and what the
@@ -330,37 +330,94 @@ def method(agency: Dict[str, Any]) -> List[Any]:
     ], 'muted')]
 
 
-# --- Owner's file ---
+# --- Owner's file: a market analysis, by an estate agent ---
+
+# National benchmarks quoted in the pricing strategy (to refresh with the barometers)
+MARKET_BENCHMARK = ("Baromètres nationaux 2025-2026 (Laforêt, Interkab) : environ 100 jours pour vendre "
+                    "un logement en France, et 4 à 5 % d'écart moyen entre le prix affiché et le prix signé.")
+
+
+def trend_text(years: List[Dict[str, Any]]) -> Optional[str]:
+    if len(years) < 2:
+        return None
+    first, last = years[0], years[-1]
+    change = 100 * (last['m2'] - first['m2']) / first['m2']
+    if abs(change) < 1:
+        return f"stable entre {first['year']} et {last['year']}"
+    return f"{'+' if change > 0 else '−'}{NBSP}{fr(abs(change))}{NBSP}% entre {first['year']} et {last['year']}"
+
+
+def price_strip(comps: List[Dict[str, Any]], subject_m2: float, low_m2: Optional[float], high_m2: Optional[float]) -> Drawing:
+    """The comparable sales on one axis of price per m2, the dwelling's
+    estimate and its range on top: where it stands, at a glance."""
+    width, height = CONTENT_W, 2.6 * cm
+    values = [c.get('adjusted_m2') or c['price_m2'] for c in comps if c.get('price_m2')]
+    lo = min(values + [subject_m2] + ([low_m2] if low_m2 else []))
+    hi = max(values + [subject_m2] + ([high_m2] if high_m2 else []))
+    pad = max(1.0, (hi - lo) * 0.12)
+    lo, hi = lo - pad, hi + pad
+    x0, x1, y = 0.4 * cm, width - 0.4 * cm, 1.15 * cm
+
+    def X(v):
+        return x0 + (v - lo) / (hi - lo) * (x1 - x0)
+    d = Drawing(width, height)
+    from reportlab.graphics.shapes import Circle, Line, Rect, String
+    d.add(Line(x0, y, x1, y, strokeColor=LINE, strokeWidth=1))
+    if low_m2 and high_m2:
+        d.add(Rect(X(low_m2), y - 7, X(high_m2) - X(low_m2), 14, fillColor=TINT, strokeColor=None))
+    for v in values:
+        d.add(Circle(X(v), y, 3.4, fillColor=colors.HexColor('#97A1B3'), strokeColor=WHITE, strokeWidth=0.8))
+    sx = X(subject_m2)
+    d.add(Line(sx, y - 12, sx, y + 12, strokeColor=BRASS, strokeWidth=2))
+    d.add(String(sx, y + 17, f"Votre bien : {eur(subject_m2)} /m²", fontName='Inter-SemiBold', fontSize=7.5,
+                 fillColor=INK, textAnchor='middle'))
+    for v in (lo + pad, hi - pad):
+        d.add(String(X(v), y - 22, f"{eur(v)}", fontName='Inter', fontSize=7, fillColor=FAINT, textAnchor='middle'))
+    return d
+
+
+def rich_bullets(items: List[str]) -> List[Any]:
+    """Bullets whose markup is ours (values inside are escaped by text())."""
+    out = []
+    for item in items:
+        row = Table([[Paragraph('–', style('dash_r', textColor=BRASS)), Paragraph(item, S['body'])]],
+                    colWidths=[0.45 * cm, CONTENT_W - 0.45 * cm])
+        row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                                 ('RIGHTPADDING', (0, 0), (-1, -1), 0), ('TOPPADDING', (0, 0), (-1, -1), 2.5),
+                                 ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5)]))
+        out.append(row)
+    return out
+
 
 def owner(d: Dict[str, Any]) -> bytes:
-    v, sim, market, thesis = d['valuation'], d['sim'], d['market'], d['thesis']
+    v, market = d['valuation'], d['market']
+    city = d.get('city_market')
     agency = d.get('agency') or {}
     prem = v.get('class_premium') or {}
     rng = value_range(d, market)
     kind = (d.get('kind') or 'logement').lower()
     house = kind.startswith('maison')
-    label, target = d['label'], d['new_label']
-    rest = max(0, (d['works'] or 0) - (d['aids'] or 0))
-    gain = d.get('value_created') or 0
+    label = d['label']
+    surface = d['surface']
+    m2_now = v['price_m2_now']
+    m2_market = market['price_per_m2']
+    adj = 100 * (m2_now - m2_market) / m2_market if m2_market else 0
+    kinds = 'maisons' if house else 'appartements'
+    who = ' · '.join(text(x) for x in (agency.get('agent_name'), agency.get('agency_name')) if x)
 
-    # Cover: their dwelling and its figures, then one step
-    story = cover_head(d, 'Dossier propriétaire · confidentiel', f"Ce que vaut votre {text(kind)} aujourd'hui")
+    # Cover: their dwelling, its value, who signs it, one step
+    story = cover_head(d, 'Avis de valeur préparatoire · confidentiel', f"Ce que vaut votre {text(kind)} aujourd'hui")
     story += [Spacer(1, 22), tiles_row([
-        kpi("Valeur estimée aujourd'hui", eur(d['price']),
-            f"entre {eur(rng['low'])} et {eur(rng['high'])} selon l'état et les prestations" if rng else f"{eur(v['price_m2_now'])} /m² en classe {text(label)}"),
-        kpi(f"Après rénovation (classe {text(target)})", eur(d['resale']), f"pour environ {eur(rest)} de travaux, aides déduites", gold=True),
-        kpi("Ventes comparables", num(market['sales']), f"{text(market['scope'])}, {text(market['period'])}"),
-    ], on_dark=True), Spacer(1, 16)]
-    dpe_row = Table([[label_change(label, target, True),
-                      Paragraph(f"Votre DPE classe votre {text(kind)} en <b>{text(label)}</b>. Le programme simulé la porte en "
-                                f"<b>{text(target)}</b> : {text(d['rental_now'].lower())} aujourd'hui, "
-                                f"{text(d['rental_after'].lower())} après travaux.", D['body'])]],
-                    colWidths=[3.6 * cm, CONTENT_W - 3.6 * cm])
-    dpe_row.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
-    story += [dpe_row, Spacer(1, 18),
-              Paragraph("DANS CE DOSSIER", D['label']), Spacer(1, 5),
-              Paragraph("Les ventes près de chez vous · Ce que vaut votre bien · Ce que votre DPE change · Vos trois options, chiffrées",
-                        D['body']), Spacer(1, 22)]
+        kpi("Valeur estimée", eur(d['price']),
+            f"entre {eur(rng['low'])} et {eur(rng['high'])}" if rng else f"{eur(m2_now)} /m²", gold=True),
+        kpi("Prix médian du secteur", f"{eur(m2_market)}<font size='11'> /m²</font>", f"{kinds} comparables, {text(market['scope'])}"),
+        kpi("Ventes analysées", num(market['sales']), f"actes notariés, {text(market['period'])}"),
+    ], on_dark=True), Spacer(1, 18),
+        Paragraph("Une analyse établie à partir des ventes réellement signées chez les notaires autour de votre bien, "
+                  "de son DPE et de l'évolution des prix de votre commune.", D['lead']), Spacer(1, 18),
+        Paragraph("SOMMAIRE", D['label']), Spacer(1, 5),
+        Paragraph("Synthèse · Votre marché local · Les ventes comparables · Le positionnement de votre bien · "
+                  "Le DPE dans votre vente · La stratégie de prix · La prochaine étape", D['body']), Spacer(1, 22)]
     block = advisor_block(agency, True, "Affinons cette estimation chez vous : 30 minutes, gratuit, sans engagement de vendre.")
     if block:
         story.append(block)
@@ -374,94 +431,171 @@ def owner(d: Dict[str, Any]) -> bytes:
         n += 1
         return section(n, title)
 
-    # 1. The sales next to them
-    story += [next_section('Ce qui s\'est vendu près de chez vous'), Spacer(1, 8),
-              Paragraph(f"Les acquéreurs de votre secteur ont payé en moyenne <b>{eur(market['price_per_m2'])} /m²</b> "
-                        f"pour un bien comparable ; la moitié des ventes se situe entre {eur(market['q25'])} et {eur(market['q75'])} /m².",
-                        L['lead']), Spacer(1, 8)]
+    # Synthesis: the four things to remember
+    points = [f"<b>Valeur.</b> Votre {text(kind)} de {f'{surface:g}'.replace('.', ',')}{NBSP}m² est estimé{'e' if house else ''} autour de "
+              f"<b>{eur(d['price'])}</b>, soit {eur(m2_now)} /m²" + (f", dans une fourchette de {eur(rng['low'])} à {eur(rng['high'])} "
+              "que la visite permettra de resserrer." if rng else ".")]
+    trend = trend_text(city['years']) if city else None
+    if city and city['years']:
+        last = city['years'][-1]
+        points.append(f"<b>Marché.</b> À {text(city['name'])}, les {kinds} se sont vendu{'e' if house else ''}s {eur(last['m2'])} /m² en médiane "
+                      f"en {last['year']}" + (f" ({trend})" if trend else '') + (f", sur {num(last['n'])} ventes : le marché est actif." if last.get('n') else '.'))
+    else:
+        points.append(f"<b>Marché.</b> {num(market['sales'])} ventes comparables {text(market['scope'])}, médiane {eur(m2_market)} /m².")
+    if prem.get(label) is not None and label != 'D':
+        points.append(f"<b>DPE.</b> Classé{'e' if house else ''} {text(label)}, votre bien se compare aux ventes de même classe : "
+                      f"dans le département, l'écart avec un bien classé D est de {fr(abs(prem[label]), 0)}{NBSP}%. "
+                      "Le bon prix en tient compte : c'est ce qui le rend vendable vite.")
+    points.append("<b>Stratégie.</b> Un prix juste dès la mise en vente : c'est dans les premières semaines qu'une annonce reçoit le plus "
+                  "de visites, et plus elle reste en ligne, plus la négociation est forte.")
+    srows = [[Paragraph(str(i + 1), L['step_n']), Paragraph(p, S['body'])] for i, p in enumerate(points)]
+    synth = Table(srows, colWidths=[1.0 * cm, CONTENT_W - 1.0 * cm])
+    synth.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LINEBELOW', (0, 0), (-1, -2), 0.5, LINE),
+                               ('TOPPADDING', (0, 0), (-1, -1), 7), ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+                               ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
+    story += [Paragraph('Synthèse', S['h2']), Spacer(1, 6), boxed_line_flow([synth])]
+
+    # 1. Local market
+    if city and city['years']:
+        cells = [kpi(f"Prix médian {city['years'][-1]['year']}", f"{eur(city['years'][-1]['m2'])}<font size='10'> /m²</font>",
+                     f"{kinds}, {text(city['name'])}", on_dark=False)]
+        if trend:
+            cells.append(kpi('Évolution', trend.split(' entre ')[0], f"entre {city['years'][0]['year']} et {city['years'][-1]['year']}",
+                             on_dark=False))
+        if city['years'][-1].get('n'):
+            cells.append(kpi(f"Ventes en {city['years'][-1]['year']}", num(city['years'][-1]['n']), f"{kinds} vendu{'e' if house else ''}s dans la commune",
+                             on_dark=False, gold=True))
+        story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('Votre marché local'), Spacer(1, 8),
+                  tiles_row(cells, on_dark=False, highlight=len(cells) - 1), Spacer(1, 10)]
+        yrows = [[head('Année'), head('Prix médian /m²', 2), head('Ventes', 2)]] + [
+            [Paragraph(str(y['year']), S['body']), Paragraph(eur(y['m2']), S['right']), Paragraph(num(y.get('n') or 0), S['right'])]
+            for y in city['years']]
+        left = grid(yrows, [CONTENT_W * 0.16, CONTENT_W * 0.17, CONTENT_W * 0.12])
+        right_rows = [[head('Communes voisines'), head('Prix médian /m²', 2)]] + [
+            [Paragraph(text(c['name']), S['body']), Paragraph(eur(c['m2']), S['right'])] for c in city['near']]
+        parts = [left, '']
+        widths = [CONTENT_W * 0.45, CONTENT_W * 0.07]
+        if city['near']:
+            parts.append(grid(right_rows, [CONTENT_W * 0.30, CONTENT_W * 0.18]))
+            widths.append(CONTENT_W * 0.48)
+        both = Table([parts], colWidths=widths)
+        both.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                                  ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
+        typical = (f" La vente type : {fr(city['surface'], 0)}{NBSP}m² "
+                   f"pour {eur(city['price'])}." if city.get('surface') and city.get('price') else '')
+        story += [both, Spacer(1, 4), Paragraph(f"Ventes de {kinds} de la commune, données DVF (DGFiP), mises à jour le "
+                                                f"{text(city.get('updated') or '')}.{typical}", S['small'])]
+
+    # 2. Comparable sales
+    story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('Les ventes comparables'), Spacer(1, 8),
+              Paragraph(f"Les acquéreurs de votre secteur ont payé en médiane <b>{eur(m2_market)} /m²</b> pour un bien comparable ; "
+                        f"la moitié des ventes se situe entre {eur(market['q25'])} et {eur(market['q75'])} /m².", L['lead']), Spacer(1, 8)]
     if market.get('comparables'):
-        story += [comparables_table(market, market.get('adjusted', 'actualisées' in (market.get('source') or ''))), Spacer(1, 3)]
+        story += [price_strip(market['comparables'], m2_now,
+                              rng['low'] / surface if rng else None, rng['high'] / surface if rng else None),
+                  Paragraph(f"Points gris : les ventes comparables, toutes classes DPE confondues. Trait doré : votre bien en classe {text(label)}"
+                            + (", et sa fourchette." if rng else "."), S['small']), Spacer(1, 6),
+                  comparables_table(market, market.get('adjusted', 'actualisées' in (market.get('source') or ''))), Spacer(1, 3)]
     story += [Paragraph(comparables_note(market), S['small'])]
 
-    # 2. Their dwelling today
-    story += [CondPageBreak(7 * cm), Spacer(1, 16), next_section('Votre bien aujourd\'hui'), Spacer(1, 8),
-              tiles_row([c for c in (
-                  kpi('Valeur estimée', eur(d['price']), f"{eur(v['price_m2_now'])} /m² en classe {text(label)}", on_dark=False),
-                  kpi('Fourchette du secteur', f"{eur(rng['low'])} – {eur(rng['high'])}",
-                      "là où se situe la moitié des ventes comparables", on_dark=False) if rng else None,
-                  kpi('Ce qui la précise', 'La visite', "état, étage, extérieur, travaux réalisés depuis le DPE", on_dark=False, gold=True),
-              ) if c], on_dark=False, highlight=2 if rng else 1), Spacer(1, 10),
-              Paragraph(text(thesis['these']), S['narrative']), Spacer(1, 4),
-              Paragraph("Les chiffres de ce dossier reposent sur les ventes enregistrées et sur votre DPE. Ils ne voient ni la lumière, "
-                        "ni la vue, ni l'état des pièces, ni les travaux faits depuis : c'est ce que votre conseiller vient apprécier.", S['muted'])]
+    # 3. Positioning: how the value is built
+    build_rows = [kv('Prix médian au m² des ventes comparables', eur(m2_market))]
+    if abs(adj) >= 0.5:
+        build_rows.append(kv(f"Ajustement pour la classe {text(label)} (les ventes comparables mêlent toutes les classes)",
+                             f"{'+' if adj > 0 else '−'}{NBSP}{fr(abs(adj))}{NBSP}%"))
+    build_rows += [kv('Prix au m² retenu pour votre bien', eur(m2_now)),
+                   kv(f"× surface habitable ({f'{surface:g}'.replace('.', ',')}{NBSP}m²)", ''),
+                   kv('<b>Valeur estimée</b>', f"<b>{eur(d['price'])}</b>")]
+    if rng:
+        build_rows.append(kv('Fourchette du secteur (moitié des ventes)', f"{eur(rng['low'])} – {eur(rng['high'])}"))
+    criteria = [[head('Ce que la visite vient préciser'), head('Effet sur le prix')]]
+    crit = [("État général, prestations, cuisine et salles d'eau", "le premier facteur d'écart avec la médiane"),
+            ("Luminosité, exposition, vue, calme", "très recherchés, souvent sous-estimés"),
+            (("Terrain, jardin, dépendances" if house else "Étage, ascenseur, balcon ou terrasse"), "écart sensible d'un bien à l'autre"),
+            ("Stationnement, garage, cave", "un vrai plus dans la plupart des secteurs"),
+            ("Travaux réalisés depuis le DPE", "un nouveau DPE peut améliorer la classe, donc le prix")]
+    for a, b in crit:
+        criteria.append([Paragraph(a, S['body']), Paragraph(b, S['muted'])])
+    story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('Le positionnement de votre bien'), Spacer(1, 8),
+              rows_table(build_rows, [CONTENT_W * 0.66, CONTENT_W * 0.34], bold_last=not rng), Spacer(1, 12),
+              KeepTogether([grid(criteria, [CONTENT_W * 0.55, CONTENT_W * 0.45]), Spacer(1, 4),
+                            Paragraph("Les chiffres voient les ventes et le DPE ; ils ne voient ni la lumière, ni l'état des pièces, "
+                                      "ni les travaux faits depuis. C'est ce que votre conseiller vient apprécier pour fixer le juste prix.",
+                                      S['muted'])])]
 
-    # 3. What the DPE changes for them
-    rows = []
-    if prem.get(label) is not None:
-        rows.append(kv(f"Écart de prix d'un logement classé {text(label)} face à un classé D, {department_name(v)}",
-                       f"<b>{prem[label]:+.0f}{NBSP}%</b>".replace('+', '+' + NBSP if prem[label] > 0 else '').replace('-', '−' + NBSP)))
-    if prem.get(target) and target != label:
-        rows.append(kv(f"Le même écart en classe {text(target)}, après travaux", f"<b>{prem[target]:+.0f}{NBSP}%</b>".replace('-', '−' + NBSP).replace('+0', '0')))
-    rows.append(kv('Location aujourd\'hui', text(d['rental_now'])))
-    rows.append(kv('Location après travaux', text(d['rental_after'])))
-    calendar = ["Location : interdite pour les logements classés G depuis le 1er janvier 2025, puis F en 2028 et E en 2034 "
-                "(nouveaux baux et renouvellements).",
-                "Loyers : ceux des logements classés F et G ne peuvent plus être augmentés depuis août 2022."]
-    if house:
-        calendar.append("Vente : un audit énergétique est obligatoire pour vendre une maison classée E, F ou G ; il chiffre "
-                        "lui-même les travaux, et les acquéreurs le liront.")
-    else:
-        calendar.append("Copropriété : les travaux collectifs votés en assemblée générale pèsent aussi dans la classe du logement.")
-    story += [CondPageBreak(7 * cm), Spacer(1, 16), next_section('Ce que votre DPE change pour vous'), Spacer(1, 8),
-              rows_table(rows, [CONTENT_W * 0.66, CONTENT_W * 0.34]), Spacer(1, 3),
-              Paragraph(f"Écarts mesurés sur {num(v.get('class_sample') or 0)} ventes rapprochées de leur DPE ({text(v.get('class_period') or '')}).",
-                        S['small']), Spacer(1, 8), *bullet_list(calendar, 'body')]
+    # 4. The DPE in the sale (an agent's subject: price, buyers, legal file)
+    story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('Le DPE dans votre vente'), Spacer(1, 8)]
+    if prem:
+        prow = [[head('Classe DPE'), *[head(c, 1) for c in LABELS]],
+                [Paragraph('Écart de prix vs D', S['body']),
+                 *[Paragraph(("<b>" if c == label else '') + (f"{prem[c]:+.0f}{NBSP}%".replace('+0', '0').replace('-', '−'))
+                             + ("</b>" if c == label else ''), style(f'op{c}', alignment=1)) for c in LABELS]]]
+        t = grid(prow, [CONTENT_W * 0.30] + [CONTENT_W * 0.10] * 7)
+        i = LABELS.index(label) + 1 if label in LABELS else None
+        if i:
+            t.setStyle(TableStyle([('BACKGROUND', (i, 0), (i, -1), TINT)]))
+        story += [t, Spacer(1, 3), Paragraph(f"{kinds.capitalize()}, écarts mesurés sur {num(v.get('class_sample') or 0)} ventes "
+                                             f"rapprochées de leur DPE ({text(v.get('class_period') or '')}).", S['small']), Spacer(1, 8)]
+    legal = []
+    if house and label in ('E', 'F', 'G'):
+        legal.append(f"<b>Audit énergétique obligatoire.</b> Pour vendre une maison classée {text(label)}, un audit doit être remis dès "
+                     "la première visite : nous l'organisons avec vous avant la mise en vente.")
+    legal.append("<b>Les acquéreurs regardent la classe.</b> Elle figure sur l'annonce et pèse dans leur budget comme dans l'avis de leur banque. "
+                 "Un prix aligné sur les ventes de même classe évite la négociation au rabais.")
+    if label in ('E', 'F', 'G'):
+        legal.append("<b>Si le bien est loué ou destiné à la location.</b> Location interdite pour les logements classés G depuis 2025, "
+                     "puis F en 2028 et E en 2034 ; loyers des F et G gelés depuis août 2022. Pour un propriétaire bailleur, "
+                     "c'est souvent le bon moment pour arbitrer.")
+    legal.append(f"<b>Les bons acquéreurs.</b> Pour un bien classé {text(label)}, nous ciblons ceux qui le recherchent "
+                 "(investisseurs, acheteurs prêts à le mettre à leur goût) et leur remettons un dossier qui chiffre leur projet.")
+    story += rich_bullets(legal)
 
-    # 4. Three options in figures
-    opt_rows = [[head('Option'), head('Ce que vous en tirez', 2), head('Ce qu\'il faut savoir')]]
-    opt_rows.append([Paragraph('<b>Vendre en l\'état</b>', S['body']), Paragraph(f"<b>{eur(d['price'])}</b>", S['right']),
-                     Paragraph("Les acquéreurs déduisent les travaux qu'ils imaginent ; un projet chiffré évite qu'ils les surestiment.", S['muted'])])
-    opt_rows.append([Paragraph(f"<b>Rénover, puis vendre</b><br/><font size='8' color='#5B6577'>classe {text(target)}</font>", S['body']),
-                     Paragraph(f"<b>{eur(d['resale'])}</b><br/><font size='8' color='#5B6577'>pour {eur_range(d['works_low'], d['works_high'])} "
-                               f"de travaux{', ' + eur(d['aids']) + ' d’aides possibles' if d['aids'] else ''}</font>", S['right']),
-                     Paragraph((f"Gain net estimé : <b><font color='#3E8E63'>+{NBSP}{eur(gain)}</font></b> après travaux et aides." if gain > 0 else
-                                "Les travaux coûtent ici plus qu'ils n'ajoutent à la valeur : mieux vaut vendre avec le projet chiffré.")
-                               + f" Comptez environ {days(sim.get('duration_days'))} de chantier.", S['muted'])])
-    if d.get('rent_month'):
-        opt_rows.append([Paragraph('<b>Rénover, puis louer</b>', S['body']),
-                         Paragraph(f"<b>{eur(d['rent_month'])}</b> / mois", S['right']),
-                         Paragraph(f"Loyer de marché de la commune ramené à votre surface ; {text(d['rental_after'].lower())}.", S['muted'])])
-    story += [CondPageBreak(7 * cm), Spacer(1, 16), next_section('Vos trois options, chiffrées'), Spacer(1, 8),
-              grid(opt_rows, [CONTENT_W * 0.24, CONTENT_W * 0.31, CONTENT_W * 0.45]), Spacer(1, 3),
-              Paragraph(f"Aides calculées pour un ménage aux revenus « {text(sim.get('income_profile') or 'intermédiaires').lower()} » : "
-                        "votre conseiller les recalcule avec vous. Travaux : prix moyens, à confirmer par devis.", S['small'])]
+    # 5. Pricing strategy
+    scen = [[head('Prix de mise en vente'), head('Ce qui se passe en général')],
+            [Paragraph(f"<b>Au prix du marché</b><br/><font size='8' color='#5B6577'>autour de {eur(d['price'])}</font>", S['body']),
+             Paragraph("Les acquéreurs qui cherchent dans cette gamme voient l'annonce dès sa parution : visites rapides, "
+                       "offres proches du prix affiché.", S['muted'])],
+            [Paragraph("<b>Juste au-dessus</b><br/><font size='8' color='#5B6577'>3 à 5 %</font>", S['body']),
+             Paragraph("Une marge de négociation raisonnable si le bien a des atouts que la visite confirme.", S['muted'])],
+            [Paragraph(f"<b>Nettement au-dessus</b><br/><font size='8' color='#5B6577'>10 % et plus, vers {eur(round(d['price'] * 1.1, -3))}</font>", S['body']),
+             Paragraph("Peu d'appels : le bien est comparé à de meilleurs biens au même prix. L'annonce s'use, les baisses "
+                       "successives font douter, la négociation finale est plus forte.", S['muted'])]]
 
-    # 5. How we would sell it
-    story += [CondPageBreak(7 * cm), Spacer(1, 16), next_section('Comment nous présenterions votre bien'), Spacer(1, 8),
-              Paragraph(text(thesis.get('strategie') or ''), S['narrative']), Spacer(1, 6),
-              *bullet_list([
-                  "Un prix appuyé sur les ventes réelles de votre secteur, celles de ce dossier, pour vendre au bon prix sans rester des mois en vitrine.",
-                  f"Un dossier acheteur qui chiffre le passage de {label} à {target} : travaux, aides, facture d'énergie, valeur après travaux. "
-                  "Les acquéreurs voient un projet, plus une passoire.",
-                  "Des acquéreurs ciblés : investisseurs et acheteurs prêts à rénover, qui recherchent précisément ce type de bien.",
-              ], 'body'), Spacer(1, 6),
-              Paragraph(text(THESIS_RISKS_TITLE), S['narrative_h']), Spacer(1, 2), *bullet_list(thesis.get('risques') or [], 'muted')]
+    story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('La stratégie de prix'), Spacer(1, 8),
+              Paragraph("Le prix d'annonce décide qui voit votre bien : les acquéreurs cherchent par tranche de prix et comparent. "
+                        "Les premières semaines sont celles où l'annonce attire le plus de visites.", L['lead']), Spacer(1, 8),
+              KeepTogether([grid(scen, [CONTENT_W * 0.32, CONTENT_W * 0.68]), Spacer(1, 4), Paragraph(MARKET_BENCHMARK, S['small'])])]
 
-    # 6. The next step
-    block = advisor_block(agency, False, "Prochaine étape : une visite d'estimation, gratuite et sans engagement.")
-    visit = bullet_list([
-        "Nous visitons votre bien et relevons ce que les chiffres ne voient pas : état, exposition, étage, extérieur, travaux déjà faits.",
-        "Nous vous remettons un avis de valeur précis, avec les ventes qui le justifient.",
-        "Vous décidez ensuite, à votre rythme : vendre, rénover, louer, ou attendre.",
-    ], 'body')
-    story += [CondPageBreak(8 * cm), Spacer(1, 16), next_section('La prochaine étape'), Spacer(1, 8), *visit, Spacer(1, 10)]
+    # 6. Next step
+    steps = [("La visite d'estimation", "30 minutes chez vous : nous relevons ce que les chiffres ne voient pas."),
+             ("Votre avis de valeur", "Un prix précis et argumenté, avec les ventes qui le justifient."),
+             ("Le plan de mise en vente", "Photos, annonce, diffusion, acquéreurs ciblés, visites qualifiées."),
+             ("Jusqu'à la signature", "Offres, compromis, notaire : nous vous accompagnons à chaque étape.")]
+    st = Table([[Paragraph(str(i + 1), L['step_n']), Paragraph(f"<b>{a}</b><br/><font color='#5B6577'>{b}</font>", S['body'])]
+                for i, (a, b) in enumerate(steps)], colWidths=[1.0 * cm, CONTENT_W - 1.0 * cm])
+    st.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LINEBELOW', (0, 0), (-1, -2), 0.5, LINE),
+                            ('TOPPADDING', (0, 0), (-1, -1), 5), ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                            ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
+    story += [CondPageBreak(9 * cm), Spacer(1, 16), next_section('La prochaine étape'), Spacer(1, 6), st, Spacer(1, 10)]
+    block = advisor_block(agency, False, "Prenons rendez-vous pour la visite d'estimation, gratuite et sans engagement.")
     if block:
         story.append(block)
-    story += [Spacer(1, 14), Paragraph('Méthode et réserves', S['h3']), Spacer(1, 4), *method(agency)]
-    return build(d, story, 'Dossier propriétaire')
+    sources = ("<b>Méthode et sources.</b> Ventes : Demandes de valeurs foncières (DVF, DGFiP), actes notariés rapprochés par type "
+               "de bien, surface et distance, prix actualisés au dernier trimestre. DPE : base publique de l'ADEME ; écarts de prix "
+               "entre classes mesurés sur les ventes du département rapprochées de leur DPE. Prix de la commune : médianes annuelles DVF. "
+               "Avis de valeur préparatoire établi sans visite : il ne remplace ni l'avis de valeur après visite, ni une expertise."
+               + (f" Établi par {who}." if who else ''))
+    story += [Spacer(1, 12), Paragraph(sources, S['small'])]
+    return build(d, story, 'Avis de valeur')
 
 
-THESIS_RISKS_TITLE = "Ce que les acquéreurs vérifieront"
+def boxed_line_flow(flowables: List[Any]) -> Table:
+    t = Table([[flowables]], colWidths=[CONTENT_W])
+    t.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), WHITE), ('BOX', (0, 0), (-1, -1), 0.6, LINE),
+                           ('LINEBEFORE', (0, 0), (0, -1), 2.5, BRASS_LIGHT),
+                           ('LEFTPADDING', (0, 0), (-1, -1), 12), ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                           ('TOPPADDING', (0, 0), (-1, -1), 4), ('BOTTOMPADDING', (0, 0), (-1, -1), 4)]))
+    return t
 
 
 # --- Buyer's file ---

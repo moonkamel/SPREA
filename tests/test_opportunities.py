@@ -161,9 +161,12 @@ def test_files_for_the_buyer_and_the_owner():
     assert "négociation" not in buyer.lower() and "décote" not in buyer and "Marge brute" not in buyer
     assert buyer.count("Estimations indicatives") >= 2  # every page
     owner = dossier_pdf(o, "proprietaire")
-    for part in ("DOSSIER PROPRIÉTAIRE", "Ce que vaut votre maison", "Ce qui s'est vendu près de chez vous",
-                 "Ce que votre DPE change pour vous", "Vos trois options, chiffrées", "visite d'estimation, gratuite et sans engagement"):
+    for part in ("AVIS DE VALEUR PRÉPARATOIRE", "Ce que vaut votre maison", "Synthèse", "Les ventes comparables",
+                 "Le positionnement de votre bien", "Le DPE dans votre vente", "La stratégie de prix",
+                 "La prochaine étape", "ne vous engage à rien"):
         assert part in owner, part
+    # An estate agent's file: no works programme, no aids
+    assert "MaPrimeRénov" not in owner and "Pompe à chaleur" not in owner and "Rénover" not in owner
     assert "Arguments de négociation" in dossier_pdf(o, "investisseur")
 
 
@@ -247,3 +250,21 @@ def test_files_show_the_report_cost_range():
     extras = [d for d in sim["detailed_costs"] if d["id"] == "parking"]
     fig = display_figures(sim, works, extras)
     assert (o["works_low"], o["works_high"]) == (fig["cost_low"], fig["cost_high"])
+
+
+def test_city_market_for_the_owner_file():
+    from api import city_market
+    data = {"updated": "2026-10-27", "communes": {
+        "59350": {"name": "Lille", "near": ["59328", "59999"], "kinds": {"maison": {
+            "m2": 2803, "q25": 2167, "q75": 3490, "n": 1724, "surface": 85, "price": 230000,
+            "years": {"2025": {"m2": 2781, "n": 923}, "2023": {"m2": 2853, "n": 887}, "2024": {"m2": 2823, "n": 801}}}}},
+        "59328": {"name": "Lambersart", "kinds": {"maison": {"m2": 3574, "n": 300}}}}}
+    city_market._files.clear()
+    transport = httpx.MockTransport(lambda r: httpx.Response(200, json=data) if r.url.path == "/prix/59.json" else httpx.Response(404))
+    c = asyncio.run(city_market.city_market("59350", "Maison", transport=transport))
+    assert c["name"] == "Lille" and [y["year"] for y in c["years"]] == [2023, 2024, 2025]
+    assert c["near"] == [{"name": "Lambersart", "m2": 3574, "n": 300}]
+    assert asyncio.run(city_market.city_market("59350", "Appartement", transport=transport)) is None
+    city_market._files.clear()
+    down = httpx.MockTransport(lambda r: httpx.Response(503))
+    assert asyncio.run(city_market.city_market("62041", "Maison", transport=down)) is None
