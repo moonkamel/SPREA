@@ -10,8 +10,6 @@ years), scored 0-100 on what announces a sale, each point explained:
 - sales right next to it in the last eighteen months (the street moves);
 - a company owning the whole building with a sale signal in the BODACC
   (dissolution, liquidation, death of a manager: api/sale_signals.py).
-GET /api/sales: the recent single-dwelling sales of the visible map (DVF),
-for the « votre voisin a vendu » letters.
 
 Only public data: DPE (ADEME), DVF (DGFiP), BODACC (DILA). No owner's name.
 """
@@ -24,7 +22,7 @@ from datetime import date, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 
 try:
     from api import prospection
@@ -278,62 +276,3 @@ async def signals(bbox: str, user: User = Depends(current_user), store: Supabase
     except httpx.HTTPError as e:
         logger.error(f"Signals failed: {type(e).__name__}")
         raise HTTPException(status_code=502, detail="La base DPE de l'ADEME ne répond pas pour le moment.")
-
-
-async def area_sales(bbox: str, months: int, today: Optional[date] = None,
-                     dvf_transport: Optional[httpx.AsyncBaseTransport] = None,
-                     communes: Optional[List[str]] = None) -> Dict[str, Any]:
-    today = today or date.today()
-    west, south, east, north = prospection.parse_bbox(bbox)
-    if communes is None:
-        communes = await communes_in_bbox(west, south, east, north, dvf_transport)
-    out: List[Dict[str, Any]] = []
-    latest = None
-    async with httpx.AsyncClient(timeout=30, transport=dvf_transport, follow_redirects=True) as client:
-        for c in communes[:MAX_COMMUNES]:
-            try:
-                data = await commune_sales(client, c, today)
-            except httpx.HTTPError:
-                continue
-            for s in data["sales"]:
-                if not s.get("lat") or not (south <= s["lat"] <= north and west <= s["lon"] <= east):
-                    continue
-                latest = max(latest or "", s.get("date") or "")
-                out.append(s)
-    # The DVF lag: count the months back from the latest sale published
-    ref = date.fromisoformat(latest) if latest else today
-    start = (ref - timedelta(days=int(months * 30.44))).isoformat()
-    kept = sorted((s for s in out if (s.get("date") or "") >= start), key=lambda s: s.get("date") or "", reverse=True)
-    return {"sales": [{"date": s["date"], "price": s["price"], "surface": s["surface"], "price_m2": round(s["price_m2"]),
-                       "kind": s.get("kind"), "street": s.get("street"),
-                       "number": s.get("number"), "commune": s.get("commune"), "lat": s["lat"], "lon": s["lon"],
-                       "rooms": s.get("rooms")} for s in kept[:600]],
-            "latest": latest, "truncated": len(kept) > 600}
-
-
-async def communes_in_bbox(west: float, south: float, east: float, north: float,
-                           transport: Optional[httpx.AsyncBaseTransport] = None) -> List[str]:
-    """Communes under the corners and the centre of the map (geo.api.gouv.fr)."""
-    points = [((south + north) / 2, (west + east) / 2), (south, west), (south, east), (north, west), (north, east)]
-    found: List[str] = []
-    async with httpx.AsyncClient(timeout=10, transport=transport) as client:
-        for lat, lon in points:
-            try:
-                res = await client.get("https://geo.api.gouv.fr/communes", params={"lat": lat, "lon": lon, "fields": "code", "format": "json"})
-                res.raise_for_status()
-                for c in res.json():
-                    if c.get("code") and c["code"] not in found:
-                        found.append(c["code"])
-            except httpx.HTTPError:
-                continue
-    return found
-
-
-@router.get("/sales", dependencies=[Depends(search_limiter.per_user)])
-async def sales(bbox: str, months: int = Query(12, ge=3, le=36), user: User = Depends(current_user),
-                store: SupabaseStore = Depends(store_dep)):
-    await require_pro(user, store)
-    try:
-        return await area_sales(bbox, months)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))

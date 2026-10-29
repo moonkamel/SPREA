@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Flame, Loader2, Receipt, Route, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Flame, Loader2, Route, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
 import { useAccount } from '../account';
 import { toProperty, type PropertyData } from '../model';
 import { Link, navigate } from '../router';
@@ -9,8 +9,7 @@ import { useSeo } from '../seo';
 import { TourHost, useAutoTour } from '../tour';
 import { Button, DPE_COLORS, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
 import { AlertsPanel, type Zone } from './Alerts';
-import { NeighbourLetterDialog, SIGNAL_COLORS, SalesPanel, SignalsPanel, TourPanel, loadTour, saveTour, titleCase,
-    type SaleItem, type SalesResult, type SignalsResult, type TourStop } from './ProspectionTools';
+import { SIGNAL_COLORS, SignalsPanel, TourPanel, loadTour, saveTour, type SignalsResult, type TourStop } from './ProspectionTools';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
@@ -22,7 +21,7 @@ import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type FollowUp, type O
 // target with every figure and every action, and the follow-up board with
 // what is due today. Built only on SPREA's data: nothing here is made up.
 
-type View = 'radar' | 'signaux' | 'dpe' | 'immeubles' | 'ventes' | 'alertes' | 'fiche' | 'tournee' | 'cible' | 'suivi';
+type View = 'radar' | 'signaux' | 'dpe' | 'immeubles' | 'alertes' | 'fiche' | 'tournee' | 'cible' | 'suivi';
 interface Center { lat: number; lon: number; label: string }
 interface PipelineItem { number: string; status: FollowUp; address: string | null; updated_at: string | null; mine: boolean }
 interface EstimateLead { id: string; name: string; address: string; city: string | null; lat: number | null; lon: number | null; project: string; status: string; phone: string | null; created_at: string }
@@ -161,7 +160,7 @@ export default function ProspectionPage() {
     const [view, setView] = useState<View>(() => {
         const mode = params.current.get('mode');
         if (linked.current || mode === 'immeubles') return 'immeubles';
-        return (['dpe', 'alertes', 'fiche', 'signaux', 'ventes', 'tournee'] as const).find(m => m === mode) || 'radar';
+        return (['dpe', 'alertes', 'fiche', 'signaux', 'tournee'] as const).find(m => m === mode) || 'radar';
     });
     const [center, setCenter] = useState<Center | null>(() => {
         if (linked.current) return { lat: linked.current.lat, lon: linked.current.lon, label: 'Immeuble' };
@@ -183,15 +182,11 @@ export default function ProspectionPage() {
     // Daily alerts: zones drawn on the map, list reloaded once a zone is created
     const [alertZones, setAlertZones] = useState<Zone[]>([]);
     const [alertsReload, setAlertsReload] = useState(0);
-    // Who is likely to sell, the sales of the area, the letterbox round
+    // Who is likely to sell, the letterbox round
     const [signalsData, setSignalsData] = useState<SignalsResult | null>(null);
     const [signalFilter, setSignalFilter] = useState<'all' | 'fort' | 'held' | 'fresh'>('all');
-    const [salesData, setSalesData] = useState<SalesResult | null>(null);
-    const [salesMonths, setSalesMonths] = useState(12);
     const [toolLoading, setToolLoading] = useState(false);
     const [tour, setTour] = useState<TourStop[]>(loadTour);
-    const [neighbourFor, setNeighbourFor] = useState<SaleItem | null>(null);
-    const salesRef = useRef<SaleItem[]>([]);
     const addStop = useCallback((st: TourStop) => setTour(t => (t.some(x => x.key === st.key) ? t : [...t, st])), []);
     const addStopRef = useRef(addStop);
     const inTour = (key: string) => tour.some(x => x.key === key);
@@ -356,7 +351,6 @@ export default function ProspectionPage() {
                             label: (d.label || null) as DPEClass | null, dpeNumber: d.dpe || null });
                         el.textContent = 'Dans la tournée';
                     }
-                    else if (d.action === 'neighbours') { const sale = salesRef.current[Number(d.idx)]; if (sale) setNeighbourFor(sale); }
                     else setLetterFor({ address: d.address || '', label: d.label as DPEClass, dpeNumber: d.dpe || '' });
                 };
             });
@@ -456,24 +450,23 @@ export default function ProspectionPage() {
     };
     const showMap = (v: View) => { setView(v); setSelected(null); };
 
-    // Signals and sales of the visible map, loaded once per area
+    // Signals of the visible map, loaded once per area
     const loadedTool = useRef<Record<string, string>>({});
     useEffect(() => {
-        if ((view !== 'signaux' && view !== 'ventes') || !pro || !zoomOk || !area) return;
-        const key = view === 'signaux' ? area.key : `${area.key}|${salesMonths}`;
+        if (view !== 'signaux' || !pro || !zoomOk || !area) return;
+        const key = area.key;
         if (loadedTool.current[view] === key) return;
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             setToolLoading(true);
             setError(null);
             try {
-                const url = view === 'signaux' ? `/api/signals?bbox=${area.key}` : `/api/sales?bbox=${area.key}&months=${salesMonths}`;
+                const url = `/api/signals?bbox=${area.key}`;
                 const res = await authedFetch(url, { signal: controller.signal });
                 if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Le chargement a échoué.');
                 const data = await res.json();
                 loadedTool.current[view] = key;
-                if (view === 'signaux') setSignalsData(data);
-                else { salesRef.current = data.sales; setSalesData(data); }
+                setSignalsData(data);
             } catch (e) {
                 if ((e as Error).name !== 'AbortError') setError((e as Error).message);
             } finally {
@@ -481,7 +474,7 @@ export default function ProspectionPage() {
             }
         }, 600);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [view, pro, zoomOk, area, salesMonths, authedFetch]);
+    }, [view, pro, zoomOk, area, authedFetch]);
     const delivered = async (stops: TourStop[]) => {
         for (const st of stops) if (st.dpeNumber) await setStatus({ number: st.dpeNumber, address: st.address }, 'courrier');
         setTour(t => t.filter(x => !stops.some(st => st.key === x.key)));
@@ -589,18 +582,6 @@ export default function ProspectionPage() {
             }
             return;
         }
-        if (view === 'ventes') {
-            if (!salesData || !zoomOk) return;
-            const link = 'color:#E3C98F;font-weight:600;text-decoration:none;cursor:pointer';
-            salesData.sales.forEach((sl, i) => {
-                L.circleMarker([sl.lat, sl.lon], { radius: 6, color: '#E3C98F', weight: 2, fillColor: '#0D1424', fillOpacity: 0.9 })
-                    .bindPopup(`<b>${esc(sl.street ? titleCase(sl.street) : 'Adresse non publiée')}</b><br>${esc(sl.kind)} · ${Math.round(sl.surface)} m² · ${formatDate(sl.date)}`
-                        + `<br><b>${eur(sl.price)}</b> · ${eur(sl.price_m2)} /m²`
-                        + `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #25324C"><a href="#" data-action="neighbours" data-idx="${i}" style="${link}">Courrier aux voisins</a></div>`)
-                    .addTo(group);
-            });
-            return;
-        }
         if (view === 'tournee') {
             if (tour.length > 1) L.polyline(tour.map(t => [t.lat, t.lon] as [number, number]), { color: '#C9A45C', weight: 3, opacity: 0.85, dashArray: '6 6' }).addTo(group);
             tour.forEach((t, i) => {
@@ -667,7 +648,7 @@ export default function ProspectionPage() {
                 .bindTooltip(`Demande d'estimation · ${esc(l.name)}`).addTo(group);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results, signalsData, signalFilter, salesData, tour]);
+    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results, signalsData, signalFilter, tour]);
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
@@ -824,7 +805,6 @@ export default function ProspectionPage() {
                         ['signaux', Flame, 'Signaux', () => showMap('signaux')],
                         ['dpe', MapPin, 'Récents', () => showMap('dpe')],
                         ['immeubles', Building2, 'Immeubles', () => showMap('immeubles')],
-                        ['ventes', Receipt, 'Ventes', () => showMap('ventes')],
                         ['alertes', Bell, 'Alertes', () => showMap('alertes')],
                         ['fiche', FileSearch, 'DPE', () => showMap('fiche')],
                         ['tournee', Route, 'Tournée', () => showMap('tournee')],
@@ -991,13 +971,12 @@ export default function ProspectionPage() {
                         </>
                     )}
 
-                    {(view === 'signaux' || view === 'ventes') && (
+                    {view === 'signaux' && (
                         <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
                             <span className="cmd-kpi px-3 py-1.5 text-xs text-ink tabular-nums flex items-center gap-2">
                                 {toolLoading && <Loader2 size={13} className="animate-spin text-brass-light" />}
                                 {!zoomOk ? 'Rapprochez-vous pour afficher la zone'
-                                    : view === 'signaux' ? (signalsData ? `${signalsData.total} adresses · ${signalsData.strong} signaux forts` : 'Analyse des adresses (10 à 30 s)')
-                                    : salesData ? `${salesData.sales.length} ventes en ${salesMonths} mois` : 'Chargement des ventes'}
+                                    : signalsData ? `${signalsData.total} adresses · ${signalsData.strong} signaux forts` : 'Analyse des adresses (10 à 30 s)'}
                             </span>
                             {view === 'signaux' && (
                                 <span className="cmd-kpi px-3 py-1.5 text-xs text-muted flex items-center gap-3">
@@ -1107,10 +1086,6 @@ export default function ProspectionPage() {
                             onTour={it => addStop({ key: `${it.lat},${it.lon}`, address: it.address, lat: it.lat, lon: it.lon, label: it.label, dpeNumber: it.dpe_number })}
                             onLetter={it => setLetterFor({ address: it.address, label: it.label as DPEClass, dpeNumber: it.dpe_number! })}
                             onOwner={it => setOwnerFor({ address: it.address, lat: it.lat, lon: it.lon })} />
-                    )}
-                    {view === 'ventes' && (
-                        <SalesPanel data={salesData} loading={toolLoading} zoomOk={zoomOk} months={salesMonths} onMonths={setSalesMonths}
-                            onFocus={sl => mapRef.current?.flyTo([sl.lat, sl.lon], 18, { duration: 0.6 })} onNeighbours={setNeighbourFor} />
                     )}
                     {view === 'tournee' && (
                         <TourPanel stops={tour} onChange={setTour} onFocus={st => mapRef.current?.flyTo([st.lat, st.lon], 18, { duration: 0.6 })}
@@ -1289,7 +1264,6 @@ export default function ProspectionPage() {
             </div>
 
             {letterFor && <LetterDialog target={letterFor} onClose={() => setLetterFor(null)} />}
-            {neighbourFor && <NeighbourLetterDialog sale={neighbourFor} onClose={() => setNeighbourFor(null)} />}
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
             {ownerFor && <OwnerRequestDialog target={ownerFor} onClose={() => setOwnerFor(null)} />}

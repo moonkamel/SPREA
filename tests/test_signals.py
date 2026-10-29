@@ -69,13 +69,3 @@ def test_scores_explained_address_by_address():
     assert bought["last_sale"]["date"] == "2025-11-10" and any(r["points"] == -20 for r in bought["reasons"])
     building = by["7 Rue Solférino 59000 Lille"]
     assert any(r["kind"] == "building" for r in building["reasons"]) and not building["long_held"]
-
-
-def test_recent_sales_of_the_map():
-    sales_rows = {2026: [sale("1", "2026-06-01", "6", "RUE NATIONALE"), sale("2", "2026-05-01", "8", "RUE NATIONALE", kind="Appartement")],
-                  2024: [sale("3", "2024-01-15", "9", "RUE NATIONALE")],
-                  2025: [sale("4", "2025-12-01", "2", "RUE LOIN", lat=51.5)]}
-    _, dvf = transports([], sales_rows)
-    res = asyncio.run(signals.area_sales("3.05,50.62,3.07,50.64", 12, TODAY, dvf_transport=dvf, communes=["59350"]))
-    assert [s["date"] for s in res["sales"]] == ["2026-06-01", "2026-05-01"]
-    assert res["sales"][0]["kind"] == "Maison" and res["sales"][1]["kind"] == "Appartement" and res["sales"][0]["number"] == "6"
