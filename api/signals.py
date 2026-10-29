@@ -15,6 +15,7 @@ for the « votre voisin a vendu » letters.
 
 Only public data: DPE (ADEME), DVF (DGFiP), BODACC (DILA). No owner's name.
 """
+import asyncio
 import logging
 import re
 import time
@@ -97,15 +98,21 @@ async def commune_sales(client: httpx.AsyncClient, insee: str, today: date) -> D
     cached = _sales.get(key)
     if cached and time.time() - cached[0] < CACHE_TTL:
         return cached[1]
-    sales: List[Dict[str, Any]] = []
-    years: List[int] = []
-    for year in range(today.year, today.year - 7, -1):
+    async def one(year: int) -> Optional[str]:
         res = await client.get(DVF_URL.format(year=year, dep=department(insee), insee=insee))
         if res.status_code in (403, 404, 410):
-            continue
+            return None
         res.raise_for_status()
+        return res.text
+    span = list(range(today.year, today.year - 7, -1))
+    texts = await asyncio.gather(*(one(y) for y in span))
+    sales: List[Dict[str, Any]] = []
+    years: List[int] = []
+    for year, text in zip(span, texts):
+        if text is None:
+            continue
         for kind in ("Maison", "Appartement"):
-            sales += [{**x, "kind": kind} for x in parse_sales(res.text, kind, year)]
+            sales += [{**x, "kind": kind} for x in parse_sales(text, kind, year)]
         years.append(year)
     out = {"sales": sales, "since": min(years) if years else None}
     _sales[key] = (time.time(), out)
@@ -200,11 +207,12 @@ async def area_signals(bbox: str, store: Optional[SupabaseStore], today: Optiona
     communes = [c for c, _ in sorted(_count(a.get("insee") for a in addresses).items(), key=lambda kv: -kv[1]) if c][:MAX_COMMUNES]
     by_commune: Dict[str, Dict[str, Any]] = {}
     async with httpx.AsyncClient(timeout=30, transport=dvf_transport) as client:
-        for c in communes:
-            try:
-                by_commune[c] = await commune_sales(client, c, today)
-            except httpx.HTTPError as e:
-                logger.warning(f"DVF of {c} unavailable: {type(e).__name__}")
+        results = await asyncio.gather(*(commune_sales(client, c, today) for c in communes), return_exceptions=True)
+        for c, r in zip(communes, results):
+            if isinstance(r, Exception):
+                logger.warning(f"DVF of {c} unavailable: {type(r).__name__}")
+            else:
+                by_commune[c] = r
     buildings: List[Dict[str, Any]] = []
     if store is not None:
         west, south, east, north = prospection.parse_bbox(bbox)
