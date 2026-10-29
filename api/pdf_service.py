@@ -1166,6 +1166,13 @@ class PDFReportGenerator:
     # --- Dossier d'investissement (Pro, agency branding) ---
 
     def generate_investment(self, d: Dict[str, Any]) -> bytes:
+        # The owner's and the buyer's files have their own layout (api/dossier_pdf.py)
+        if d.get('audience') in ('proprietaire', 'acheteur'):
+            try:
+                from api import dossier_pdf
+            except ImportError:
+                import dossier_pdf
+            return (dossier_pdf.owner if d['audience'] == 'proprietaire' else dossier_pdf.buyer)(d)
         buffer = BytesIO()
         agency = d.get('agency') or {}
         address = d['address']

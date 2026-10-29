@@ -155,13 +155,15 @@ def test_files_for_the_buyer_and_the_owner():
     the comparable sales and a fixed notice on every page."""
     o = asyncio.run(analyse(RAW, "bailleur", dvf_transport=dvf_transport(), rent_transport=rent_transport()))
     buyer = dossier_pdf(o, "acheteur")
-    for part in ("Dossier acheteur", "Le projet en bref", "Ce qui fait la valeur du projet", "Ventes comparables les plus proches",
-                 "Estimations indicatives, à confirmer par devis"):
+    for part in ("Dossier acheteur", "Le projet en bref", "Avant, après", "Les travaux, poste par poste", "Le projet, étape par étape",
+                 "Le financement", "sans intérêts", "ventes comparables les plus proches", "Estimations indicatives"):
         assert part in buyer, part
     assert "négociation" not in buyer.lower() and "décote" not in buyer and "Marge brute" not in buyer
     assert buyer.count("Estimations indicatives") >= 2  # every page
     owner = dossier_pdf(o, "proprietaire")
-    assert "Dossier propriétaire" in owner and "Valeur estimée aujourd'hui" in owner and "Comment le présenter aux acquéreurs" in owner
+    for part in ("DOSSIER PROPRIÉTAIRE", "Ce que vaut votre maison", "Ce qui s'est vendu près de chez vous",
+                 "Ce que votre DPE change pour vous", "Vos trois options, chiffrées", "visite d'estimation, gratuite et sans engagement"):
+        assert part in owner, part
     assert "Arguments de négociation" in dossier_pdf(o, "investisseur")
 
 
@@ -178,7 +180,7 @@ def test_buyer_file_from_the_simulator_with_the_mandate_price():
     o = asyncio.run(opportunities.simulation_dossier_data(req, dvf_transport=dvf_transport(), rent_transport=rent_transport()))
     assert o["price"] == 210000 and o["price_is_asked"] and o["works_ids"] == ["roof", "iti"]
     assert o["total"] == o["price"] + o["notary"] + o["works"] - o["aids"]
-    assert "Prix d'acquisition demandé" in dossier_pdf(o, "acheteur")
+    assert "Prix demandé" in dossier_pdf(o, "acheteur")
 
 
 def test_scan_sorts_and_filters_for_the_agent():
