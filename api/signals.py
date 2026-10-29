@@ -204,9 +204,11 @@ async def area_signals(bbox: str, store: Optional[SupabaseStore], today: Optiona
     found = await prospection.search(bbox, list(prospection.LABELS), since=(today - timedelta(days=730)).isoformat(),
                                      transport=dpe_transport)
     addresses = found["addresses"]
-    communes = [c for c, _ in sorted(_count(a.get("insee") for a in addresses).items(), key=lambda kv: -kv[1]) if c][:MAX_COMMUNES]
+    # (former communes appear as « old59350 » in the DPE: not a DVF code)
+    communes = [c for c, _ in sorted(_count(a.get("insee") for a in addresses).items(), key=lambda kv: -kv[1])
+                if c and re.fullmatch(r"\d[\dAB]\d{3}", c)][:MAX_COMMUNES]
     by_commune: Dict[str, Dict[str, Any]] = {}
-    async with httpx.AsyncClient(timeout=30, transport=dvf_transport) as client:
+    async with httpx.AsyncClient(timeout=30, transport=dvf_transport, follow_redirects=True) as client:
         results = await asyncio.gather(*(commune_sales(client, c, today) for c in communes), return_exceptions=True)
         for c, r in zip(communes, results):
             if isinstance(r, Exception):
@@ -260,7 +262,7 @@ async def area_sales(bbox: str, months: int, today: Optional[date] = None,
         communes = await communes_in_bbox(west, south, east, north, dvf_transport)
     out: List[Dict[str, Any]] = []
     latest = None
-    async with httpx.AsyncClient(timeout=30, transport=dvf_transport) as client:
+    async with httpx.AsyncClient(timeout=30, transport=dvf_transport, follow_redirects=True) as client:
         for c in communes[:MAX_COMMUNES]:
             try:
                 data = await commune_sales(client, c, today)

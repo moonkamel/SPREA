@@ -136,7 +136,9 @@ async def search(bbox: str, labels: List[str], kind: Optional[str] = None, since
             if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", start):
                 raise ValueError("Date de DPE invalide.")
             query.append(f"date_etablissement_dpe:[{start} TO *]")
+        # The newest first: in a dense area only MAX_RESULTS rows come back
         params = {"bbox": f"{west},{south},{east},{north}", "size": str(MAX_RESULTS), "select": ",".join(FIELDS),
+                  "sort": "-date_etablissement_dpe",
                   "qs": " AND ".join(query)}
         async with httpx.AsyncClient(timeout=20, transport=transport) as client:
             res = await client.get(ADEME_URL, params=params)
