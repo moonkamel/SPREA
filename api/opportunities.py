@@ -31,6 +31,7 @@ from pydantic import BaseModel, Field
 try:
     from api import claude
     from api.accounts import ReportMeta, is_pro, safe_filename, store_dep
+    from api.city_market import city_market
     from api.ademe_client import AdemeConnector
     from api.auth import User, current_user
     from api.dvf import market_price
@@ -47,6 +48,7 @@ try:
 except ImportError:
     import claude
     from accounts import ReportMeta, is_pro, safe_filename, store_dep
+    from city_market import city_market
     from ademe_client import AdemeConnector
     from auth import User, current_user
     from dvf import market_price
@@ -501,7 +503,9 @@ async def dossier_data(data: DossierRequest) -> Dict[str, Any]:
 
 async def render_dossier(o: Dict[str, Any], profile: str, audience: str, client_name: Optional[str],
                          user: User, store: SupabaseStore) -> Response:
-    thesis = await write_thesis(public(o), profile, audience)
+    # The owner's file is a market analysis, built from the figures alone
+    thesis = await write_thesis(public(o), profile, audience) if audience != "proprietaire" else {"source": "rules"}
+    city = await city_market(o.get("insee"), o.get("kind")) if audience == "proprietaire" else None
     agency = await store.get_agent_page(user.id) or {}
     address = display_address(o["address"] or "", o.get("postcode"), o.get("city"))
     pdf = pdf_service.generate_investment({
@@ -509,7 +513,7 @@ async def render_dossier(o: Dict[str, Any], profile: str, audience: str, client_
         "profile": profile, "profile_name": PROFILES[profile]["name"], "audience": audience,
         "notary_rate": PROFILES[profile]["notary"],
         "thesis": thesis, "agency": agency, "address": address, "client_name": client_name,
-        "valuation": o["_v"], "sim": o["_sim"], "market": o["_market"],
+        "valuation": o["_v"], "sim": o["_sim"], "market": o["_market"], "city_market": city,
     })
     name = {"investisseur": "Dossier_investissement", "acheteur": "Dossier_acheteur", "proprietaire": "Dossier_proprietaire"}[audience]
     return Response(content=pdf, media_type="application/pdf", headers={
