@@ -302,6 +302,37 @@ def blocked(key: str) -> Dict[str, str]:
         offset += 100
 
 
+def backlog(track: List[Dict], today: date, quota: int) -> int:
+    """Emails still waiting at Brevo this morning. Above the daily cap Brevo
+    does not refuse: it queues the emails and sends them after the next reset
+    (around 1:30 at night), one day's cap at a time. Rebuilt from the send
+    dates of the tracking file over the last week (a follow-up moves the date
+    of its row, but only after FOLLOW_UP_DAYS, so recent days are exact)."""
+    sent: Dict[date, int] = {}
+    for t in track:
+        try:
+            d = date.fromisoformat(t["dernier_envoi"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        sent[d] = sent.get(d, 0) + 1
+    carry = 0
+    for i in range(FOLLOW_UP_DAYS, 0, -1):
+        carry = max(0, carry + sent.get(today - timedelta(days=i), 0) - quota)
+    return carry
+
+
+def credits_left(key: str) -> Optional[int]:
+    """Emails the Brevo plan still allows today (free plan: daily send limit)."""
+    status, data = api("GET", "/account", key)
+    if status != 200:
+        print(f"Compte Brevo illisible : {status} {data}", file=sys.stderr)
+        return None
+    for p in data.get("plan") or []:
+        if p.get("creditsType") == "sendLimit" and p.get("credits") is not None:
+            return int(p["credits"])
+    return None
+
+
 def read(path: str) -> List[Dict]:
     with open(path, encoding="utf-8-sig") as f:
         return list(csv.DictReader(f, delimiter=";"))
@@ -311,6 +342,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True, help="checkout of the campaign-suivi branch")
     ap.add_argument("--quota", type=int, default=50)
+    ap.add_argument("--daily-cap", type=int, default=300, help="emails a day of the Brevo plan")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--today", default=date.today().isoformat())
     args = ap.parse_args()
@@ -338,7 +370,17 @@ def main():
             seen.add(e)
             fresh.append(p)
     plan = [("relance", t) for t in due] + [("nouveau", p) for p in fresh]
-    plan = plan[:args.quota]
+    # Never above what Brevo sends today: what is already queued and what was
+    # sent earlier today count against the daily cap
+    waiting = backlog(track, today, args.daily_cap)
+    done_today = sum(1 for t in track if t["dernier_envoi"] == today.isoformat())
+    budget = max(0, min(args.quota, args.daily_cap - waiting - done_today))
+    left = credits_left(key) if key else None
+    if left is not None:
+        budget = min(budget, max(0, left))
+    print(f"Quota du jour : {args.daily_cap} ; en attente chez Brevo {waiting}, déjà envoyés aujourd'hui {done_today}, "
+          f"crédits Brevo restants {'?' if left is None else left} -> {budget} envois au plus")
+    plan = plan[:budget]
     print(f"{len(due)} relances dues, {len(fresh)} nouveaux contacts ; envoi de {len(plan)} (quota {args.quota})")
 
     sent = errors = 0
