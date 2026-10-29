@@ -241,7 +241,7 @@ export default function ContactsPage() {
                             {estimates.length === 0 ? (
                                 <p className="mt-3 text-sm text-muted">
                                     Aucune demande pour l'instant. Les demandes arrivent dans les communes couvertes par vos{' '}
-                                    <Link to="/alertes" className="underline text-brass-light">zones d'alerte</Link>.
+                                    <Link to="/prospection?mode=alertes" className="underline text-brass-light">zones d'alerte</Link>.
                                 </p>
                             ) : (
                                 <ul className="mt-4 divide-y divide-line/70">

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileText, Loader2, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, Building2, Calculator, Download, Eye, FileSearch, FileText, Loader2, Lock, MapPin, QrCode, Radar, Search, Star, UserSearch, Users, Workflow } from 'lucide-react';
 import { useAccount } from '../account';
+import { toProperty, type PropertyData } from '../model';
 import { Link, navigate } from '../router';
 import { useSeo } from '../seo';
 import { TourHost, useAutoTour } from '../tour';
 import { Button, DPE_COLORS, DpeBadge, eur, eurRange, type DPEClass } from '../ui';
+import { AlertsPanel, type Zone } from './Alerts';
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
@@ -18,7 +20,7 @@ import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type FollowUp, type O
 // target with every figure and every action, and the follow-up board with
 // what is due today. Built only on SPREA's data: nothing here is made up.
 
-type View = 'radar' | 'dpe' | 'immeubles' | 'cible' | 'suivi';
+type View = 'radar' | 'dpe' | 'immeubles' | 'alertes' | 'fiche' | 'cible' | 'suivi';
 interface Center { lat: number; lon: number; label: string }
 interface PipelineItem { number: string; status: FollowUp; address: string | null; updated_at: string | null; mine: boolean }
 interface EstimateLead { id: string; name: string; address: string; city: string | null; lat: number | null; lon: number | null; project: string; status: string; phone: string | null; created_at: string }
@@ -156,7 +158,8 @@ export default function ProspectionPage() {
     })());
     const [view, setView] = useState<View>(() => {
         const mode = params.current.get('mode');
-        return linked.current || mode === 'immeubles' ? 'immeubles' : mode === 'dpe' ? 'dpe' : 'radar';
+        if (linked.current || mode === 'immeubles') return 'immeubles';
+        return mode === 'dpe' || mode === 'alertes' || mode === 'fiche' ? mode : 'radar';
     });
     const [center, setCenter] = useState<Center | null>(() => {
         if (linked.current) return { lat: linked.current.lat, lon: linked.current.lon, label: 'Immeuble' };
@@ -175,6 +178,11 @@ export default function ProspectionPage() {
     const [monoSignal, setMonoSignal] = useState<'all' | 'any' | 'strong'>('all');
     const [mono, setMono] = useState<{ buildings: MonoBuilding[]; truncated: boolean } | null>(null);
     const [layerLoading, setLayerLoading] = useState(false);
+    // Daily alerts: zones drawn on the map, list reloaded once a zone is created
+    const [alertZones, setAlertZones] = useState<Zone[]>([]);
+    const [alertsReload, setAlertsReload] = useState(0);
+    // One dwelling looked up by address or DPE number
+    const [fiche, setFiche] = useState<{ results: PropertyData[]; loading: boolean; error: string | null }>({ results: [], loading: false, error: null });
     const [scan, setScan] = useState<OpportunityScan | null>(null);
     const [scanning, setScanning] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -407,6 +415,7 @@ export default function ProspectionPage() {
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.detail || "L'alerte n'a pas pu être créée.");
             setAlertMessage(`Alerte « ${name} » créée : ${data.new_hits} DPE reçus ces 14 derniers jours. Les nouveaux arriveront chaque matin.`);
+            setAlertsReload(n => n + 1);
         } catch (e) {
             setAlertMessage((e as Error).message);
         }
@@ -425,6 +434,36 @@ export default function ProspectionPage() {
         setTimeout(() => dpeMarkers.current.get(a.address || `${a.lat},${a.lon}`)?.openPopup(), 300);
     };
     const showMap = (v: View) => { setView(v); setSelected(null); };
+    // Opening the alerts frames their zones, once per visit of the view
+    const framed = useRef(false);
+    useEffect(() => {
+        if (view !== 'alertes') { framed.current = false; return; }
+        const zs = alertZones.filter(z => z.lat != null && z.lon != null);
+        if (framed.current || !zs.length || !mapRef.current) return;
+        framed.current = true;
+        const bounds = L.latLngBounds(zs.map(z => L.latLng(z.lat, z.lon).toBounds(z.radius_m * 2)).flatMap(b => [b.getSouthWest(), b.getNorthEast()]));
+        mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+    }, [view, alertZones]);
+    const searchFiche = async (query: string) => {
+        const q = query.trim();
+        if (!q) return;
+        // A DPE number: 13 letters and digits, the year first (2659E…)
+        const byNumber = /^[0-9]{4}[A-Z0-9]{9}$/i.test(q.replace(/\s/g, ''));
+        setFiche({ results: [], loading: true, error: null });
+        try {
+            const res = await authedFetch(byNumber ? `/api/search-dpe/${encodeURIComponent(q.replace(/\s/g, '').toUpperCase())}` : `/api/search-address?q=${encodeURIComponent(q)}`);
+            if (res.status === 429) throw new Error('Trop de recherches en peu de temps : patientez une minute.');
+            if (!res.ok) throw new Error('La recherche a échoué.');
+            const data = await res.json();
+            const results: PropertyData[] = (data.results || []).map(toProperty);
+            setFiche({ results, loading: false, error: results.length ? null : data.error ? "Le service de l'ADEME ne répond pas pour le moment."
+                : byNumber ? 'Aucun DPE ne correspond à ce numéro.' : "Aucun DPE trouvé à cette adresse : essayez le numéro du DPE." });
+            const first = results.find(r => r.latitude != null && r.longitude != null);
+            if (first) mapRef.current?.flyTo([first.latitude!, first.longitude!], 17, { duration: 0.8 });
+        } catch (e) {
+            setFiche({ results: [], loading: false, error: (e as Error).message });
+        }
+    };
 
     const focus = useCallback((o: Opportunity) => {
         setSelected(o.number);
@@ -473,6 +512,24 @@ export default function ProspectionPage() {
             }
             return;
         }
+        if (view === 'alertes') {
+            for (const z of alertZones) {
+                if (z.lat == null || z.lon == null) continue;
+                L.circle([z.lat, z.lon], { radius: z.radius_m, color: '#E3C98F', weight: z.active ? 2 : 1, dashArray: z.active ? undefined : '4 6',
+                    fillColor: '#C9A45C', fillOpacity: z.active ? 0.12 : 0.04 })
+                    .bindTooltip(`${esc(z.name)} · ${z.radius_m >= 1000 ? `${(z.radius_m / 1000).toFixed(1).replace('.', ',')} km` : `${z.radius_m} m`}${z.active ? '' : ' · en pause'}`)
+                    .addTo(group);
+            }
+            return;
+        }
+        if (view === 'fiche') {
+            for (const r of fiche.results) {
+                if (r.latitude == null || r.longitude == null || !r.label) continue;
+                L.circleMarker([r.latitude, r.longitude], { radius: 9, color: '#0A0F1A', weight: 1.5, fillColor: DPE_COLORS[r.label as DPEClass]?.bg || '#97A1B3', fillOpacity: 0.95 })
+                    .bindTooltip(`${esc(r.address || '')} · DPE ${r.label}`).addTo(group);
+            }
+            return;
+        }
         if (view === 'immeubles') {
             if (!mono || !zoomOk) return;
             for (const b of mono.buildings) {
@@ -512,7 +569,7 @@ export default function ProspectionPage() {
                 .bindTooltip(`Demande d'estimation · ${esc(l.name)}`).addTo(group);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady]);
+    }, [view, dpe, mono, zoomOk, ranked, selected, leads, focus, mapReady, alertZones, fiche.results]);
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
@@ -663,25 +720,26 @@ export default function ProspectionPage() {
 
             <div className="flex-1 min-h-0 flex flex-col-reverse lg:flex-row">
                 {/* Rail */}
-                <nav className="shrink-0 flex lg:flex-col items-center justify-around lg:justify-start gap-1.5 lg:w-[68px] border-t lg:border-t-0 lg:border-r border-line bg-[#0B1120] py-1.5 lg:pt-3.5" aria-label="Vues">
+                <nav className="shrink-0 flex lg:flex-col items-center justify-start sm:justify-around lg:justify-start gap-1 sm:gap-1.5 overflow-x-auto lg:overflow-visible lg:w-[68px] border-t lg:border-t-0 lg:border-r border-line bg-[#0B1120] py-1.5 lg:pt-3.5" aria-label="Vues">
                     {([
                         ['radar', Radar, 'Radar', () => backToRadar()],
-                        ['dpe', MapPin, 'DPE', () => showMap('dpe')],
+                        ['dpe', MapPin, 'Récents', () => showMap('dpe')],
                         ['immeubles', Building2, 'Immeubles', () => showMap('immeubles')],
+                        ['alertes', Bell, 'Alertes', () => showMap('alertes')],
+                        ['fiche', FileSearch, 'DPE', () => showMap('fiche')],
                         ['cible', Star, 'Cible', () => { const t = current?.o || ranked[0]?.o; if (t) focus(t); }],
                         ['suivi', Workflow, 'Suivi', () => setView('suivi')],
                     ] as const).map(([v, Icon, label, go]) => (
                         <button key={v} type="button" onClick={go} aria-current={view === v ? 'page' : undefined} data-tour={v === 'suivi' ? 'cmd-suivi' : v === 'dpe' ? 'cmd-layers' : undefined}
-                            className={`relative w-11 sm:w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] ${view === v ? 'text-brass-light bg-brass/10 lg:shadow-[inset_2px_0_0_#C9A45C]' : 'text-faint hover:text-ink'}`}>
+                            className={`relative shrink-0 w-[46px] sm:w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] ${view === v ? 'text-brass-light bg-brass/10 lg:shadow-[inset_2px_0_0_#C9A45C]' : 'text-faint hover:text-ink'}`}>
                             <Icon size={19} strokeWidth={1.6} />{label}
                             {v === 'suivi' && due.length > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-coral text-[9px] text-white flex items-center justify-center">{due.length}</span>}
                         </button>
                     ))}
                     {([
-                        ['/alertes', Bell, 'Alertes', 0],
                         ['/contacts', Users, 'Leads', newLeads.length],
                     ] as const).map(([to, Icon, label, badge]) => (
-                        <Link key={to} to={to} className="relative w-11 sm:w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] text-faint hover:text-ink">
+                        <Link key={to} to={to} className="relative shrink-0 w-[46px] sm:w-12 h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] text-faint hover:text-ink">
                             <Icon size={19} strokeWidth={1.6} />{label}
                             {badge > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-coral text-[9px] text-white flex items-center justify-center">{badge}</span>}
                         </Link>
@@ -831,6 +889,18 @@ export default function ProspectionPage() {
                         </>
                     )}
 
+                    {view === 'alertes' && (
+                        <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-14 z-[500] flex flex-wrap items-center gap-2">
+                            <button type="button" onClick={createAlert} disabled={!mapReady}
+                                className="cmd-kpi h-9 px-3 text-xs text-brass-light hover:text-ink flex items-center gap-1.5">
+                                <Bell size={14} />Créer une alerte ici
+                            </button>
+                            <span className="cmd-kpi px-3 py-1.5 text-xs text-muted max-w-md">
+                                {alertMessage || `Zone visible, classes ${labels.length ? labels.join(', ') : 'E, F, G'} : chaque matin, les nouveaux DPE publiés.`}
+                            </span>
+                        </div>
+                    )}
+
                     {/* Target HUD */}
                     {view === 'cible' && current && (
                         <>
@@ -912,6 +982,77 @@ export default function ProspectionPage() {
                             </p>
                         </>
                     )}
+                    {view === 'alertes' && (
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="px-[18px] pt-4 pb-3 border-b border-line">
+                                <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Alertes nouveaux DPE</p>
+                                <h2 className="text-[19px] text-ink">Chaque matin, les DPE publiés dans vos zones</h2>
+                                <p className="mt-1 text-xs text-faint">Un nouveau DPE précède souvent une vente ou une mise en location.</p>
+                            </div>
+                            <AlertsPanel compact reload={alertsReload} onZones={setAlertZones}
+                                onZone={z => mapRef.current?.flyTo([z.lat, z.lon], z.radius_m > 1500 ? 14 : 15, { duration: 0.8 })} />
+                        </div>
+                    )}
+                    {view === 'fiche' && (
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="px-[18px] pt-4 pb-4 border-b border-line">
+                                <p className="text-[10px] tracking-[0.16em] uppercase text-faint">Fiche DPE</p>
+                                <h2 className="text-[19px] text-ink">Un bien précis</h2>
+                                <p className="mt-1 text-xs text-faint">Adresse ou numéro de DPE (13 caractères, en haut du diagnostic).</p>
+                                <form className="mt-3 flex gap-2" onSubmit={e => { e.preventDefault(); searchFiche(String(new FormData(e.currentTarget).get('q') || '')); }}>
+                                    <input name="q" aria-label="Adresse ou numéro de DPE" placeholder="12 rue Nationale, Lille ou 2659E…"
+                                        className="flex-1 min-w-0 h-10 rounded-[10px] border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint" />
+                                    <Button type="submit" className="h-10 px-3" disabled={fiche.loading}>
+                                        {fiche.loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
+                                    </Button>
+                                </form>
+                                {fiche.error && <p role="alert" className="mt-2 text-xs text-coral">{fiche.error}</p>}
+                            </div>
+                            <ul className="divide-y divide-line/70">
+                                {fiche.results.map(r => (
+                                    <li key={r.ademe_dpe_number || r.address} className="px-[18px] py-3">
+                                        <button type="button" className="flex items-start gap-3 text-left w-full"
+                                            onClick={() => r.latitude != null && r.longitude != null && mapRef.current?.flyTo([r.latitude, r.longitude], 18, { duration: 0.6 })}>
+                                            <DpeBadge label={r.label as DPEClass} size="sm" />
+                                            <span className="min-w-0">
+                                                <span className="block text-sm text-ink">{r.address}</span>
+                                                <span className="block text-xs text-faint">
+                                                    {[r.buildingType, r.surface ? `${Math.round(r.surface)} m²` : null, r.details,
+                                                      r.dpeDate ? `DPE du ${formatDate(r.dpeDate)}` : null].filter(Boolean).join(' · ')}
+                                                </span>
+                                            </span>
+                                        </button>
+                                        <div className="mt-2 ml-10 flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
+                                            {r.ademe_dpe_number && (
+                                                <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1"
+                                                    onClick={() => navigate(`/?dpe=${encodeURIComponent(r.ademe_dpe_number!)}`)}>
+                                                    <Calculator size={12} />Dossier de rénovation
+                                                </button>
+                                            )}
+                                            {r.ademe_dpe_number && r.label && (
+                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
+                                                    onClick={() => setLetterFor({ address: r.address, label: r.label as DPEClass, dpeNumber: r.ademe_dpe_number! })}>
+                                                    <QrCode size={12} />Courrier
+                                                </button>
+                                            )}
+                                            {r.latitude != null && r.longitude != null && (
+                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
+                                                    onClick={() => setOwnerFor({ address: r.address, lat: r.latitude!, lon: r.longitude! })}>
+                                                    <UserSearch size={12} />Connaître le propriétaire
+                                                </button>
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                            {!fiche.results.length && !fiche.loading && (
+                                <p className="px-[18px] py-4 text-xs text-faint">
+                                    Le dossier de rénovation chiffre les travaux, les aides et la valeur après travaux : de quoi préparer un rendez-vous
+                                    ou appuyer la vente d'une passoire auprès des acquéreurs.
+                                </p>
+                            )}
+                        </div>
+                    )}
                     {view === 'dpe' && (
                         <>
                             <div className="px-[18px] pt-4 pb-3 border-b border-line">
@@ -925,7 +1066,7 @@ export default function ProspectionPage() {
                                         <button type="button" onClick={createAlert} className="mt-2.5 flex items-center gap-1.5 text-xs text-brass-light hover:text-ink">
                                             <Bell size={13} />Créer une alerte sur cette zone
                                         </button>
-                                        {alertMessage && <p className="mt-1.5 text-xs text-faint">{alertMessage} <Link to="/alertes" className="underline text-brass-light">Voir les alertes</Link></p>}
+                                        {alertMessage && <p className="mt-1.5 text-xs text-faint">{alertMessage} <button type="button" onClick={() => showMap('alertes')} className="underline text-brass-light">Voir les alertes</button></p>}
                                     </>
                                 )}
                             </div>

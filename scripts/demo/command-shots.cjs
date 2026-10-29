@@ -76,6 +76,14 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
         if (u.includes('/api/prospection')) return json({ locked: false, addresses, dwellings: addresses.length, total: addresses.length, truncated: false });
         if (u.includes('/api/monopro')) return json({ buildings, truncated: false });
         if (u.includes('/api/estimate-leads')) return json({ leads });
+        if (u.includes('/api/alerts')) return json({ email_enabled: true, zones: [
+            { id: 'z1', name: 'Tourcoing centre', lat: C.lat, lon: C.lon, radius_m: 900, labels: 'F,G', kind: null, email: true, active: true, last_checked_on: day(0), mine: true },
+            { id: 'z2', name: 'Blanc Seau', lat: C.lat + 0.008, lon: C.lon - 0.012, radius_m: 600, labels: 'E,F,G', kind: 'maison', email: false, active: true, last_checked_on: day(0), mine: true }],
+            hits: items.slice(0, 6).map((o, i) => ({ id: `h${i}`, zone_id: i % 2 ? 'z2' : 'z1', dpe_number: o.number, address: o.address, label: o.label,
+                kind: o.kind, surface: o.surface, dpe_date: o.dpe_date, received_on: day(i < 3 ? 0 : 1), detail: null, created_at: iso(i < 3 ? 0 : 1) })) });
+        if (u.includes('/api/search-address')) return json({ count: 1, results: [{ address: items[0].address, ademe_dpe_number: items[0].number,
+            date_etablissement: items[0].dpe_date, shab: items[0].surface, dpe_class_current: items[0].label, building_type: 'Maison',
+            latitude: items[0].lat, longitude: items[0].lon, construction_period: items[0].period }] });
         if (u.includes('/api/agent-page')) return json({ agent_name: 'Tarik Lakel', agency_name: 'SPREA Immobilier' });
         return json({});
     });
@@ -97,12 +105,17 @@ const leads = [{ id: 'l1', name: 'Marie Martin', address: '27 rue de la Bourgogn
     await p.getByRole('button', { name: /Suivi/ }).first().click();
     await p.waitForTimeout(1200);
     await p.screenshot({ path: `${out}/command-suivi.png` });
-    for (const [name, label] of [['dpe', 'DPE'], ['immeubles', 'Immeubles']]) {
+    for (const [name, label] of [['dpe', 'Récents'], ['immeubles', 'Immeubles'], ['alertes', 'Alertes']]) {
         await p.getByRole('button', { name: label, exact: true }).click();
         await p.waitForTimeout(2500);
         await tiles();
         await p.screenshot({ path: `${out}/command-${name}.png` });
     }
+    await p.getByRole('button', { name: 'DPE', exact: true }).click();
+    await p.getByLabel('Adresse ou numéro de DPE').fill('3 rue de Lille, Tourcoing');
+    await p.keyboard.press('Enter');
+    await p.waitForTimeout(2500);
+    await p.screenshot({ path: `${out}/command-fiche.png` });
     if (errors.length) { console.error(errors); process.exitCode = 1; }
     await b.close();
 })();

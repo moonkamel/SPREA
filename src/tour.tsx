@@ -42,7 +42,7 @@ export const TOURS: Record<TourId, { name: string; steps: TourStep[] }> = {
             { screen: 'prospection', target: 'cmd-search', title: 'Votre zone',
               text: 'Tapez une commune ou une adresse pour scanner un autre secteur, ou une commande (⌘ K).' },
             { screen: 'prospection', target: 'cmd-layers', title: 'Toute la carte',
-              text: 'Tous les DPE récents de la carte, filtrés, avec alerte quotidienne et export CSV, puis les immeubles entiers détenus par une société.' },
+              text: 'Tous les DPE récents de la carte, les immeubles entiers détenus par une société, vos alertes du matin et la fiche DPE d\'un bien précis.' },
             { screen: 'prospection', target: 'cmd-suivi', title: 'Le suivi',
               text: 'De « à contacter » au mandat, avec chaque matin les relances dues et les vendeurs à rappeler.',
               note: 'Cette visite reste disponible dans le menu « ? » du site.' },
