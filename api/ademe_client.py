@@ -195,8 +195,13 @@ class AdemeConnector:
                         mapped.longitude = coords[0]
                     results.append(mapped)
                 
-                # Sort by date (most recent first)
+                # The dwellings at the exact number first (ADEME also returns the
+                # rest of the street), then the most recent DPE first
+                def exact(x) -> bool:
+                    a = clean_text(x.address or "")
+                    return bool(housenumber) and a.startswith(f"{housenumber.lower()} ") and street_clean in a
                 results.sort(key=lambda x: x.date_etablissement or "", reverse=True)
+                results.sort(key=lambda x: not exact(x))
                 return results
             except Exception as e:
                 logger.error(f"Address search error: {e}")

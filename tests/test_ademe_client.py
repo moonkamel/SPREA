@@ -66,3 +66,19 @@ def test_city_and_equipment_details():
     assert prop.details["ventilation"] == "VMC simple flux autoréglable"
     assert prop.details["dpe_annual_cost"] == "1235"
     assert AdemeConnector()._map_to_internal(RAW).details["ventilation"] is None
+
+
+def test_address_search_puts_the_exact_number_first(monkeypatch):
+    import asyncio
+    c = AdemeConnector()
+    ban = {"features": [{"properties": {"postcode": "62000", "housenumber": "13", "street": "Avenue Jean Mermoz", "city": "Dainville",
+                                        "citycode": "62263"}, "geometry": {"coordinates": [2.73, 50.28]}}]}
+    rows = [dict(RAW, numero_dpe="2262E0000000A", adresse_brut="113 Avenue Jean Mermoz", date_etablissement_dpe="2026-09-01"),
+            dict(RAW, numero_dpe="2262E0000000B", adresse_brut="13 Avenue Jean Mermoz", date_etablissement_dpe="2024-01-01"),
+            dict(RAW, numero_dpe="2262E0000000C", adresse_brut="1 Avenue Jean Mermoz", date_etablissement_dpe="2025-01-01")]
+
+    async def fake(client, url, params):
+        return ban if url == c.BAN_URL else {"results": rows}
+    monkeypatch.setattr(c, "_make_request", fake)
+    found = asyncio.run(c.search_by_address("13 avenue Jean Mermoz Dainville"))
+    assert [p.ademe_dpe_number for p in found] == ["2262E0000000B", "2262E0000000A", "2262E0000000C"]
