@@ -13,7 +13,7 @@ import { SIGNAL_COLORS, SignalsPanel, TourPanel, loadTour, saveTour, type Signal
 import LetterDialog, { type LetterTarget } from './LetterDialog';
 import OwnerRequestDialog, { type OwnerTarget } from './OwnerRequestDialog';
 import { MonoproList, MonoproSheet, NO_DPE_COLOR, monoColor, type MonoBuilding, type SheetTarget } from './Monopro';
-import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type FollowUp, type Opportunity, type OpportunityScan } from './Opportunities';
+import { DossierDialog, FOLLOW_UPS, dpeAge, type Audience, type DossierPreview, type FollowUp, type Opportunity, type OpportunityScan } from './Opportunities';
 
 // Prospection: the agent's one prospecting dashboard. The radar of their area
 // (recent F and G DPE, each valued) with the targets ranked by score, every
@@ -204,7 +204,7 @@ export default function ProspectionPage() {
     const [selected, setSelected] = useState<string | null>(null);
     const [letterFor, setLetterFor] = useState<LetterTarget | null>(null);
     const [ownerFor, setOwnerFor] = useState<OwnerTarget | null>(null);
-    const [dossier, setDossier] = useState<{ o: Opportunity; audience: Audience } | null>(null);
+    const [dossier, setDossier] = useState<{ preview: DossierPreview; number: string; audience: Audience } | null>(null);
     const [goal, setGoal] = useState(() => Number(localStorage.getItem(GOAL_KEY)) || 5);
     const [moved, setMoved] = useState(false);
 
@@ -652,7 +652,7 @@ export default function ProspectionPage() {
 
     // --- Command bar ---
     const [query, setQuery] = useState('');
-    const [places, setPlaces] = useState<{ label: string; lat: number; lon: number; city: string }[]>([]);
+    const [places, setPlaces] = useState<{ label: string; lat: number; lon: number; city: string; precise: boolean }[]>([]);
     const [paletteOpen, setPaletteOpen] = useState(false);
     const [cursor, setCursor] = useState(0);
     const input = useRef<HTMLInputElement>(null);
@@ -663,7 +663,8 @@ export default function ProspectionPage() {
             try {
                 const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=4`, { signal: controller.signal });
                 const data = await res.json();
-                setPlaces((data.features || []).map((f: any) => ({ label: f.properties.label, lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], city: f.properties.city })));
+                setPlaces((data.features || []).map((f: any) => ({ label: f.properties.label, lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0],
+                    city: f.properties.city, precise: f.properties.type === 'housenumber' })));
             } catch { /* suggestions are optional */ }
         }, 220);
         return () => { clearTimeout(timer); controller.abort(); };
@@ -673,7 +674,12 @@ export default function ProspectionPage() {
         const list: { label: string; hint: string; run: () => void }[] = [];
         const hits = ranked.filter(t => q && t.o.address.toLowerCase().includes(q)).slice(0, 4);
         hits.forEach(t => list.push({ label: shortAddress(t.o.address), hint: `Cible #${rank(t.o.number)}`, run: () => focus(t.o) }));
-        places.forEach(p => list.push({ label: p.label, hint: 'Scanner ce secteur', run: () => { setCenter({ lat: p.lat, lon: p.lon, label: p.city }); setView('radar'); mapRef.current?.setView([p.lat, p.lon], 14.5); } }));
+        // A street number opens that dwelling (its DPE, files, letter, owner); a street or a town scans the area
+        places.forEach(p => list.push(p.precise
+            ? { label: p.label, hint: 'Ouvrir ce bien', run: () => { setView('fiche'); mapRef.current?.setView([p.lat, p.lon], 18); searchFiche(p.label); } }
+            : { label: p.label, hint: 'Scanner ce secteur', run: () => { setCenter({ lat: p.lat, lon: p.lon, label: p.city }); setView('radar'); mapRef.current?.setView([p.lat, p.lon], 14.5); } }));
+        if (places[0]?.precise) list.push({ label: `Scanner le secteur de ${places[0].city}`, hint: 'Radar autour de cette adresse',
+            run: () => { const p = places[0]; setCenter({ lat: p.lat, lon: p.lon, label: p.city }); setView('radar'); mapRef.current?.setView([p.lat, p.lon], 14.5); } });
         const base = [
             { label: 'Radar', hint: 'Vue d\'ensemble', run: backToRadar },
             { label: 'Suivi', hint: 'Relances, rendez-vous, mandats', run: () => setView('suivi') },
@@ -716,8 +722,8 @@ export default function ProspectionPage() {
                 const k = e.key.toLowerCase();
                 if (k === 'c') setLetterFor({ address: o.address, label: o.label, dpeNumber: o.number });
                 else if (k === 'p') setOwnerFor({ address: o.address, lat: o.lat, lon: o.lon });
-                else if (k === 'd') setDossier({ o, audience: 'proprietaire' });
-                else if (k === 'a') setDossier({ o, audience: 'acheteur' });
+                else if (k === 'd') setDossier({ preview: o, number: o.number, audience: 'proprietaire' });
+                else if (k === 'a') setDossier({ preview: o, number: o.number, audience: 'acheteur' });
                 else if (k === 's') navigate(`/?dpe=${encodeURIComponent(o.number)}`);
                 else if (k === 'f') window.open(streetView(o), '_blank', 'noopener');
             }
@@ -1132,8 +1138,16 @@ export default function ProspectionPage() {
                                             </span>
                                         </button>
                                         <div className="mt-2 ml-10 flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
+                                            {r.ademe_dpe_number && r.label && (['proprietaire', 'acheteur'] as Audience[]).map(a => (
+                                                <button key={a} type="button" className="text-brass-light hover:text-ink flex items-center gap-1"
+                                                    onClick={() => setDossier({ number: r.ademe_dpe_number!, audience: a, preview: {
+                                                        address: r.address, kind: r.buildingType, surface: r.surface, label: r.label as DPEClass,
+                                                        new_label: r.label as DPEClass, works_names: [] } })}>
+                                                    <FileText size={12} />{a === 'proprietaire' ? 'Dossier propriétaire' : 'Dossier acheteur'}
+                                                </button>
+                                            ))}
                                             {r.ademe_dpe_number && (
-                                                <button type="button" className="text-brass-light hover:text-ink flex items-center gap-1"
+                                                <button type="button" className="text-muted hover:text-ink flex items-center gap-1"
                                                     onClick={() => navigate(`/?dpe=${encodeURIComponent(r.ademe_dpe_number!)}`)}>
                                                     <Calculator size={12} />Dossier de rénovation
                                                 </button>
@@ -1248,7 +1262,7 @@ export default function ProspectionPage() {
                         <TargetSheet o={current.o} score={current.score} status={statuses[current.o.number]} item={pipeline.find(p => p.number === current.o.number)}
                             onLetter={() => setLetterFor({ address: current.o.address, label: current.o.label, dpeNumber: current.o.number })}
                             onOwner={() => setOwnerFor({ address: current.o.address, lat: current.o.lat, lon: current.o.lon })}
-                            onDossier={a => setDossier({ o: current.o, audience: a })}
+                            onDossier={a => setDossier({ preview: current.o, number: current.o.number, audience: a })}
                             onStatus={s => setStatus(current.o, s)} />
                     )}
                     {view === 'cible' && !current && (
@@ -1267,8 +1281,8 @@ export default function ProspectionPage() {
             {sheet && <MonoproSheet target={sheet} onClose={() => setSheet(null)}
                 onFocus={(lat, lon) => mapRef.current?.setView([lat, lon], Math.max(mapRef.current.getZoom(), 17))} />}
             {ownerFor && <OwnerRequestDialog target={ownerFor} onClose={() => setOwnerFor(null)} />}
-            {dossier && <DossierDialog audience={dossier.audience} preview={dossier.o}
-                request={{ url: '/api/opportunities/dossier', body: { number: dossier.o.number } }} onClose={() => setDossier(null)} />}
+            {dossier && <DossierDialog audience={dossier.audience} preview={dossier.preview}
+                request={{ url: '/api/opportunities/dossier', body: { number: dossier.number } }} onClose={() => setDossier(null)} />}
         </div>
     );
 }

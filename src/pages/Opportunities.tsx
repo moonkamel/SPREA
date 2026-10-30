@@ -288,10 +288,12 @@ export function DossierDialog({ preview, audience, request, onClose }: {
                         ))}
                     </div>
                 )}
-                <p className="mt-3 text-xs text-faint">
-                    Programme : {o.works_names.join(', ') || '–'} ({o.label} → {o.new_label}).
-                    {o.rent_month ? ` Loyer de marché ≈ ${eur(o.rent_month)} / mois.` : ''}
-                </p>
+                {(o.works_names.length > 0 || !!o.rent_month) && (
+                    <p className="mt-3 text-xs text-faint">
+                        {o.works_names.length > 0 && `Programme : ${o.works_names.join(', ')} (${o.label} → ${o.new_label}).`}
+                        {o.rent_month ? ` Loyer de marché ≈ ${eur(o.rent_month)} / mois.` : ''}
+                    </p>
+                )}
                 {!!o.risks?.length && (
                     <ul className="mt-2 text-xs text-muted list-disc pl-4 space-y-0.5">{o.risks.map(r => <li key={r}>{r}</li>)}</ul>
                 )}
