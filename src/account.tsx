@@ -47,6 +47,8 @@ interface Me {
     subscription_current_period_end: string | null;
     commitment_end: string | null;
     has_billing_account: boolean;
+    // SPREA's own team: the /admin dashboard
+    is_admin?: boolean;
     reports: ReportSummary[];
     team: Team | null;
 }

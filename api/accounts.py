@@ -380,6 +380,7 @@ async def me(user: User = Depends(current_user), store: SupabaseStore = Depends(
         "subscription_current_period_end": profile.get("subscription_current_period_end"),
         "commitment_end": commitment_running(profile),
         "has_billing_account": bool(profile.get("stripe_customer_id")),
+        "is_admin": bool(profile.get("is_admin")),
         "reports": [report_summary(r) for r in reports],
     }
 

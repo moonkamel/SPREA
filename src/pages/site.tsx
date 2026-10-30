@@ -36,6 +36,7 @@ function Nav() {
         ? [['/prospection', 'Prospection', true], ['/', 'Simulateur', false], ['/documents-copro', 'PV d\'AG', false], ['/contacts', 'Contacts', false],
             me.team ? ['/equipe', 'Équipe', false] : ['/observatoire', 'Observatoire', false]]
         : [['/demo', 'Visite guidée', true], ['/estimation', 'Estimer un bien', false], ['/observatoire', 'Observatoire', false], ['/tarifs', 'Tarifs', true]];
+    if (me?.is_admin) links.push(['/admin', 'Admin', false]);
     const hidden = links.some(([, , essential]) => !essential);
 
     // Closed on navigation, Escape or a click outside

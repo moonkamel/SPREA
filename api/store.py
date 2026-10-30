@@ -182,6 +182,19 @@ class SupabaseStore:
         return await self._request("PATCH", "estimate_leads", params={"id": f"eq.{lead_id}", "assigned_user_id": f"eq.{user_id}"},
                                    json=fields, prefer="return=representation")
 
+    async def all_estimate_leads(self) -> List[Dict[str, Any]]:
+        return await self._request("GET", "estimate_leads", params={"select": "*", "order": "created_at.desc", "limit": "2000"})
+
+    async def admin_update_estimate_lead(self, lead_id: str, fields: Dict[str, Any]) -> List[Dict[str, Any]]:
+        return await self._request("PATCH", "estimate_leads", params={"id": f"eq.{lead_id}"},
+                                   json=fields, prefer="return=representation")
+
+    async def profile_emails(self, user_ids: List[str]) -> Dict[str, Optional[str]]:
+        if not user_ids:
+            return {}
+        rows = await self._request("GET", "profiles", params={"id": f"in.({','.join(user_ids)})", "select": "id,email"})
+        return {r["id"]: r.get("email") for r in rows}
+
     async def list_zones(self, user_id: str) -> List[Dict[str, Any]]:
         return await self._request("GET", "alert_zones", params={
             "user_id": f"eq.{user_id}", "select": "*", "order": "created_at.asc"})
