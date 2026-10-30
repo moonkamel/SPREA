@@ -360,6 +360,7 @@ Disallow: /l/
 Disallow: /rejoindre
 Disallow: /equipe
 Disallow: /contacts
+Disallow: /admin
 Disallow: /alertes
 Disallow: /prospection
 
