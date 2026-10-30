@@ -17,12 +17,8 @@ import urllib.parse
 from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(__file__))
-from brevo_stats import events  # noqa: E402
-from send_brevo import TRACK_COLS, api, read  # noqa: E402
+from send_brevo import TRACK_COLS, api, read, still_queued  # noqa: E402
 
-# Events that mean the email left Brevo
-GONE = {"delivered", "softBounces", "hardBounces", "blocked", "invalid", "error", "spam", "unsubscribed",
-        "opened", "uniqueOpened", "proxyOpen", "uniqueProxyOpen", "clicks", "deferred"}
 CANCELLED = "annulé (file Brevo)"
 
 
@@ -40,7 +36,7 @@ def queued_messages(key: str, email: str, since: date):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True, help="checkout of the campaign-suivi branch")
-    ap.add_argument("--days", type=int, default=6)
+    ap.add_argument("--days", type=int, default=3)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     key = os.getenv("BREVO_API_KEY", "")
@@ -50,14 +46,10 @@ def main():
     track_path = os.path.join(args.dir, "prospection-suivi.csv")
     track = read(track_path)
 
-    gone = set()
-    for e in events(key, since.isoformat(), date.today().isoformat()):
-        if e.get("event") in GONE and e.get("email"):
-            gone.add(e["email"].lower())
-    recent = [t for t in track if t["statut"] == "en cours" and t["dernier_envoi"] >= since.isoformat()]
-    waiting = [t for t in recent if t["email"].strip().lower() not in gone]
-    print(f"{len(recent)} envois depuis le {since:%d/%m}, {len(recent) - len(waiting)} déjà partis, "
-          f"{len(waiting)} encore en file chez Brevo", flush=True)
+    waiting = still_queued(key, track, date.today(), args.days)
+    if waiting is None:
+        sys.exit("Événements Brevo illisibles")
+    print(f"{len(waiting)} emails envoyés depuis le {since:%d/%m} sans remise par Brevo (encore en file)", flush=True)
     by_day = {}
     for t in waiting:
         by_day[t["dernier_envoi"]] = by_day.get(t["dernier_envoi"], 0) + 1
