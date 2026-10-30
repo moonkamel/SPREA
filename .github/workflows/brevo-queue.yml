@@ -1,0 +1,47 @@
+name: Prospection (annuler la file Brevo)
+
+# Cancels the prospection emails Brevo queued above the daily cap, which it
+# would send around 1:30 at night (scripts/campaign/brevo_queue.py). A push
+# only counts them; cancel=true deletes them and marks the rows of the
+# tracking file of the campaign-suivi branch.
+on:
+  workflow_dispatch:
+    inputs:
+      cancel:
+        description: "Annuler les emails en file (true / false)"
+        default: "false"
+  push:
+    branches: ["claude/**"]
+    paths: [".github/workflows/brevo-queue.yml", "scripts/campaign/brevo_queue.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: campaign-send
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: campaign-suivi
+          path: suivi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Queue
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          CANCEL: ${{ inputs.cancel || 'false' }}
+        run: python -u scripts/campaign/brevo_queue.py --dir suivi $([ "$CANCEL" = "true" ] || echo --dry-run)
+      - name: Save tracking
+        if: ${{ inputs.cancel == 'true' }}
+        run: |
+          cd suivi
+          git add prospection-suivi.csv
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Suivi : file Brevo annulée le $(date +%F)" || exit 0
+          git push -q origin HEAD:campaign-suivi

@@ -321,6 +321,28 @@ def backlog(track: List[Dict], today: date, quota: int) -> int:
     return carry
 
 
+# Brevo events meaning the email left the queue
+GONE = {"delivered", "softBounces", "hardBounces", "blocked", "invalid", "error", "spam", "unsubscribed",
+        "opened", "uniqueOpened", "proxyOpen", "uniqueProxyOpen", "clicks", "deferred"}
+
+
+def still_queued(key: str, track: List[Dict], today: date, days: int = 3) -> Optional[List[Dict]]:
+    """Rows sent in the last days whose email has no event of delivery yet at
+    Brevo: still in its queue. Read from the events of Brevo, so exact, unlike
+    backlog(); None when they cannot be read."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from brevo_stats import events
+    since = (today - timedelta(days=days)).isoformat()
+    try:
+        gone = {e["email"].lower() for e in events(key, since, today.isoformat())
+                if e.get("event") in GONE and e.get("email")}
+    except (urllib.error.URLError, ValueError) as e:
+        print(f"Événements Brevo illisibles : {e}", file=sys.stderr)
+        return None
+    return [t for t in track if t.get("statut") == "en cours" and (t.get("dernier_envoi") or "") >= since
+            and t["email"].strip().lower() not in gone]
+
+
 def credits_left(key: str) -> Optional[int]:
     """Emails the Brevo plan still allows today (free plan: daily send limit)."""
     status, data = api("GET", "/account", key)
@@ -372,7 +394,10 @@ def main():
     plan = [("relance", t) for t in due] + [("nouveau", p) for p in fresh]
     # Never above what Brevo sends today: what is already queued and what was
     # sent earlier today count against the daily cap
-    waiting = backlog(track, today, args.daily_cap)
+    queued = still_queued(key, track, today) if key else None
+    # Emails of today waiting at Brevo are counted once, in done_today
+    waiting = (sum(1 for t in queued if t["dernier_envoi"] != today.isoformat()) if queued is not None
+               else backlog(track, today, args.daily_cap))
     done_today = sum(1 for t in track if t["dernier_envoi"] == today.isoformat())
     budget = max(0, min(args.quota, args.daily_cap - waiting - done_today))
     left = credits_left(key) if key else None
