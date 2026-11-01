@@ -40,6 +40,9 @@ WIDE_RINGS = [(5000, 15), (10000, 15)]
 MAX_NEIGHBOURS = 12
 # Comparable surface: from 60 % to 160 % of the dwelling's surface
 SURFACE_BAND = (0.6, 1.6)
+# Houses: comparable land, from half to twice the plot of the house (a
+# terraced house on 150 m2 and a detached one on 800 m2 sell apart)
+LAND_BAND = (0.5, 2.0)
 # The two most recent years with data, up to 4 years when sales are scarce
 MIN_YEARS, MAX_YEARS = 2, 4
 # Excludes outliers (garages sold as dwellings, data errors)
@@ -94,7 +97,10 @@ def parse_sales(text: str, kind: str, year: int) -> List[Dict]:
         price_m2 = price / surface
         if not MIN_PRICE_M2 <= price_m2 <= MAX_PRICE_M2:
             continue
-        sales.append({"price_m2": price_m2, "surface": surface, "price": price, "lat": _float(d.get("latitude")),
+        # Land of the sale: each parcel and kind of ground counted once
+        land = sum({(r.get("id_parcelle"), r.get("nature_culture"), r.get("surface_terrain")): _float(r.get("surface_terrain")) or 0
+                    for r in rows}.values()) or None
+        sales.append({"price_m2": price_m2, "surface": surface, "price": price, "land": land, "lat": _float(d.get("latitude")),
                       "lon": _float(d.get("longitude")), "year": year, "quarter": quarter(d.get("date_mutation") or ""),
                       "date": (d.get("date_mutation") or "")[:10], "street": (d.get("adresse_nom_voie") or "").strip(),
                       "number": ((d.get("adresse_numero") or "") + (d.get("adresse_suffixe") or "")).strip(),
@@ -118,7 +124,8 @@ def adjust_to_today(sales: List[Dict], index: Dict[str, float]) -> None:
 
 
 def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[float],
-              surface: Optional[float] = None, adjusted: bool = False, wide: bool = False) -> Optional[Dict]:
+              surface: Optional[float] = None, adjusted: bool = False, wide: bool = False,
+              land: Optional[float] = None) -> Optional[Dict]:
     pool = sales
     similar = "de surface comparable "
     if surface:
@@ -131,6 +138,16 @@ def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[
             similar = ""
     else:
         similar = ""
+    land_matched = False
+    if land and kind == "Maison":
+        on_land = [s for s in pool if s.get("land") and land * LAND_BAND[0] <= s["land"] <= land * LAND_BAND[1]]
+        # Enough houses on a comparable plot nearby: only them
+        near_enough = lat is None or lon is None or sum(
+            1 for s in on_land if s["lat"] is not None and s["lon"] is not None and distance_m(lat, lon, s["lat"], s["lon"]) <= RINGS[-1][0]
+        ) >= RINGS[-1][1]
+        if len(on_land) >= MIN_COMMUNE_SALES and near_enough:
+            pool, land_matched = on_land, True
+            similar = (similar[:-1] + " et " if similar else "") + "de terrain comparable "
     if lat is not None and lon is not None:
         located = [(distance_m(lat, lon, s["lat"], s["lon"]), s) for s in pool if s["lat"] is not None and s["lon"] is not None]
         for d, s in located:
@@ -141,12 +158,12 @@ def summarize(sales: List[Dict], kind: str, lat: Optional[float], lon: Optional[
                 scope = f"à moins de {radius} m" if radius < 1000 else f"à moins de {radius // 1000} km"
                 if wide:
                     scope += ", communes voisines incluses"
-                return {**_result(near, kind, scope, similar, adjusted), "wide": wide}
+                return {**_result(near, kind, scope, similar, adjusted), "wide": wide, "land_matched": land_matched}
     if wide:
         return None
     if len(pool) >= MIN_COMMUNE_SALES:
         commune = next((s["commune"] for s in pool if s["commune"]), None)
-        return _result(pool, kind, f"à {commune}" if commune else "dans la commune", similar, adjusted)
+        return {**_result(pool, kind, f"à {commune}" if commune else "dans la commune", similar, adjusted), "land_matched": land_matched}
     return None
 
 
@@ -248,13 +265,14 @@ async def neighbours(client: httpx.AsyncClient, insee: str, lat: Optional[float]
 async def market_price(insee: str, building_type: Optional[str], lat: Optional[float] = None,
                        lon: Optional[float] = None, surface: Optional[float] = None,
                        transport: Optional[httpx.AsyncBaseTransport] = None,
-                       today: Optional[date] = None) -> Optional[Dict]:
+                       today: Optional[date] = None, land: Optional[float] = None) -> Optional[Dict]:
     """Median price per m2 of comparable sales around this dwelling, or None."""
     insee = (insee or "").strip().upper()
     if len(insee) != 5:
         return None
     kind = "Maison" if "maison" in (building_type or "").lower() else "Appartement"
-    key = (insee, kind, round(lat or 0, 3), round(lon or 0, 3), round(surface or 0, -1))
+    land = land if kind == "Maison" and land and land > 0 else None
+    key = (insee, kind, round(lat or 0, 3), round(lon or 0, 3), round(surface or 0, -1), round(land or 0, -1))
     cached = _cache.get(key)
     if cached and time.time() - cached[0] < CACHE_TTL:
         return cached[1]
@@ -267,7 +285,7 @@ async def market_price(insee: str, building_type: Optional[str], lat: Optional[f
             sales = await commune_sales(client, insee, kind, today)
             if index:
                 adjust_to_today(sales, index)
-            result = summarize(sales, kind, lat, lon, surface, adjusted=bool(index))
+            result = summarize(sales, kind, lat, lon, surface, adjusted=bool(index), land=land)
             if result is None:
                 # Too few sales in the commune: the neighbouring communes too
                 codes, ref_lat, ref_lon = await neighbours(client, insee, lat, lon)
@@ -276,7 +294,7 @@ async def market_price(insee: str, building_type: Optional[str], lat: Optional[f
                     wider = [s for found in more for s in found]
                     if index:
                         adjust_to_today(wider, index)
-                    result = summarize(sales + wider, kind, ref_lat, ref_lon, surface, adjusted=bool(index), wide=True)
+                    result = summarize(sales + wider, kind, ref_lat, ref_lon, surface, adjusted=bool(index), wide=True, land=land)
     except httpx.HTTPError as e:
         logger.error(f"DVF fetch failed for {insee}: {type(e).__name__} {e}")
         return None
