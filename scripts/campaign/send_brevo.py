@@ -142,7 +142,7 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
     elif step == 3:
         subject = "Un mandat paie des années d'abonnement"
         body = (P.format("Le calcul est simple : sur une vente à 250 000 €, les honoraires dépassent <b>10 000 € HT</b>. "
-                         "L'abonnement SPREA démarre à <b>79 € TTC par mois</b>. Un seul mandat signé grâce à un DPE repéré "
+                         "L'abonnement SPREA démarre à <b>49 € TTC par mois</b>, après 14 jours d'essai gratuit. Un seul mandat signé grâce à un DPE repéré "
                          "à temps le rembourse <b>plus de dix fois</b>.")
                 + P.format(f"Nous vous proposons <b>20 minutes en visio, sur le secteur de {a}</b> : vous voyez les "
                            "propriétaires de vos rues et les signaux de vente et les immeubles détenus par une société, puis vous décidez. "
@@ -236,6 +236,8 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                     ("Le simulateur de rénovation", " : travaux, aides, reste à charge, en direct devant le client"),
                     ("Les PV d'AG lus par l'IA", ", la fiche de la copropriété et les artisans RGE")])
                 + BUTTON.format(href=demo, label="Voir tout en 3 minutes →")
+                + P.format("<b>14 jours d'essai gratuit, sans carte bancaire</b>, puis 49 € TTC par mois ; "
+                           "39 € à vie pour les 50 premiers abonnés.")
                 + (P.format(f"Au passage, à {v} en ce moment : {m2}. "
                             f'<a href="{prices_link}" style="color:#8a6d2f; font-weight:bold">Le détail par nombre de pièces et l\'évolution sur 3 ans</a>.')
                    if m2 else "")
@@ -256,7 +258,7 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
         subject = f"{prenom + ', l' if prenom else 'L'}e calcul tient en une ligne"
         preview = "Une seule commission couvre des années d'abonnement."
         body = (P.format("Sur une vente à 250 000 €, la commission dépasse souvent <b>10 000 €</b>. SPREA Solo coûte "
-                         "<b>79 € TTC par mois</b>, tous les outils inclus : alertes DPE, carte des passoires, courriers, "
+                         "<b>49 € TTC par mois</b> (39 € pour les 50 premiers abonnés, à vie), tous les outils inclus : alertes DPE, carte des passoires, courriers, "
                          "avis de valeur, dossiers acheteur, demandes des vendeurs de votre secteur.")
                 + P.format("Autrement dit, <b>votre part sur une seule vente</b> rentrée grâce à un DPE repéré à temps "
                            "couvre plusieurs années d'abonnement.")

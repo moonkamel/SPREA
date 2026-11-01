@@ -24,7 +24,7 @@ const WHY = [
     { icon: Store, title: 'Pas de vitrine ?', text: "Les vendeurs ne passent pas devant chez vous. SPREA vous mène à eux : chaque nouveau DPE est une porte à laquelle frapper." },
     { icon: Swords, title: 'Seul face aux agences du coin', text: "Les mêmes données qu'un service marketing de réseau : DPE de l'ADEME, ventes DVF de la DGFiP, barèmes d'aides en vigueur." },
     { icon: Clock, title: 'Votre temps, c\'est votre chiffre', text: "Du DPE au courrier en un clic. Du rendez-vous au dossier chiffré en deux minutes. Le reste du temps, vous êtes sur le terrain." },
-    { icon: Wallet, title: 'Un outil à votre taille', text: "79 € TTC par mois en Solo, sans équipe à payer. Un seul mandat signé rembourse des années d'abonnement." },
+    { icon: Wallet, title: 'Un outil à votre taille', text: "49 € TTC par mois en Solo, 14 jours d'essai gratuit, sans équipe à payer. Un seul mandat signé rembourse des années d'abonnement." },
 ];
 
 export default function Home() {
@@ -101,7 +101,7 @@ function Hero({ can3D, lite }: { can3D: boolean; lite: boolean }) {
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.7 }}
                     className="mt-8 lg:mt-[3.4vh] flex flex-col sm:flex-row gap-3">
                     <GlowButton onClick={() => navigate('/demo')}>Voir la visite guidée <ArrowRight size={18} /></GlowButton>
-                    <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Solo · 79 € TTC / mois</GlowButton>
+                    <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Solo · 49 € TTC / mois</GlowButton>
                 </motion.div>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}
                     className="mt-5 lg:mt-[2.2vh] text-xs text-faint flex items-center gap-2">
@@ -122,7 +122,7 @@ function Figures() {
         { node: <Counter to={1.27} decimals={2} suffix=" million" />, label: "de ventes DVF rapprochées de leur DPE pour mesurer la valeur verte" },
         { node: <>Chaque <span className="text-brass-light">matin</span></>, label: "les DPE publiés par l'ADEME dans vos communes" },
         { node: <Counter to={30} suffix=" s" />, label: "pour passer d'une adresse à un avis de valeur complet" },
-        { node: <Counter to={79} suffix=" €" />, label: 'TTC par mois en formule Solo, tous les outils inclus' },
+        { node: <Counter to={49} suffix=" €" />, label: 'TTC par mois en formule Solo, tous les outils inclus' },
     ];
     return (
         <section className="relative border-y border-white/[0.06] bg-gradient-to-b from-panel/50 to-canvas">
@@ -239,7 +239,7 @@ function FinalCta() {
             <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
                 <Reveal>
                     <h2 className="text-3xl sm:text-[2.75rem] text-ink leading-[1.1]">Un mandat signé paie des années d'abonnement.</h2>
-                    <p className="mt-5 text-[15px] sm:text-base text-muted">Solo à 79 € TTC par mois. Tous les outils inclus : alertes DPE, carte des passoires, courriers, avis de valeur, dossiers acheteur.</p>
+                    <p className="mt-5 text-[15px] sm:text-base text-muted">Solo à 49 € TTC par mois, essai gratuit de 14 jours. Tous les outils inclus : alertes DPE, carte des passoires, courriers, avis de valeur, dossiers acheteur.</p>
                     <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
                         <GlowButton onClick={() => navigate('/demo')}>Faire la visite guidée <ArrowRight size={18} /></GlowButton>
                         <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Voir les tarifs</GlowButton>

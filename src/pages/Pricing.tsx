@@ -30,8 +30,16 @@ const FAQ = [
         a: "Oui : la visite guidée présente chaque outil en images (simulateur, carte de prospection, alertes, avis de valeur, immeubles de SCI et signaux de vente, biens à fort potentiel, dossier acheteur, PV d'AG lus par l'IA). Pour une présentation en direct, écrivez-nous.",
     },
     {
+        q: "Puis-je essayer gratuitement ?",
+        a: "Oui : votre premier abonnement commence par 14 jours d'essai gratuit, sans carte bancaire, avec tous les outils. Ajoutez un moyen de paiement avant la fin de l'essai pour continuer ; sans moyen de paiement, l'essai s'arrête de lui-même, sans rien à payer.",
+    },
+    {
+        q: "Qu'est-ce que le prix fondateur ?",
+        a: "Les 50 premiers abonnés Solo en paiement mensuel paient 39 € TTC par mois au lieu de 49 €, et gardent ce prix tant que leur abonnement continue. Le nombre de places restantes est affiché sur cette page.",
+    },
+    {
         q: "Y a-t-il un engagement ?",
-        a: "Oui, 12 mois pour toutes les formules. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte » et reste actif jusqu'à la fin de la période payée.",
+        a: "Oui, 12 mois pour toutes les formules, à partir de la fin de l'essai gratuit. En paiement mensuel, l'abonnement est payé chaque mois pendant au moins 12 mois ; en annuel, les 12 mois sont payés d'avance. À l'issue de l'engagement, l'abonnement est résiliable à tout moment depuis « Mon compte » et reste actif jusqu'à la fin de la période payée.",
     },
     {
         q: 'Les prix sont-ils TTC ?',
@@ -49,8 +57,8 @@ const FAQ = [
 
 export default function PricingPage() {
     useSeo({
-        title: 'Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers',
-        description: "Solo 79 € TTC / mois, Agence 59 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
+        title: 'Tarifs SPREA : dès 49 € TTC par mois pour les agents immobiliers',
+        description: "Solo 49 € TTC / mois, essai gratuit de 14 jours, Agence 39 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
         path: '/tarifs',
     });
     const { config, me, startSubscription } = useAccount();
@@ -58,7 +66,10 @@ export default function PricingPage() {
     const [quote, setQuote] = useState<'agence' | 'reseau' | null>(null);
     const [agencyOpen, setAgencyOpen] = useState(false);
     const plan: Plan = billing === 'monthly' ? 'solo_monthly' : 'solo_yearly';
-    const soloPrice = (config?.plans?.[plan] || (billing === 'monthly' ? '79 € / mois' : '790 € / an')).split(' / ')[0];
+    const soloPrice = (config?.plans?.[plan] || (billing === 'monthly' ? '49 € / mois' : '490 € / an')).split(' / ')[0];
+    // Founder price: the first subscribers of Solo monthly keep it for good
+    const founder = billing === 'monthly' && config?.founder?.left ? config.founder : null;
+    const trialDays = config?.trial_days || 14;
     const per = billing === 'monthly' ? 'par mois' : 'par an';
 
     const offers = [
@@ -66,19 +77,22 @@ export default function PricingPage() {
             id: 'solo',
             name: 'Solo',
             tagline: 'Pour un agent ou un mandataire indépendant.',
-            price: soloPrice,
+            price: founder?.price ? founder.price.split(' / ')[0] : soloPrice,
+            was: founder?.price ? soloPrice : null,
             unit: `${per} · TTC`,
-            note: billing === 'yearly' ? 'soit 2 mois offerts' : 'engagement 12 mois',
+            note: founder ? `prix fondateur à vie · encore ${founder.left} place${founder.left > 1 ? 's' : ''}`
+                : billing === 'yearly' ? 'soit 2 mois offerts' : `essai gratuit ${trialDays} jours · engagement 12 mois ensuite`,
             cta: me?.is_pro
                 ? <GlowButton disabled className="mt-8 w-full">Abonnement actif</GlowButton>
-                : <GlowButton onClick={() => startSubscription(plan)} className="mt-8 w-full">Démarrer maintenant</GlowButton>,
+                : <GlowButton onClick={() => startSubscription(plan)} className="mt-8 w-full">Essayer {trialDays} jours gratuitement</GlowButton>,
             highlighted: true,
         },
         {
             id: 'agence',
             name: 'Agence',
             tagline: 'Pour équiper une équipe de 2 à 50 agents.',
-            price: billing === 'monthly' ? '59 €' : '590 €',
+            price: billing === 'monthly' ? '39 €' : '390 €',
+            was: null,
             unit: `par agent, ${per} · TTC`,
             note: '2 agents minimum · engagement 12 mois',
             cta: me?.is_pro
@@ -91,7 +105,8 @@ export default function PricingPage() {
             name: 'Réseau',
             tagline: 'Pour les enseignes et réseaux de plusieurs agences.',
             price: 'Sur devis',
-            unit: 'à partir de 39 € par agent et par mois · TTC',
+            was: null,
+            unit: 'à partir de 25 € par agent et par mois · TTC',
             note: 'engagement 12 mois',
             cta: <GlowButton variant="ghost" onClick={() => setQuote('reseau')} className="mt-8 w-full">Demander un devis</GlowButton>,
             highlighted: false,
@@ -133,7 +148,9 @@ export default function PricingPage() {
                             <h2 className="font-sans text-xs font-semibold tracking-[0.2em] uppercase text-brass">{o.name}</h2>
                             {o.highlighted && <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-brass text-canvas font-semibold">Démarrage immédiat</span>}
                         </div>
-                        <p className="relative mt-5 font-serif text-[2.6rem] leading-none text-ink">{o.price}</p>
+                        <p className="relative mt-5 font-serif text-[2.6rem] leading-none text-ink">
+                            {o.was && <span className="mr-2 align-middle font-sans text-lg text-faint line-through">{o.was}</span>}{o.price}
+                        </p>
                         <p className="relative text-sm mt-2 text-faint">{o.unit}</p>
                         <p className="relative text-xs mt-1 text-sage">{o.note}</p>
                         <p className="relative mt-4 text-sm text-muted">{o.tagline}</p>
@@ -270,7 +287,7 @@ function AgencyDialog({ billing, onClose, onConfirm, onQuote }: {
 }) {
     const [name, setName] = useState('');
     const [seats, setSeats] = useState(3);
-    const unit = billing === 'monthly' ? 59 : 590;
+    const unit = billing === 'monthly' ? 39 : 390;
     const valid = name.trim().length >= 2 && seats >= 2 && seats <= 50;
     return (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>

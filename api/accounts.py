@@ -29,7 +29,7 @@ try:
     from api.auth import User, current_user
     from api.dvf import market_price
     from api.billing import (AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, PlanUnavailable, billing_configured, commitment_end,
-                             get_billing, subscription_period_end)
+                             get_billing, subscription_period_end, TRIAL_DAYS)
     from api.pdf_service import pdf_service
     from api.report_content import build_report, facts_for_writer
     from api.ratelimit import ai_limiter, search_limiter
@@ -41,7 +41,7 @@ except ImportError:
     from auth import User, current_user
     from dvf import market_price
     from billing import (AGENCY_PLANS, PRO_ACTIVE_STATUSES, Billing, PlanUnavailable, billing_configured, commitment_end,
-                         get_billing, subscription_period_end)
+                         get_billing, subscription_period_end, TRIAL_DAYS)
     from pdf_service import pdf_service
     from report_content import build_report, facts_for_writer
     from ratelimit import ai_limiter, search_limiter
@@ -55,7 +55,7 @@ router = APIRouter(prefix="/api")
 
 # Version of the CGV shown to the user (src/legal.ts, CGV_VERSION): stored with
 # each acceptance so we know which terms a customer agreed to.
-TERMS_VERSION = "2026-10-10.3"
+TERMS_VERSION = "2026-11-02"
 TERMS_REQUIRED = "Vous devez accepter les conditions générales de vente."
 
 
@@ -351,10 +351,14 @@ async def public_config():
     billing_enabled = billing_configured()
     report_price = pro_price = None
     plans: Dict[str, Optional[str]] = {}
+    founder = None
     if billing_enabled:
         billing = get_billing()
         plans = await billing.plan_labels()
         pro_price = plans.get("solo_monthly")
+        left = await billing.founders_left()
+        if left:
+            founder = {"price": await billing.price_label(await billing.founder_price()), "left": left}
     return {
         "auth_enabled": bool(supabase_url and anon_key),
         "supabase_url": supabase_url,
@@ -364,6 +368,9 @@ async def public_config():
         "pro_price": pro_price,
         # Prices excluding VAT
         "plans": plans,
+        # Founder price of Solo monthly while places are left
+        "founder": founder,
+        "trial_days": TRIAL_DAYS,
         "terms_version": TERMS_VERSION,
     }
 
@@ -618,8 +625,10 @@ async def subscribe(data: SubscribeRequest, user: User = Depends(current_user),
     await store.update_profile(user.id, terms_acceptance())
     customer_id = await ensure_customer(store, billing, user, profile)
     try:
+        # Free trial for a first subscription only (never subscribed, nor their agency)
+        trial = not any((h or {}).get("subscription_status") for h in (profile, org))
         url = await billing.subscription_checkout(user.id, customer_id, data.plan,
-                                                  quantity=data.seats if agency else 1, org_id=org_id)
+                                                  quantity=data.seats if agency else 1, org_id=org_id, trial=trial)
     except PlanUnavailable:
         raise HTTPException(status_code=503, detail="Cette formule n'est pas disponible pour le moment, réessayez plus tard.")
     return {"checkout_url": url}

@@ -40,7 +40,7 @@ def test_agency_subscription_gives_access_and_replaces_solo(env):
     assert client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "agence_monthly", "seats": 1, "agency_name": "X Y"}).status_code == 400
     assert client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "agence_monthly", "seats": 3}).status_code == 400
     org_id = agency(client, store, billing)
-    assert billing.checkouts[-1] == {"plan": "agence_monthly", "quantity": 3, "org_id": org_id}
+    assert billing.checkouts[-1] == {"plan": "agence_monthly", "quantity": 3, "org_id": org_id, "trial": False}
     assert store.orgs[org_id]["subscription_status"] == "active" and store.orgs[org_id]["seats"] == 3
     # The Solo plan is cancelled, access now comes from the agency
     assert billing.canceled == ["sub_solo"]

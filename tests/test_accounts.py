@@ -302,9 +302,9 @@ class FakeBilling:
                                      "currency": "eur", "metadata": {"kind": "report", "report_id": report_id}}
         return {"id": session_id, "url": f"https://checkout.stripe.test/{session_id}"}
 
-    async def subscription_checkout(self, user_id, customer_id, plan="solo_monthly", quantity=1, org_id=None):
+    async def subscription_checkout(self, user_id, customer_id, plan="solo_monthly", quantity=1, org_id=None, trial=False):
         self.plans.append(plan)
-        self.checkouts.append({"plan": plan, "quantity": quantity, "org_id": org_id})
+        self.checkouts.append({"plan": plan, "quantity": quantity, "org_id": org_id, "trial": trial})
         return "https://checkout.stripe.test/sub"
 
     async def portal_url(self, customer_id, can_cancel=True):
@@ -406,6 +406,11 @@ def test_subscription_records_terms_and_plan(env):
     client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "solo_yearly"})
     assert store.profiles[ALICE.id]["terms_version"] == accounts.TERMS_VERSION
     assert billing.plans == ["solo_yearly"]
+    # A first subscription starts with the free trial; not after a past one
+    assert billing.checkouts[-1]["trial"] is True
+    store.profiles[ALICE.id]["subscription_status"] = "canceled"
+    client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "solo_monthly"})
+    assert billing.checkouts[-1]["trial"] is False
     assert client.post("/api/billing/subscribe", json={**SUBSCRIBE, "plan": "gratuit"}).status_code == 422
 
 

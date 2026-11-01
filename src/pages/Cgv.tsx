@@ -47,11 +47,13 @@ export default function CgvPage() {
 
                 <Article n={6} title="Prix">
                     <p>Les prix sont indiqués en euros toutes taxes comprises, TVA au taux de 20 % incluse ; la facture détaille le montant hors taxes et la TVA. Le prix applicable est celui affiché au moment de la souscription.</p>
+                    <p><b>Prix fondateur.</b> Les 50 premiers abonnements Solo souscrits en paiement mensuel à compter du 2 novembre 2026 bénéficient d'un prix de 39 € TTC par mois, maintenu tant que l'abonnement n'est pas résilié. Le nombre de places restantes est affiché sur la page Tarifs ; une fois les 50 places attribuées, le prix public s'applique aux nouvelles souscriptions.</p>
                     <p>Le Vendeur peut modifier ses prix. Le Client en est informé par email au moins 30 jours avant leur application ; le nouveau prix s'applique à la période suivante, et le Client peut résilier sans frais avant cette date.</p>
                 </Article>
 
                 <Article n={7} title="Souscription et paiement">
                     <p>La souscription est faite depuis le site : choix de la formule et de la périodicité (mensuelle ou annuelle), acceptation des CGV, puis paiement par carte bancaire sur la page sécurisée de son prestataire Stripe, qui recueille la raison sociale, l'adresse et le numéro de TVA du Client. Le Vendeur n'a pas accès aux données de carte bancaire. Les formules Agence et Réseau peuvent aussi être souscrites sur devis.</p>
+                    <p><b>Essai gratuit.</b> Le premier abonnement d'un Client (ou de son agence) commence par un essai gratuit de 14 jours, avec l'accès à tous les services de la formule choisie. Aucun moyen de paiement n'est demandé pour le commencer. Pour continuer à l'issue de l'essai, le Client enregistre un moyen de paiement depuis « Mon compte » ; à défaut, l'abonnement prend fin automatiquement à la fin de l'essai, sans aucune somme due. Le Client peut aussi y mettre fin à tout moment pendant l'essai.</p>
                     <p>L'abonnement est payable d'avance, au début de chaque période. Une facture est émise à chaque paiement et mise à disposition du Client dans « Mon compte ».</p>
                     <p>Toute somme non payée à l'échéance entraîne de plein droit des pénalités de retard au taux d'intérêt appliqué par la Banque centrale européenne à son opération de refinancement la plus récente, majoré de 10 points, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 € (articles L441-10 et D441-5 du Code de commerce). Aucun escompte n'est accordé pour paiement anticipé.</p>
                 </Article>
@@ -61,7 +63,7 @@ export default function CgvPage() {
                 </Article>
 
                 <Article n={9} title="Durée et engagement">
-                    <p>Les abonnements Solo et Agence souscrits à compter du 9 octobre 2026 comportent un <b>engagement d'une durée de 12 mois</b> à compter de la souscription. En paiement mensuel, le Client règle chaque mensualité pendant au moins 12 mois ; en paiement annuel, les 12 mois sont réglés d'avance. Les contrats Réseau sont conclus pour 12 mois, sauf conditions particulières.</p>
+                    <p>Les abonnements Solo et Agence souscrits à compter du 9 octobre 2026 comportent un <b>engagement d'une durée de 12 mois</b> à compter de la souscription, ou de la fin de l'essai gratuit lorsque l'abonnement en comporte un. En paiement mensuel, le Client règle chaque mensualité pendant au moins 12 mois ; en paiement annuel, les 12 mois sont réglés d'avance. Les contrats Réseau sont conclus pour 12 mois, sauf conditions particulières.</p>
                     <p>Sauf lorsque le Client remplit les conditions de l'article L221-3 du Code de la consommation (professionnel employant cinq salariés au plus, pour un contrat n'entrant pas dans le champ de son activité principale), le droit de rétractation ne s'applique pas à l'abonnement, souscrit à distance par un professionnel pour les besoins de son activité. Aucune somme versée n'est remboursée, sauf manquement du Vendeur à ses obligations.</p>
                     <p>Pendant l'engagement, l'abonnement ne peut pas être résilié avant son terme : une demande de résiliation prend effet à la fin de la période d'engagement, les mensualités restant dues jusqu'à cette date. Le nombre d'utilisateurs d'une formule Agence peut être augmenté à tout moment, au prorata ; il ne peut être réduit qu'à la fin de la période d'engagement, sans descendre sous le minimum de la formule.</p>
                 </Article>
