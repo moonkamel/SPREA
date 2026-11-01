@@ -41,7 +41,7 @@ const SOFTWARE = {
     operatingSystem: 'Web', url: SITE, publisher: ORG,
     description: "Logiciel pour agents immobiliers : prospection des passoires thermiques, alertes nouveaux DPE, courriers avec QR code, simulateur de rénovation et avis de valeur avant / après travaux.",
     offers: [
-        { '@type': 'Offer', name: 'Solo', price: '79', priceCurrency: 'EUR', category: 'subscription', description: 'Par mois, TTC' },
+        { '@type': 'Offer', name: 'Solo', price: '49', priceCurrency: 'EUR', category: 'subscription', description: 'Par mois, TTC, essai gratuit de 14 jours' },
         { '@type': 'Offer', name: 'Agence', price: '59', priceCurrency: 'EUR', category: 'subscription', description: 'Par agent et par mois, TTC' },
     ],
 };
@@ -117,7 +117,7 @@ ${ul([
         '<strong>Pas de vitrine ?</strong> Chaque nouveau DPE est une porte à laquelle frapper.',
         "<strong>Seul face aux agences du coin</strong> : DPE de l'ADEME, ventes DVF de la DGFiP, barèmes d'aides en vigueur.",
         '<strong>Votre temps, c\'est votre chiffre</strong> : du DPE au courrier en un clic, du rendez-vous au dossier chiffré en deux minutes.',
-        "<strong>Un outil à votre taille</strong> : 79 € TTC par mois en Solo. Un seul mandat signé rembourse des années d'abonnement.",
+        "<strong>Un outil à votre taille</strong> : 49 € TTC par mois en Solo, 14 jours d'essai gratuit. Un seul mandat signé rembourse des années d'abonnement.",
     ])}
 <p>${int(obs.total_sales)} ventes rapprochées de leur DPE pour mesurer la valeur verte.</p>
 <p><a href="/demo">Faire la visite guidée</a> · <a href="/tarifs">Voir les tarifs</a></p>`,
@@ -188,7 +188,7 @@ pages.push(page({
 <p>Synthèse, analyse rédigée, plan de travaux et de financement, valeur verte et calendrier de la loi Climat, fiche immeuble et artisans RGE.</p>
 <h2>Toute l'agence sur le même outil</h2>
 <p>Une place par agent, invitations par lien, contacts et alertes partagés dans l'agence, console réseau.</p>
-<p><a href="/tarifs">Démarrer à 79 € TTC / mois</a></p>`,
+<p><a href="/tarifs">Essayer 14 jours gratuitement, puis 49 € TTC / mois</a></p>`,
 }));
 
 const FAQ = [
@@ -200,8 +200,8 @@ const FAQ = [
 ];
 pages.push(page({
     path: '/tarifs',
-    title: 'Tarifs SPREA : dès 79 € TTC par mois pour les agents immobiliers',
-    description: "Solo 79 € TTC / mois, Agence 59 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
+    title: 'Tarifs SPREA : dès 49 € TTC par mois pour les agents immobiliers',
+    description: "Solo 49 € TTC / mois, essai gratuit de 14 jours, Agence 39 € TTC par agent, Réseau sur devis. Tous les outils inclus : prospection DPE, immeubles de rapport, alertes, avis de valeur, rapports.",
     jsonld: [SOFTWARE, {
         '@context': 'https://schema.org', '@type': 'FAQPage',
         mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
@@ -209,9 +209,9 @@ pages.push(page({
     body: `${nav}
 <h1>Tarifs SPREA</h1>
 ${ul([
-        '<strong>Solo</strong> : 79 € TTC par mois ou 790 € TTC par an, pour un agent ou un mandataire indépendant.',
-        "<strong>Agence</strong> : 59 € TTC par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
-        '<strong>Réseau</strong> : sur devis, à partir de 39 € TTC par agent et par mois, console du siège.',
+        '<strong>Solo</strong> : 49 € TTC par mois ou 490 € TTC par an, pour un agent ou un mandataire indépendant, après 14 jours d'essai gratuit ; prix fondateur de 39 € par mois pour les 50 premiers abonnés.',
+        "<strong>Agence</strong> : 39 € TTC par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
+        '<strong>Réseau</strong> : sur devis, à partir de 25 € TTC par agent et par mois, console du siège.',
     ])}
 <p>Tous les outils inclus dans chaque formule. Engagement de 12 mois, paiement mensuel ou annuel.</p>
 <h2>Questions fréquentes</h2>

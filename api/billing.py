@@ -28,6 +28,13 @@ PRO_CHECKOUT_MESSAGE = (
     "En payant, vous confirmez avoir accepté les CGV. Abonnement avec un engagement de 12 mois, "
     "puis résiliable à tout moment depuis votre compte."
 )
+TRIAL_CHECKOUT_MESSAGE = (
+    "Vous confirmez avoir accepté les CGV. Essai gratuit de 14 jours, sans carte bancaire : "
+    "ajoutez un moyen de paiement avant la fin de l'essai pour continuer, avec un engagement de 12 mois "
+    "à partir de la fin de l'essai. Sans moyen de paiement, l'essai s'arrête de lui-même."
+)
+# First subscription: free trial, no card asked
+TRIAL_DAYS = 14
 
 # Minimum duration of the subscriptions taken from now on (stored in their
 # metadata: the subscriptions taken before stay without commitment)
@@ -36,7 +43,11 @@ COMMITMENT_MONTHS = 12
 # Subscription plans: Stripe lookup keys
 PLANS = ("solo_monthly", "solo_yearly", "agence_monthly", "agence_yearly")
 AGENCY_PLANS = ("agence_monthly", "agence_yearly")
-# Prices are displayed and set VAT included (79 € TTC): the rate is inclusive
+# Founder price: the first subscribers of Solo monthly keep it for good
+FOUNDER_PLAN = "solo_founder_monthly"
+FOUNDER_SEATS = 50
+FOUNDER_STATUSES = ("active", "trialing", "past_due")
+# Prices are displayed and set VAT included (49 € TTC): the rate is inclusive
 VAT_RATE_KEY = "tva20_ttc"
 
 
@@ -82,12 +93,15 @@ class SeatsLocked(Exception):
 
 
 def commitment_end(subscription: Dict[str, Any]) -> Optional[int]:
-    """End of the minimum duration of a subscription, None without commitment."""
+    """End of the minimum duration of a subscription, None without commitment.
+    A free trial commits to nothing: the 12 months start when it ends."""
+    if subscription.get("status") == "trialing":
+        return None
     try:
         months = int((subscription.get("metadata") or {}).get("commitment_months") or 0)
     except ValueError:
         return None
-    start = subscription.get("start_date")
+    start = subscription.get("trial_end") or subscription.get("start_date")
     return add_months(start, months) if months and start else None
 
 
@@ -109,6 +123,7 @@ class Billing:
         self._plan_prices: Dict[str, str] = {}
         self._vat_rate: Optional[str] = None
         self._committed_portal: Optional[str] = None
+        self._founders: Optional[tuple] = None
 
     async def price_label(self, price_id: str) -> Optional[str]:
         if price_id not in self._price_labels:
@@ -137,6 +152,33 @@ class Billing:
                 raise PlanUnavailable(plan)
             self._plan_prices[plan] = found[0]["id"]
         return self._plan_prices[plan]
+
+    async def founder_price(self) -> Optional[str]:
+        """Founder price id, None when it is not set up in Stripe."""
+        try:
+            return await self.plan_price(FOUNDER_PLAN)
+        except PlanUnavailable:
+            return None
+
+    async def founders_left(self) -> int:
+        """Founder places still open: subscriptions on the founder price, kept
+        5 minutes. 0 without founder price (or when Stripe does not answer)."""
+        if self._founders and time.time() - self._founders[0] < 300:
+            return self._founders[1]
+        price = await self.founder_price()
+        if not price:
+            return 0
+        try:
+            taken = 0
+            for status in FOUNDER_STATUSES:
+                subs = as_dict(await self.client.v1.subscriptions.list_async(params={"price": price, "status": status, "limit": 100}))
+                taken += len(subs.get("data") or [])
+        except Exception as e:
+            logger.error(f"Cannot count the founder subscriptions: {e}")
+            return 0
+        left = max(0, FOUNDER_SEATS - taken)
+        self._founders = (time.time(), left)
+        return left
 
     async def plan_labels(self) -> Dict[str, Optional[str]]:
         labels: Dict[str, Optional[str]] = {}
@@ -216,30 +258,43 @@ class Billing:
         return {"id": session["id"], "url": session["url"]}
 
     async def subscription_checkout(self, user_id: str, customer_id: str, plan: str = "solo_monthly",
-                                    quantity: int = 1, org_id: Optional[str] = None) -> str:
+                                    quantity: int = 1, org_id: Optional[str] = None, trial: bool = False) -> str:
         """Solo: one seat on the user's profile. Agence: one seat per agent,
-        the subscription belongs to the organization (metadata org_id)."""
-        line: Dict[str, Any] = {"price": await self.plan_price(plan), "quantity": quantity}
+        the subscription belongs to the organization (metadata org_id). Solo
+        monthly takes the founder price while places are left; a first
+        subscription starts with a free trial, without card."""
+        price = await self.plan_price(plan)
+        founder = plan == "solo_monthly" and await self.founders_left() > 0
+        if founder:
+            price = await self.founder_price() or price
+        line: Dict[str, Any] = {"price": price, "quantity": quantity}
         if not self.automatic_tax:
             # Prices excluding VAT: add the VAT rate ourselves
             rate = await self.vat_rate()
             if rate:
                 line["tax_rates"] = [rate]
         metadata = {"kind": "subscription", "user_id": user_id, "plan": plan, "commitment_months": str(COMMITMENT_MONTHS),
-                    **({"org_id": org_id} if org_id else {})}
+                    **({"org_id": org_id} if org_id else {}), **({"founder": "1"} if founder else {})}
+        subscription_data: Dict[str, Any] = {"metadata": metadata}
+        extra: Dict[str, Any] = {}
+        if trial:
+            subscription_data.update(trial_period_days=TRIAL_DAYS,
+                                     trial_settings={"end_behavior": {"missing_payment_method": "cancel"}})
+            extra["payment_method_collection"] = "if_required"
         session = await self.client.v1.checkout.sessions.create_async(params={
             "mode": "subscription",
             "customer": customer_id,
             "client_reference_id": user_id,
             "line_items": [line],
             "metadata": metadata,
-            "subscription_data": {"metadata": metadata},
+            "subscription_data": subscription_data,
+            **extra,
             "allow_promotion_codes": True,
             # Professionals: company name and VAT number on the invoice
             "tax_id_collection": {"enabled": True},
             "billing_address_collection": "required",
             "customer_update": {"address": "auto", "name": "auto"},
-            "custom_text": {"submit": {"message": PRO_CHECKOUT_MESSAGE}},
+            "custom_text": {"submit": {"message": TRIAL_CHECKOUT_MESSAGE if trial else PRO_CHECKOUT_MESSAGE}},
             **self._tax_params(),
             "success_url": f"{self.app_url}/?checkout=pro_success",
             "cancel_url": f"{self.app_url}/tarifs?checkout=pro_cancel",

@@ -21,10 +21,12 @@ EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeede
 TAX_CODE = "txcd_10000000"
 # Amounts TTC (cents), as shown on the site
 PLANS = {
-    "solo_monthly": ("SPREA Solo", 7900, "month"),
-    "solo_yearly": ("SPREA Solo", 79000, "year"),
-    "agence_monthly": ("SPREA Agence (par agent)", 5900, "month"),
-    "agence_yearly": ("SPREA Agence (par agent)", 59000, "year"),
+    "solo_monthly": ("SPREA Solo", 4900, "month"),
+    "solo_yearly": ("SPREA Solo", 49000, "year"),
+    # The 50 first Solo monthly subscribers (api/billing.py FOUNDER_SEATS)
+    "solo_founder_monthly": ("SPREA Solo", 3900, "month"),
+    "agence_monthly": ("SPREA Agence (par agent)", 3900, "month"),
+    "agence_yearly": ("SPREA Agence (par agent)", 39000, "year"),
     "report_single": ("Rapport SPREA", 3900, None),
 }
 

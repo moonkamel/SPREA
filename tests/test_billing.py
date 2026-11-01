@@ -103,3 +103,13 @@ def test_unknown_plan_falls_back_to_pro_price():
 
     billing.client.v1.prices.list_async = list_prices
     assert asyncio.run(billing.plan_price("solo_monthly")) == "price_pro"
+
+
+def test_a_trial_commits_to_nothing_and_the_twelve_months_start_after_it():
+    from api.billing import commitment_end, committed
+    start, trial_end = 1_800_000_000, 1_800_000_000 + 14 * 86400
+    sub = {"metadata": {"commitment_months": "12"}, "start_date": start, "trial_end": trial_end}
+    assert commitment_end({**sub, "status": "trialing"}) is None
+    assert not committed({**sub, "status": "trialing"}, now=start + 86400)
+    end = commitment_end({**sub, "status": "active"})
+    assert end > trial_end + 360 * 86400 and committed({**sub, "status": "active"}, now=trial_end + 86400)

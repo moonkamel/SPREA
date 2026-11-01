@@ -15,6 +15,9 @@ interface PublicConfig {
     pro_price: string | null;
     // Subscription plans, prices including VAT (TTC)
     plans?: Partial<Record<Plan, string | null>>;
+    // Founder price of Solo monthly while places are left
+    founder?: { price: string | null; left: number } | null;
+    trial_days?: number;
 }
 
 export type Plan = 'solo_monthly' | 'solo_yearly' | 'agence_monthly' | 'agence_yearly';
@@ -669,8 +672,20 @@ function AccountModal({ me, onClose, onPassword, onDownload, onSubscribe, onPort
                             </>
                         ) : me.is_pro ? (
                             <>
-                                <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement actif</p>
-                                <p className="text-sm text-muted mt-1">Tous les outils inclus{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
+                                {me.subscription_status === 'trialing' ? (
+                                    <>
+                                        <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Essai gratuit en cours</p>
+                                        <p className="text-sm text-muted mt-1">
+                                            Tous les outils inclus{periodEnd ? ` jusqu'au ${periodEnd}` : ''}. Ajoutez un moyen de paiement dans « Factures et abonnement »
+                                            pour continuer ensuite ; sans moyen de paiement, l'essai s'arrête de lui-même, sans rien à payer.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Abonnement actif</p>
+                                        <p className="text-sm text-muted mt-1">Tous les outils inclus{periodEnd ? ` · renouvellement le ${periodEnd}` : ''}</p>
+                                    </>
+                                )}
                                 {me.commitment_end && <p className="text-xs text-faint mt-1">Engagement jusqu'au {new Date(me.commitment_end).toLocaleDateString('fr-FR')}, puis résiliable à tout moment.</p>}
                             </>
                         ) : (
@@ -741,7 +756,7 @@ const PLAN_NAMES: Record<Plan, string> = {
     agence_monthly: 'Agence · mensuel', agence_yearly: 'Agence · annuel',
 };
 
-// "59 € / mois" × 4 agents -> "236 € / mois"
+// "39 € / mois" × 4 agents -> "156 € / mois"
 const multiply = (price: string, n: number) => {
     const m = price.match(/^([\d\s.,]+)\s*€(.*)$/);
     if (!m) return price;

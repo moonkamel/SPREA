@@ -302,7 +302,7 @@ export default function DemoPage() {
                         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
                             {me?.is_pro
                                 ? <GlowButton onClick={start}>Ouvrir le simulateur <ArrowRight size={18} /></GlowButton>
-                                : <GlowButton onClick={() => startSubscription('solo_monthly')}>Démarrer à 79 € TTC / mois <ArrowRight size={18} /></GlowButton>}
+                                : <GlowButton onClick={() => startSubscription('solo_monthly')}>Essayer 14 jours gratuitement <ArrowRight size={18} /></GlowButton>}
                             <GlowButton variant="ghost" onClick={() => navigate('/tarifs')}>Formules Agence et Réseau</GlowButton>
                         </div>
                         <p className="mt-5 text-sm text-muted flex items-center justify-center gap-2">
