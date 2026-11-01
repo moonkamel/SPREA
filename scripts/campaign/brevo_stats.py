@@ -24,17 +24,26 @@ def get(path: str, key: str, params: dict) -> dict:
         return json.loads(res.read().decode() or "{}")
 
 
-def events(key: str, start: str, end: str):
-    """Every event of the prospection emails, page by page."""
+def events(key: str, start: str, end: str, tag: str = "prospection"):
+    """Every event of the emails carrying this tag, page by page."""
     offset = 0
     while True:
-        data = get("/smtp/statistics/events", key, {"startDate": start, "endDate": end, "tags": "prospection",
+        data = get("/smtp/statistics/events", key, {"startDate": start, "endDate": end, "tags": tag,
                                                     "limit": 2500, "offset": offset, "sort": "asc"})
         rows = data.get("events") or []
         yield from rows
         if len(rows) < 2500:
             return
         offset += 2500
+
+
+STEPS = ["mail1", "mail2", "mail3", "mail4"]
+
+
+def network(email: str) -> str:
+    """Where the address is: the advisors' networks apart from the agencies."""
+    domain = email.rsplit("@", 1)[-1]
+    return {"iadfrance.fr": "iad", "safti.fr": "Safti"}.get(domain, "agences et autres")
 
 
 def pct(n: int, d: int) -> str:
@@ -54,36 +63,44 @@ def main():
 
     # Per day and per email of the sequence: who received, opened (people / proxies), clicked
     by: dict = defaultdict(lambda: defaultdict(set))
+    nets: dict = defaultdict(lambda: defaultdict(set))
     links: Counter = Counter()
     kinds: Counter = Counter()
-    for e in events(key, start.isoformat(), end.isoformat()):
-        day = (e.get("date") or "")[:10]
-        # One tag (« tag ») or several (« tags »), depending on the event
-        tags = e.get("tags") or ([e["tag"]] if e.get("tag") else [])
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(",")]
-        step = next((t for t in tags if t.startswith("mail")), "mail?")
-        kind = e.get("event") or ""
-        kinds[kind] += 1
-        who = (e.get("email") or "").lower()
-        for k in ((day, step), ("total", step), ("total", "tous")):
-            by[k][kind].add(who)
-        if kind == "clicks" and e.get("link"):
-            links[urllib.parse.urlsplit(e["link"])._replace(query="").geturl()] += 1
+    # The events do not say which email of the sequence they belong to: read
+    # tag by tag (each email is sent with « prospection » and « mailN »)
+    for step in STEPS:
+        for e in events(key, start.isoformat(), end.isoformat(), step):
+            day = (e.get("date") or "")[:10]
+            kind = e.get("event") or ""
+            kinds[kind] += 1
+            who = (e.get("email") or "").lower()
+            for k in ((day, step), ("total", step), ("total", "tous")):
+                by[k][kind].add(who)
+            for k in ((network(who), step), (network(who), "tous")):
+                nets[k][kind].add(who)
+            if kind == "clicks" and e.get("link"):
+                links[urllib.parse.urlsplit(e["link"])._replace(query="").geturl()] += 1
 
     lines = [f"# Prospection Brevo du {start:%d/%m} au {end:%d/%m/%Y}", "",
              "| Jour | Mail | Envoyés | Délivrés | Ouvertures (personnes) | Chargés par proxy | Clics | Désinscrits | Rebonds |",
              "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
-    for (day, step) in sorted(by, key=lambda k: (k[0] == "total", k)):
-        s = by[(day, step)]
+    def row(first: str, step: str, s: dict) -> str:
         sent = len(s["requests"])
         delivered = len(s["delivered"])
         proxy = s["proxy_open"] | s["proxyOpen"] | s["loadedByProxy"]
         people = (s["opened"] | s["unique_opened"]) - proxy
         clicked = s["clicks"]
-        lines.append(f"| {day} | {step} | {sent} | {delivered} | {len(people)} ({pct(len(people), delivered)}) | {len(proxy)} | "
-                     f"{len(clicked)} ({pct(len(clicked), delivered)}) | {len(s['unsubscribed'])} | "
-                     f"{len(s['hardBounces'] | s['softBounces'] | s['blocked'])} |")
+        return (f"| {first} | {step} | {sent} | {delivered} | {len(people)} ({pct(len(people), delivered)}) | {len(proxy)} | "
+                f"{len(clicked)} ({pct(len(clicked), delivered)}) | {len(s['unsubscribed'])} | "
+                f"{len(s['hardBounces'] | s['softBounces'] | s['blocked'])} |")
+
+    for (day, step) in sorted(by, key=lambda k: (k[0] == "total", k)):
+        lines.append(row(day, step, by[(day, step)]))
+    lines += ["", "## Par réseau (sur la période)", "",
+              "| Réseau | Mail | Envoyés | Délivrés | Ouvertures (personnes) | Chargés par proxy | Clics | Désinscrits | Rebonds |",
+              "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
+    for (net, step) in sorted(nets, key=lambda k: (k[0], k[1] == "tous", k[1])):
+        lines.append(row(net, step, nets[(net, step)]))
     lines += ["", "## Liens cliqués", ""]
     lines += [f"- {n} × {link}" for link, n in links.most_common(20)] or ["Aucun clic pour l'instant."]
     lines += ["", "_Événements reçus : " + ", ".join(f"{k} {n}" for k, n in sorted(kinds.items())) + "_"]

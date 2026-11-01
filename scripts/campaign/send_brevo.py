@@ -33,6 +33,14 @@ REPLY_TO = {"email": "contact@sprea.app", "name": "SPREA"}
 DEMO = "https://sprea.app/demo?utm_source=email&amp;utm_medium=prospection&amp;utm_campaign={campaign}"
 TRACK_COLS = ["siren", "agence", "ville", "email", "etape", "dernier_envoi", "statut", "source_url"]
 FOLLOW_UP_DAYS = 7
+# Domains not written to for now, follow-ups included: the iad addresses
+# received 1,133 emails from 27 to 31/10 without a single real open (filtered
+# by their mail server), until a delivery test says otherwise
+PAUSED_DOMAINS = {"iadfrance.fr"}
+
+
+def paused(email: str) -> bool:
+    return email.strip().lower().rsplit("@", 1)[-1] in PAUSED_DOMAINS
 SMALL = {"de", "du", "des", "la", "le", "les", "et", "d", "l", "en", "sur", "lez", "à", "au", "aux", "par"}
 UPPER = {"sarl", "sas", "sasu", "eurl", "sci", "sa", "ei", "glv", "nbbs", "mc", "ab", "mav", "epim", "sbi", "ilo"}
 
@@ -386,12 +394,12 @@ def main():
                     t["statut"] = "STOP" if "unsub" in reason.lower() or "spam" in reason.lower() else "rebond"
 
     due = [t for t in track if t["statut"] == "en cours" and int(t["etape"] or 1) < 4 and t["dernier_envoi"]
-           and date.fromisoformat(t["dernier_envoi"]) + timedelta(days=FOLLOW_UP_DAYS) <= today]
+           and date.fromisoformat(t["dernier_envoi"]) + timedelta(days=FOLLOW_UP_DAYS) <= today and not paused(t["email"])]
     known = {t["email"].lower() for t in track}
     fresh, seen = [], set()
     for p in prospects:
         e = p["email"].strip().lower()
-        if e and e not in known and e not in seen:
+        if e and e not in known and e not in seen and not paused(e):
             seen.add(e)
             fresh.append(p)
     plan = [("relance", t) for t in due] + [("nouveau", p) for p in fresh]

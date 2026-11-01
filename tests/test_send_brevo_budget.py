@@ -54,3 +54,9 @@ def test_still_queued_is_unknown_when_brevo_cannot_be_read(monkeypatch):
         raise urllib.error.URLError("down")
     monkeypatch.setattr(brevo_stats, "events", fail)
     assert send_brevo.still_queued("k", [], date(2026, 10, 30)) is None
+
+
+def test_paused_domains():
+    assert send_brevo.paused("Jean.Dupont@IADFRANCE.fr ")
+    assert not send_brevo.paused("contact@agence-du-nord.fr")
+    assert not send_brevo.paused("marie.durand@safti.fr")
