@@ -83,3 +83,18 @@ def test_test_batch_cap_per_network(tmp_path, monkeypatch):
     send_brevo.main()
     sent = [l for l in out if l.startswith("[essai]")]
     assert sum("@safti.fr" in l for l in sent) == 9 and any("contact@agence.fr" in l for l in sent)
+
+
+def test_no_send_while_the_site_shows_another_offer(monkeypatch):
+    import io
+    import json as _json
+    import urllib.request
+
+    def site(config):
+        monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: io.BytesIO(_json.dumps(config).encode()))
+    site({"terms_version": "2026-10-10.3", "plans": {"solo_monthly": "79 € / mois"}})
+    assert not send_brevo.site_offer_ok()
+    site({"terms_version": "2026-11-02", "plans": {"solo_monthly": "79 € / mois"}})
+    assert not send_brevo.site_offer_ok()
+    site({"terms_version": "2026-11-02", "plans": {"solo_monthly": "49 € / mois"}})
+    assert send_brevo.site_offer_ok()

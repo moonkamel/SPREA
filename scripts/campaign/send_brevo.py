@@ -162,6 +162,24 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
 
 SITE = "https://sprea.app"
 UTM = "utm_source=email&amp;utm_medium=prospection&amp;utm_campaign={campaign}&amp;utm_content=mail{step}"
+# The emails quote the offer (49 EUR, 14-day trial): nothing leaves while the
+# live site shows another one (deployment not through, prices not switched)
+OFFER_TERMS, OFFER_PRICE = "2026-11-02", "49 €"
+
+
+def site_offer_ok() -> bool:
+    try:
+        with urllib.request.urlopen(f"{SITE}/api/config", timeout=20) as res:
+            config = json.loads(res.read())
+    except (urllib.error.URLError, ValueError) as e:
+        print(f"Site illisible : {e}", file=sys.stderr)
+        return False
+    ok = (config.get("terms_version") == OFFER_TERMS
+          and ((config.get("plans") or {}).get("solo_monthly") or "").startswith(OFFER_PRICE))
+    if not ok:
+        print(f"Le site n'affiche pas encore l'offre des mails (CGV {config.get('terms_version')}, "
+              f"Solo {(config.get('plans') or {}).get('solo_monthly')}) : aucun envoi aujourd'hui.", flush=True)
+    return ok
 PRICES_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "src", "data", "prix_index.json")
 _prices: Optional[Dict[str, List[Dict]]] = None
 
@@ -389,6 +407,8 @@ def main():
     key = os.getenv("BREVO_API_KEY", "")
     if not key and not args.dry_run:
         sys.exit("BREVO_API_KEY manquant")
+    if not args.dry_run and not site_offer_ok():
+        return
     today = date.fromisoformat(args.today)
     track_path = os.path.join(args.dir, "prospection-suivi.csv")
     track = read(track_path)
