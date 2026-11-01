@@ -31,7 +31,7 @@ jobs:
       - name: Signals check
         run: |
           pip install -q -r requirements.txt >/dev/null 2>&1 || pip install -q httpx fastapi pydantic
-          timeout 280 python scripts/probe/signals_check.py > out/signals_check.txt 2>&1 || true
+          timeout 120 python scripts/probe/dainville_check.py > out/dainville_check.txt 2>&1 || true
       - name: Save
         run: |
           cd out && git init -q -b probe && git add -A
