@@ -132,7 +132,7 @@ def email(step: int, agence: str, ville: str, campaign: str) -> Dict[str, str]:
                          "L'abonnement SPREA démarre à <b>79 € TTC par mois</b>. Un seul mandat signé grâce à un DPE repéré "
                          "à temps le rembourse <b>plus de dix fois</b>.")
                 + P.format(f"Nous vous proposons <b>20 minutes en visio, sur le secteur de {a}</b> : vous voyez les "
-                           "propriétaires de vos rues et les immeubles de SCI qui risquent de se vendre, puis vous décidez. "
+                           "propriétaires de vos rues et les signaux de vente et les immeubles détenus par une société, puis vous décidez. "
                            "Répondez simplement avec un créneau.")
                 + BUTTON.format(href=demo, label="Voir la visite guidée (3 minutes) →"))
     else:
@@ -207,19 +207,21 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                 + P.format("SPREA est pensé pour les conseillers indépendants qui prospectent seuls. Tout est inclus :")
                 + group("Repérer les vendeurs", [
                     ("Prospection, votre tableau de bord", " : chaque matin, les biens à fort potentiel de votre secteur, chiffrés et classés par score"),
+                    ("Les signaux de vente", " : chaque logement noté de 0 à 100 selon sa probabilité d'être vendu, chaque point expliqué "
+                     "(DPE récent, location bloquée par le DPE, propriétaire de longue date, ventes voisines)"),
                     ("Les nouveaux DPE de vos communes, chaque matin", " : un DPE précède souvent une vente ou une mise en location"),
-                    ("Sur le même écran, tous les DPE E, F, G récents", ", avec le suivi de chaque adresse"),
-                    ("Les immeubles entiers détenus par une SCI", ", leur gérant, et les SCI en liquidation ou dissolution (BODACC)"),
+                    ("Les immeubles entiers détenus par une société", ", et son gérant : un seul interlocuteur pour plusieurs lots"),
                     ("Les propriétaires de votre secteur qui demandent à être rappelés", ", depuis l'estimateur gratuit de sprea.app")])
                 + group("Les contacter", [
+                    ("Un bien précis en une recherche", " : tapez son adresse, SPREA retrouve son DPE et prépare ses dossiers"),
                     ("Connaître le propriétaire d'un bien repéré", " : SPREA retrouve la parcelle au cadastre et prépare la demande officielle au service des impôts fonciers, prête à envoyer"),
                     ("Un courrier à votre nom en un clic", ", avec un QR code : le propriétaire découvre ce que vaut son bien et vous laisse ses coordonnées, avec son accord"),
-                    ("Les demandes de rappel", " réunies dans vos contacts, consentement horodaté")])
+                    ("La tournée de boîtes aux lettres", " : vos adresses dans le meilleur ordre, l'itinéraire à pied et tous les courriers imprimés dans l'ordre de passage")])
                 + group("Signer et vendre", [
-                    ("L'avis de valeur avant / après travaux", ", appuyé sur les ventes réelles du quartier"),
-                    ("Le simulateur de rénovation", " : travaux, aides, reste à charge, en direct devant le propriétaire"),
-                    ("Le dossier acheteur", " : la passoire qui ne part pas devient un projet chiffré"),
-                    ("Les PV d'AG lus par l'IA", ", la fiche de la copropriété, les artisans RGE et un rapport PDF à vos couleurs")])
+                    ("L'avis de valeur du propriétaire", " : le marché de sa commune et les ventes réelles autour de chez lui, pour décrocher le rendez-vous"),
+                    ("Le dossier acheteur", " : la passoire qui ne part pas devient un projet chiffré, travaux et aides compris"),
+                    ("Le simulateur de rénovation", " : travaux, aides, reste à charge, en direct devant le client"),
+                    ("Les PV d'AG lus par l'IA", ", la fiche de la copropriété et les artisans RGE")])
                 + BUTTON.format(href=demo, label="Voir tout en 3 minutes →")
                 + (P.format(f"Au passage, à {v} en ce moment : {m2}. "
                             f'<a href="{prices_link}" style="color:#8a6d2f; font-weight:bold">Le détail par nombre de pièces et l\'évolution sur 3 ans</a>.')
@@ -246,7 +248,7 @@ def advisor_email(step: int, prenom: str, ville: str, campaign: str, price: Opti
                 + P.format("Autrement dit, <b>votre part sur une seule vente</b> rentrée grâce à un DPE repéré à temps "
                            "couvre plusieurs années d'abonnement.")
                 + P.format("Nous vous proposons <b>20 minutes en visio, sur vos propres rues</b> : les DPE récents, les passoires, "
-                           "les immeubles de SCI qui risquent de se vendre. Ensuite, vous décidez. Répondez simplement avec un créneau.")
+                           "les signaux de vente et les immeubles détenus par une société. Ensuite, vous décidez. Répondez simplement avec un créneau.")
                 + BUTTON.format(href=f"{SITE}/tarifs?{utm}", label="Voir les formules →"))
     else:
         subject = "Nous ne vous relancerons plus"
