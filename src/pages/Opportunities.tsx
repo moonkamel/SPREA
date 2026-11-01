@@ -234,6 +234,10 @@ export function DossierDialog({ preview, audience, request, onClose }: {
     const [client, setClient] = useState('');
     const [price, setPrice] = useState('');
     const [profile, setProfile] = useState<InvestorProfile>('bailleur');
+    // What the agent saw and the data cannot see: state, a detached house, a view...
+    const [condition, setCondition] = useState('');
+    const [adjust, setAdjust] = useState('');
+    const [reason, setReason] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const t = TEXTS[audience];
@@ -246,7 +250,9 @@ export function DossierDialog({ preview, audience, request, onClose }: {
             const asked = Number(price.replace(/[\s €]/g, ''));
             const res = await authedFetch(request.url, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...request.body, audience, profile, client_name: client || null, purchase_price: asked > 0 ? asked : null }),
+                body: JSON.stringify({ ...request.body, audience, profile, client_name: client || null, purchase_price: asked > 0 ? asked : null,
+                    condition: condition || null, adjustment_pct: Math.max(-20, Math.min(20, Number(adjust.replace(',', '.')) || 0)),
+                    adjustment_reason: reason.trim() || null }),
             });
             if (!res.ok) throw new Error(await errorDetail(res, "Le dossier n'a pas pu être généré."));
             const blob = await res.blob();
@@ -305,6 +311,26 @@ export function DossierDialog({ preview, audience, request, onClose }: {
                         value={client} onChange={e => setClient(e.target.value)} aria-label={t.client} />
                 </div>
                 <p className="mt-1 text-xs text-faint">{t.priceHelp}</p>
+                {request.url === '/api/opportunities/dossier' && (
+                    <div className="mt-3 rounded-xl border border-line p-3">
+                        <p className="text-xs text-muted">Ce que vous savez du bien et que les données ne voient pas (facultatif)</p>
+                        <div className="mt-2 grid sm:grid-cols-[1fr_7rem] gap-2">
+                            <select value={condition} onChange={e => setCondition(e.target.value)} aria-label="État du bien"
+                                className="h-10 rounded-xl border border-line bg-raised px-3 text-sm text-ink">
+                                <option value="">État : non précisé</option>
+                                <option value="a_renover">À rénover (−12 %)</option>
+                                <option value="rafraichir">À rafraîchir (−5 %)</option>
+                                <option value="bon">Bon état (0 %)</option>
+                                <option value="refait">Refait à neuf (+6 %)</option>
+                            </select>
+                            <input className={fieldClass} inputMode="decimal" placeholder="± %" value={adjust} aria-label="Autre ajustement en %"
+                                onChange={e => setAdjust(e.target.value.replace(/[^0-9,.+-]/g, ''))} />
+                        </div>
+                        <input className={`${fieldClass} mt-2`} maxLength={80} value={reason} onChange={e => setReason(e.target.value)}
+                            placeholder="Motif de l'ajustement : maison individuelle, vue dégagée…" aria-label="Motif de l'ajustement" />
+                        <p className="mt-1 text-[11px] text-faint">Chaque ajustement figure dans le dossier, avec son motif. Entre −20 % et +20 %.</p>
+                    </div>
+                )}
                 <select value={profile} onChange={e => setProfile(e.target.value as InvestorProfile)} aria-label="Type d'acquéreur"
                     className="mt-3 h-10 w-full rounded-xl border border-line bg-raised px-3 text-sm text-ink">
                     {(Object.keys(PROFILE_LABELS) as InvestorProfile[]).map(p => <option key={p} value={p}>{PROFILE_LABELS[p]}</option>)}

@@ -15,7 +15,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Fetch
@@ -31,7 +31,7 @@ jobs:
       - name: Signals check
         run: |
           pip install -q -r requirements.txt >/dev/null 2>&1 || pip install -q httpx fastapi pydantic
-          for d in 62 59; do timeout 1300 python scripts/probe/valuation_backtest.py $d > out/backtest_$d.txt 2>&1 || true; done
+          timeout 280 python scripts/probe/signals_check.py > out/signals_check.txt 2>&1 || true
       - name: Save
         run: |
           cd out && git init -q -b probe && git add -A

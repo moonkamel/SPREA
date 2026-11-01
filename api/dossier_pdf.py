@@ -401,7 +401,10 @@ def owner(d: Dict[str, Any]) -> bytes:
     surface = d['surface']
     m2_now = v['price_m2_now']
     m2_market = market['price_per_m2']
-    adj = 100 * (m2_now - m2_market) / m2_market if m2_market else 0
+    agent = d.get('adjustments') or []
+    agent_factor = 1 + sum(a['pct'] for a in agent) / 100
+    # The class adjustment alone; the agent's own adjustments are listed apart
+    adj = 100 * (m2_now / agent_factor - m2_market) / m2_market if m2_market else 0
     kinds = 'maisons' if house else 'appartements'
     who = ' · '.join(text(x) for x in (agency.get('agent_name'), agency.get('agency_name')) if x)
 
@@ -503,6 +506,12 @@ def owner(d: Dict[str, Any]) -> bytes:
     if abs(adj) >= 0.5:
         build_rows.append(kv(f"Ajustement pour la classe {text(label)} (les ventes comparables mêlent toutes les classes)",
                              f"{'+' if adj > 0 else '−'}{NBSP}{fr(abs(adj))}{NBSP}%"))
+    if house and d.get('land'):
+        build_rows.append(kv('Terrain (cadastre)', f"{num(d['land'])}{NBSP}m²"
+                             + (" · comparé aux maisons de terrain proche" if market.get('land_matched') else "")))
+    for a in agent:
+        build_rows.append(kv(f"{text(a['label'])} (constaté par votre conseiller)",
+                             f"{'+' if a['pct'] > 0 else '−'}{NBSP}{fr(abs(a['pct']))}{NBSP}%"))
     build_rows += [kv('Prix au m² retenu pour votre bien', eur(m2_now)),
                    kv(f"× surface habitable ({f'{surface:g}'.replace('.', ',')}{NBSP}m²)", ''),
                    kv('<b>Valeur estimée</b>', f"<b>{eur(d['price'])}</b>")]
