@@ -268,3 +268,13 @@ def test_city_market_for_the_owner_file():
     city_market._files.clear()
     down = httpx.MockTransport(lambda r: httpx.Response(503))
     assert asyncio.run(city_market.city_market("62041", "Maison", transport=down)) is None
+
+
+def test_agent_adjustments_from_the_dossier_request():
+    from api.opportunities import DossierRequest, agent_adjustments
+    req = DossierRequest(number="2562E1801788C", audience="proprietaire", condition="refait",
+                         adjustment_pct=5, adjustment_reason="maison individuelle")
+    assert agent_adjustments(req) == [{"label": "État : refait à neuf", "pct": 6},
+                                      {"label": "Maison individuelle", "pct": 5}]
+    assert agent_adjustments(DossierRequest(number="2562E1801788C", condition="bon")) == []
+    assert agent_adjustments(DossierRequest(number="2562E1801788C", adjustment_pct=-3))[0]["label"] == "Appréciation du conseiller"

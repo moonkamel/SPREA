@@ -190,7 +190,8 @@ def compute(d: EstimateRequest, market: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.post("/estimate", dependencies=[Depends(estimate_limiter)])
 async def estimate(d: EstimateRequest):
-    market = await market_price(d.insee, "Maison" if d.kind == "maison" else "Appartement", d.lat, d.lon, d.surface)
+    market = await market_price(d.insee, "Maison" if d.kind == "maison" else "Appartement", d.lat, d.lon, d.surface,
+                                land=d.land)
     if not market:
         raise HTTPException(status_code=422, detail="Pas assez de ventes comparables connues autour de cette adresse pour estimer ce bien.")
     return compute(d, market)

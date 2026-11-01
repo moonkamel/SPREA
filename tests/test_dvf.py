@@ -149,3 +149,25 @@ def test_follows_redirects_and_skips_forbidden_years():
 
     res = asyncio.run(market_price("59350", "Maison", transport=httpx.MockTransport(handler), today=date(2026, 10, 8)))
     assert res["price_per_m2"] == 2500
+
+
+def test_land_of_a_sale_and_houses_on_a_comparable_plot():
+    def house(mid, price, land, lat=LILLE[0]):
+        r = row(mid, price, "Maison", 100, lat=lat)
+        r.update(id_parcelle=f"p{mid}", nature_culture="sols", surface_terrain=str(land))
+        garden = dict(r, type_local="", surface_reelle_bati="", nature_culture="jardins", surface_terrain="50")
+        return [r, garden]
+    rows = []
+    for i in range(16):
+        rows += house(f"s{i}", 150000, 150)      # terraced houses on small plots: 1 500 €/m2
+        rows += house(f"b{i}", 250000, 800)      # detached houses on large plots: 2 500 €/m2
+    sales = parse_sales(to_csv(rows), "Maison", 2025)
+    assert {s["land"] for s in sales} == {200, 850}
+    plain = dvf.summarize(sales, "Maison", LILLE[0], LILLE[1], 100)
+    big = dvf.summarize(sales, "Maison", LILLE[0], LILLE[1], 100, land=700)
+    small = dvf.summarize(sales, "Maison", LILLE[0], LILLE[1], 100, land=180)
+    assert big["price_per_m2"] == 2500 and big["land_matched"] and "de terrain comparable" in big["source"]
+    assert small["price_per_m2"] == 1500
+    assert not plain["land_matched"]
+    # Too few houses on a comparable plot: all of them
+    assert not dvf.summarize(sales, "Maison", LILLE[0], LILLE[1], 100, land=5000)["land_matched"]

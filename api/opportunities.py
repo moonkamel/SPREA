@@ -34,6 +34,7 @@ try:
     from api.city_market import city_market
     from api.ademe_client import AdemeConnector
     from api.auth import User, current_user
+    from api.cadastre import find_parcel
     from api.dvf import market_price
     from api.figures import cost_range
     from api.green_value import department, kind_of
@@ -51,6 +52,7 @@ except ImportError:
     from city_market import city_market
     from ademe_client import AdemeConnector
     from auth import User, current_user
+    from cadastre import find_parcel
     from dvf import market_price
     from figures import cost_range
     from green_value import department, kind_of
@@ -198,7 +200,8 @@ def risks(prop, sim: Dict[str, Any], v: Dict[str, Any], market: Dict[str, Any], 
 
 async def analyse(raw: Dict[str, Any], profile: str, today: Optional[date] = None,
                   dvf_transport: Optional[httpx.AsyncBaseTransport] = None,
-                  rent_transport: Optional[httpx.AsyncBaseTransport] = None) -> Optional[Dict[str, Any]]:
+                  rent_transport: Optional[httpx.AsyncBaseTransport] = None,
+                  land: Optional[float] = None, adjustments: Optional[List[Dict[str, Any]]] = None) -> Optional[Dict[str, Any]]:
     """One dwelling: programme, valuation and the investor's figures; None
     when it cannot be valued (no works, no comparable sales)."""
     today = today or date.today()
@@ -215,7 +218,7 @@ async def analyse(raw: Dict[str, Any], profile: str, today: Optional[date] = Non
     if not works:
         return None
     market = await market_price(prop.insee_code, prop.building_type, prop.latitude, prop.longitude, prop.shab,
-                                transport=dvf_transport)
+                                transport=dvf_transport, land=land)
     if not market:
         return None
     sp.price_per_m2, sp.price_source, sp.insee_code = market["price_per_m2"], market["source"], prop.insee_code
@@ -228,6 +231,7 @@ async def analyse(raw: Dict[str, Any], profile: str, today: Optional[date] = Non
         "insee": prop.insee_code, "postcode": prop.postcode, "city": prop.city,
         "building_type": prop.building_type, "surface": prop.shab, "period": prop.construction_period,
         "dpe_date": str(prop.date_etablissement)[:10] if prop.date_etablissement else None,
+        "land": land, "adjustments": adjustments or [],
     })
 
 
@@ -236,8 +240,9 @@ def assemble(simulation: SimulationInput, market: Dict[str, Any], rent: Optional
     """The dwelling's file once its programme, market and rent are known:
     from a scanned DPE or from the simulator (the works the agent chose)."""
     sim = simulate(simulation)
+    adjustments = info.get("adjustments") or []
     v = compute(sim, market, info["surface"], kind_of(info["building_type"]),
-                department(info.get("insee"), info.get("postcode")), 0)
+                department(info.get("insee"), info.get("postcode")), sum(a["pct"] for a in adjustments))
     if not v["works"] or not v["value_after"]:
         return None
     works = simulation.works
@@ -254,6 +259,8 @@ def assemble(simulation: SimulationInput, market: Dict[str, Any], rent: Optional
         "risks": risks(facts, sim, v, market, today),
         # Value after works bounded by twice the works (api/green_value.py)
         "gain_capped": bool(v.get("gain_capped")),
+        # What the agent saw (state, a detached house...) and the plot from the land registry
+        "adjustments": adjustments, "land": info.get("land"),
         "_v": v, "_sim": sim, "_market": market,
     }
 
@@ -478,12 +485,49 @@ async def write_thesis(o: Dict[str, Any], profile: str, audience: str = "investi
     return {**fallback_thesis(o, profile, audience), "source": "rules"}
 
 
+# State seen at the visit, same weights as the public estimator (api/estimate.py)
+CONDITIONS = {"a_renover": (-12, "À rénover"), "rafraichir": (-5, "Travaux de rafraîchissement"),
+              "bon": (0, "Bon état"), "refait": (6, "Refait à neuf")}
+
+
 class DossierRequest(BaseModel):
     number: str = Field(..., pattern=r"^[0-9A-Za-z]{10,16}$")
     profile: str = Field("marchand", pattern="^(marchand|bailleur)$")
     audience: str = Field("investisseur", pattern=AUDIENCE_PATTERN)
     purchase_price: Optional[float] = Field(None, ge=1000, le=20_000_000)
     client_name: Optional[str] = Field(None, max_length=100)
+    # What the agent knows and the data cannot see
+    condition: Optional[str] = Field(None, pattern="^(a_renover|rafraichir|bon|refait)$")
+    adjustment_pct: float = Field(0, ge=-20, le=20)
+    adjustment_reason: Optional[str] = Field(None, max_length=80)
+
+
+def agent_adjustments(data: DossierRequest) -> List[Dict[str, Any]]:
+    out = []
+    if data.condition and CONDITIONS[data.condition][0]:
+        pct, label = CONDITIONS[data.condition]
+        out.append({"label": f"État : {label.lower()}", "pct": pct})
+    if round(data.adjustment_pct, 1):
+        reason = (data.adjustment_reason or "").strip()
+        out.append({"label": reason[:1].upper() + reason[1:] if reason else "Appréciation du conseiller", "pct": round(data.adjustment_pct, 1)})
+    return out
+
+
+async def house_land(raw: Dict[str, Any]) -> Optional[float]:
+    """Plot of a house from the land registry, at its DPE's location; None
+    for a flat, or when the registry does not answer."""
+    if "maison" not in (raw.get("type_batiment") or "").lower():
+        return None
+    prop = AdemeConnector()._map_to_internal(raw)
+    if prop.latitude is None or prop.longitude is None:
+        return None
+    try:
+        found = await find_parcel(prop.latitude, prop.longitude)
+    except httpx.HTTPError as e:
+        logger.info(f"Parcel unavailable: {type(e).__name__}")
+        return None
+    area = (found or {}).get("contenance")
+    return float(area) if area else None
 
 
 async def dossier_data(data: DossierRequest) -> Dict[str, Any]:
@@ -493,7 +537,8 @@ async def dossier_data(data: DossierRequest) -> Dict[str, Any]:
         rows = res.json().get("results") or []
     if not rows:
         raise HTTPException(status_code=404, detail="DPE introuvable.")
-    o = await analyse(rows[0], data.profile)
+    land = await house_land(rows[0])
+    o = await analyse(rows[0], data.profile, land=land, adjustments=agent_adjustments(data))
     if not o:
         raise HTTPException(status_code=422, detail="Ce logement ne peut pas être chiffré (pas de travaux ou pas de ventes comparables).")
     if data.purchase_price:
