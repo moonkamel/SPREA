@@ -60,3 +60,26 @@ def test_paused_domains():
     assert send_brevo.paused("Jean.Dupont@IADFRANCE.fr ")
     assert not send_brevo.paused("contact@agence-du-nord.fr")
     assert not send_brevo.paused("marie.durand@safti.fr")
+
+
+def test_test_batch_cap_per_network(tmp_path, monkeypatch):
+    import csv as _csv
+    cols = send_brevo.TRACK_COLS
+    with open(tmp_path / "prospection-suivi.csv", "w", newline="") as f:
+        w = _csv.DictWriter(f, fieldnames=cols, delimiter=";")
+        w.writeheader()
+        w.writerow({"email": "deja@safti.fr", "etape": "1", "dernier_envoi": "2026-11-02", "statut": "en cours"})
+    with open(tmp_path / "prospects_a_contacter.csv", "w", newline="") as f:
+        w = _csv.DictWriter(f, fieldnames=["siren", "agence", "ville", "email", "source_url"], delimiter=";")
+        w.writeheader()
+        for i in range(60):
+            w.writerow({"agence": "Conseiller", "ville": "Lille", "email": f"c{i}@safti.fr"})
+        w.writerow({"agence": "Agence", "ville": "Lille", "email": "contact@agence.fr"})
+    monkeypatch.setattr(send_brevo, "DOMAIN_DAILY_CAP", {"safti.fr": 10})
+    monkeypatch.delenv("BREVO_API_KEY", raising=False)
+    monkeypatch.setattr("sys.argv", ["x", "--dir", str(tmp_path), "--quota", "300", "--dry-run", "--today", "2026-11-02"])
+    out = []
+    monkeypatch.setattr("builtins.print", lambda *a, **k: out.append(" ".join(map(str, a))))
+    send_brevo.main()
+    sent = [l for l in out if l.startswith("[essai]")]
+    assert sum("@safti.fr" in l for l in sent) == 9 and any("contact@agence.fr" in l for l in sent)

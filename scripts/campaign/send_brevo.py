@@ -39,6 +39,11 @@ FOLLOW_UP_DAYS = 7
 PAUSED_DOMAINS = {"iadfrance.fr"}
 
 
+# New contacts a day at most for a network never written to: a test batch
+# whose opens are checked before writing to the rest
+DOMAIN_DAILY_CAP = {"safti.fr": 50}
+
+
 def paused(email: str) -> bool:
     return email.strip().lower().rsplit("@", 1)[-1] in PAUSED_DOMAINS
 SMALL = {"de", "du", "des", "la", "le", "les", "et", "d", "l", "en", "sur", "lez", "à", "au", "aux", "par"}
@@ -402,6 +407,21 @@ def main():
         if e and e not in known and e not in seen and not paused(e):
             seen.add(e)
             fresh.append(p)
+    # Test batches: today's sends to a capped network count against its cap
+    capped: Dict[str, int] = {}
+    for t in track:
+        dom = t["email"].strip().lower().rsplit("@", 1)[-1]
+        if dom in DOMAIN_DAILY_CAP and t["dernier_envoi"] == today.isoformat():
+            capped[dom] = capped.get(dom, 0) + 1
+    kept = []
+    for p in fresh:
+        dom = p["email"].strip().lower().rsplit("@", 1)[-1]
+        if dom in DOMAIN_DAILY_CAP:
+            if capped.get(dom, 0) >= DOMAIN_DAILY_CAP[dom]:
+                continue
+            capped[dom] = capped.get(dom, 0) + 1
+        kept.append(p)
+    fresh = kept
     plan = [("relance", t) for t in due] + [("nouveau", p) for p in fresh]
     # Never above what Brevo sends today: what is already queued and what was
     # sent earlier today count against the daily cap
