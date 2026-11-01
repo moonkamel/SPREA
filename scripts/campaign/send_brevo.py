@@ -322,11 +322,12 @@ def backlog(track: List[Dict], today: date, quota: int) -> int:
 
 
 # Brevo events meaning the email left the queue
+# ("deferred" is not one: an email held in the queue above the daily cap is deferred)
 GONE = {"delivered", "softBounces", "hardBounces", "blocked", "invalid", "error", "spam", "unsubscribed",
-        "opened", "uniqueOpened", "proxyOpen", "uniqueProxyOpen", "clicks", "deferred"}
+        "opened", "uniqueOpened", "proxyOpen", "uniqueProxyOpen", "clicks"}
 
 
-def still_queued(key: str, track: List[Dict], today: date, days: int = 3) -> Optional[List[Dict]]:
+def still_queued(key: str, track: List[Dict], today: date, days: int = 7) -> Optional[List[Dict]]:
     """Rows sent in the last days whose email has no event of delivery yet at
     Brevo: still in its queue. Read from the events of Brevo, so exact, unlike
     backlog(); None when they cannot be read."""
