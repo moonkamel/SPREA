@@ -36,7 +36,7 @@ def queued_messages(key: str, email: str, since: date):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True, help="checkout of the campaign-suivi branch")
-    ap.add_argument("--days", type=int, default=3)
+    ap.add_argument("--days", type=int, default=7)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     key = os.getenv("BREVO_API_KEY", "")
