@@ -33,6 +33,8 @@ TRIAL_CHECKOUT_MESSAGE = (
     "ajoutez un moyen de paiement avant la fin de l'essai pour continuer, avec un engagement de 12 mois "
     "à partir de la fin de l'essai. Sans moyen de paiement, l'essai s'arrête de lui-même."
 )
+# How long a plan's price id is kept before asking Stripe again
+PLAN_TTL = 300
 # First subscription: free trial, no card asked
 TRIAL_DAYS = 14
 
@@ -120,7 +122,9 @@ class Billing:
         self.price_pro = price_pro
         self.app_url = app_url.rstrip("/")
         self._price_labels: Dict[str, str] = {}
-        self._plan_prices: Dict[str, str] = {}
+        # Plan -> (time read, price id): a price changed in Stripe (lookup key
+        # moved to a new price) is seen within PLAN_TTL, without a redeploy
+        self._plan_prices: Dict[str, tuple] = {}
         self._vat_rate: Optional[str] = None
         self._committed_portal: Optional[str] = None
         self._founders: Optional[tuple] = None
@@ -139,19 +143,23 @@ class Billing:
     async def plan_price(self, plan: str) -> str:
         """Price id of a plan, from its lookup key. Only solo_monthly falls back
         to STRIPE_PRICE_PRO: another plan must never be billed at that price."""
-        if plan not in self._plan_prices:
+        cached = self._plan_prices.get(plan)
+        if not cached or time.time() - cached[0] > PLAN_TTL:
             try:
                 prices = as_dict(await self.client.v1.prices.list_async(params={"lookup_keys": [plan], "active": True}))
                 found = prices.get("data") or []
             except Exception as e:
                 logger.error(f"Cannot load Stripe plan {plan}: {e}")
+                # Stripe not answering: keep the price already known
+                if cached:
+                    return cached[1]
                 found = []
             if not found:
                 if plan == "solo_monthly":
                     return self.price_pro
                 raise PlanUnavailable(plan)
-            self._plan_prices[plan] = found[0]["id"]
-        return self._plan_prices[plan]
+            self._plan_prices[plan] = (time.time(), found[0]["id"])
+        return self._plan_prices[plan][1]
 
     async def founder_price(self) -> Optional[str]:
         """Founder price id, None when it is not set up in Stripe."""

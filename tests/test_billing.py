@@ -113,3 +113,22 @@ def test_a_trial_commits_to_nothing_and_the_twelve_months_start_after_it():
     assert not committed({**sub, "status": "trialing"}, now=start + 86400)
     end = commitment_end({**sub, "status": "active"})
     assert end > trial_end + 360 * 86400 and committed({**sub, "status": "active"}, now=trial_end + 86400)
+
+
+def test_a_plan_price_moved_in_stripe_is_seen_after_the_cache_expires(monkeypatch):
+    import asyncio
+
+    from api import billing as b
+    bill = b.Billing("sk_test_x", "whsec", "price_r", "price_p", "https://sprea.app")
+    current = {"id": "price_old"}
+
+    async def listing(params):
+        return {"data": [dict(current)]}
+    monkeypatch.setattr(bill.client.v1.prices, "list_async", listing)
+    now = [1000.0]
+    monkeypatch.setattr(b.time, "time", lambda: now[0])
+    assert asyncio.run(bill.plan_price("solo_yearly")) == "price_old"
+    current["id"] = "price_new"
+    assert asyncio.run(bill.plan_price("solo_yearly")) == "price_old"
+    now[0] += b.PLAN_TTL + 1
+    assert asyncio.run(bill.plan_price("solo_yearly")) == "price_new"
