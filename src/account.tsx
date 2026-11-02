@@ -50,6 +50,8 @@ interface Me {
     subscription_current_period_end: string | null;
     commitment_end: string | null;
     has_billing_account: boolean;
+    // Access offered by SPREA (founder, partner), without a subscription
+    free_access?: boolean;
     // SPREA's own team: the /admin dashboard
     is_admin?: boolean;
     reports: ReportSummary[];
@@ -672,7 +674,12 @@ function AccountModal({ me, onClose, onPassword, onDownload, onSubscribe, onPort
                             </>
                         ) : me.is_pro ? (
                             <>
-                                {me.subscription_status === 'trialing' ? (
+                                {me.free_access && me.subscription_status !== 'active' && me.subscription_status !== 'trialing' ? (
+                                    <>
+                                        <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Accès offert</p>
+                                        <p className="text-sm text-muted mt-1">Tous les outils inclus, sans abonnement.</p>
+                                    </>
+                                ) : me.subscription_status === 'trialing' ? (
                                     <>
                                         <p className="text-ink font-medium flex items-center gap-2"><Sparkles size={16} className="text-brass" /> Essai gratuit en cours</p>
                                         <p className="text-sm text-muted mt-1">

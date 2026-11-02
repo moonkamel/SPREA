@@ -100,7 +100,9 @@ def is_shared_account(email: Optional[str]) -> bool:
 
 
 def is_pro(profile: Optional[Dict[str, Any]]) -> bool:
-    return bool(profile) and (profile.get("subscription_status") in PRO_ACTIVE_STATUSES or org_active(profile))
+    """A running subscription, the agency's, or access offered by SPREA."""
+    return bool(profile) and (profile.get("subscription_status") in PRO_ACTIVE_STATUSES or org_active(profile)
+                              or bool(profile.get("free_access")))
 
 
 def team_summary(profile: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -382,6 +384,7 @@ async def me(user: User = Depends(current_user), store: SupabaseStore = Depends(
     return {
         "email": user.email,
         "is_pro": is_pro(profile),
+        "free_access": bool(profile.get("free_access")),
         "team": team_summary(profile),
         "subscription_status": profile.get("subscription_status"),
         "subscription_current_period_end": profile.get("subscription_current_period_end"),
