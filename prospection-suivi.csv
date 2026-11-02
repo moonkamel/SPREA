@@ -1,9 +1,9 @@
 siren;agence;ville;email;etape;dernier_envoi;statut;source_url
-990406605;DELEU IMMOBILIER;RONCQ;roncq@deleuimmobilier.com;1;2026-10-26;en cours;https://deleuimmobilier.com/fr/deleu-roncq
-989371299;PULP IMMOBILIER;SECLIN;contact@pulp-immobilier.fr;1;2026-10-26;en cours;https://www.pulp-immobilier.fr/agence-immobiliere-seclin
+990406605;DELEU IMMOBILIER;RONCQ;roncq@deleuimmobilier.com;2;2026-11-02;en cours;https://deleuimmobilier.com/fr/deleu-roncq
+989371299;PULP IMMOBILIER;SECLIN;contact@pulp-immobilier.fr;2;2026-11-02;en cours;https://www.pulp-immobilier.fr/agence-immobiliere-seclin
 943987669;PULP IMMOBILIER;HALLUIN;contact@pulp-immobilier.fr;1;2026-10-26;doublon (même adresse que Seclin);https://www.pulp-immobilier.fr/agence-immobiliere-halluin
-989240262;QG IMMO;ROUBAIX;contact@qgimmo.fr;1;2026-10-26;en cours;https://www.qgimmo.fr/contact
-940769896;DELANNOY IMMOBILIER;LILLE;contact@delannoy-immobilier.fr;1;2026-10-26;en cours;https://www.delannoy-immobilier.fr/
+989240262;QG IMMO;ROUBAIX;contact@qgimmo.fr;2;2026-11-02;en cours;https://www.qgimmo.fr/contact
+940769896;DELANNOY IMMOBILIER;LILLE;contact@delannoy-immobilier.fr;2;2026-11-02;en cours;https://www.delannoy-immobilier.fr/
 938077468;QUADRA IMMOBILIER D'ENTREPRISE;BONDUES;contact@quadra.immo;1;2026-10-27;répondu;https://quadra.immo/mentions-legales/
 932516339;OVALIE IMMO;TOURCOING;agence.ovalie.immo@gmail.com;1;2026-10-27;en cours;https://quoideneuf-ici.com/agence/ovalieimmo/
 931029797;MC IMMOBILIER;LA BASSEE;agence@mcimmobilier5962.fr;1;2026-10-27;en cours;https://www.mcimmobilier5962.fr/
@@ -1269,3 +1269,53 @@ siren;agence;ville;email;etape;dernier_envoi;statut;source_url
 ;Isabelle Giraudet;Sanary-sur-Mer;isabelle.giraudet@iadfrance.fr;1;2026-10-29;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.giraudet
 ;Isabelle Hodin;Fréjus;isabelle.hodin@iadfrance.fr;1;2026-10-29;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.hodin
 ;Isabelle Ilo;Garéoult;isabelle.ilo@iadfrance.fr;1;2026-10-29;en cours;https://www.iadfrance.fr/conseiller-immobilier/isabelle.ilo
+;Abdel Nifaoui;Paris 8E Arrondissement;abdel.nifaoui@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdel-nifaoui
+;Abdelkader Geddi;Champs-Sur-Marne;abdelkader.geddi@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdelkader-geddi
+;Abdelkader Sebaa;Asnieres-Sur-Seine;abdelkader.sebaa@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdelkader-sebaa
+;Abdelkader Tahar;Pont-De-Cheruy;abdelkader.tahar@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdelkader-tahar
+;Abdellah Jaber;Drancy;abdellah.jaber@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdellah-jaber
+;Abdesselam Alami;Amberieu-En-Bugey;abdesselam.alami@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abdesselam-alami
+;Abel Medjouba;Marseille 6E Arrondissement;abel.medjouba@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abel-medjouba
+;Aboubakar Kéita;Colombes;aboubakar.keita@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/aboubakar-keita
+;Abygaïl Morales;Kourou;abygail.morales@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/abygail-morales
+;Adam Sarkissian;Champigneulles;adam.sarkissian@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adam-sarkissian
+;Adelaida Mezzadri;Nice;adelaida.mezzadri@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adelaida-mezzadri
+;Adeline Aignan;Mios;adeline.aignan@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-aignan
+;Adeline Chalumeau;Evron;adeline.chalumeau@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-chalumeau
+;Adeline Chardonnet;Annecy;adeline.chardonnet@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-chardonnet
+;Adeline Clep;Renty;adeline.clep@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-clep
+;Adeline Delabarre;Bayeux;adeline.delabarre@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-delabarre
+;Adeline Demacon;Montmedy;adeline.demacon@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-demacon
+;Adeline Masquelez;Coulonge;adeline.masquelez@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-masquelez
+;Adeline Mazeron;Toulon;adeline.mazeron@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-mazeron
+;Adeline Ménissier;Digne-Les-Bains;adeline.menissier@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-menissier
+;Adeline Prevel;Fismes;adeline.prevel@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-prevel
+;Adeline Rosselot;La Couture-Boussey;adeline.rosselot@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-rosselot
+;Adeline Stoltz;Arches;adeline.stoltz@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adeline-stoltz
+;Adrian Delachat;Trans-En-Provence;adrian.delachat@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrian-delachat
+;Adrian Duminica;Meudon;adrian.duminica@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrian-duminica
+;Adrian Glucklich;Querqueville;adrian.glucklich@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrian-glucklich
+;Adrian Pachère;Vensac;adrian.pachere@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrian-pachere
+;Adrien Bertel;Evry;adrien.bertel@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-bertel
+;Adrien Crespin;Vallons De L Erdre;adrien.crespin@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-crespin
+;Adrien Ersent;Marquion;adrien.ersent@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-ersent
+;Adrien Fabre;Bessieres;adrien.fabre@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-fabre
+;Adrien Fleuriau;Fontenay-Le-Comte;adrien.fleuriau@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-fleuriau
+;Adrien Gaulupeau;Faverolles;adrien.gaulupeau@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-gaulupeau
+;Adrien Giraud;La Rochelle;adrien.giraud@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-giraud
+;Adrien Miravitllas;Luc-Sur-Orbieu;adrien.miravitllas@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-miravitllas
+;Adrien Noel;Landres;adrien.noel@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-noel
+;Adrien Oustry;Agde;adrien.oustry@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-oustry
+;Adrien Pluquet;Saucats;adrien.pluquet@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-pluquet
+;Adrien Puron;Lorient;adrien.puron@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-puron
+;Adrien Recoules;Saint-Laurent-Des-Bois;adrien.recoules@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-recoules
+;Adrien Rey;Agen;adrien.rey@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/adrien-rey
+;Agatha Baggenstos;Fargues;agatha.baggenstos@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agatha-baggenstos
+;Agathe Talon;Saint-Vallier;agathe.talon@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agathe-talon
+;Agnès Bourgon;Toulouse;agnes.bourgon@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-bourgon
+;Agnès Dipoko;Creteil;agnes.dipoko@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-dipoko
+;Agnès Galloy;Versailles;agnes.galloy@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-galloy
+;Agnès Garcia;Harnes;agnes.garcia@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-garcia
+;Agnès Georgelin;Rouge;agnes.georgelin@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-georgelin
+;Agnès Korn;Ouilly-Le-Vicomte;agnes.korn@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-korn
+;Agnès Rouxel;Orvault;agnes.rouxel@safti.fr;1;2026-11-02;en cours;https://www.safti.fr/votre-conseiller-safti/agnes-rouxel
