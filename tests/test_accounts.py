@@ -913,3 +913,8 @@ def test_billing_moves_an_early_cancellation_to_the_end_of_the_commitment():
     asyncio.run(billing.keep_commitment({**sub, "cancel_at": add_months(start, 12)}))
     asyncio.run(billing.keep_commitment({**sub, "start_date": start - 400 * 86400, "cancel_at_period_end": True}))
     assert len(calls) == 1
+
+
+def test_free_access_without_subscription():
+    assert accounts.is_pro({"id": "u", "free_access": True})
+    assert not accounts.is_pro({"id": "u", "free_access": False, "subscription_status": "canceled"})
