@@ -209,7 +209,7 @@ pages.push(page({
     body: `${nav}
 <h1>Tarifs SPREA</h1>
 ${ul([
-        '<strong>Solo</strong> : 49 € TTC par mois ou 490 € TTC par an, pour un agent ou un mandataire indépendant, après 14 jours d'essai gratuit ; prix fondateur de 39 € par mois pour les 50 premiers abonnés.',
+        "<strong>Solo</strong> : 49 € TTC par mois ou 490 € TTC par an, pour un agent ou un mandataire indépendant, après 14 jours d'essai gratuit ; prix fondateur de 39 € par mois pour les 50 premiers abonnés.",
         "<strong>Agence</strong> : 39 € TTC par agent et par mois, à partir de 2 agents, contacts et alertes partagés dans l'agence.",
         '<strong>Réseau</strong> : sur devis, à partir de 25 € TTC par agent et par mois, console du siège.',
     ])}
