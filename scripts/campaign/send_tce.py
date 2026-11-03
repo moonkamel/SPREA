@@ -34,7 +34,7 @@ from typing import Dict, List, Optional
 sys.path.insert(0, os.path.dirname(__file__))
 from send_brevo import api, credits_left, nice  # noqa: E402
 
-SENDER = {"name": "Tarik Lakel - SPREA", "email": "contact@sprea.app"}
+SENDER = {"name": "SPREA", "email": "contact@sprea.app"}
 REPLY_TO = {"email": "contact@sprea.app", "name": "Tarik Lakel"}
 TRACK = "envois_tce.csv"
 TRACK_COLS = ["email", "entreprise", "immeuble", "lien", "envoi", "statut"]
