@@ -35,7 +35,7 @@ try:
     from api.immeuble import ademe_rows
     from api.monopro_report import build_dossier, unit_surface
     from api.prospection import parse_bbox
-    from api.ratelimit import ai_limiter, search_limiter
+    from api.ratelimit import ai_limiter, search_limiter, share_limiter
     from api.store import SupabaseStore
 except ImportError:
     import claude
@@ -47,7 +47,7 @@ except ImportError:
     from immeuble import ademe_rows
     from monopro_report import build_dossier, unit_surface
     from prospection import parse_bbox
-    from ratelimit import ai_limiter, search_limiter
+    from ratelimit import ai_limiter, search_limiter, share_limiter
     from store import SupabaseStore
 
 logger = logging.getLogger(__name__)
@@ -202,7 +202,7 @@ async def monopro_dossier(building_id: str, user: User = Depends(current_user), 
     return await dossier_response(building, agency, store)
 
 
-@router.get("/monopro/{building_id}/dossier/partage", dependencies=[Depends(ai_limiter)])
+@router.get("/monopro/{building_id}/dossier/partage", dependencies=[Depends(share_limiter)])
 async def monopro_shared_dossier(building_id: str, t: str = Query("", max_length=64),
                                  store: SupabaseStore = Depends(store_dep)):
     """The same dossier, without an account, for a link SPREA signed; in SPREA's name."""

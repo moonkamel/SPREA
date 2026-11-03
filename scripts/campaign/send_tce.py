@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
@@ -225,7 +226,7 @@ def pdf_check(link: str, cache: Dict[str, Optional[bool]]) -> Optional[bool]:
         return cache[link]
     import pdfplumber
     result = None
-    for attempt in range(1):  # a dossier the site cannot make within a minute is skipped
+    for attempt in range(4):
         try:
             with urllib.request.urlopen(link, timeout=60) as res:
                 raw = res.read()
@@ -234,8 +235,16 @@ def pdf_check(link: str, cache: Dict[str, Optional[bool]]) -> Optional[bool]:
                     txt = " ".join(p.extract_text() or "" for p in pdf.pages)
                 result = "après rénovation" in txt and "Décote liée au DPE" in txt
             break
-        except Exception as e:  # noqa: BLE001
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < 3:  # the site's limit per address: wait, never skip the firm for it
+                print("Site saturé (429) : pause de 2 minutes", flush=True)
+                time.sleep(120)
+                continue
             print(f"Dossier illisible ({e}) : {link}", flush=True)
+            break
+        except Exception as e:  # noqa: BLE001  a dossier the site cannot make within a minute is skipped
+            print(f"Dossier illisible ({e}) : {link}", flush=True)
+            break
     cache[link] = result
     return result
 
