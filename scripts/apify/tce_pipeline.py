@@ -60,7 +60,7 @@ START_FEE = 0.003           # démarrage d'un run (marge)
 
 # Plafonds de lignes par étape : ~60 000 entreprises RGE en France, dont environ
 # 8 % dans les Hauts-de-France ; le reste est calibré pour tenir sous 15 $.
-CAPS = {"rge": 6000, "companies_naf": 500, "companies_sirens": 700, "directors": 600, "capeb": 150}
+CAPS = {"rge": 6000, "companies_naf": 500, "companies_sirens": 700, "directors": 600, "directors_more": 600, "capeb": 150}
 
 # Corps de métier : chaque domaine RGE du registre ADEME rattaché à un lot.
 # Les études et l'architecture ne sont pas des travaux : ignorées.
@@ -244,7 +244,72 @@ def score_proximity(count: int) -> int:
 
 # --- Assemblage ------------------------------------------------------------
 
-COLUMNS = ["Entreprise_Nom", "Entreprise_Type", "Dirigeant_Nom", "Email", "Téléphone", "Adresse", "CodePostal", "SIRET",
+# --- Qualité des adresses : à qui écrire en priorité --------------------------
+
+FREE_MAIL = {"gmail.com", "orange.fr", "wanadoo.fr", "hotmail.fr", "hotmail.com", "free.fr", "sfr.fr", "laposte.net",
+             "outlook.fr", "outlook.com", "yahoo.fr", "yahoo.com", "live.fr", "icloud.com", "aol.com", "neuf.fr",
+             "bbox.fr", "numericable.fr"}
+# Services internes : un mail de prospection n'y est pas lu par la direction
+INTERNAL = ("compta", "facturation", "facture", "rh", "recrutement", "emploi", "job", "candidature", "qualification",
+            "qualite", "noreply", "no-reply", "nepasrepondre", "sav", "paie", "juridique", "litige")
+GENERIC = ("contact", "info", "accueil", "secretariat", "secretaire", "bureau", "administratif", "administration",
+           "devis", "commercial", "agence", "direction", "mail", "entreprise", "sarl", "sas", "office", "hello")
+# Ordre de préférence quand une entreprise a plusieurs adresses
+EMAIL_RANK = {"Nominatif (dirigeant)": 0, "Nominatif": 1, "Générique": 2, "Messagerie perso": 3,
+              "Domaine à vérifier": 4, "À éviter (service interne)": 5}
+
+
+def domain_of(url: str) -> str:
+    host = urllib.parse.urlsplit(url if "//" in url else "//" + url).hostname or ""
+    return host[4:] if host.startswith("www.") else host
+
+
+def email_status(email: str, director: str = "", company: str = "", website: str = "") -> str:
+    """Nominatif (dirigeant), Nominatif, Générique, Messagerie perso, Domaine à vérifier ou À éviter."""
+    local, _, domain = email.strip().lower().partition("@")
+    if not local or not domain:
+        return ""
+    flat = plain(local).replace(".", " ").replace("_", " ").replace("-", " ")
+    words = [w.rstrip("0123456789") for w in flat.split()]
+
+    def has(prefixes, among):
+        # « rh » seul ; « compta », « compta2 », « comptabilite » par le début du mot
+        return any(w == x or (len(x) > 3 and w.startswith(x)) for w in among for x in prefixes)
+    if has(INTERNAL, words):
+        return "À éviter (service interne)"
+    names = [n for n in plain(director).split() if len(n) > 2]
+    if names and any(n in flat for n in names):
+        return "Nominatif (dirigeant)"
+    if domain in FREE_MAIL:
+        return "Messagerie perso"
+    site = domain_of(website) if website else ""
+    tokens = [t for t in plain(company).replace("'", " ").split() if len(t) > 3]
+    if site and site != domain and not domain.endswith("." + site) and not any(t in domain for t in tokens):
+        return "Domaine à vérifier"
+    if not site and tokens and not any(t in domain.replace("-", "") for t in tokens):
+        return "Domaine à vérifier"
+    if has(GENERIC, words[:1]):
+        return "Générique"
+    # Ni service ni boîte générique : une personne (prenom.nom, pnom, prénom seul)
+    return "Nominatif"
+
+
+def best_email(candidates: List[str], director: str, company: str, website: str) -> Tuple[str, str]:
+    """La meilleure adresse parmi celles des différentes sources, et son statut."""
+    seen, scored = set(), []
+    for e in candidates:
+        e = (e or "").strip().lower()
+        if e and "@" in e and e not in seen:
+            seen.add(e)
+            st = email_status(e, director, company, website)
+            scored.append((EMAIL_RANK.get(st, 9), len(scored), e, st))
+    if not scored:
+        return "", ""
+    _, _, e, st = min(scored)
+    return e, st
+
+
+COLUMNS = ["Entreprise_Nom", "Entreprise_Type", "Dirigeant_Nom", "Email", "Email_Statut", "Téléphone", "Adresse", "CodePostal", "SIRET",
            "Codes_NAF", "Qualifications_RGE", "Nb_Corps_Metier", "Effectif", "CA", "Score_Multi_Competence",
            "Score_Capacite_Chantier", "Score_Proximite", "Score_Final", "Eco_Artisan_CAPEB"]
 
@@ -274,13 +339,19 @@ def build_rows(rge_tce: Dict[str, Dict], companies: Dict[str, Dict], directors: 
         emp = c.get("employees")
         quals = sorted({q.get("certificate") or q.get("name") or q.get("workDomain") or ""
                         for q in r.get("qualifications") or [] if isinstance(q, dict)} - {""}) or r.get("certificates") or []
+        name = first(r.get("companyName"), c.get("name"), c.get("legalName"), d.get("companyName"))
+        director = first(d.get("directorName"),
+                         " ".join(x for x in (d.get("directorFirstName"), d.get("directorLastName")) if x),
+                         k.get("contactName"))
+        email, status = best_email([d.get("email"), r.get("email"), c.get("primaryEmail"), *(c.get("emails") or []),
+                                    k.get("email")], director, name,
+                                   first(r.get("website"), c.get("website"), d.get("website"), k.get("website")))
         rows.append({
-            "Entreprise_Nom": first(r.get("companyName"), c.get("name"), c.get("legalName"), d.get("companyName")),
+            "Entreprise_Nom": name,
             "Entreprise_Type": "Entreprise Générale" if naf in GENERAL_NAF else "TCE",
-            "Dirigeant_Nom": first(d.get("directorName"),
-                                   " ".join(x for x in (d.get("directorFirstName"), d.get("directorLastName")) if x),
-                                   k.get("contactName")),
-            "Email": first(d.get("email"), r.get("email"), c.get("primaryEmail"), k.get("email")),
+            "Dirigeant_Nom": director,
+            "Email": email,
+            "Email_Statut": status,
             "Téléphone": first(d.get("phone"), r.get("phone"), (c.get("phones") or [None])[0], k.get("phone")),
             "Adresse": first(r.get("fullAddress"), r.get("streetAddress"), d.get("address"), k.get("address")),
             "CodePostal": postcode,
@@ -362,6 +433,12 @@ def main(argv=None):
     directors = by_siren(run_actor("corent1robert/rge-siren-enrich", {
         "mode": "sirets", "sirets": sirets, "rowDepth": "directors", "howMany": "all",
     }, token, PRICES["directors"], len(sirets), args.out, "2_dirigeants", budget))
+    # Suite : les entreprises retenues que le premier passage n'a pas couvertes
+    more = [first(rge_tce.get(s, {}).get("siret"), s) for s in targets if s not in directors][:CAPS["directors_more"]]
+    if more:
+        directors.update({s: d for s, d in by_siren(run_actor("corent1robert/rge-siren-enrich", {
+            "mode": "sirets", "sirets": more, "rowDepth": "directors", "howMany": "all",
+        }, token, PRICES["directors"], len(more), args.out, "2_dirigeants_suite", budget)).items() if s not in directors})
     capeb = by_siren(run_actor("corent1robert/capeb-scraper", {
         "filterActivities": ["entreprise générale"], "departments": DEPARTMENTS, "collectEmails": True,
         "maxItems": CAPS["capeb"],

@@ -83,3 +83,18 @@ def test_budget_never_exceeded():
         assert False
     except RuntimeError:
         pass
+
+
+def test_email_status():
+    st = tce.email_status
+    assert st("fredericdescamps@live.fr", "Frédéric Descamps", "HOMZA SERVICES") == "Nominatif (dirigeant)"
+    assert st("nadegeguiot@courtinsas.fr", "Bernard Filleur", "COURTIN") == "Nominatif"
+    assert st("contact@nordbaticonstruction.com", "", "NORD BATI CONSTRUCTION") == "Générique"
+    assert st("servais.compta2@groupe-sfd.com", "", "ETABLISSEMENT SERVAIS") == "À éviter (service interne)"
+    assert st("rh@lepretre-energies.fr", "", "LEPRETRE ENERGIES") == "À éviter (service interne)"
+    assert st("rhone.dupont@bati.fr", "", "BATI") == "Nominatif"
+    assert st("maxime.leveaux@spiebatignolles.fr", "", "FARASSE FLUIDES") == "Domaine à vérifier"
+    assert st("hdf-chauffage@orange.fr", "", "HDF CHAUFFAGE") == "Messagerie perso"
+    # The best address wins over the first one found
+    assert tce.best_email(["comptabilite@carobat.fr", "julien.guillet@carobat.fr"], "Julien Guillet", "CARO BAT", "")[0] \
+        == "julien.guillet@carobat.fr"
