@@ -253,10 +253,16 @@ def label_text(d: Dict[str, Any]) -> Optional[str]:
     if dpe.get("label"):
         return f"classé {dpe['label']}" + (f" (DPE collectif du {dpe['date'][8:10]}/{dpe['date'][5:7]}/{dpe['date'][:4]})"
                                            if dpe.get("date") else "")
-    present = [l for l in "ABCDEFG" if d["units"]["total"][l]]
+    units = d["units"]
+    present = [l for l in "ABCDEFG" if units["known"][l]]
     if not present:
         return f"classé {d['label']}" if d.get("label") else None
     span = present[0] if len(present) == 1 else f"de {present[0]} à {present[-1]}"
+    n, nb = units["n_known"], d["building"]["nb_log"]
+    if n < nb:
+        # Only some dwellings have a DPE: say so, the others are an estimate
+        return (f"{n} logement{'s' if n > 1 else ''} diagnostiqué{'s' if n > 1 else ''} sur {nb} "
+                f"(classé{'s' if n > 1 else ''} {span}), pas de DPE collectif")
     return f"logements classés {span}, pas de DPE collectif"
 
 
@@ -271,7 +277,12 @@ def win_arguments(d: Dict[str, Any]) -> List[str]:
         out.append(f"Après rénovation (classe C), sa valeur lot par lot passerait d'environ {eur(v['lots_now'])} à "
                    f"{eur(v['after_works'])}, pour {eur_range(w['low'], w['high'])} de travaux.")
     if d["units"]["total"]["F"] + d["units"]["total"]["G"]:
-        out.append("Les travaux remettent les logements F et G sur le marché locatif et débloquent la révision des loyers.")
+        if d["units"]["total"]["G"]:
+            out.append("Les travaux remettent les logements G sur le marché locatif, évitent aux logements F d'en sortir en "
+                       "2028 et débloquent la révision des loyers.")
+        else:
+            out.append("Les travaux évitent aux logements F de sortir du marché locatif le 01/01/2028 et débloquent la "
+                       "révision des loyers.")
     out.append("Les primes CEE (certificats d'économies d'énergie) sont ouvertes à tout propriétaire, société comprise, "
                "mais seulement pour des travaux réalisés par une entreprise RGE.")
     out.append("Un seul propriétaire décide : pas d'assemblée générale ni de vote de copropriété avant de lancer le chantier.")
@@ -329,7 +340,10 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
                             style('t2', fontSize=7.5, leading=10, textColor=muted))])
     if fg:
         cells.append([*kpi_cell("Logements F ou G", f"<font color='#C4553A'>{fg}</font> / {b['nb_log']}", big=True),
-                      Paragraph("interdits ou bientôt interdits à la location", style('t3', fontSize=7.5, leading=10, textColor=muted))])
+                      Paragraph("interdits ou bientôt interdits à la location"
+                                + (f", dont {sum(units['estimated'].values())} estimé{'s' if sum(units['estimated'].values()) > 1 else ''}"
+                                   if sum(units['estimated'].values()) else ""),
+                                style('t3', fontSize=7.5, leading=10, textColor=muted))])
     k = Table([cells], colWidths=[(CONTENT_W - 12) / len(cells)] * len(cells))
     k.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 8),
                            ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8)]))
@@ -358,7 +372,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         source.append(f"{units['n_known']} logement{'s' if units['n_known'] > 1 else ''} avec un DPE publié")
     est = sum(units["estimated"].values())
     if est:
-        source.append(f"{est} estimé{'s' if est > 1 else ''} d'après le DPE de l'immeuble")
+        source.append(f"{est} estimé{'s' if est > 1 else ''} " + ("d'après le DPE collectif" if d.get("building_dpe") else f"à la classe du{'s' if units['n_known'] > 1 else ''} DPE publié{'s' if units['n_known'] > 1 else ''}"))
     if units["unknown"]:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
@@ -397,8 +411,11 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         lines += [owner_name, f"SIREN {owner.get('siren') or b.get('owner_siren')}"]
         if company.get("address"):
             lines.append(f"Siège : {company['address']}")
-        officer = next((o for o in company.get("officers") or [] if not o.get("company")), None) \
-            or next(iter(company.get("officers") or []), None)
+        people = company.get("officers") or []
+        # The manager (gérant, président) decides; a partner « indéfiniment responsable » does not
+        officer = next((o for o in people if not o.get("company") and re.search(r"(?i)g[ée]rant|pr[ée]sident", o.get("role") or "")), None) \
+            or next((o for o in people if re.search(r"(?i)g[ée]rant|pr[ée]sident", o.get("role") or "")), None) \
+            or next((o for o in people if not o.get("company")), None) or next(iter(people), None)
         if officer:
             lines.append(f"Dirigeant : {officer_name(officer['name'])}" + (f" ({officer['role']})" if officer.get("role") else ""))
         if d.get("portfolio_count"):

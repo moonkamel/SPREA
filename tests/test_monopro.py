@@ -625,3 +625,19 @@ def test_closed_company_has_no_signal():
     assert sale_signals.score(list(reversed(same_day)), today)["score"] == 0
     # Dissolution under way, not closed yet: strong
     assert sale_signals.score(events[2:3] + [{**events[2], "date": "2026-06-01"}], today)["level"] == "fort"
+
+def test_worksite_dossier_with_a_single_dpe():
+    """19 rue des Monnayeurs: 4 dwellings, one DPE (F), no collective DPE, a partner listed before the manager."""
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    company = {"name": "SCI DES MONNAYEURS", "officers": [
+        {"name": "Benjamin GIARDINA", "role": "Associé indéfiniment responsable", "company": False},
+        {"name": "Marie GIARDINA", "role": "Gérant", "company": False}]}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 4, "dpe_label": "F", "year_built": 1922}, OWNERS[0], company,
+                                     0, [flat(1, "F")], None, {}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+    assert "1 logement diagnostiqué sur 4 (classé F), pas de DPE collectif" in pdf and "logements classés F," not in pdf
+    assert "dont 3 estimés" in pdf and "3 estimés à la classe du DPE publié" in pdf
+    assert "d'après le DPE de l'immeuble" not in pdf
+    assert "évitent aux logements F de sortir du marché locatif" in pdf and "remettent les logements F" not in pdf
+    assert "Dirigeant : Marie GIARDINA (Gérant)" in pdf
