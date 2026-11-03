@@ -8,3 +8,4 @@ dns_brevo2 https://dns.google/resolve?name=brevo2._domainkey.sprea.app&type=CNAM
 dns_brevo_mail https://dns.google/resolve?name=mail._domainkey.sprea.app&type=TXT
 dns_zoho https://dns.google/resolve?name=zmail._domainkey.sprea.app&type=TXT
 dns_ns https://dns.google/resolve?name=sprea.app&type=NS
+dossier_tce https://sprea.app/api/monopro/bdnb-bg-YD53-P7BT-5N8W/dossier/partage?t=1fa794d39e993bb3e098ec5d14280b83
