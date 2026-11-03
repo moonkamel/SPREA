@@ -1,0 +1,27 @@
+380 immeubles à contrôler
+  20 dossiers contrôlés
+  40 dossiers contrôlés
+  60 dossiers contrôlés
+  80 dossiers contrôlés
+  100 dossiers contrôlés
+  120 dossiers contrôlés
+  140 dossiers contrôlés
+  160 dossiers contrôlés
+  180 dossiers contrôlés
+  200 dossiers contrôlés
+  220 dossiers contrôlés
+  240 dossiers contrôlés
+  260 dossiers contrôlés
+  280 dossiers contrôlés
+  300 dossiers contrôlés
+  320 dossiers contrôlés
+  340 dossiers contrôlés
+  360 dossiers contrôlés
+  380 dossiers contrôlés
+
+380 immeubles : 281 envoyables, 99 écartés de la campagne
+Envoyables : 260 sans alerte ; 91 avec plus de logements estimés que connus (indiqué dans le dossier)
+    13  pas de dirigeant
+     9  aucun DPE de logement publié
+Valeur affichée : 31
+-> out/audit_dossiers.csv
