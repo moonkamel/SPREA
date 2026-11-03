@@ -39,6 +39,9 @@ REPLY_TO = {"email": "contact@sprea.app", "name": "Tarik Lakel"}
 TRACK = "envois_tce.csv"
 TRACK_COLS = ["email", "entreprise", "immeuble", "lien", "envoi", "statut"]
 SKIP_STATUS = {"À éviter (service interne)", "Domaine à vérifier"}
+# Within the campaign, the addresses most likely read by the person written to go first
+# (and protect the domain's reputation while it warms up)
+STATUS_ORDER = {"Nominatif (dirigeant)": 0, "Nominatif": 1, "Générique": 2, "Messagerie perso": 3}
 NBSP = " "
 MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre",
           "novembre", "décembre"]
@@ -217,7 +220,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True)
     ap.add_argument("--limit", type=int, default=300, help="the first N firms by relevance")
-    ap.add_argument("--quota", type=int, default=150, help="emails at most for this run")
+    ap.add_argument("--quota", type=int, default=40, help="emails at most for this run")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--test-to", default="", help="send only the first email, through Brevo, to this address")
     args = ap.parse_args()
@@ -237,7 +240,8 @@ def main():
 
     # The first N of the ranking are the campaign; those already written to are done
     campaign = eligible(rows, set())[:args.limit]
-    todo = [r for r in campaign if r["Email"].strip().lower() not in written]
+    todo = sorted((r for r in campaign if r["Email"].strip().lower() not in written),
+                  key=lambda r: STATUS_ORDER.get(r["Email_Statut"], 9))  # stable: score order kept within
     print(f"{len(rows)} lignes, campagne : les {len(campaign)} premières adresses valables, "
           f"{len(campaign) - len(todo)} déjà écrites, {len(todo)} à écrire")
     counts = dpe_counts(sorted({by_link[r["Lien_Dossier"]]["id"] for r in todo if r["Lien_Dossier"] in by_link}))
