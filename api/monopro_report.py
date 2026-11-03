@@ -188,26 +188,36 @@ FILLER = "Autres postes pour atteindre la classe C"
 def works_per_dwelling(works: Optional[Dict], units: Dict, shab: float, nb_log: int) -> Optional[Dict]:
     """Works for a building firm: each dwelling at the cost of its own class
     (RENOVATION_M2), not the whole building at the cost of its worst dwelling.
-    The items the DPE points out are kept as they are; the item that tops them up
-    to class C only covers what the dwellings still need beyond them."""
+    The items the DPE points out are kept as they are; what the dwellings still
+    need beyond them to reach class C is set out class by class (how many
+    dwellings, their surface, known or estimated), never as one generic line."""
     if not works or not nb_log:
         return works
     unit = shab / nb_log
-    floor_low = sum(n * unit * RENOVATION_M2[l][0] for l, n in units["total"].items() if l in RENOVATION_M2)
-    floor_high = sum(n * unit * RENOVATION_M2[l][1] for l, n in units["total"].items() if l in RENOVATION_M2)
-    if not works.get("detailed"):
-        if not floor_low:
-            return None
-        classes = ", ".join(f"{n} {l}" for l, n in units["total"].items() if n and l in RENOVATION_M2)
-        item = {"name": "Rénovation énergétique des logements", "reason": f"logements classés {classes}",
-                "low": round(floor_low, -2), "high": round(floor_high, -2), "per_dwelling": True}
-        return {"items": [item], "low": item["low"], "high": item["high"], "detailed": False}
-    items = [dict(it) for it in works["items"] if it["name"] != FILLER]
+    classes = [(l, n) for l, n in units["total"].items() if n and l in RENOVATION_M2]
+    floor = {l: (n * unit * RENOVATION_M2[l][0], n * unit * RENOVATION_M2[l][1]) for l, n in classes}
+    floor_low, floor_high = sum(v[0] for v in floor.values()), sum(v[1] for v in floor.values())
+    if not floor_low:
+        return None if not works.get("detailed") else works
+    items = [dict(it) for it in works["items"] if it["name"] != FILLER] if works.get("detailed") else []
     low, high = sum(it["low"] for it in items), sum(it["high"] for it in items)
-    if low < floor_low:
-        items.append({"name": FILLER, "reason": "fenêtres, chauffage, ventilation, eau chaude",
-                      "low": round(floor_low - low, -2), "high": round(max(floor_high - high, floor_low - low), -2)})
-    return {"items": items, "low": sum(it["low"] for it in items), "high": sum(it["high"] for it in items), "detailed": True}
+    rest_low = max(0.0, floor_low - low)
+    rest_high = max(floor_high - high, rest_low)
+    if rest_low:
+        what = ("fenêtres, chauffage, ventilation, eau chaude" if items else
+                "isolation, fenêtres, chauffage, ventilation, eau chaude")
+        for l, n in sorted(classes, key=lambda c: "ABCDEFG".index(c[0]), reverse=True):
+            share_low, share_high = floor[l][0] / floor_low, floor[l][1] / floor_high
+            known, est = units["known"].get(l, 0), units["estimated"].get(l, 0)
+            source = " · ".join(x for x in (f"{known} DPE publié{'s' if known > 1 else ''}" if known else None,
+                                            f"{est} estimé{'s' if est > 1 else ''}" if est else None) if x)
+            s = "s" if n > 1 else ""
+            items.append({"name": f"{n} logement{s} classé{s} {l} (environ {round(unit)} m² chacun)",
+                          "reason": f"{what} ({source})" if source else what,
+                          "low": round(rest_low * share_low, -2), "high": round(rest_high * share_high, -2),
+                          "per_dwelling": True})
+    return {"items": items, "low": sum(it["low"] for it in items), "high": sum(it["high"] for it in items),
+            "detailed": bool(works.get("detailed"))}
 
 
 def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict], portfolio_count: int,
