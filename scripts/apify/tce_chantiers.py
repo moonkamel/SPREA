@@ -21,6 +21,7 @@ import json
 import math
 import os
 import sys
+from datetime import date
 from typing import Dict, List, Optional, Tuple
 
 import httpx
@@ -34,8 +35,12 @@ SITE = "https://sprea.app"
 DEPARTMENTS = ["02", "59", "60", "62", "80"]
 MAX_KM = 40           # au-delà, un chantier n'est plus dans la zone d'une entreprise
 MAX_PER_BUILDING = 2  # entreprises à qui le même immeuble est proposé
+FRESH_MONTHS = 18     # DPE de moins de 18 mois : le propriétaire vient de faire diagnostiquer
+OLD_MONTHS = 36       # au-delà de 3 ans, l'immeuble passe en fin de liste (travaux possibles depuis)
+MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre",
+          "novembre", "décembre"]
 COLUMNS = ["Score", "Entreprise", "Dirigeant", "Email", "Email_Statut", "Téléphone", "Distance_km",
-           "Immeuble_Adresse", "Logements", "Surface_m2", "DPE", "Travaux_min", "Travaux_max",
+           "Immeuble_Adresse", "Logements", "Surface_m2", "DPE", "Date_DPE", "Travaux_min", "Travaux_max",
            "SCI_Nom", "SCI_SIREN", "SCI_Gerant", "SCI_Siege", "Lien_Dossier", "Accroche"]
 
 
@@ -135,7 +140,7 @@ async def building_facts(client: httpx.AsyncClient, b: Dict) -> Dict:
     token = share_token(b["id"])
     return {
         "id": b["id"], "address": b.get("address"), "lat": b["lat"], "lon": b["lon"], "nb_log": b["nb_log"],
-        "label": d.get("label") or b.get("dpe_label"), "worst": d.get("worst"), "shab": d.get("shab"),
+        "label": d.get("label") or b.get("dpe_label"), "dpe_date": b.get("dpe_date"), "worst": d.get("worst"), "shab": d.get("shab"),
         "works_low": works.get("low"), "works_high": works.get("high"),
         "sci_name": (company or {}).get("name") or owner.get("name") or "",
         "sci_siren": b["owner_siren"], "sci_officer": officer(company),
@@ -147,17 +152,47 @@ async def building_facts(client: httpx.AsyncClient, b: Dict) -> Dict:
 
 # --- Rapprochement et texte -------------------------------------------------
 
-def building_priority(f: Dict) -> float:
-    """0 à 1 : classe G avant F, grande surface avant petite."""
+def dpe_age_months(f: Dict, today: Optional[date] = None) -> Optional[float]:
+    try:
+        d = date.fromisoformat(str(f.get("dpe_date"))[:10])
+    except ValueError:
+        return None
+    return ((today or date.today()) - d).days / 30.44
+
+
+def is_old(f: Dict, today: Optional[date] = None) -> bool:
+    """DPE de plus de 3 ans (ou sans date) : gardé, mais en fin de liste."""
+    age = dpe_age_months(f, today)
+    return age is None or age > OLD_MONTHS
+
+
+def freshness(f: Dict, today: Optional[date] = None) -> float:
+    """1 pour un DPE de moins de 18 mois, puis dégressif jusqu'à 0 à 3 ans."""
+    age = dpe_age_months(f, today)
+    if age is None or age >= OLD_MONTHS:
+        return 0.0
+    return 1.0 if age <= FRESH_MONTHS else (OLD_MONTHS - age) / (OLD_MONTHS - FRESH_MONTHS)
+
+
+def building_priority(f: Dict, today: Optional[date] = None) -> float:
+    """0 à 1 : classe G avant F, DPE récent, grande surface avant petite."""
     cls = 1.0 if (f.get("worst") or f.get("label")) == "G" else 0.75
     size = min(1.0, (f.get("shab") or 0) / 800)
-    return 0.6 * cls + 0.4 * size
+    return 0.45 * cls + 0.30 * freshness(f, today) + 0.25 * size
 
 
-def score(tce_score: float, f: Dict, distance: float) -> float:
+def score(tce_score: float, f: Dict, distance: float, today: Optional[date] = None) -> float:
     """Score de priorité sur 10 : l'entreprise (45 %), l'immeuble (35 %), la distance (20 %)."""
-    return round(10 * (0.45 * min(tce_score, 15) / 15 + 0.35 * building_priority(f)
+    return round(10 * (0.45 * min(tce_score, 15) / 15 + 0.35 * building_priority(f, today)
                        + 0.20 * max(0.0, 1 - distance / MAX_KM)), 1)
+
+
+def dpe_when(f: Dict) -> str:
+    try:
+        d = date.fromisoformat(str(f.get("dpe_date"))[:10])
+    except ValueError:
+        return ""
+    return f"{MONTHS[d.month - 1]} {d.year}"
 
 
 def hook(director: str, f: Dict, distance: float) -> str:
@@ -170,14 +205,17 @@ def hook(director: str, f: Dict, distance: float) -> str:
            "Classé F, ses logements ne pourront plus être proposés à un nouveau locataire à partir du 1er janvier 2028.")
     works = (f" Le dossier chiffre la rénovation énergétique entre {euros(f['works_low'])} et {euros(f['works_high'])}."
              if f.get("works_low") and f.get("works_high") else "")
-    return (f"{hello} un immeuble de {f['nb_log']} logements ({size}, classé {f.get('label')}) se trouve à "
+    when = f" au DPE de {dpe_when(f)}" if dpe_when(f) else ""
+    return (f"{hello} un immeuble de {f['nb_log']} logements ({size}, classé {f.get('label')}{when}) se trouve à "
             f"{distance:.0f} km de votre entreprise, au {f.get('address')}. Il appartient à la société "
             f"{f['sci_name']} (SIREN {f['sci_siren']}). {ban}{works} Le dossier complet : {f['link']}")
 
 
-def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts: List[Dict]) -> List[Dict]:
+def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts: List[Dict],
+          today: Optional[date] = None) -> List[Dict]:
     """Chaque entreprise, par score décroissant, prend le meilleur immeuble à moins de MAX_KM
-    encore proposé à moins de MAX_PER_BUILDING entreprises."""
+    encore proposé à moins de MAX_PER_BUILDING entreprises : un DPE de moins de 3 ans d'abord,
+    un plus ancien seulement s'il n'y en a pas. Les lignes à DPE ancien finissent la liste."""
     used: Dict[str, int] = {}
     out = []
     ordered = sorted(tce_rows, key=lambda r: -float(r.get("Score_Final") or 0))
@@ -192,23 +230,24 @@ def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts
             d = km(p[0], p[1], f["lat"], f["lon"])
             if d > MAX_KM:
                 continue
-            s = score(float(r.get("Score_Final") or 0), f, d)
-            if not best or s > best[0]:
-                best = (s, f, d)
+            s = score(float(r.get("Score_Final") or 0), f, d, today)
+            key = (not is_old(f, today), s)
+            if not best or key > best[0]:
+                best = (key, f, d)
         if not best:
             continue
-        s, f, d = best
+        (_, s), f, d = best
         used[f["id"]] = used.get(f["id"], 0) + 1
         director = r.get("Dirigeant_Nom", "")
         out.append({
             "Score": s, "Entreprise": r.get("Entreprise_Nom"), "Dirigeant": director, "Email": r.get("Email"),
             "Email_Statut": r.get("Email_Statut", ""), "Téléphone": r.get("Téléphone"), "Distance_km": round(d, 1),
             "Immeuble_Adresse": f.get("address"), "Logements": f["nb_log"], "Surface_m2": f.get("shab") or "",
-            "DPE": f.get("label"), "Travaux_min": f.get("works_low") or "", "Travaux_max": f.get("works_high") or "",
+            "DPE": f.get("label"), "Date_DPE": str(f.get("dpe_date") or "")[:10], "Travaux_min": f.get("works_low") or "", "Travaux_max": f.get("works_high") or "",
             "SCI_Nom": f["sci_name"], "SCI_SIREN": f["sci_siren"], "SCI_Gerant": f["sci_officer"],
             "SCI_Siege": f["sci_office"], "Lien_Dossier": f["link"], "Accroche": hook(director, f, d),
         })
-    out.sort(key=lambda x: -x["Score"])
+    out.sort(key=lambda x: (is_old({"dpe_date": x["Date_DPE"]}, today), -x["Score"]))
     return out
 
 
@@ -220,6 +259,11 @@ async def main_async(args):
     async with httpx.AsyncClient(timeout=30) as client:
         if os.path.exists(cache_path):
             facts = json.load(open(cache_path, encoding="utf-8"))
+            if any("dpe_date" not in f for f in facts):  # cache d'avant la date du DPE
+                dates = {b["id"]: b.get("dpe_date") for b in await load_buildings(client)}
+                for f in facts:
+                    f["dpe_date"] = dates.get(f["id"])
+                json.dump(facts, open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         else:
             buildings = await load_buildings(client)
             print(f"{len(buildings)} immeubles F/G détenus par une société dans les Hauts-de-France")
