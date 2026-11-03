@@ -1,11 +1,14 @@
 name: Prospection TCE (envoi Brevo)
 
-# First email to the TCE/RGE firms of the apify-tce branch
+# First email to the TCE/RGE firms of the apify-tce branch, 40 a day on weekdays
 # (scripts/campaign/send_tce.py): one nearby F/G building and its signed SPREA
 # dossier each. On demand only; a dry run (default) writes a preview
 # (apercu_envoi_tce.html / .csv) and sends nothing. Tracking (envois_tce.csv)
 # on the apify-tce branch: an address is never written to twice.
 on:
+  # Weekdays 9:10 (Paris, winter time): 40 emails a day while sprea.app warms up
+  schedule:
+    - cron: "10 8 * * 1-5"
   workflow_dispatch:
     inputs:
       limit:
@@ -13,7 +16,7 @@ on:
         default: "300"
       quota:
         description: "Emails au plus pour ce lancement"
-        default: "150"
+        default: "40"
       dry_run:
         description: "Essai sans envoi (true / false)"
         default: "true"
@@ -45,8 +48,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LIMIT: ${{ inputs.limit || '300' }}
-          QUOTA: ${{ inputs.quota || '150' }}
-          DRY: ${{ inputs.dry_run || 'true' }}
+          QUOTA: ${{ github.event_name == 'schedule' && '40' || inputs.quota || '40' }}
+          DRY: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run || 'true' }}
           TEST_TO: ${{ inputs.test_to }}
         run: |
           if [ -n "$TEST_TO" ]; then

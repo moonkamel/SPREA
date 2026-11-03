@@ -49,3 +49,11 @@ def test_only_some_dwellings_diagnosed_and_acronyms():
     m = st.compose(dict(ROW, DPE="G", SCI_Nom="JJM LIVE TOGETHER"), FIRM, {"nb_log": 10, "dpe_fg": 2, "dpe_count": 3}, True)
     assert "le classent G (septembre 2025) : 2 des 3 logements diagnostiqués sont classés F ou G." in m["text"]
     assert "(la société JJM Live Together)" in m["text"]
+
+
+def test_nominative_addresses_first_score_order_kept():
+    rows = [dict(ROW, Email="g@x.fr", Email_Statut="Générique"), dict(ROW, Email="p@x.fr", Email_Statut="Messagerie perso"),
+            dict(ROW, Email="d1@x.fr", Email_Statut="Nominatif (dirigeant)"), dict(ROW, Email="n@x.fr", Email_Statut="Nominatif"),
+            dict(ROW, Email="d2@x.fr", Email_Statut="Nominatif (dirigeant)")]
+    ordered = sorted(st.eligible(rows, set()), key=lambda r: st.STATUS_ORDER.get(r["Email_Statut"], 9))
+    assert [r["Email"] for r in ordered] == ["d1@x.fr", "d2@x.fr", "n@x.fr", "g@x.fr", "p@x.fr"]
