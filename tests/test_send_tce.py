@@ -71,3 +71,12 @@ def test_already_sent_reads_brevo_and_stops_if_unreadable(monkeypatch):
     import pytest
     with pytest.raises(SystemExit):
         st.already_sent("k")
+
+
+def test_large_works_only_when_most_dwellings_are_f_or_g():
+    small = st.compose(dict(ROW, Surface_m2="187"), FIRM, {"nb_log": 3, "dpe_fg": 1, "dpe_count": 3}, True)["text"]
+    assert "des travaux seront nécessaires pour continuer à louer" in small and "envergure" not in small
+    big = st.compose(ROW, FIRM, {"nb_log": 10, "dpe_fg": 2, "dpe_count": 3}, True)["text"]  # 2 of the 3 diagnosed
+    assert "des travaux d'envergure seront nécessaires" in big
+    assert st.mostly_fg({"nb_log": 16, "dpe_fg": 16, "dpe_count": 16})
+    assert not st.mostly_fg({"nb_log": 16, "dpe_fg": 2, "dpe_count": 16}) and not st.mostly_fg({"nb_log": 4, "dpe_fg": None})

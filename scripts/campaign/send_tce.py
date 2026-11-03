@@ -112,14 +112,23 @@ def dwellings_sentence(nb_log: int, fg: Optional[int], diagnosed: Optional[int],
                    f" : 1 de ses {nb_log} logements est classé F ou G.")
 
 
-def ban_sentence(label: str, holder: str) -> str:
+def ban_sentence(label: str, holder: str, major: bool = True) -> str:
+    """major: at least half of the dwellings known are F or G; else « d'envergure » would overstate the job."""
     if label == "G":
         rule = ("Les logements classés G ne peuvent plus être proposés à un nouveau locataire depuis le "
                 "1er janvier 2025, et les logements classés F suivront le 1er janvier 2028")
     else:
         rule = "Les logements classés F ne pourront plus être proposés à un nouveau locataire à partir du 1er janvier 2028"
-    return (f"{rule} : le propriétaire ({holder}) est directement concerné par ces restrictions locatives, et des "
-            f"travaux d'envergure seront nécessaires pour continuer à louer ces logements.")
+    works = "des travaux d'envergure seront nécessaires" if major else "des travaux seront nécessaires"
+    return (f"{rule} : le propriétaire ({holder}) est directement concerné par ces restrictions locatives, et "
+            f"{works} pour continuer à louer ces logements.")
+
+
+def mostly_fg(building: Dict) -> bool:
+    """At least half of the dwellings with a DPE (all of them when every one has one) are F or G."""
+    fg, nb_log = building.get("dpe_fg") or 0, int(building["nb_log"])
+    known = min(building.get("dpe_count") or nb_log, nb_log)
+    return fg * 2 >= known if known else False
 
 
 def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
@@ -146,7 +155,7 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
         dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
                            row.get("Date_DPE", "")) + " "
-        + ban_sentence(label, holder),
+        + ban_sentence(label, holder, mostly_fg(building)),
         f"Pour vous faire gagner un temps considérable, j'ai utilisé mon outil d'analyse pour générer le dossier "
         f"complet de ce chantier. Vous y trouverez {contents}.",
         "Vous pouvez télécharger l'analyse PDF gratuitement ici :",
