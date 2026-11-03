@@ -13,13 +13,12 @@ FIRM = {"Adresse": "159 TER RUE JOUFFROY, 59100 ROUBAIX"}
 
 def test_mail_states_the_share_of_fg_dwellings_and_names_the_towns():
     m = st.compose(ROW, FIRM, {"nb_log": 16, "dpe_fg": 2, "dpe_count": 16}, True)
-    assert m["subject"] == "Opportunité : Immeuble de 792 m² classé F à Roubaix"
+    assert m["subject"] == "Opportunité : Immeuble de 792\u00a0m² à Roubaix, 2 logements classés F ou G"
     t = m["text"]
     assert t.startswith("Bonjour François,") and "NORD BATI" not in t and "Nord Bati Construction" in t
     assert "ADEME, DVF" not in t and "à l'intelligence artificielle." in t
     assert "secteur de Roubaix" in t and "2 km de votre entreprise" in t
-    assert ("Les DPE publiés pour cet immeuble de 16 logements le classent F (septembre 2025) : 2 de ses 16 "
-            "logements sont classés F ou G.") in t
+    assert "2 des 16 logements de cet immeuble sont classés F ou G (DPE de septembre 2025)." in t
     assert "Les 16 logements" not in t and "(la SCI Lebon)" in t
     assert "décote actuelle du bien et sa valeur après rénovation" in t and "99 € HT" in t
     assert "https://x/d?t=1" in m["html"] and "STOP" in m["html"]
@@ -80,3 +79,31 @@ def test_large_works_only_when_most_dwellings_are_f_or_g():
     assert "des travaux d'envergure seront nécessaires" in big
     assert st.mostly_fg({"nb_log": 16, "dpe_fg": 16, "dpe_count": 16})
     assert not st.mostly_fg({"nb_log": 16, "dpe_fg": 2, "dpe_count": 16}) and not st.mostly_fg({"nb_log": 4, "dpe_fg": None})
+
+
+def test_few_fg_dwellings_never_called_a_class_for_the_building():
+    m = st.compose(dict(ROW, DPE="G", Surface_m2="287"), FIRM, {"nb_log": 6, "dpe_fg": 1, "dpe_count": 6}, True)
+    assert m["subject"] == "Opportunité : Immeuble de 287 m² à Roubaix, 1 logement classé F ou G"
+    t = m["text"]
+    assert "1 des 6 logements de cet immeuble est classé F ou G (DPE de septembre 2025)." in t
+    assert "le classent" not in t and "envergure" not in t
+    m = st.compose(dict(ROW, DPE="G"), FIRM, {"nb_log": 10, "dpe_fg": 1, "dpe_count": 4}, True)
+    assert "1 des 4 logements diagnostiqués de cet immeuble de 10 logements est classé F ou G" in m["text"]
+
+
+def test_order_puts_mostly_fg_buildings_first():
+    rows = [dict(ROW, Email="a@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L1"),
+            dict(ROW, Email="b@x.fr", Email_Statut="Générique", Lien_Dossier="L2"),
+            dict(ROW, Email="c@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L2")]
+    by_link = {"L1": {"id": "b1"}, "L2": {"id": "b2"}}
+    counts = {"b1": {"nb_log": 6, "dpe_fg": 1, "dpe_count": 6}, "b2": {"nb_log": 6, "dpe_fg": 4, "dpe_count": 6}}
+    assert [r["Email"] for r in st.order(rows, by_link, counts)] == ["c@x.fr", "b@x.fr", "a@x.fr"]
+
+
+def test_architects_and_non_works_firms_left_out():
+    assert st.does_works({"Codes_NAF": "43.22B"}) and st.does_works({"Codes_NAF": "41.20A, 71.11Z"})
+    assert not st.does_works({"Codes_NAF": "71.11Z"}) and not st.does_works({"Codes_NAF": "46.74B"})
+    assert st.does_works(None) and st.does_works({"Codes_NAF": ""})
+    rows = [dict(ROW, Email="a@x.fr", Entreprise="ARCHI"), dict(ROW, Email="b@x.fr", Entreprise="BATI")]
+    firms = {"ARCHI": {"Codes_NAF": "71.11Z"}, "BATI": {"Codes_NAF": "43.99C"}}
+    assert [r["Email"] for r in st.eligible(rows, set(), firms)] == ["b@x.fr"]
