@@ -1,0 +1,38 @@
+name: Apify (chantiers pour les entreprises TCE)
+
+# Pairs each TCE firm of the apify-tce branch with a nearby F/G building owned
+# by a company (scripts/apify/tce_chantiers.py): building file, owner, signed
+# dossier link and an opening text. Results on the apify-tce branch. No Apify
+# credit used: SPREA's buildings, ADEME and the Annuaire des entreprises.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apify-tce
+
+jobs:
+  chantiers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: TCE results
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Chantiers
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python -u scripts/apify/tce_chantiers.py --tce out --out out
+      - name: Save
+        run: |
+          cd out
+          git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Chantiers TCE $(date +%F-%H%M)" || exit 0
+          git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce

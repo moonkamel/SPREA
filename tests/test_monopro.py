@@ -341,6 +341,33 @@ def test_dossier_pdf_route(env, monkeypatch):
     main.ai_limiter.calls.clear()
 
 
+def test_shared_dossier_needs_the_signed_link(env, monkeypatch):
+    client, store, _, _ = env
+    add_monopro(store)
+    from api.auth import current_user
+    main.app.dependency_overrides.pop(current_user, None)  # no account
+
+    async def nothing(*a, **k):
+        return None
+
+    async def rows(client_, params):
+        return [flat(1, "G")]
+    monkeypatch.setattr(monopro, "fetch_company", nothing)
+    monkeypatch.setattr(monopro, "ademe_rows", rows)
+    monkeypatch.setattr(monopro, "market_price", nothing)
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-key")
+    token = monopro.share_token("bdnb-bg-AAAA")
+    assert len(token) == 32 and token != monopro.share_token("bdnb-bg-ZZZZ")
+    res = client.get(f"/api/monopro/bdnb-bg-AAAA/dossier/partage?t={token}")
+    assert res.status_code == 200 and res.content[:4] == b"%PDF" and res.headers["content-disposition"].startswith("inline")
+    assert client.get("/api/monopro/bdnb-bg-AAAA/dossier/partage?t=" + "0" * 32).status_code == 404
+    assert client.get("/api/monopro/bdnb-bg-AAAA/dossier/partage").status_code == 404
+    # Without the key on the server, no link opens
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY")
+    assert client.get(f"/api/monopro/bdnb-bg-AAAA/dossier/partage?t={token}").status_code == 404
+    main.ai_limiter.calls.clear()
+
+
 def test_dossier_counts_only_the_dwellings_of_the_building():
     """121 rue de Solférino: 3 dwellings, but the search around the building
     also returned the DPE of the neighbours (12 DPE): value 15 times too high."""
