@@ -1,0 +1,41 @@
+name: Contrôle des dossiers chantier (TCE)
+
+# Rebuilds the worksite dossier of every building of the TCE campaign with the
+# live data and checks it (scripts/apify/audit_dossiers.py). Read-only on the
+# site and Brevo; the report goes to the audit-dossiers branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths: ["scripts/apify/audit_dossiers.py", ".github/workflows/audit-dossiers.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audit-dossiers
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: TCE files
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Audit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python -u scripts/apify/audit_dossiers.py --dir out --limit 300 | tee summary.txt
+      - name: Save
+        if: always()
+        run: |
+          mkdir report && cp out/audit_dossiers.csv summary.txt report/ 2>/dev/null || true
+          cd report && git init -q -b audit && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Contrôle des dossiers $(date +%F-%H%M)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" audit:audit-dossiers
