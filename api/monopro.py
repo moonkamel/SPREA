@@ -205,17 +205,19 @@ async def monopro_dossier(building_id: str, user: User = Depends(current_user), 
 @router.get("/monopro/{building_id}/dossier/partage", dependencies=[Depends(share_limiter)])
 async def monopro_shared_dossier(building_id: str, t: str = Query("", max_length=64),
                                  store: SupabaseStore = Depends(store_dep)):
-    """The same dossier, without an account, for a link SPREA signed; in SPREA's name."""
+    """The worksite version of the dossier, without an account, for a link SPREA signed (sent to building firms)."""
     expected = share_token(building_id)
     if not expected or not hmac.compare_digest(expected, t):
         raise HTTPException(status_code=404, detail="Dossier introuvable.")
     building = await store.get_monopro(building_id) if building_id.startswith("bdnb-") and len(building_id) <= 40 else None
     if not building:
         raise HTTPException(status_code=404, detail="Dossier introuvable.")
-    return await dossier_response(building, SPREA_AGENCY, store, inline=True)
+    return await dossier_response(building, SPREA_AGENCY, store, inline=True, audience="tce")
 
 
-async def dossier_response(building: Dict, agency: Dict, store: SupabaseStore, inline: bool = False) -> Response:
+async def dossier_response(building: Dict, agency: Dict, store: SupabaseStore, inline: bool = False,
+                           audience: str = "agent") -> Response:
+    """The dossier PDF; audience "tce" is the worksite version sent to building firms (signed link)."""
     siren = building.get("owner_siren")
     owner = (await store.monopro_owners([siren]) or [None])[0] if siren else None
     portfolio = len(await store.monopro_by_owner(siren, PORTFOLIO_LIMIT + 1)) - 1 if siren else 0
@@ -234,8 +236,9 @@ async def dossier_response(building: Dict, agency: Dict, store: SupabaseStore, i
         logger.warning(f"DVF lookup failed for the dossier: {type(e).__name__}")
     dossier = build_dossier(building, owner, company, max(portfolio, 0), rows, market, agency)
     filename = safe_filename(building.get("address") or "immeuble")[:60]
-    return Response(content=monopro_pdf.generate(dossier), media_type="application/pdf",
-                    headers={"Content-Disposition": f"{'inline' if inline else 'attachment'}; filename=Dossier_immeuble_{filename}.pdf"})
+    kind = "chantier" if audience == "tce" else "immeuble"
+    return Response(content=monopro_pdf.generate(dossier, audience), media_type="application/pdf",
+                    headers={"Content-Disposition": f"{'inline' if inline else 'attachment'}; filename=Dossier_{kind}_{filename}.pdf"})
 
 
 @router.get("/monopro/{building_id}", dependencies=[Depends(search_limiter)])
