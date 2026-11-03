@@ -8,11 +8,14 @@ Inputs, in the checkout of the apify-tce branch (--dir):
   4_immeubles_fg.json                  the buildings (id behind each dossier link)
   envois_tce.csv                       tracking: one line per address written to
 
-Only facts are written: the share of F/G dwellings comes from the DPE published
-for the building (Supabase, monopro_buildings), the value lines are promised only
-when the PDF really has them (each dossier is opened and read before the send).
-Left out: no address, internal-service or unchecked domains, companies in
-liquidation (their owner does not "face" the works), an address already written to.
+The email is written from the dossier itself: each building's dossier is rebuilt
+exactly as the signed link does (api/monopro_report.py, with the DPE of the ADEME
+and the DVF prices), and the subject, the F/G dwellings, the order of the sends
+and the promise of the value lines all come from it, so the email and the PDF
+never disagree. Left out: no address, internal-service or unchecked domains,
+firms that carry out no works, companies in liquidation, an address already
+written to, and buildings a dossier cannot back (no F/G dwelling among the
+published DPE, nor a collective DPE classed F or G).
 
   python scripts/campaign/send_tce.py --dir out --limit 300 --dry-run   # preview, no email
   BREVO_API_KEY=... python scripts/campaign/send_tce.py --dir out --limit 300 --quota 150
@@ -20,7 +23,6 @@ liquidation (their owner does not "face" the works), an address already written 
 import argparse
 import csv
 import html
-import io
 import json
 import os
 import re
@@ -33,6 +35,7 @@ from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from send_brevo import api, credits_left, nice  # noqa: E402
 
 SENDER = {"name": "SPREA", "email": "contact@sprea.app"}
@@ -98,23 +101,58 @@ def m2(v) -> str:
     return f"{int(float(v)):,}".replace(",", NBSP)
 
 
-def dwellings_sentence(nb_log: int, fg: Optional[int], diagnosed: Optional[int], label: str, dpe_date: str) -> str:
-    """What the published DPE say, no more: all the dwellings F/G, or how many of the diagnosed ones."""
-    when = f" ({month_year(dpe_date)})" if month_year(dpe_date) else ""
-    if fg is not None and fg >= nb_log:
-        return f"Les {nb_log} logements de cet immeuble sont classés F ou G{when}."
-    if diagnosed == 1 and nb_log > 1:
-        # One DPE only: it says nothing about the other dwellings
-        return (f"Le seul DPE publié pour cet immeuble de {nb_log} logements{when} classe son logement {label}"
-                + (", et les autres logements n'ont pas encore de DPE." if fg else "."))
-    head = f"Les DPE publiés pour cet immeuble de {nb_log} logements le classent {label}{when}"
-    if not fg:
-        return head + "."
-    if diagnosed and diagnosed < nb_log:
-        return head + (f" : {fg} des {diagnosed} logements diagnostiqués sont classés F ou G." if fg > 1 else
-                       f" : 1 des {diagnosed} logements diagnostiqués est classé F ou G.")
-    return head + (f" : {fg} de ses {nb_log} logements sont classés F ou G." if fg > 1 else
-                   f" : 1 de ses {nb_log} logements est classé F ou G.")
+def verb(n: int) -> str:
+    return "sont classés" if n > 1 else "est classé"
+
+
+def dossier_facts(d: Dict) -> Dict:
+    """What the dossier of the building shows about its DPE: the email says this and nothing else."""
+    u, b = d["units"], d["building"]
+    coll = d.get("building_dpe") or {}
+    known_fg = u["known"]["F"] + u["known"]["G"]
+    coll_fg = coll.get("label") in ("F", "G")
+    worst = ("G" if u["known"]["G"] or coll.get("label") == "G" else
+             "F" if u["known"]["F"] or coll.get("label") == "F" else None)
+    n = u["n_known"]
+    try:
+        from api.monopro_pdf import value_pays
+    except ImportError:
+        from monopro_pdf import value_pays
+    return {
+        "nb_log": int(b["nb_log"]), "n_known": n, "known_fg": known_fg, "worst": worst, "shab": d["shab"],
+        "collective": coll.get("label"), "collective_date": coll.get("date") or "",
+        # a building the dossier backs: F/G dwellings among the published DPE, or a collective DPE F/G
+        # with no dwelling DPE contradicting it
+        "ok": bool(known_fg or (coll_fg and not n)),
+        # most dwellings F/G: told by a collective DPE, or by at least two dwelling DPE (one says little)
+        "major": bool(coll_fg or ((n >= 2 or n == int(b["nb_log"])) and known_fg * 2 >= n)),
+        "has_value": value_pays(d),
+    }
+
+
+def dwellings_sentence(f: Dict) -> str:
+    """The published DPE as the dossier shows them, never a class the building does not have."""
+    nb, n, kfg = f["nb_log"], f["n_known"], f["known_fg"]
+    if f["collective"] in ("F", "G"):
+        when = f" ({month_year(f['collective_date'])})" if month_year(f["collective_date"]) else ""
+        s = f"Le DPE collectif de cet immeuble de {nb} logements le classe {f['collective']}{when}"
+        return s + (f", et {kfg} des {n} logements diagnostiqués {verb(kfg)} F ou G." if n else ".")
+    if n == nb and kfg == nb:
+        return f"Les {nb} logements de cet immeuble sont classés F ou G."
+    if n == 1:
+        return (f"Le seul DPE publié pour cet immeuble de {nb} logements classe son logement {f['worst']}, et les autres "
+                "logements n'ont pas encore de DPE.")
+    if n == nb:
+        return f"{kfg} des {nb} logements de cet immeuble {verb(kfg)} F ou G."
+    return f"{kfg} des {n} logements diagnostiqués de cet immeuble de {nb} logements {verb(kfg)} F ou G."
+
+
+def subject_line(f: Dict, btown: str) -> str:
+    surface = f"{m2(f['shab'])}{NBSP}m²"
+    if f["collective"] in ("F", "G"):
+        return f"Opportunité : Immeuble de {surface} classé {f['collective']} à {btown}"
+    k = f["known_fg"]
+    return f"Opportunité : Immeuble de {surface} à {btown}, {k} logement{'s' if k > 1 else ''} classé{'s' if k > 1 else ''} F ou G"
 
 
 def ban_sentence(label: str, holder: str, major: bool = True) -> str:
@@ -129,27 +167,10 @@ def ban_sentence(label: str, holder: str, major: bool = True) -> str:
             f"{works} pour continuer à louer ces logements.")
 
 
-def minority_sentence(nb_log: int, fg: int, diagnosed: Optional[int], dpe_date: str) -> str:
-    """Few F/G dwellings: their number only, never a class for the whole building."""
-    when = f" (DPE de {month_year(dpe_date)})" if month_year(dpe_date) else ""
-    known = min(diagnosed or nb_log, nb_log)
-    verb = "sont classés" if fg > 1 else "est classé"
-    of = f"des {known} logements diagnostiqués de cet immeuble de {nb_log} logements" if known < nb_log else \
-        f"des {nb_log} logements de cet immeuble"
-    return f"{fg} {of} {verb} F ou G{when}."
-
-
-def mostly_fg(building: Dict) -> bool:
-    """At least half of the dwellings with a DPE (all of them when every one has one) are F or G."""
-    fg, nb_log = building.get("dpe_fg") or 0, int(building["nb_log"])
-    known = min(building.get("dpe_count") or nb_log, nb_log)
-    return fg * 2 >= known if known else False
-
-
-def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
-    surface = m2(row["Surface_m2"])
+def compose(row: Dict, firm: Dict, f: Dict) -> Dict:
+    """f: dossier_facts() of the building."""
+    surface = m2(f["shab"])
     btown, ftown = town(row["Immeuble_Adresse"]), town(firm.get("Adresse", ""))
-    label = row["DPE"]
     prenom = first_name(row["Dirigeant"])
     company = display(row["Entreprise"])
     holder = owner(row["SCI_Nom"])
@@ -157,13 +178,8 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
     dist_txt = "moins d'1 km" if dist < 1 else f"{dist:.0f}{NBSP}km"
     link = row["Lien_Dossier"]
     contents = ("l'estimation détaillée des travaux, la décote actuelle du bien et sa valeur après rénovation"
-                if has_value else "l'estimation détaillée des travaux, logement par logement")
-    major = mostly_fg(building)
-    fg = building.get("dpe_fg") or 0
-    # A building where F/G dwellings are few is not « classé G »: the subject says how many there are
-    subject = (f"Opportunité : Immeuble de {surface}{NBSP}m² classé {label} à {btown}" if major else
-               f"Opportunité : Immeuble de {surface}{NBSP}m² à {btown}, {fg} logement{'s' if fg > 1 else ''} "
-               f"classé{'s' if fg > 1 else ''} F ou G")
+                if f["has_value"] else "l'estimation détaillée des travaux, logement par logement")
+    subject = subject_line(f, btown)
     paras = [
         f"Bonjour {prenom}," if prenom else "Bonjour,",
         f"Je me permets de vous contacter car j'ai identifié que votre entreprise, {company}, est en mesure de mener "
@@ -173,10 +189,7 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
         f"En analysant le parc immobilier de votre secteur, elle a repéré une opportunité qui correspond à votre zone "
         f"d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
-        (dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
-                            row.get("Date_DPE", "")) if major else
-         minority_sentence(int(building["nb_log"]), fg, building.get("dpe_count"), row.get("Date_DPE", ""))) + " "
-        + ban_sentence(label, holder, major),
+        dwellings_sentence(f) + " " + ban_sentence(f["worst"], holder, f["major"]),
         f"Pour vous faire gagner un temps considérable, j'ai utilisé mon outil d'analyse pour générer le dossier "
         f"complet de ce chantier. Vous y trouverez {contents}.",
         "Vous pouvez télécharger l'analyse PDF gratuitement ici :",
@@ -201,13 +214,12 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
     return {"subject": subject, "html": f'<div style="{FONT}">{body}</div>{FOOTER}', "text": text}
 
 
-def order(todo: List[Dict], by_link: Dict[str, Dict], counts: Dict[str, Dict]) -> List[Dict]:
+def order(todo: List[Dict], facts: Dict[str, Dict], building_of: Dict[str, str]) -> List[Dict]:
     """Buildings where most known dwellings are F or G first (the strongest worksites), then the
     addresses most likely read by the person written to; score order kept within (stable sort)."""
     def key(r):
-        f = by_link.get(r["Lien_Dossier"])
-        b = counts.get(f["id"]) if f else None
-        return (0 if b and mostly_fg(b) else 1, STATUS_ORDER.get(r["Email_Statut"], 9))
+        f = facts.get(building_of.get(r["Lien_Dossier"], ""))
+        return (0 if f and f["major"] else 1, STATUS_ORDER.get(r["Email_Statut"], 9))
     return sorted(todo, key=key)
 
 
@@ -233,17 +245,71 @@ def eligible(rows: List[Dict], written: set, firms: Optional[Dict[str, Dict]] = 
     return out
 
 
-def dpe_counts(ids: List[str]) -> Dict[str, Dict]:
-    """nb_log and F/G dwellings of the buildings, from Supabase."""
+def supabase_rows(table: str, field: str, values: List[str], select: str = "*") -> List[Dict]:
     url, key = os.environ["SUPABASE_URL"].rstrip("/"), os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    out = {}
-    for i in range(0, len(ids), 100):
-        q = urllib.parse.urlencode({"select": "id,nb_log,dpe_count,dpe_fg", "id": f"in.({','.join(ids[i:i + 100])})"})
-        req = urllib.request.Request(f"{url}/rest/v1/monopro_buildings?{q}",
-                                     headers={"apikey": key, "Authorization": f"Bearer {key}"})
+    out = []
+    for i in range(0, len(values), 100):
+        q = urllib.parse.urlencode({"select": select, field: f"in.({','.join(values[i:i + 100])})"})
+        req = urllib.request.Request(f"{url}/rest/v1/{table}?{q}", headers={"apikey": key, "Authorization": f"Bearer {key}"})
         with urllib.request.urlopen(req, timeout=60) as res:
-            out.update({b["id"]: b for b in json.load(res)})
+            out += json.load(res)
     return out
+
+
+async def building_dossier(client, b: Dict, owner: Optional[Dict]) -> Dict:
+    """The dossier of the building as the signed link builds it (api/monopro.py dossier_response):
+    DPE of the ADEME around it, local DVF prices. The company details do not change the facts."""
+    from api.dvf import market_price
+    from api.immeuble import ademe_rows
+    from api.monopro_report import build_dossier, unit_surface
+    rows: List[Dict] = []
+    try:
+        rows = await ademe_rows(client, {"geo_distance": f"{b['lon']},{b['lat']},30", "size": "300"})
+    except Exception as e:  # noqa: BLE001  as the site: the dossier is made without them
+        print(f"ADEME illisible pour {b['id']} : {type(e).__name__}", flush=True)
+    market = None
+    try:
+        market = await market_price(b.get("insee") or "", "Appartement", b["lat"], b["lon"], unit_surface(b, rows))
+    except Exception:  # noqa: BLE001
+        pass
+    return build_dossier(b, owner, None, 0, rows, market, {"agency_name": "SPREA"})
+
+
+def campaign_facts(candidates: List[Dict], written: set, building_of: Dict[str, str], limit: int):
+    """Walk the ranking: an address already written to counts in the campaign; another one counts only
+    if the dossier of its building backs it. Returns (todo, facts per building, excluded rows)."""
+    import asyncio
+    import httpx
+    ids = sorted({building_of[r["Lien_Dossier"]] for r in candidates if r["Lien_Dossier"] in building_of})
+    buildings = {b["id"]: b for b in supabase_rows("monopro_buildings", "id", ids)}
+    sirens = sorted({b["owner_siren"] for b in buildings.values() if b.get("owner_siren")})
+    owners = {o["siren"]: o for o in supabase_rows("monopro_owners", "siren", sirens)}
+    facts: Dict[str, Dict] = {}
+
+    async def run():
+        todo, excluded, count = [], [], 0
+        async with httpx.AsyncClient(timeout=30) as client:
+            for r in candidates:
+                if count >= limit:
+                    break
+                if r["Email"].strip().lower() in written:
+                    count += 1
+                    continue
+                bid = building_of.get(r["Lien_Dossier"])
+                b = buildings.get(bid)
+                if not b:
+                    excluded.append((r, "immeuble introuvable"))
+                    continue
+                if bid not in facts:
+                    facts[bid] = dossier_facts(await building_dossier(client, b, owners.get(b.get("owner_siren"))))
+                if not facts[bid]["ok"]:
+                    excluded.append((r, "aucun logement F ou G parmi les DPE publiés"))
+                    continue
+                todo.append(r)
+                count += 1
+        return todo, excluded
+    todo, excluded = asyncio.run(run())
+    return todo, facts, excluded
 
 
 def already_sent(key: str, days: int = 60) -> set:
@@ -271,33 +337,14 @@ def save_track(path: str, track: List[Dict]):
         w.writerows(track)
 
 
-def pdf_check(link: str, cache: Dict[str, Optional[bool]]) -> Optional[bool]:
-    """None: the dossier does not open; else whether it shows the value lines."""
-    if link in cache:
-        return cache[link]
-    import pdfplumber
-    result = None
-    for attempt in range(4):
-        try:
-            with urllib.request.urlopen(link, timeout=60) as res:
-                raw = res.read()
-            if raw[:4] == b"%PDF":
-                with pdfplumber.open(io.BytesIO(raw)) as pdf:
-                    txt = " ".join(p.extract_text() or "" for p in pdf.pages)
-                result = "après rénovation" in txt and "Décote liée au DPE" in txt
-            break
-        except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < 3:  # the site's limit per address: wait, never skip the firm for it
-                print("Site saturé (429) : pause de 2 minutes", flush=True)
-                time.sleep(120)
-                continue
-            print(f"Dossier illisible ({e}) : {link}", flush=True)
-            break
-        except Exception as e:  # noqa: BLE001  a dossier the site cannot make within a minute is skipped
-            print(f"Dossier illisible ({e}) : {link}", flush=True)
-            break
-    cache[link] = result
-    return result
+def link_ok(link: str) -> bool:
+    """The signed link opens a PDF: checked once per run, before any email points to it."""
+    try:
+        with urllib.request.urlopen(link, timeout=90) as res:
+            return res.read(4) == b"%PDF"
+    except Exception as e:  # noqa: BLE001
+        print(f"Lien de dossier en échec ({e}) : {link}", flush=True)
+        return False
 
 
 def main():
@@ -330,13 +377,15 @@ def main():
                 track.append({"email": e, "envoi": "", "statut": "envoyé (repris de Brevo)"})
             written |= missing
 
-    # The first N of the ranking are the campaign; those already written to are done
-    campaign = eligible(rows, set(), firms)[:args.limit]
-    todo = [r for r in campaign if r["Email"].strip().lower() not in written]
-    print(f"{len(rows)} lignes, campagne : les {len(campaign)} premières adresses valables, "
-          f"{len(campaign) - len(todo)} déjà écrites, {len(todo)} à écrire")
-    counts = dpe_counts(sorted({by_link[r["Lien_Dossier"]]["id"] for r in todo if r["Lien_Dossier"] in by_link}))
-    todo = order(todo, by_link, counts)
+    # The first N of the ranking backed by a dossier are the campaign; those already written to count in it
+    building_of = {link: f["id"] for link, f in by_link.items()}
+    todo, facts, excluded = campaign_facts(eligible(rows, set(), firms), written, building_of, args.limit)
+    print(f"{len(rows)} lignes ; {len(todo)} à écrire, {len(excluded)} écartées (dossier sans F/G établi)", flush=True)
+    for r, why in excluded:
+        print(f"  écartée : {r['Entreprise']} ({r['Immeuble_Adresse']}) : {why}", flush=True)
+    todo = order(todo, facts, building_of)
+    if todo and not args.dry_run and not link_ok(todo[0]["Lien_Dossier"]):
+        sys.exit("Le site ne renvoie pas le dossier : aucun envoi")
 
     budget = len(todo) if args.dry_run else args.quota
     if not args.dry_run:
@@ -345,19 +394,12 @@ def main():
             budget = min(budget, max(0, left))
         print(f"Crédits Brevo du jour : {'?' if left is None else left} -> {budget} envois au plus")
 
-    cache: Dict[str, Optional[bool]] = {}
     plan, previews, sent, errors, skipped = [], [], 0, 0, 0
     for r in todo:
         if sent >= budget and not args.dry_run:
             break
-        f = by_link.get(r["Lien_Dossier"])
-        b = counts.get(f["id"]) if f else None
-        has_value = pdf_check(r["Lien_Dossier"], cache)
-        if not b or has_value is None:
-            skipped += 1
-            print(f"Écarté (dossier ou immeuble introuvable) : {r['Entreprise']}", flush=True)
-            continue
-        msg = compose(r, firms.get(r["Entreprise"], {}), b, has_value)
+        f = facts[building_of[r["Lien_Dossier"]]]
+        msg = compose(r, firms.get(r["Entreprise"], {}), f)
         if args.test_to:  # the real email of the first firm, to a test inbox; nothing tracked
             status, data = api("POST", "/smtp/email", key, {
                 "sender": SENDER, "replyTo": REPLY_TO, "to": [{"email": args.test_to}],
@@ -365,8 +407,8 @@ def main():
             print(f"Test Brevo -> {args.test_to} : {status} {data}")
             return
         plan.append({"email": r["Email"].strip(), "entreprise": r["Entreprise"], "score": r["Score"],
-                     "objet": msg["subject"], "valeur_dans_pdf": "oui" if has_value else "non",
-                     "logements_fg": f"{b.get('dpe_fg')}/{b['nb_log']}"})
+                     "objet": msg["subject"], "valeur_dans_pdf": "oui" if f["has_value"] else "non",
+                     "logements_fg": f"{f['known_fg']}/{f['n_known']} connus, {f['nb_log']} logements"})
         if args.dry_run:
             if len(previews) < 5:
                 previews.append(msg)

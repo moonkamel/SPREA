@@ -11,24 +11,77 @@ ROW = {"Score": "9.5", "Entreprise": "NORD BATI CONSTRUCTION", "Dirigeant": "Fra
 FIRM = {"Adresse": "159 TER RUE JOUFFROY, 59100 ROUBAIX"}
 
 
-def test_mail_states_the_share_of_fg_dwellings_and_names_the_towns():
-    m = st.compose(ROW, FIRM, {"nb_log": 16, "dpe_fg": 2, "dpe_count": 16}, True)
-    assert m["subject"] == "Opportunité : Immeuble de 792\u00a0m² à Roubaix, 2 logements classés F ou G"
+from datetime import date  # noqa: E402
+
+from api import monopro_pdf, monopro_report  # noqa: E402
+from tests.test_monopro import DOSSIER_BUILDING, OWNERS, TODAY, flat  # noqa: E402
+
+
+def facts(rows, nb_log, label="F", market=None, **building):
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": nb_log, "dpe_label": label, **building}, OWNERS[0], None,
+                                     0, rows, market, {}, TODAY)
+    return st.dossier_facts(d)
+
+
+def collective(label, surface=300):
+    return {"numero_dpe": "IMM", "type_batiment": "immeuble", "date_etablissement_dpe": "2026-03-10",
+            "surface_habitable_immeuble": surface, "etiquette_dpe": label, "adresse_ban": DOSSIER_BUILDING["address"]}
+
+
+def test_mail_from_a_building_with_few_fg_dwellings():
+    """140 rue de Wazemmes: C D D E E G, no collective DPE."""
+    f = facts([flat(i, c) for i, c in enumerate("CDDEEG")], 6, "G")
+    assert f["ok"] and not f["major"] and f["known_fg"] == 1 and f["worst"] == "G"
+    m = st.compose(ROW, FIRM, f)
+    assert m["subject"].startswith("Opportunité : Immeuble de ") and m["subject"].endswith("à Roubaix, 1 logement classé F ou G")
     t = m["text"]
-    assert t.startswith("Bonjour François,") and "NORD BATI" not in t and "Nord Bati Construction" in t
-    assert "ADEME, DVF" not in t and "à l'intelligence artificielle." in t
-    assert "secteur de Roubaix" in t and "2 km de votre entreprise" in t
-    assert "2 des 16 logements de cet immeuble sont classés F ou G (DPE de septembre 2025)." in t
-    assert "Les 16 logements" not in t and "(la SCI Lebon)" in t
-    assert "décote actuelle du bien et sa valeur après rénovation" in t and "99 € HT" in t
-    assert "https://x/d?t=1" in m["html"] and "STOP" in m["html"]
+    assert t.startswith("Bonjour François,") and "Nord Bati Construction" in t and "secteur de Roubaix" in t
+    assert "1 des 6 logements de cet immeuble est classé F ou G." in t and "classé G à" not in t
+    assert "des travaux seront nécessaires" in t and "envergure" not in t
+    assert "décote" not in t and "99\u00a0€ HT" in t and "STOP" in m["html"] and ROW["Lien_Dossier"] in m["html"]
 
 
-def test_all_dwellings_and_no_value_in_pdf():
-    m = st.compose(dict(ROW, DPE="G", SCI_Nom="JOLETA"), FIRM, {"nb_log": 16, "dpe_fg": 16, "dpe_count": 16}, False)
-    assert "Les 16 logements de cet immeuble sont classés F ou G (septembre 2025)." in m["text"]
-    assert "depuis le 1er janvier 2025" in m["text"] and "(la société Joleta)" in m["text"]
-    assert "décote" not in m["text"]
+def test_mail_from_a_single_dpe():
+    """19 rue des Monnayeurs: 4 dwellings, one DPE F."""
+    f = facts([flat(1, "F")], 4, "F")
+    assert f["ok"] and not f["major"]  # one DPE says little about the 3 other dwellings
+    t = st.compose(ROW, FIRM, f)["text"]
+    assert "Le seul DPE publié pour cet immeuble de 4 logements classe son logement F" in t
+    assert "Les logements classés F ne pourront plus" in t and "envergure" not in t
+    assert facts([flat(1, "G"), flat(2, "F")], 3, "G")["major"]
+
+
+def test_mail_from_a_collective_dpe_and_value():
+    rows = [collective("G")] + [flat(i, "GFE"[i % 3]) for i in range(4)]
+    f = facts(rows, 12, "G", market={"price_per_m2": 6000, "source": "DVF"})
+    m = st.compose(ROW, FIRM, f)
+    assert m["subject"] == "Opportunité : Immeuble de 300\u00a0m² classé G à Roubaix"
+    assert "Le DPE collectif de cet immeuble de 12 logements le classe G (mars 2026), et 3 des 4 logements" in m["text"]
+    assert f["has_value"] and "décote actuelle du bien et sa valeur après rénovation" in m["text"]
+    # Same promise as the PDF: the value lines are in it
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12, "dpe_label": "G"}, OWNERS[0], None, 0, rows,
+                                     {"price_per_m2": 6000, "source": "DVF"}, {}, TODAY)
+    from tests.test_pdf import pdf_text
+    assert "Décote liée au DPE" in pdf_text(monopro_pdf.generate(d, "tce"))
+
+
+def test_buildings_a_dossier_cannot_back_are_left_out():
+    # No DPE found at the address: only the class of our base, nothing to show
+    assert not facts([], 4, "F")["ok"]
+    # The latest DPE of the dwellings are no longer F or G
+    assert not facts([flat(i, c) for i, c in enumerate("CDE")], 3, "F")["ok"]
+    # A collective DPE G contradicted by every dwelling DPE
+    assert not facts([collective("G")] + [flat(i, "D") for i in range(3)], 3, "G")["ok"]
+    # A collective DPE F alone is enough
+    assert facts([collective("F")], 4, "F")["ok"]
+
+
+def test_order_puts_mostly_fg_buildings_first():
+    rows = [dict(ROW, Email="a@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L1"),
+            dict(ROW, Email="b@x.fr", Email_Statut="Générique", Lien_Dossier="L2"),
+            dict(ROW, Email="c@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L2")]
+    fx = {"b1": {"major": False}, "b2": {"major": True}}
+    assert [r["Email"] for r in st.order(rows, fx, {"L1": "b1", "L2": "b2"})] == ["c@x.fr", "b@x.fr", "a@x.fr"]
 
 
 def test_eligible_skips_bad_addresses_liquidations_duplicates_and_written():
@@ -42,12 +95,6 @@ def test_eligible_skips_bad_addresses_liquidations_duplicates_and_written():
 def test_first_name_needs_a_full_name():
     assert st.first_name("Grand") == "" and st.first_name("Marie Durand") == "Marie"
     assert st.town("22 RUE X, 59400 CAMBRAI CEDEX") == "Cambrai"
-
-
-def test_only_some_dwellings_diagnosed_and_acronyms():
-    m = st.compose(dict(ROW, DPE="G", SCI_Nom="JJM LIVE TOGETHER"), FIRM, {"nb_log": 10, "dpe_fg": 2, "dpe_count": 3}, True)
-    assert "le classent G (septembre 2025) : 2 des 3 logements diagnostiqués sont classés F ou G." in m["text"]
-    assert "(la société JJM Live Together)" in m["text"]
 
 
 def test_nominative_addresses_first_score_order_kept():
@@ -72,34 +119,6 @@ def test_already_sent_reads_brevo_and_stops_if_unreadable(monkeypatch):
         st.already_sent("k")
 
 
-def test_large_works_only_when_most_dwellings_are_f_or_g():
-    small = st.compose(dict(ROW, Surface_m2="187"), FIRM, {"nb_log": 3, "dpe_fg": 1, "dpe_count": 3}, True)["text"]
-    assert "des travaux seront nécessaires pour continuer à louer" in small and "envergure" not in small
-    big = st.compose(ROW, FIRM, {"nb_log": 10, "dpe_fg": 2, "dpe_count": 3}, True)["text"]  # 2 of the 3 diagnosed
-    assert "des travaux d'envergure seront nécessaires" in big
-    assert st.mostly_fg({"nb_log": 16, "dpe_fg": 16, "dpe_count": 16})
-    assert not st.mostly_fg({"nb_log": 16, "dpe_fg": 2, "dpe_count": 16}) and not st.mostly_fg({"nb_log": 4, "dpe_fg": None})
-
-
-def test_few_fg_dwellings_never_called_a_class_for_the_building():
-    m = st.compose(dict(ROW, DPE="G", Surface_m2="287"), FIRM, {"nb_log": 6, "dpe_fg": 1, "dpe_count": 6}, True)
-    assert m["subject"] == "Opportunité : Immeuble de 287 m² à Roubaix, 1 logement classé F ou G"
-    t = m["text"]
-    assert "1 des 6 logements de cet immeuble est classé F ou G (DPE de septembre 2025)." in t
-    assert "le classent" not in t and "envergure" not in t
-    m = st.compose(dict(ROW, DPE="G"), FIRM, {"nb_log": 10, "dpe_fg": 1, "dpe_count": 4}, True)
-    assert "1 des 4 logements diagnostiqués de cet immeuble de 10 logements est classé F ou G" in m["text"]
-
-
-def test_order_puts_mostly_fg_buildings_first():
-    rows = [dict(ROW, Email="a@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L1"),
-            dict(ROW, Email="b@x.fr", Email_Statut="Générique", Lien_Dossier="L2"),
-            dict(ROW, Email="c@x.fr", Email_Statut="Nominatif (dirigeant)", Lien_Dossier="L2")]
-    by_link = {"L1": {"id": "b1"}, "L2": {"id": "b2"}}
-    counts = {"b1": {"nb_log": 6, "dpe_fg": 1, "dpe_count": 6}, "b2": {"nb_log": 6, "dpe_fg": 4, "dpe_count": 6}}
-    assert [r["Email"] for r in st.order(rows, by_link, counts)] == ["c@x.fr", "b@x.fr", "a@x.fr"]
-
-
 def test_architects_and_non_works_firms_left_out():
     assert st.does_works({"Codes_NAF": "43.22B"}) and st.does_works({"Codes_NAF": "41.20A, 71.11Z"})
     assert not st.does_works({"Codes_NAF": "71.11Z"}) and not st.does_works({"Codes_NAF": "46.74B"})
@@ -107,10 +126,3 @@ def test_architects_and_non_works_firms_left_out():
     rows = [dict(ROW, Email="a@x.fr", Entreprise="ARCHI"), dict(ROW, Email="b@x.fr", Entreprise="BATI")]
     firms = {"ARCHI": {"Codes_NAF": "71.11Z"}, "BATI": {"Codes_NAF": "43.99C"}}
     assert [r["Email"] for r in st.eligible(rows, set(), firms)] == ["b@x.fr"]
-
-
-def test_single_dpe_sentence():
-    m = st.compose(dict(ROW, DPE="F"), FIRM, {"nb_log": 4, "dpe_fg": 1, "dpe_count": 1}, True)
-    t = m["text"]
-    assert "Le seul DPE publié pour cet immeuble de 4 logements (septembre 2025) classe son logement F" in t
-    assert "1 des 1" not in t

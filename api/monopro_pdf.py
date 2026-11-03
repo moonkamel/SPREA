@@ -210,6 +210,22 @@ def trade(item: Dict[str, Any]) -> str:
     return TRADES_GLOBAL if item["name"].startswith("Rénovation énergétique globale") else TRADES_OTHER
 
 
+def work_lines(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Three classes of dwellings or more: one line for the dwellings, their classes in the finding,
+    so that a long list of works still fits in two pages."""
+    per = [it for it in items if it.get("per_dwelling")]
+    if len(per) < 3:
+        return items
+    count = lambda it: int(it["name"].split(" ", 1)[0])
+    label = lambda it: re.search(r"classés? ([A-G])", it["name"]).group(1)
+    size = re.search(r"environ (\d+) m²", per[0]["name"])
+    merged = {"name": f"{sum(count(it) for it in per)} logements à rénover"
+                      + (f" (environ {size.group(1)} m² chacun)" if size else ""),
+              "reason": " · ".join(f"{count(it)} {label(it)}" for it in per) + " : " + per[0]["reason"].split(" (")[0],
+              "low": sum(it["low"] for it in per), "high": sum(it["high"] for it in per), "per_dwelling": True}
+    return [it for it in items if not it.get("per_dwelling")] + [merged]
+
+
 def owner_pressure(d: Dict[str, Any]) -> List[str]:
     """What forces the owner to act: the law on its dwellings, its obligations."""
     out = []
@@ -349,22 +365,23 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
                            ('TOPPADDING', (0, 0), (-1, -1), 8), ('BOTTOMPADDING', (0, 0), (-1, -1), 8)]))
     story += [boxed([k], padding=6), Spacer(1, gap + 2)]
 
+    works_part: List[Any] = []
     # 1. The works, by trade
     if w:
         rows = [[head("Poste"), head("Constat (DPE)"), head("Corps d'état"), head("Coût TTC", 2)]]
-        for it in w["items"]:
+        for it in work_lines(w["items"]):
             rows.append([Paragraph(text(it["name"]), S['body']), Paragraph(text(it["reason"]), S['muted']),
                          Paragraph(text(trade(it)), S['muted']), Paragraph(eur_range(it['low'], it['high']), S['right'])])
         rows.append([Paragraph("<b>Total</b>", S['body']), Paragraph("", S['muted']), Paragraph("", S['muted']),
                      Paragraph(eur_range(w['low'], w['high']), S['right_b'])])
-        story += [KeepTogether([
+        works_part = [
             next_section("Le chantier, poste par poste"), Spacer(1, 6),
             grid(rows, [CONTENT_W * 0.26, CONTENT_W * 0.23, CONTENT_W * 0.26, CONTENT_W * 0.25], bold_last=True), Spacer(1, 4),
             Paragraph(("Postes déduits du DPE (isolation et équipements constatés), complétés pour atteindre la classe C, "
                        "chaque logement au coût de sa propre classe. " if w["detailed"] else
                        "Ordre de grandeur d'une rénovation énergétique de chaque logement, au coût de sa classe. ")
                       + "Coûts moyens de marché : votre visite et vos devis fixent le montant réel. "
-                        "Un seul maître d'ouvrage, qui finance seul l'ensemble des travaux.", S['small'])])]
+                        "Un seul maître d'ouvrage, qui finance seul l'ensemble des travaux.", S['small'])]
 
     # 2. The dwellings and the law
     source = []
@@ -377,7 +394,14 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
              Paragraph(text(" · ".join(source) or "Aucun DPE publié pour cet immeuble."), S['small'])]
-    story += [CondPageBreak(5 * cm), Spacer(1, gap), KeepTogether(block)]
+    # A long list of works pushes the small DPE block, then the rest, onto a third page: in the
+    # compact layout it comes first and the works table may run on to the next page
+    if compact:
+        if w:  # shown first, so numbered first
+            block[0], works_part[0] = section(1, "Le DPE des logements"), section(2, "Le chantier, poste par poste")
+        story += [KeepTogether(block), Spacer(1, gap)] + works_part
+    else:
+        story += ([KeepTogether(works_part)] if w else []) + [CondPageBreak(5 * cm), Spacer(1, gap), KeepTogether(block)]
 
     # 3. Why the owner has to act
     pressure = owner_pressure(d)
