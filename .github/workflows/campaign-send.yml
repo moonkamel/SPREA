@@ -3,11 +3,9 @@ name: Prospection (envoi Brevo)
 # Daily prospection send through Brevo (scripts/campaign/send_brevo.py):
 # follow-ups due, then new contacts, from the files of the campaign-suivi
 # branch, whose tracking file is updated and pushed back. 300 a day, the
-# daily cap of the Brevo free plan. Weekdays at 9:05
-# (Paris, winter time), after the replies of the inbox are read.
+# daily cap of the Brevo free plan. On demand only since 3/11/2026: the
+# agency and advisor campaign is paused (prospecting moves to TCE/RGE firms).
 on:
-  schedule:
-    - cron: "5 8 * * 1-5"
   workflow_dispatch:
     inputs:
       quota:
