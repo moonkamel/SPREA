@@ -641,3 +641,23 @@ def test_worksite_dossier_with_a_single_dpe():
     assert "d'après le DPE de l'immeuble" not in pdf
     assert "évitent aux logements F de sortir du marché locatif" in pdf and "remettent les logements F" not in pdf
     assert "Dirigeant : Marie GIARDINA (Gérant)" in pdf
+
+
+def test_worksite_dossier_long_list_of_works_fits_two_pages():
+    from api import monopro_pdf
+    coll = {"numero_dpe": "IMM", "type_batiment": "immeuble", "date_etablissement_dpe": "2026-03-10",
+            "surface_habitable_immeuble": 300, "etiquette_dpe": "G", "qualite_isolation_murs": "insuffisante",
+            "qualite_isolation_plancher_haut_comble_perdu": "insuffisante", "qualite_isolation_plancher_bas": "insuffisante",
+            "type_installation_chauffage": "installation collective", "type_energie_principale_chauffage": "Gaz naturel",
+            "type_ventilation": "Ventilation par ouverture des fenêtres", "adresse_ban": DOSSIER_BUILDING["address"]}
+    rows = [coll] + [flat(i, c) for i, c in enumerate("BCDEFGG")]
+    company = {"name": "SCI TRES LONGUE DENOMINATION DU NORD", "address": "123 BOULEVARD DE LA LIBERTE 59800 LILLE",
+               "officers": [{"name": "Jean DUPONT", "role": "Gérant", "company": False}]}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 7, "dpe_label": "G", "year_built": 1900}, OWNERS[0], company, 3,
+                                     rows, {"price_per_m2": 9000, "source": "DVF"}, {}, TODAY)
+    assert monopro_pdf.value_pays(d) and len([i for i in d["works_tce"]["items"] if i.get("per_dwelling")]) == 4
+    lines = monopro_pdf.work_lines(d["works_tce"]["items"])
+    merged = lines[-1]
+    assert merged["name"].startswith("5 logements à rénover") and merged["reason"].startswith("2 G · 1 F · 1 E · 1 D")
+    assert sum(i["low"] for i in lines) == d["works_tce"]["low"]
+    assert monopro_pdf.pages(monopro_pdf.generate(d, "tce")) == 2

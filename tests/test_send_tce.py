@@ -44,10 +44,11 @@ def test_mail_from_a_building_with_few_fg_dwellings():
 def test_mail_from_a_single_dpe():
     """19 rue des Monnayeurs: 4 dwellings, one DPE F."""
     f = facts([flat(1, "F")], 4, "F")
-    assert f["ok"] and f["major"]
+    assert f["ok"] and not f["major"]  # one DPE says little about the 3 other dwellings
     t = st.compose(ROW, FIRM, f)["text"]
     assert "Le seul DPE publié pour cet immeuble de 4 logements classe son logement F" in t
-    assert "Les logements classés F ne pourront plus" in t and "d'envergure" in t
+    assert "Les logements classés F ne pourront plus" in t and "envergure" not in t
+    assert facts([flat(1, "G"), flat(2, "F")], 3, "G")["major"]
 
 
 def test_mail_from_a_collective_dpe_and_value():

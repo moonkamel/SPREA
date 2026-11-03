@@ -124,7 +124,8 @@ def dossier_facts(d: Dict) -> Dict:
         # a building the dossier backs: F/G dwellings among the published DPE, or a collective DPE F/G
         # with no dwelling DPE contradicting it
         "ok": bool(known_fg or (coll_fg and not n)),
-        "major": bool(coll_fg or (n and known_fg * 2 >= n)),
+        # most dwellings F/G: told by a collective DPE, or by at least two dwelling DPE (one says little)
+        "major": bool(coll_fg or ((n >= 2 or n == int(b["nb_log"])) and known_fg * 2 >= n)),
         "has_value": value_pays(d),
     }
 

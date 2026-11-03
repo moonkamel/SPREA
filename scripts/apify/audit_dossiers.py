@@ -28,7 +28,7 @@ import send_tce as st  # noqa: E402
 
 COLS = ["immeuble", "statut", "adresse", "logements", "dpe_connus", "estimes", "fg", "entete", "budget_bas", "budget_haut",
         "eur_m2_bas", "part_poste_generique", "valeur_affichee", "dirigeant", "pages", "mail_majoritaire",
-        "dossier_majoritaire", "alertes"]
+        "dossier_majoritaire", "note", "alertes"]
 
 
 def supabase(path: str, params: Dict) -> List[Dict]:
@@ -48,8 +48,7 @@ def checks(d: Dict, text: str, pages: int, counts: Optional[Dict]) -> List[str]:
         out.append("aucun logement F ou G")
     if not u["n_known"]:
         out.append("aucun DPE de logement publié")
-    elif sum(u["estimated"].values()) > u["n_known"]:
-        out.append("plus de logements estimés que connus")
+    # More dwellings estimated than known is stated in the dossier (« dont 3 estimés »): a note, not an alert
     if not d.get("building_dpe") and "· classé" in text:
         out.append("classe d'immeuble sans DPE collectif")
     if "d'après le DPE de l'immeuble" in text:
@@ -107,6 +106,7 @@ async def audit_one(client: httpx.AsyncClient, b: Dict, owner: Optional[Dict], c
         "dirigeant": (re.search(r"Dirigeant : ([^\n]*)", text) or [None, ""])[1],
         "pages": pages, "mail_majoritaire": f["major"],
         "dossier_majoritaire": bool(known) and (u["known"]["F"] + u["known"]["G"]) * 2 >= known,
+        "note": "plus de logements estimés que connus" if sum(u["estimated"].values()) > known else "",
         "alertes": " ; ".join(alerts),
     }
 
@@ -149,7 +149,8 @@ async def main_async(args):
     sendable = [r for r in out if r.get("statut") == "envoyable"]
     clean = sum(1 for r in sendable if not r.get("alertes"))
     print(f"\n{len(out)} immeubles : {len(sendable)} envoyables, {len(out) - len(sendable)} écartés de la campagne")
-    print(f"Envoyables : {clean} sans alerte")
+    print(f"Envoyables : {clean} sans alerte ; {sum(1 for r in sendable if r.get('note'))} avec plus de logements "
+          "estimés que connus (indiqué dans le dossier)")
     for a, n in alerts.most_common():
         print(f"  {n:4d}  {a}")
     print(f"Valeur affichée : {sum(1 for r in out if r.get('valeur_affichee') == 'oui')}")
