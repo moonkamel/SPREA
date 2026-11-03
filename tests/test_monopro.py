@@ -476,7 +476,7 @@ def test_worksite_dossier_for_building_firms():
                "officers": [{"name": "HOLDING Y", "role": "Gérant", "company": True},
                             {"name": "Jean DUPONT", "role": "Gérant", "company": False}]}
     d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 2, rows,
-                                     {"price_per_m2": 4100, "source": "DVF"}, {"agency_name": "Agence X"}, TODAY)
+                                     {"price_per_m2": 6000, "source": "DVF"}, {"agency_name": "Agence X"}, TODAY)
     pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
     assert "Dossier chantier" in pdf and "Le chantier, poste par poste" in pdf and "Corps d'état" in pdf
     assert "Couvreur" in pdf and "Électricien" in pdf and "Budget travaux estimé" in pdf
@@ -489,10 +489,36 @@ def test_worksite_dossier_for_building_firms():
     # The app keeps its sale dossier
     app = pdf_text(monopro_pdf.generate(d)).replace("\n", " ")
     assert "arguments de cession" in app and "Agence X" in app and "Corps d'état" not in app
-    # Without prices, no value promised
-    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 0, rows, None, {}, TODAY)
+    # Without prices, or when the works cost more than they add, no value promised
+    for market in (None, {"price_per_m2": 2000, "source": "DVF"}):
+        d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 0, rows, market, {}, TODAY)
+        pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+        assert "Décote liée au DPE" not in pdf and "après rénovation" not in pdf and "entreprise RGE" in pdf
+
+
+def test_worksite_dossier_when_few_dwellings_are_f_or_g():
+    """6 dwellings C D D E E G, no collective DPE (140 rue de Wazemmes): the building is not « classé G »,
+    no audit is claimed, and the works are priced dwelling by dwelling."""
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    g = {**flat(5, "G"), "qualite_isolation_murs": "insuffisante", "qualite_isolation_plancher_haut_comble_perdu": "insuffisante",
+         "type_installation_chauffage": "installation collective", "type_energie_principale_chauffage": "Gaz naturel"}
+    rows = [flat(0, "C"), flat(1, "D"), flat(2, "D"), flat(3, "E"), flat(4, "E"), g]
+    company = {"name": "SCI MIRABEAU", "officers": [{"name": "Christiane TOUPET (BRIQUETEUR)", "role": "Gérant", "company": False}]}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 6, "dpe_label": "G", "year_built": 1990}, OWNERS[0], company,
+                                     0, rows, {"price_per_m2": 3436, "source": "DVF"}, {}, TODAY)
+    assert d["worst"] == "G" and d["works_tce"]["high"] < d["works"]["low"]
+    unit = d["shab"] / 6
+    floor = unit * (450 + 2 * 250 + 2 * 120)
+    assert d["works_tce"]["low"] >= round(floor, -2) - 100
     pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
-    assert "Décote liée au DPE" not in pdf and "entreprise RGE" in pdf
+    assert "logements classés de C à G, pas de DPE collectif" in pdf and "· classé G" not in pdf
+    assert "audit énergétique (classe" not in pdf
+    assert "Christiane TOUPET (Gérant)" in pdf and "BRIQUETEUR" not in pdf
+    assert "après rénovation" not in pdf  # 6 dwellings, one G: the value does not pay the works
+    # The app keeps its sale dossier as it was
+    app = pdf_text(monopro_pdf.generate(d)).replace("\n", " ")
+    assert "Audit énergétique obligatoire pour vendre" in app
 
 
 # --- Sale signals (BODACC) ---

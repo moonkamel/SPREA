@@ -124,6 +124,16 @@ def ban_sentence(label: str, holder: str, major: bool = True) -> str:
             f"{works} pour continuer à louer ces logements.")
 
 
+def minority_sentence(nb_log: int, fg: int, diagnosed: Optional[int], dpe_date: str) -> str:
+    """Few F/G dwellings: their number only, never a class for the whole building."""
+    when = f" (DPE de {month_year(dpe_date)})" if month_year(dpe_date) else ""
+    known = min(diagnosed or nb_log, nb_log)
+    verb = "sont classés" if fg > 1 else "est classé"
+    of = f"des {known} logements diagnostiqués de cet immeuble de {nb_log} logements" if known < nb_log else \
+        f"des {nb_log} logements de cet immeuble"
+    return f"{fg} {of} {verb} F ou G{when}."
+
+
 def mostly_fg(building: Dict) -> bool:
     """At least half of the dwellings with a DPE (all of them when every one has one) are F or G."""
     fg, nb_log = building.get("dpe_fg") or 0, int(building["nb_log"])
@@ -143,7 +153,12 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
     link = row["Lien_Dossier"]
     contents = ("l'estimation détaillée des travaux, la décote actuelle du bien et sa valeur après rénovation"
                 if has_value else "l'estimation détaillée des travaux, logement par logement")
-    subject = f"Opportunité : Immeuble de {surface}{NBSP}m² classé {label} à {btown}"
+    major = mostly_fg(building)
+    fg = building.get("dpe_fg") or 0
+    # A building where F/G dwellings are few is not « classé G »: the subject says how many there are
+    subject = (f"Opportunité : Immeuble de {surface}{NBSP}m² classé {label} à {btown}" if major else
+               f"Opportunité : Immeuble de {surface}{NBSP}m² à {btown}, {fg} logement{'s' if fg > 1 else ''} "
+               f"classé{'s' if fg > 1 else ''} F ou G")
     paras = [
         f"Bonjour {prenom}," if prenom else "Bonjour,",
         f"Je me permets de vous contacter car j'ai identifié que votre entreprise, {company}, est en mesure de mener "
@@ -153,9 +168,10 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
         f"En analysant le parc immobilier de votre secteur, elle a repéré une opportunité qui correspond à votre zone "
         f"d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
-        dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
-                           row.get("Date_DPE", "")) + " "
-        + ban_sentence(label, holder, mostly_fg(building)),
+        (dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
+                            row.get("Date_DPE", "")) if major else
+         minority_sentence(int(building["nb_log"]), fg, building.get("dpe_count"), row.get("Date_DPE", ""))) + " "
+        + ban_sentence(label, holder, major),
         f"Pour vous faire gagner un temps considérable, j'ai utilisé mon outil d'analyse pour générer le dossier "
         f"complet de ce chantier. Vous y trouverez {contents}.",
         "Vous pouvez télécharger l'analyse PDF gratuitement ici :",
@@ -180,11 +196,32 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
     return {"subject": subject, "html": f'<div style="{FONT}">{body}</div>{FOOTER}', "text": text}
 
 
-def eligible(rows: List[Dict], written: set) -> List[Dict]:
+def order(todo: List[Dict], by_link: Dict[str, Dict], counts: Dict[str, Dict]) -> List[Dict]:
+    """Buildings where most known dwellings are F or G first (the strongest worksites), then the
+    addresses most likely read by the person written to; score order kept within (stable sort)."""
+    def key(r):
+        f = by_link.get(r["Lien_Dossier"])
+        b = counts.get(f["id"]) if f else None
+        return (0 if b and mostly_fg(b) else 1, STATUS_ORDER.get(r["Email_Statut"], 9))
+    return sorted(todo, key=key)
+
+
+def does_works(firm: Optional[Dict]) -> bool:
+    """A firm that carries out works (NAF 41.20 building, 43.xx specialised trades): architects (71.11Z),
+    design offices, developers or wholesalers are not « en mesure de mener des chantiers »."""
+    if firm is None:
+        return True  # not in the firms file: kept, as before
+    codes = re.findall(r"\d{2}\.\d{2}[A-Z]?", firm.get("Codes_NAF") or "")
+    return not codes or any(c.startswith(("41.2", "43.")) for c in codes)
+
+
+def eligible(rows: List[Dict], written: set, firms: Optional[Dict[str, Dict]] = None) -> List[Dict]:
     out, seen = [], set(written)
     for r in rows:
         e = r["Email"].strip().lower()
         if not e or r["Email_Statut"] in SKIP_STATUS or e in seen or "iquidat" in r.get("SCI_Gerant", ""):
+            continue
+        if firms is not None and not does_works(firms.get(r["Entreprise"])):
             continue
         seen.add(e)
         out.append(r)
@@ -289,12 +326,12 @@ def main():
             written |= missing
 
     # The first N of the ranking are the campaign; those already written to are done
-    campaign = eligible(rows, set())[:args.limit]
-    todo = sorted((r for r in campaign if r["Email"].strip().lower() not in written),
-                  key=lambda r: STATUS_ORDER.get(r["Email_Statut"], 9))  # stable: score order kept within
+    campaign = eligible(rows, set(), firms)[:args.limit]
+    todo = [r for r in campaign if r["Email"].strip().lower() not in written]
     print(f"{len(rows)} lignes, campagne : les {len(campaign)} premières adresses valables, "
           f"{len(campaign) - len(todo)} déjà écrites, {len(todo)} à écrire")
     counts = dpe_counts(sorted({by_link[r["Lien_Dossier"]]["id"] for r in todo if r["Lien_Dossier"] in by_link}))
+    todo = order(todo, by_link, counts)
 
     budget = len(todo) if args.dry_run else args.quota
     if not args.dry_run:

@@ -182,6 +182,34 @@ def fmt_eur(v: float) -> str:
     return f"{round_value(v):,}".replace(",", " ") + " €"
 
 
+FILLER = "Autres postes pour atteindre la classe C"
+
+
+def works_per_dwelling(works: Optional[Dict], units: Dict, shab: float, nb_log: int) -> Optional[Dict]:
+    """Works for a building firm: each dwelling at the cost of its own class
+    (RENOVATION_M2), not the whole building at the cost of its worst dwelling.
+    The items the DPE points out are kept as they are; the item that tops them up
+    to class C only covers what the dwellings still need beyond them."""
+    if not works or not nb_log:
+        return works
+    unit = shab / nb_log
+    floor_low = sum(n * unit * RENOVATION_M2[l][0] for l, n in units["total"].items() if l in RENOVATION_M2)
+    floor_high = sum(n * unit * RENOVATION_M2[l][1] for l, n in units["total"].items() if l in RENOVATION_M2)
+    if not works.get("detailed"):
+        if not floor_low:
+            return None
+        classes = ", ".join(f"{n} {l}" for l, n in units["total"].items() if n and l in RENOVATION_M2)
+        item = {"name": "Rénovation énergétique des logements", "reason": f"logements classés {classes}",
+                "low": round(floor_low, -2), "high": round(floor_high, -2), "per_dwelling": True}
+        return {"items": [item], "low": item["low"], "high": item["high"], "detailed": False}
+    items = [dict(it) for it in works["items"] if it["name"] != FILLER]
+    low, high = sum(it["low"] for it in items), sum(it["high"] for it in items)
+    if low < floor_low:
+        items.append({"name": FILLER, "reason": "fenêtres, chauffage, ventilation, eau chaude",
+                      "low": round(floor_low - low, -2), "high": round(max(floor_high - high, floor_low - low), -2)})
+    return {"items": items, "low": sum(it["low"] for it in items), "high": sum(it["high"] for it in items), "detailed": True}
+
+
 def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict], portfolio_count: int,
                   rows: List[Dict], market: Optional[Dict], agency: Dict, today: Optional[date] = None) -> Dict[str, Any]:
     today = today or date.today()
@@ -291,4 +319,6 @@ def build_dossier(building: Dict, owner: Optional[Dict], company: Optional[Dict]
         "works": works, "value": value, "audit": audit, "collective_dpe": collective_dpe, "holding": holding,
         "rental_ban": [{"label": l, "date": _date_fr(d), "passed": d <= today, "units": units["total"][l]} for l, d in RENTAL_BAN.items()],
         "arguments": arguments(units, works, value, holding, audit, today, worst),
+        # The worksite dossier for building firms (api/monopro_pdf.py, audience "tce") only
+        "works_tce": works_per_dwelling(works, units, shab, nb_log),
     }

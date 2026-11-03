@@ -3,8 +3,9 @@ of the other SPREA documents, for two readers:
 - "agent" (the app): the sale dossier, in the agency's name;
 - "tce" (the signed link sent to building firms): the same facts read as a
   worksite, works by trade, what weighs on the owner, how to win the job."""
+import re
 from io import BytesIO
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from reportlab.platypus import CondPageBreak, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from reportlab.lib.pagesizes import A4
@@ -204,6 +205,8 @@ TRADES_GLOBAL = "Tous corps d'état : isolation, menuiseries, chauffage, ventila
 def trade(item: Dict[str, Any]) -> str:
     if item.get("id") in TRADES:
         return TRADES[item["id"]]
+    if item.get("per_dwelling"):
+        return "Isolation intérieure, menuiseries, chauffage, ventilation, par logement"
     return TRADES_GLOBAL if item["name"].startswith("Rénovation énergétique globale") else TRADES_OTHER
 
 
@@ -222,7 +225,8 @@ def owner_pressure(d: Dict[str, Any]) -> List[str]:
     if t["F"] + t["G"]:
         out.append("Loyers gelés : le loyer d'un logement F ou G ne peut plus être révisé ni augmenté depuis le 24/08/2022.")
     audit = d.get("audit") or {}
-    if audit.get("required"):
+    # The audit depends on the class of the building: only a collective DPE gives it
+    if audit.get("required") and d.get("building_dpe"):
         out.append(f"Pour vendre, il doit faire réaliser un audit énergétique (classe {d['label']}) : les travaux deviennent "
                    "visibles de tout acheteur et pèsent sur le prix.")
     cdpe = d.get("collective_dpe") or {}
@@ -231,18 +235,41 @@ def owner_pressure(d: Dict[str, Any]) -> List[str]:
     return out
 
 
+def value_pays(d: Dict[str, Any]) -> bool:
+    """The value is an argument only when what the works add covers at least their low cost:
+    else the owner reads that they cost more than they bring."""
+    v, w = d.get("value"), d.get("works_tce")
+    return bool(v and w and v["after_works"] - v["lots_now"] >= w["low"])
+
+
+def officer_name(name: str) -> str:
+    """« Christiane TOUPET (BRIQUETEUR) » -> « Christiane TOUPET »: the usual name in brackets is left out."""
+    return re.sub(r"\s*\([^)]*\)", "", name).strip()
+
+
+def label_text(d: Dict[str, Any]) -> Optional[str]:
+    """The class of the building only when a collective DPE gives it; else the range of its dwellings."""
+    dpe = d.get("building_dpe") or {}
+    if dpe.get("label"):
+        return f"classé {dpe['label']}" + (f" (DPE collectif du {dpe['date'][8:10]}/{dpe['date'][5:7]}/{dpe['date'][:4]})"
+                                           if dpe.get("date") else "")
+    present = [l for l in "ABCDEFG" if d["units"]["total"][l]]
+    if not present:
+        return f"classé {d['label']}" if d.get("label") else None
+    span = present[0] if len(present) == 1 else f"de {present[0]} à {present[-1]}"
+    return f"logements classés {span}, pas de DPE collectif"
+
+
 def win_arguments(d: Dict[str, Any]) -> List[str]:
     """What a firm can tell the owner: figures of the dossier, and the RGE label."""
     out = []
-    v, w = d.get("value"), d.get("works")
-    if v and v.get("dpe_discount"):
-        out.append(f"Aujourd'hui, l'immeuble vaut environ {eur(v['dpe_discount'])} de moins qu'un immeuble équivalent "
-                   "classé D (ventes réelles).")
-    if v and w:
-        gain = v["after_works"] - v["lots_now"]
-        if gain > 0:
-            out.append(f"Après rénovation (classe C), sa valeur lot par lot passerait d'environ {eur(v['lots_now'])} à "
-                       f"{eur(v['after_works'])}, pour {eur_range(w['low'], w['high'])} de travaux.")
+    v, w = d.get("value"), d.get("works_tce")
+    if value_pays(d):
+        if v.get("dpe_discount"):
+            out.append(f"Aujourd'hui, l'immeuble vaut environ {eur(v['dpe_discount'])} de moins qu'un immeuble équivalent "
+                       "classé D (ventes réelles).")
+        out.append(f"Après rénovation (classe C), sa valeur lot par lot passerait d'environ {eur(v['lots_now'])} à "
+                   f"{eur(v['after_works'])}, pour {eur_range(w['low'], w['high'])} de travaux.")
     if d["units"]["total"]["F"] + d["units"]["total"]["G"]:
         out.append("Les travaux remettent les logements F et G sur le marché locatif et débloquent la révision des loyers.")
     out.append("Les primes CEE (certificats d'économies d'énergie) sont ouvertes à tout propriétaire, société comprise, "
@@ -272,9 +299,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
     name = company.get("name") or owner.get("name") or ""
     form = owner.get("legal_form") or ""
     owner_name = name if not form or name.upper().startswith(form.upper() + " ") else f"{form} {name}".strip()
-    dpe = d.get("building_dpe") or {}
-    dpe_txt = f"classé {d['label']}" + (f" (DPE du {dpe['date'][8:10]}/{dpe['date'][5:7]}/{dpe['date'][:4]})" if dpe.get("date") else "") \
-        if d.get("label") else None
+    dpe_txt = label_text(d)
     facts = " · ".join(x for x in [
         f"{b['nb_log']} logement{'s' if b['nb_log'] > 1 else ''}",
         f"{d['levels']} niveau{'x' if d['levels'] > 1 else ''}" if d.get("levels") else None,
@@ -291,7 +316,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
     story.append(Spacer(1, gap + 2))
 
     # Key figures: the job, its size, its urgency
-    v, w = d.get("value"), d.get("works")
+    v, w = d.get("value"), d.get("works_tce")
     units = d["units"]
     fg = units["total"]["G"] + units["total"]["F"]
     muted = S['muted'].textColor
@@ -321,8 +346,9 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         story += [KeepTogether([
             next_section("Le chantier, poste par poste"), Spacer(1, 6),
             grid(rows, [CONTENT_W * 0.26, CONTENT_W * 0.23, CONTENT_W * 0.26, CONTENT_W * 0.25], bold_last=True), Spacer(1, 4),
-            Paragraph(("Postes déduits du DPE (isolation et équipements constatés), complétés pour atteindre la classe C. " if w["detailed"] else
-                       "Ordre de grandeur d'une rénovation énergétique globale pour cette classe. ")
+            Paragraph(("Postes déduits du DPE (isolation et équipements constatés), complétés pour atteindre la classe C, "
+                       "chaque logement au coût de sa propre classe. " if w["detailed"] else
+                       "Ordre de grandeur d'une rénovation énergétique de chaque logement, au coût de sa classe. ")
                       + "Coûts moyens de marché : votre visite et vos devis fixent le montant réel. "
                         "Un seul maître d'ouvrage, qui finance seul l'ensemble des travaux.", S['small'])])]
 
@@ -350,7 +376,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
     # 4. How to convince the owner, with figures it can check
     args = win_arguments(d)
     value_rows = []
-    if v:
+    if value_pays(d):
         value_rows = [kv("Valeur lot par lot, état actuel", eur(v['lots_now'])),
                       kv("Valeur lot par lot après rénovation (classe C)", f"<b>{eur(v['after_works'])}</b>", 'right_b')]
         if v.get("dpe_discount"):
@@ -374,7 +400,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         officer = next((o for o in company.get("officers") or [] if not o.get("company")), None) \
             or next(iter(company.get("officers") or []), None)
         if officer:
-            lines.append(f"Dirigeant : {officer['name']}" + (f" ({officer['role']})" if officer.get("role") else ""))
+            lines.append(f"Dirigeant : {officer_name(officer['name'])}" + (f" ({officer['role']})" if officer.get("role") else ""))
         if d.get("portfolio_count"):
             s = "s" if d["portfolio_count"] > 1 else ""
             lines.append(f"Ce propriétaire détient {d['portfolio_count']} autre{s} immeuble{s} dans la base SPREA : "
