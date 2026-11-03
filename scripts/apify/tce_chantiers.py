@@ -227,6 +227,8 @@ def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts
         for f in facts:
             if used.get(f["id"], 0) >= MAX_PER_BUILDING or not f.get("sci_active", True):
                 continue
+            if f.get("label") not in ("F", "G"):  # DPE collectif meilleur : seuls quelques lots sont F/G
+                continue
             d = km(p[0], p[1], f["lat"], f["lon"])
             if d > MAX_KM:
                 continue

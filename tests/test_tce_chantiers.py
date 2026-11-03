@@ -60,6 +60,11 @@ def test_recent_dpe_first_old_ones_kept_at_the_end():
     assert out[0]["Score"] < out[1]["Score"]
 
 
+def test_building_whose_collective_dpe_is_better_than_f_is_left_out():
+    d_building = dict(building(1, "D"), worst="F")
+    assert ch.match([firm("100000000", 15)], {"100000000": ARRAS}, [d_building], TODAY) == []
+
+
 def test_hook_states_only_facts():
     f = building(1, "F")
     text = ch.hook("Marie Durand", f, 12.4)
