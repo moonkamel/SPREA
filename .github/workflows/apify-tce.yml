@@ -1,0 +1,45 @@
+name: Apify (prospection entreprises TCE Hauts-de-France)
+
+# Runs scripts/apify/tce_pipeline.py with the APIFY_TOKEN secret and pushes the
+# intermediate JSON and the final CSV to the apify-tce branch. On demand only:
+# every run spends Apify credit (15 USD at most, capped run by run).
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Plan et coût seulement, sans lancer d'Actor (true / false)"
+        default: "true"
+      budget:
+        description: "Budget maximal en dollars"
+        default: "15"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apify-tce
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      # Earlier results: a step already paid for is read back, not run again
+      - name: Previous results
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce || mkdir -p out
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pipeline
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: python -u scripts/apify/tce_pipeline.py --out out --budget "${{ inputs.budget }}" $([ "${{ inputs.dry_run }}" = "true" ] && echo --dry-run)
+      - name: Save
+        if: ${{ inputs.dry_run != 'true' && always() }}
+        run: |
+          cd out
+          [ -d .git ] || [ -f .git ] || git init -q -b apify-tce
+          git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Apify TCE $(date +%F-%H%M)" || exit 0
+          git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce
