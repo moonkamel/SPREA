@@ -70,9 +70,15 @@ def first_name(director: str) -> str:
     return words[0] if len(words) >= 2 else ""
 
 
+def display(name: str) -> str:
+    """« JJM LIVE TOGETHER » -> « JJM Live Together » : a short word without a vowel is an acronym."""
+    return " ".join(w.upper() if re.fullmatch(r"[bcdfghjklmnpqrstvwxz&]{2,4}", w.lower()) else w
+                    for w in nice(name).split())
+
+
 def owner(name: str) -> str:
     """« SCI LEBON » -> « la SCI Lebon », « JOLETA » -> « la société Joleta »."""
-    n = nice(name)
+    n = display(name)
     return f"la {n}" if re.match(r"(?i)^(sci|scpi|sarl|sas|sasu|eurl|sa|snc)\b", n) else f"la société {n}"
 
 
@@ -88,16 +94,18 @@ def m2(v) -> str:
     return f"{int(float(v)):,}".replace(",", NBSP)
 
 
-def dwellings_sentence(nb_log: int, fg: Optional[int], label: str, dpe_date: str) -> str:
-    """What the published DPE say, no more: all the dwellings F/G, or how many of them."""
-    when = f" au DPE de {month_year(dpe_date)}" if month_year(dpe_date) else ""
+def dwellings_sentence(nb_log: int, fg: Optional[int], diagnosed: Optional[int], label: str, dpe_date: str) -> str:
+    """What the published DPE say, no more: all the dwellings F/G, or how many of the diagnosed ones."""
+    when = f" ({month_year(dpe_date)})" if month_year(dpe_date) else ""
     if fg is not None and fg >= nb_log:
-        return f"Les {nb_log} logements de cet immeuble sont classés {label}{when}."
-    if fg:
-        part = f"{fg} de ses {nb_log} logements sont classés F ou G" if fg > 1 else \
-            f"1 de ses {nb_log} logements est classé F ou G"
-        return f"L'immeuble, de {nb_log} logements, est classé {label}{when}, et {part}."
-    return f"L'immeuble, de {nb_log} logements, est classé {label}{when}."
+        return f"Les {nb_log} logements de cet immeuble sont classés F ou G{when}."
+    head = f"Les DPE publiés pour cet immeuble de {nb_log} logements le classent {label}{when}"
+    if not fg:
+        return head + "."
+    if diagnosed and diagnosed < nb_log:
+        return head + f" : {fg} des {diagnosed} logements diagnostiqués sont classés F ou G."
+    return head + (f" : {fg} de ses {nb_log} logements sont classés F ou G." if fg > 1 else
+                   f" : 1 de ses {nb_log} logements est classé F ou G.")
 
 
 def ban_sentence(label: str, holder: str) -> str:
@@ -107,7 +115,7 @@ def ban_sentence(label: str, holder: str) -> str:
     else:
         rule = "Les logements classés F ne pourront plus être proposés à un nouveau locataire à partir du 1er janvier 2028"
     return (f"{rule} : le propriétaire ({holder}) est directement concerné par ces restrictions locatives, et des "
-            f"travaux d'envergure seront nécessaires pour continuer à louer.")
+            f"travaux d'envergure seront nécessaires pour continuer à louer ces logements.")
 
 
 def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
@@ -115,7 +123,7 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
     btown, ftown = town(row["Immeuble_Adresse"]), town(firm.get("Adresse", ""))
     label = row["DPE"]
     prenom = first_name(row["Dirigeant"])
-    company = nice(row["Entreprise"])
+    company = display(row["Entreprise"])
     holder = owner(row["SCI_Nom"])
     dist = float(row["Distance_km"])
     dist_txt = "moins d'1 km" if dist < 1 else f"{dist:.0f}{NBSP}km"
@@ -130,7 +138,8 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
         f"En croisant les bases de données publiques (ADEME, DVF, Cadastre), je suis tombé sur une opportunité qui "
         f"correspond à votre zone d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
-        dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), label, row.get("Date_DPE", "")) + " "
+        dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
+                           row.get("Date_DPE", "")) + " "
         + ban_sentence(label, holder),
         f"Pour vous faire gagner un temps considérable, j'ai utilisé mon outil d'analyse pour générer le dossier "
         f"complet de ce chantier. Vous y trouverez {contents}.",
@@ -256,7 +265,7 @@ def main():
                 previews.append(msg)
             continue
         status, data = api("POST", "/smtp/email", key, {
-            "sender": SENDER, "replyTo": REPLY_TO, "to": [{"email": r["Email"].strip(), "name": nice(r["Entreprise"])}],
+            "sender": SENDER, "replyTo": REPLY_TO, "to": [{"email": r["Email"].strip(), "name": display(r["Entreprise"])}],
             "subject": msg["subject"], "htmlContent": msg["html"], "textContent": msg["text"],
             "tags": ["tce", "tce-mail1"],
         })
