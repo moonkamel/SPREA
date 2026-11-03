@@ -135,8 +135,10 @@ def compose(row: Dict, firm: Dict, building: Dict, has_value: bool) -> Dict:
         f"Bonjour {prenom}," if prenom else "Bonjour,",
         f"Je me permets de vous contacter car j'ai identifié que votre entreprise, {company}, est en mesure de mener "
         f"des chantiers de rénovation globale dans le secteur de {ftown}.",
-        f"En croisant les bases de données publiques (ADEME, DVF, Cadastre), je suis tombé sur une opportunité qui "
-        f"correspond à votre zone d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
+        "SPREA, la plateforme que j'ai développée, associe une expertise technique du bâtiment (performance "
+        "énergétique, chiffrage des travaux) à l'intelligence artificielle.",
+        f"En analysant le parc immobilier de votre secteur, elle a repéré une opportunité qui correspond à votre zone "
+        f"d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
         dwellings_sentence(int(building["nb_log"]), building.get("dpe_fg"), building.get("dpe_count"), label,
                            row.get("Date_DPE", "")) + " "

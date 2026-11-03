@@ -16,6 +16,7 @@ def test_mail_states_the_share_of_fg_dwellings_and_names_the_towns():
     assert m["subject"] == "Opportunité : Immeuble de 792 m² classé F à Roubaix"
     t = m["text"]
     assert t.startswith("Bonjour François,") and "NORD BATI" not in t and "Nord Bati Construction" in t
+    assert "ADEME, DVF" not in t and "à l'intelligence artificielle." in t
     assert "secteur de Roubaix" in t and "2 km de votre entreprise" in t
     assert ("Les DPE publiés pour cet immeuble de 16 logements le classent F (septembre 2025) : 2 de ses 16 "
             "logements sont classés F ou G.") in t
