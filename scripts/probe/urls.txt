@@ -1,2 +1,10 @@
 bodacc_familles https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/facets?facet=familleavis_lib
 sprea_config https://sprea.app/api/config?t=0704
+dns_spf https://dns.google/resolve?name=sprea.app&type=TXT
+dns_dmarc https://dns.google/resolve?name=_dmarc.sprea.app&type=TXT
+dns_mx https://dns.google/resolve?name=sprea.app&type=MX
+dns_brevo1 https://dns.google/resolve?name=brevo1._domainkey.sprea.app&type=CNAME
+dns_brevo2 https://dns.google/resolve?name=brevo2._domainkey.sprea.app&type=CNAME
+dns_brevo_mail https://dns.google/resolve?name=mail._domainkey.sprea.app&type=TXT
+dns_zoho https://dns.google/resolve?name=zmail._domainkey.sprea.app&type=TXT
+dns_ns https://dns.google/resolve?name=sprea.app&type=NS

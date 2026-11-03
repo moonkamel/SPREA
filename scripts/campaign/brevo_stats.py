@@ -37,7 +37,7 @@ def events(key: str, start: str, end: str, tag: str = "prospection"):
         offset += 2500
 
 
-STEPS = ["mail1", "mail2", "mail3", "mail4"]
+STEPS = ["mail1", "mail2", "mail3", "mail4", "tce-mail1"]  # tce-mail1: TCE/RGE firms (send_tce.py)
 
 
 def network(email: str) -> str:
@@ -67,7 +67,7 @@ def main():
     links: Counter = Counter()
     kinds: Counter = Counter()
     # The events do not say which email of the sequence they belong to: read
-    # tag by tag (each email is sent with « prospection » and « mailN »)
+    # tag by tag (each email is sent with « prospection » and « mailN », or « tce » and « tce-mail1 »)
     for step in STEPS:
         for e in events(key, start.isoformat(), end.isoformat(), step):
             day = (e.get("date") or "")[:10]
@@ -76,7 +76,8 @@ def main():
             who = (e.get("email") or "").lower()
             for k in ((day, step), ("total", step), ("total", "tous")):
                 by[k][kind].add(who)
-            for k in ((network(who), step), (network(who), "tous")):
+            net = "TCE (artisans)" if step.startswith("tce") else network(who)
+            for k in ((net, step), (net, "tous")):
                 nets[k][kind].add(who)
             if kind == "clicks" and e.get("link"):
                 links[urllib.parse.urlsplit(e["link"])._replace(query="").geturl()] += 1
