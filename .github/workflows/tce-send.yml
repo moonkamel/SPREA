@@ -1,0 +1,54 @@
+name: Prospection TCE (envoi Brevo)
+
+# First email to the TCE/RGE firms of the apify-tce branch
+# (scripts/campaign/send_tce.py): one nearby F/G building and its signed SPREA
+# dossier each. On demand only; a dry run (default) writes a preview
+# (apercu_envoi_tce.html / .csv) and sends nothing. Tracking (envois_tce.csv)
+# on the apify-tce branch: an address is never written to twice.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Les N premières entreprises par pertinence"
+        default: "300"
+      quota:
+        description: "Emails au plus pour ce lancement"
+        default: "150"
+      dry_run:
+        description: "Essai sans envoi (true / false)"
+        default: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apify-tce
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: TCE files
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q pdfplumber==0.11.9
+      - name: Send
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LIMIT: ${{ inputs.limit || '300' }}
+          QUOTA: ${{ inputs.quota || '150' }}
+          DRY: ${{ inputs.dry_run || 'true' }}
+        run: python -u scripts/campaign/send_tce.py --dir out --limit "$LIMIT" --quota "$QUOTA" $([ "$DRY" = "false" ] || echo --dry-run)
+      - name: Save
+        if: always()
+        run: |
+          cd out
+          git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Envoi TCE $(date +%F-%H%M)" || exit 0
+          git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce
