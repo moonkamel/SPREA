@@ -661,3 +661,16 @@ def test_worksite_dossier_long_list_of_works_fits_two_pages():
     assert merged["name"].startswith("5 logements à rénover") and merged["reason"].startswith("2 G · 1 F · 1 E · 1 D")
     assert sum(i["low"] for i in lines) == d["works_tce"]["low"]
     assert monopro_pdf.pages(monopro_pdf.generate(d, "tce")) == 2
+
+
+def test_worksite_dossier_without_any_dpe_at_the_address():
+    """11c rue Roger Salengro (Ferrière-la-Grande): 5 dwellings, 1 level, class G from the BDNB, no DPE at the address."""
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 5, "levels": 1, "dpe_label": "G", "year_built": 1890},
+                                     OWNERS[0], None, 0, [], None, {}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+    assert "classé G selon la base nationale des bâtiments (aucun DPE retrouvé à cette adresse)" in pdf
+    assert "5 estimés d'après la base nationale des bâtiments" in pdf and "à la classe du DPE publié" not in pdf
+    assert "remettent les logements G sur le marché locatif et débloquent" in pdf and "logements F d'en sortir" not in pdf
+    assert "5 logements, 1 niveau " in pdf + " " and "1 niveaux" not in pdf
