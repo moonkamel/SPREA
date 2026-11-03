@@ -272,7 +272,10 @@ def label_text(d: Dict[str, Any]) -> Optional[str]:
     units = d["units"]
     present = [l for l in "ABCDEFG" if units["known"][l]]
     if not present:
-        return f"classé {d['label']}" if d.get("label") else None
+        # No DPE at this address: the class is the one the national building database (BDNB) links to the
+        # building, from DPE filed under another address. Say where it comes from.
+        return (f"classé {d['label']} selon la base nationale des bâtiments (aucun DPE retrouvé à cette adresse)"
+                if d.get("label") else None)
     span = present[0] if len(present) == 1 else f"de {present[0]} à {present[-1]}"
     n, nb = units["n_known"], d["building"]["nb_log"]
     if n < nb:
@@ -293,9 +296,11 @@ def win_arguments(d: Dict[str, Any]) -> List[str]:
         out.append(f"Après rénovation (classe C), sa valeur lot par lot passerait d'environ {eur(v['lots_now'])} à "
                    f"{eur(v['after_works'])}, pour {eur_range(w['low'], w['high'])} de travaux.")
     if d["units"]["total"]["F"] + d["units"]["total"]["G"]:
-        if d["units"]["total"]["G"]:
+        if d["units"]["total"]["G"] and d["units"]["total"]["F"]:
             out.append("Les travaux remettent les logements G sur le marché locatif, évitent aux logements F d'en sortir en "
                        "2028 et débloquent la révision des loyers.")
+        elif d["units"]["total"]["G"]:
+            out.append("Les travaux remettent les logements G sur le marché locatif et débloquent la révision des loyers.")
         else:
             out.append("Les travaux évitent aux logements F de sortir du marché locatif le 01/01/2028 et débloquent la "
                        "révision des loyers.")
@@ -352,7 +357,8 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         cells.append([*kpi_cell("Budget travaux estimé", eur_range(w['low'], w['high'])),
                       Paragraph("coûts moyens de marché, TTC", style('t1', fontSize=7.5, leading=10, textColor=muted))])
     cells.append([*kpi_cell("Surface à traiter", f"{num(d['shab'])}{NBSP}m²"),
-                  Paragraph(f"{b['nb_log']} logements" + (f", {d['levels']} niveaux" if d.get("levels") else ""),
+                  Paragraph(f"{b['nb_log']} logement{'s' if b['nb_log'] > 1 else ''}"
+                            + (f", {d['levels']} niveau{'x' if d['levels'] > 1 else ''}" if d.get("levels") else ""),
                             style('t2', fontSize=7.5, leading=10, textColor=muted))])
     if fg:
         cells.append([*kpi_cell("Logements F ou G", f"<font color='#C4553A'>{fg}</font> / {b['nb_log']}", big=True),
@@ -389,7 +395,11 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         source.append(f"{units['n_known']} logement{'s' if units['n_known'] > 1 else ''} avec un DPE publié")
     est = sum(units["estimated"].values())
     if est:
-        source.append(f"{est} estimé{'s' if est > 1 else ''} " + ("d'après le DPE collectif" if d.get("building_dpe") else f"à la classe du{'s' if units['n_known'] > 1 else ''} DPE publié{'s' if units['n_known'] > 1 else ''}"))
+        n = units["n_known"]
+        source.append(f"{est} estimé{'s' if est > 1 else ''} " + (
+            "d'après le DPE collectif" if d.get("building_dpe") else
+            f"à la classe du{'s' if n > 1 else ''} DPE publié{'s' if n > 1 else ''}" if n else
+            "d'après la base nationale des bâtiments (DPE rattachés au bâtiment, non retrouvés à cette adresse)"))
     if units["unknown"]:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
