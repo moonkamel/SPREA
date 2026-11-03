@@ -107,3 +107,10 @@ def test_architects_and_non_works_firms_left_out():
     rows = [dict(ROW, Email="a@x.fr", Entreprise="ARCHI"), dict(ROW, Email="b@x.fr", Entreprise="BATI")]
     firms = {"ARCHI": {"Codes_NAF": "71.11Z"}, "BATI": {"Codes_NAF": "43.99C"}}
     assert [r["Email"] for r in st.eligible(rows, set(), firms)] == ["b@x.fr"]
+
+
+def test_single_dpe_sentence():
+    m = st.compose(dict(ROW, DPE="F"), FIRM, {"nb_log": 4, "dpe_fg": 1, "dpe_count": 1}, True)
+    t = m["text"]
+    assert "Le seul DPE publié pour cet immeuble de 4 logements (septembre 2025) classe son logement F" in t
+    assert "1 des 1" not in t

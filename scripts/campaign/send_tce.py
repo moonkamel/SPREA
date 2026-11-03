@@ -103,11 +103,16 @@ def dwellings_sentence(nb_log: int, fg: Optional[int], diagnosed: Optional[int],
     when = f" ({month_year(dpe_date)})" if month_year(dpe_date) else ""
     if fg is not None and fg >= nb_log:
         return f"Les {nb_log} logements de cet immeuble sont classés F ou G{when}."
+    if diagnosed == 1 and nb_log > 1:
+        # One DPE only: it says nothing about the other dwellings
+        return (f"Le seul DPE publié pour cet immeuble de {nb_log} logements{when} classe son logement {label}"
+                + (", et les autres logements n'ont pas encore de DPE." if fg else "."))
     head = f"Les DPE publiés pour cet immeuble de {nb_log} logements le classent {label}{when}"
     if not fg:
         return head + "."
     if diagnosed and diagnosed < nb_log:
-        return head + f" : {fg} des {diagnosed} logements diagnostiqués sont classés F ou G."
+        return head + (f" : {fg} des {diagnosed} logements diagnostiqués sont classés F ou G." if fg > 1 else
+                       f" : 1 des {diagnosed} logements diagnostiqués est classé F ou G.")
     return head + (f" : {fg} de ses {nb_log} logements sont classés F ou G." if fg > 1 else
                    f" : 1 de ses {nb_log} logements est classé F ou G.")
 
