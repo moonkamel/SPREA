@@ -57,3 +57,17 @@ def test_nominative_addresses_first_score_order_kept():
             dict(ROW, Email="d2@x.fr", Email_Statut="Nominatif (dirigeant)")]
     ordered = sorted(st.eligible(rows, set()), key=lambda r: st.STATUS_ORDER.get(r["Email_Statut"], 9))
     assert [r["Email"] for r in ordered] == ["d1@x.fr", "d2@x.fr", "n@x.fr", "g@x.fr", "p@x.fr"]
+
+
+def test_already_sent_reads_brevo_and_stops_if_unreadable(monkeypatch):
+    calls = []
+
+    def fake_api(method, path, key, body=None):
+        calls.append(path)
+        return 200, {"events": [{"email": "A@x.fr"}, {"email": "b@x.fr"}, {"email": ""}]}
+    monkeypatch.setattr(st, "api", fake_api)
+    assert st.already_sent("k") == {"a@x.fr", "b@x.fr"} and "tags=tce-mail1" in calls[0]
+    monkeypatch.setattr(st, "api", lambda *a, **k: (500, {}))
+    import pytest
+    with pytest.raises(SystemExit):
+        st.already_sent("k")

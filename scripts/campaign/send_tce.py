@@ -28,7 +28,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -194,15 +194,40 @@ def dpe_counts(ids: List[str]) -> Dict[str, Dict]:
     return out
 
 
+def already_sent(key: str, days: int = 60) -> set:
+    """Addresses Brevo already holds a TCE email for (tag tce-mail1): the tracking file
+    can miss some if a run was cut short, Brevo cannot."""
+    out, offset = set(), 0
+    start, end = (date.today() - timedelta(days=days)).isoformat(), date.today().isoformat()
+    while True:
+        q = urllib.parse.urlencode({"startDate": start, "endDate": end, "tags": "tce-mail1", "event": "requests",
+                                    "limit": 2500, "offset": offset})
+        status, data = api("GET", f"/smtp/statistics/events?{q}", key)
+        if status != 200:
+            sys.exit(f"Envois Brevo illisibles ({status}) : arrêt, pour ne jamais écrire deux fois")
+        rows = data.get("events") or []
+        out |= {(e.get("email") or "").strip().lower() for e in rows}
+        if len(rows) < 2500:
+            return out - {""}
+        offset += 2500
+
+
+def save_track(path: str, track: List[Dict]):
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=TRACK_COLS, delimiter=";", extrasaction="ignore")
+        w.writeheader()
+        w.writerows(track)
+
+
 def pdf_check(link: str, cache: Dict[str, Optional[bool]]) -> Optional[bool]:
     """None: the dossier does not open; else whether it shows the value lines."""
     if link in cache:
         return cache[link]
     import pdfplumber
     result = None
-    for attempt in range(2):
+    for attempt in range(1):  # a dossier the site cannot make within a minute is skipped
         try:
-            with urllib.request.urlopen(link, timeout=120) as res:
+            with urllib.request.urlopen(link, timeout=60) as res:
                 raw = res.read()
             if raw[:4] == b"%PDF":
                 with pdfplumber.open(io.BytesIO(raw)) as pdf:
@@ -211,7 +236,6 @@ def pdf_check(link: str, cache: Dict[str, Optional[bool]]) -> Optional[bool]:
             break
         except Exception as e:  # noqa: BLE001
             print(f"Dossier illisible ({e}) : {link}", flush=True)
-            time.sleep(5)
     cache[link] = result
     return result
 
@@ -237,6 +261,14 @@ def main():
     track_path = os.path.join(args.dir, TRACK)
     track = read(track_path)
     written = {t["email"].strip().lower() for t in track}
+    if key and not args.dry_run:
+        brevo = already_sent(key)
+        missing = brevo - written
+        if missing:
+            print(f"{len(missing)} adresses déjà écrites selon Brevo mais absentes du suivi : ajoutées", flush=True)
+            for e in sorted(missing):
+                track.append({"email": e, "envoi": "", "statut": "envoyé (repris de Brevo)"})
+            written |= missing
 
     # The first N of the ranking are the campaign; those already written to are done
     campaign = eligible(rows, set())[:args.limit]
@@ -294,7 +326,8 @@ def main():
         sent += 1
         track.append({"email": r["Email"].strip(), "entreprise": r["Entreprise"], "immeuble": r["Immeuble_Adresse"],
                       "lien": r["Lien_Dossier"], "envoi": date.today().isoformat(), "statut": "envoyé"})
-        print(f"OK -> {r['Email']} ({data.get('messageId', '')})", flush=True)
+        print(f"OK {sent} -> {r['Email']} ({data.get('messageId', '')})", flush=True)
+        save_track(track_path, track)  # after each email: a run cut short never writes twice
         time.sleep(2)
 
     if args.dry_run:
@@ -309,10 +342,7 @@ def main():
         print(f"Essai : {len(plan)} emails prêts, {skipped} écartés, "
               f"{sum(1 for p in plan if p['valeur_dans_pdf'] == 'oui')} dossiers avec la valeur après rénovation")
     else:
-        with open(track_path, "w", newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=TRACK_COLS, delimiter=";", extrasaction="ignore")
-            w.writeheader()
-            w.writerows(track)
+        save_track(track_path, track)
         print(f"Bilan {datetime.now():%Y-%m-%d %H:%M} : {sent} envoyés, {errors} erreurs, {skipped} écartés")
 
 
