@@ -360,6 +360,11 @@ def test_shared_dossier_needs_the_signed_link(env, monkeypatch):
     assert len(token) == 32 and token != monopro.share_token("bdnb-bg-ZZZZ")
     res = client.get(f"/api/monopro/bdnb-bg-AAAA/dossier/partage?t={token}")
     assert res.status_code == 200 and res.content[:4] == b"%PDF" and res.headers["content-disposition"].startswith("inline")
+    # The worksite version for building firms, not the sale dossier of the app
+    from tests.test_pdf import pdf_text
+    shared = pdf_text(res.content)
+    assert "Dossier chantier" in shared and "arguments de cession" not in shared
+    assert "Dossier_chantier_" in res.headers["content-disposition"]
     assert client.get("/api/monopro/bdnb-bg-AAAA/dossier/partage?t=" + "0" * 32).status_code == 404
     assert client.get("/api/monopro/bdnb-bg-AAAA/dossier/partage").status_code == 404
     # Without the key on the server, no link opens
@@ -455,6 +460,39 @@ def test_dossier_pdf_fits_two_pages_with_every_section():
                                      {"price_per_m2": 4100, "source": "prix médian des ventes DVF voisines"}, agency, TODAY)
     assert len(d["works"]["items"]) >= 5 and len(d["arguments"]) == 8
     assert monopro_pdf.pages(monopro_pdf.generate(d)) == 2
+    assert monopro_pdf.pages(monopro_pdf.generate(d, "tce")) == 2
+
+
+def test_worksite_dossier_for_building_firms():
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    collective = {"numero_dpe": "IMM", "type_batiment": "immeuble", "date_etablissement_dpe": "2026-03-10",
+                  "surface_habitable_immeuble": 300, "etiquette_dpe": "G", "qualite_isolation_murs": "insuffisante",
+                  "qualite_isolation_plancher_haut_comble_perdu": "insuffisante", "qualite_isolation_plancher_bas": "insuffisante",
+                  "type_installation_chauffage": "installation collective", "type_energie_principale_chauffage": "Gaz naturel",
+                  "type_ventilation": "Ventilation par ouverture des fenêtres", "adresse_ban": DOSSIER_BUILDING["address"]}
+    rows = [collective] + [flat(i, "GFE"[i % 3]) for i in range(4)]
+    company = {"name": "SCI DU NORD", "address": "1 RUE X 59800 LILLE",
+               "officers": [{"name": "HOLDING Y", "role": "Gérant", "company": True},
+                            {"name": "Jean DUPONT", "role": "Gérant", "company": False}]}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 2, rows,
+                                     {"price_per_m2": 4100, "source": "DVF"}, {"agency_name": "Agence X"}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+    assert "Dossier chantier" in pdf and "Le chantier, poste par poste" in pdf and "Corps d'état" in pdf
+    assert "Couvreur" in pdf and "Électricien" in pdf and "Budget travaux estimé" in pdf
+    assert "Pourquoi le propriétaire doit agir" in pdf and "Vos arguments face au propriétaire" in pdf
+    assert "entreprise RGE" in pdf and "Dirigeant : Jean DUPONT (Gérant)" in pdf and "2 autres immeubles" in pdf
+    # What the TCE email promises, only when the dossier has it
+    assert "après rénovation" in pdf and "Décote liée au DPE" in pdf
+    # Nothing of the sale dossier: no agency, no sale in one piece
+    assert "Agence X" not in pdf and "en bloc" not in pdf and "Pourquoi vendre" not in pdf
+    # The app keeps its sale dossier
+    app = pdf_text(monopro_pdf.generate(d)).replace("\n", " ")
+    assert "arguments de cession" in app and "Agence X" in app and "Corps d'état" not in app
+    # Without prices, no value promised
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 12}, OWNERS[0], company, 0, rows, None, {}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+    assert "Décote liée au DPE" not in pdf and "entreprise RGE" in pdf
 
 
 # --- Sale signals (BODACC) ---
