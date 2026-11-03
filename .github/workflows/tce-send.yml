@@ -17,6 +17,9 @@ on:
       dry_run:
         description: "Essai sans envoi (true / false)"
         default: "true"
+      test_to:
+        description: "Adresse de test : envoie seulement le premier mail, par Brevo, à cette adresse"
+        default: ""
 
 permissions:
   contents: write
@@ -44,7 +47,13 @@ jobs:
           LIMIT: ${{ inputs.limit || '300' }}
           QUOTA: ${{ inputs.quota || '150' }}
           DRY: ${{ inputs.dry_run || 'true' }}
-        run: python -u scripts/campaign/send_tce.py --dir out --limit "$LIMIT" --quota "$QUOTA" $([ "$DRY" = "false" ] || echo --dry-run)
+          TEST_TO: ${{ inputs.test_to }}
+        run: |
+          if [ -n "$TEST_TO" ]; then
+            python -u scripts/campaign/send_tce.py --dir out --limit "$LIMIT" --test-to "$TEST_TO"
+          else
+            python -u scripts/campaign/send_tce.py --dir out --limit "$LIMIT" --quota "$QUOTA" $([ "$DRY" = "false" ] || echo --dry-run)
+          fi
       - name: Save
         if: always()
         run: |

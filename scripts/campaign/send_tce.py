@@ -219,8 +219,11 @@ def main():
     ap.add_argument("--limit", type=int, default=300, help="the first N firms by relevance")
     ap.add_argument("--quota", type=int, default=150, help="emails at most for this run")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--test-to", default="", help="send only the first email, through Brevo, to this address")
     args = ap.parse_args()
     key = os.getenv("BREVO_API_KEY", "")
+    if args.test_to:
+        args.dry_run = False
     if not args.dry_run and not key:
         sys.exit("BREVO_API_KEY manquant")
 
@@ -259,6 +262,12 @@ def main():
             print(f"Écarté (dossier ou immeuble introuvable) : {r['Entreprise']}", flush=True)
             continue
         msg = compose(r, firms.get(r["Entreprise"], {}), b, has_value)
+        if args.test_to:  # the real email of the first firm, to a test inbox; nothing tracked
+            status, data = api("POST", "/smtp/email", key, {
+                "sender": SENDER, "replyTo": REPLY_TO, "to": [{"email": args.test_to}],
+                "subject": msg["subject"], "htmlContent": msg["html"], "textContent": msg["text"], "tags": ["tce-test"]})
+            print(f"Test Brevo -> {args.test_to} : {status} {data}")
+            return
         plan.append({"email": r["Email"].strip(), "entreprise": r["Entreprise"], "score": r["Score"],
                      "objet": msg["subject"], "valeur_dans_pdf": "oui" if has_value else "non",
                      "logements_fg": f"{b.get('dpe_fg')}/{b['nb_log']}"})
