@@ -13,9 +13,6 @@ on:
       all_rge:
         description: "Toutes les entreprises RGE, pas seulement les tous corps d'état (true / false)"
         default: "false"
-  push:
-    branches: ["claude/**"]
-    paths: ["scripts/apify/tce_free.py", ".github/workflows/tce-free.yml"]
 
 permissions:
   contents: write
