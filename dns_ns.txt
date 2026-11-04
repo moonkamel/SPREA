@@ -1,0 +1,1 @@
+{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"sprea.app.","type":2}],"Answer":[{"name":"sprea.app.","type":2,"TTL":21600,"data":"ns2.vercel-dns.com."},{"name":"sprea.app.","type":2,"TTL":21600,"data":"ns1.vercel-dns.com."}],"Comment":"Response from 198.51.45.13."}

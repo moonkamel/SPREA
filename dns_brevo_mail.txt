@@ -1,0 +1,1 @@
+{"Status":3,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"mail._domainkey.sprea.app.","type":16}],"Authority":[{"name":"sprea.app.","type":6,"TTL":600,"data":"ns1.vercel-dns.com. hostmaster.nsone.net. 1791639483 43200 7200 1209600 600"}],"Comment":"Response from 198.51.44.13."}

@@ -1,0 +1,1 @@
+{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"sprea.app.","type":15}],"Answer":[{"name":"sprea.app.","type":15,"TTL":60,"data":"20 mx2.zoho.eu."},{"name":"sprea.app.","type":15,"TTL":60,"data":"50 mx3.zoho.eu."},{"name":"sprea.app.","type":15,"TTL":60,"data":"10 mx.zoho.eu."}],"Comment":"Response from 198.51.45.13."}

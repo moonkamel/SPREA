@@ -1,0 +1,1 @@
+{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"_dmarc.sprea.app.","type":16}],"Answer":[{"name":"_dmarc.sprea.app.","type":16,"TTL":300,"data":"v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com"}],"Comment":"Response from 198.51.45.13."}
