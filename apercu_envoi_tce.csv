@@ -1,129 +1,361 @@
 ﻿email;entreprise;score;objet;valeur_dans_pdf;logements_fg
-renovallet@gmail.com;SARL RENOVALLET;5.9;Opportunité : Immeuble de 333 m² à Lille, 1 logement classé F ou G;non;1/1 connus, 4 logements
-kevyn.tardieu@peronne-chauffage.com;PERONNE CHAUFFAGE;5.8;Opportunité : Immeuble de 201 m² à Cambrai, 1 logement classé F ou G;non;1/1 connus, 4 logements
-nicolas@enr-batiment.fr;ENR-ELEC;5.8;Opportunité : Immeuble de 213 m² classé F à Béthune;non;1/4 connus, 4 logements
-marc.bassery@nordnet.fr;SARL BASSERY;5.8;Opportunité : Immeuble de 128 m² à Arras, 2 logements classés F ou G;non;2/3 connus, 3 logements
-trolle.c.electricien@orange.fr;CEDRIC TROLLE;5.8;Opportunité : Immeuble de 275 m² à Hardinghen, 2 logements classés F ou G;non;2/2 connus, 3 logements
-ets.tillettedacheux@wanadoo.fr;SARL F.TILLETTE D'ACHEUX & FILS;5.7;Opportunité : Immeuble de 325 m² à Berck, 2 logements classés F ou G;non;2/2 connus, 6 logements
-vivienservices59@gmail.com;VIVIEN FABRICE;5.7;Opportunité : Immeuble de 209 m² classé F à Dunkerque;non;3/6 connus, 6 logements
-johann.pannequin@gmail.com;EURL PANNEQUIN;5.6;Opportunité : Immeuble de 522 m² à Douai, 1 logement classé F ou G;non;1/1 connus, 9 logements
-freddy.drai@home-clef.fr;HOME CLEF;5.6;Opportunité : Immeuble de 176 m² à Douai, 2 logements classés F ou G;non;2/4 connus, 4 logements
-renovation.rayr@gmail.com;S.A.S.U RM RENOVATION (RM RENOVATION);5.6;Opportunité : Immeuble de 168 m² classé F à Roubaix;non;2/4 connus, 4 logements
-ybruge@wanadoo.fr;BRUGE CHAUFFAGE;5.5;Opportunité : Immeuble de 208 m² classé F à Arras;non;2/6 connus, 6 logements
-sna.anzalone@wanadoo.fr;ANZALONE HABITAT;5.5;Opportunité : Immeuble de 98 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/1 connus, 3 logements
-fontaine.f59@orange.fr;FRANCOIS FONTAINE;5.4;Opportunité : Immeuble de 212 m² classé F à Valenciennes;non;2/9 connus, 15 logements
-e.rousselle@dimuzio-freres.fr;DI MUZIO CONSTRUCTION;8.0;Opportunité : Immeuble de 275 m² classé G à Raismes;non;2/9 connus, 9 logements
-assistante.technique@fidon.fr;Société Nouvelle Fidon SAS;6.9;Opportunité : Immeuble de 152 m² à Douai, 2 logements classés F ou G;non;2/4 connus, 6 logements
-sed@sed-batiment.fr;SED BATIMENT;5.9;Opportunité : Immeuble de 136 m² à Roubaix, 1 logement classé F ou G;non;1/1 connus, 4 logements
-etra@etra-constructions.fr;ETRA CONSTRUCTIONS;5.8;Opportunité : Immeuble de 125 m² à Calais, 1 logement classé F ou G;non;1/1 connus, 3 logements
-vp@constructions-toitures-lilleroises.net;CONSTRUCTIONS TOITURES LILLEROISES;5.5;Opportunité : Immeuble de 150 m² à Béthune, 2 logements classés F ou G;non;2/4 connus, 4 logements
-contact@sarl-freel.com;ALAIN FREEL;7.0;Opportunité : Immeuble de 252 m² classé F à Calais;non;1/6 connus, 6 logements
-contact@rotsaertbrancato.fr;ROTSAERT BRANCATO SAS;6.7;Opportunité : Immeuble de 162 m² à Roubaix, 2 logements classés F ou G;non;2/2 connus, 3 logements
-contact@verizo.fr;VERIZO;6.6;Opportunité : Immeuble de 187 m² à Béthune, 4 logements classés F ou G;non;4/6 connus, 6 logements
-contact@vb-batiment.fr;VINCENT BATIMENT;6.6;Opportunité : Immeuble de 239 m² classé G à Tourcoing;non;5/5 connus, 5 logements
-secretariat@eclaircie.info;ECLAIRCIE;6.5;Opportunité : Immeuble de 325 m² à Berck, 2 logements classés F ou G;non;2/2 connus, 6 logements
-contact@rborealisations.com;RBO REALISATIONS;6.5;Opportunité : Immeuble de 112 m² classé G à Lille;non;2/4 connus, 4 logements
-contact@farbe-bat.fr;FARBE;6.4;Opportunité : Immeuble de 212 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/1 connus, 5 logements
-contact@entreprise-drain.fr;ENTREPRISE DRAIN;6.1;Opportunité : Immeuble de 221 m² à Cambrai, 2 logements classés F ou G;non;2/4 connus, 5 logements
-contact@france-construction.net;FRANCE CONSTRUCTION RENOVATION;6.1;Opportunité : Immeuble de 328 m² à Famars, 4 logements classés F ou G;non;4/7 connus, 20 logements
-info@domotechservices.fr;DOMOTECH SERVICES;6.1;Opportunité : Immeuble de 210 m² à Loos, 2 logements classés F ou G;non;2/2 connus, 8 logements
-contact@lecutier.fr;SARL LECUTIER;5.9;Opportunité : Immeuble de 267 m² à Douai, 3 logements classés F ou G;non;3/5 connus, 5 logements
-contact@cpz-littoral.fr;CPZ DU LITTORAL;5.9;Opportunité : Immeuble de 135 m² classé F à Boulogne-sur-Mer;non;1/1 connus, 3 logements
-contact@ligniersas.fr;LIGNIER SAS;5.8;Opportunité : Immeuble de 84 m² classé G à Berck;non;1/3 connus, 3 logements
-contact@batima-construction.fr;BATIMA;5.7;Opportunité : Immeuble de 118 m² à Tourcoing, 3 logements classés F ou G;non;3/4 connus, 4 logements
-contact@carrobatc.fr;CARROBAT C (CARROBAT C);5.5;Opportunité : Immeuble de 117 m² classé F à Douai;non;3/3 connus, 3 logements
-contact@ckconcept.fr;CK CONCEPT;5.5;Opportunité : Immeuble de 202 m² à Armentières, 1 logement classé F ou G;non;1/2 connus, 5 logements
-contact@wimille-chauffage.fr;WIMILLE CHAUFFAGE SOC;5.4;Opportunité : Immeuble de 92 m² classé F à Dunkerque;non;2/4 connus, 4 logements
-hdf-chauffage@orange.fr;HDF CHAUFFAGE;8.5;Opportunité : Immeuble de 140 m² classé F à Mazingarbe;non;1/3 connus, 3 logements
-bepbat@hotmail.fr;BEP BAT;8.0;Opportunité : Immeuble de 351 m² à Roubaix, 3 logements classés F ou G;non;3/5 connus, 13 logements
-renovial@orange.fr;RENOVIAL;7.8;Opportunité : Immeuble de 209 m² à Lille, 5 logements classés F ou G;oui;5/5 connus, 5 logements
-bfgrenovation@gmail.com;BFG RENOVATION;7.7;Opportunité : Immeuble de 1 032 m² à Calais, 1 logement classé F ou G;non;1/1 connus, 4 logements
-habitat.projet.hdf@gmail.com;HABITAT PROJET;7.6;Opportunité : Immeuble de 217 m² classé G à Hénin-Beaumont;non;2/2 connus, 5 logements
-snecaloin@neuf.fr;SAS SNE CALOIN;7.6;Opportunité : Immeuble de 331 m² à Le Touquet-Paris-Plage, 1 logement classé F ou G;oui;1/1 connus, 3 logements
-galeries.escaut@wanadoo.fr;GALERIES DE L'ESCAUT;7.5;Opportunité : Immeuble de 275 m² classé G à Raismes;non;2/9 connus, 9 logements
-sasmlbatiment@gmail.com;ML BATIMENT;7.5;Opportunité : Immeuble de 131 m² classé F à Liévin;non;2/3 connus, 3 logements
-francebati59@outlook.fr;FRANCE BATI;7.5;Opportunité : Immeuble de 181 m² classé G à Roubaix;non;1/3 connus, 7 logements
-dhaisne-houdart@wanadoo.fr;SOCIETE D'EXPLOITATION DES ETABLISSEMENTS DHAISNE HOUDART;7.4;Opportunité : Immeuble de 212 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/1 connus, 5 logements
-aktarenovation@gmail.com;AKTA RENOVATION;7.4;Opportunité : Immeuble de 152 m² à Marcq-en-Barœul, 2 logements classés F ou G;non;2/4 connus, 4 logements
-ducarne.andre@orange.fr;DUCARNE BATIMENT;7.3;Opportunité : Immeuble de 357 m² classé F à Le Cateau-Cambrésis;non;2/3 connus, 3 logements
-lumelio.pv@gmail.com;LUMELIO;7.3;Opportunité : Immeuble de 83 m² classé F à Douai;non;3/3 connus, 6 logements
-cliniqueduchauffage@orange.fr;SARL CLINIQUE DU CHAUFFAGE;7.3;Opportunité : Immeuble de 199 m² à Boulogne-sur-Mer, 6 logements classés F ou G;non;6/9 connus, 10 logements
-abclimetchauffage@gmail.com;AB-CLIM & CHAUFFAGE;7.2;Opportunité : Immeuble de 200 m² à Roubaix, 1 logement classé F ou G;non;1/2 connus, 5 logements
-madeco59@outlook.fr;MA DECO;7.2;Opportunité : Immeuble de 143 m² à Lille, 4 logements classés F ou G;non;4/5 connus, 5 logements
-sarlbatir59@gmail.com;BAT IR;7.0;Opportunité : Immeuble de 228 m² à Lille, 4 logements classés F ou G;oui;4/4 connus, 5 logements
-saskos6259@gmail.com;KOS;6.9;Opportunité : Immeuble de 252 m² classé F à Calais;non;1/6 connus, 6 logements
-omega.hautsdefrance@gmail.com;OMEGA;6.9;Opportunité : Immeuble de 301 m² à Fenain, 1 logement classé F ou G;non;1/1 connus, 3 logements
-sarlbatibod59179@gmail.com;BATI BOD;6.9;Opportunité : Immeuble de 462 m² à Marchiennes, 1 logement classé F ou G;non;1/2 connus, 10 logements
-lmr.bethune@gmail.com;LA MAISON RENOVEE;6.9;Opportunité : Immeuble de 239 m² classé G à Beuvry;non;1/2 connus, 5 logements
-nhc.habitat@gmail.com;NORD HABITAT CONCEPT;6.9;Opportunité : Immeuble de 165 m² classé F à Tourcoing;non;2/3 connus, 3 logements
-travauxhdf@gmail.com;TRAVAUX HDF;6.9;Opportunité : Immeuble de 152 m² à Douai, 2 logements classés F ou G;non;2/4 connus, 6 logements
-bc.10@orange.fr;B C DIX;6.8;Opportunité : Immeuble de 1 427 m² à Bapaume, 1 logement classé F ou G;non;1/1 connus, 3 logements
-mmrbati@outlook.fr;R-BAT;6.8;Opportunité : Immeuble de 179 m² classé F à Villeneuve-d'Ascq;non;4/6 connus, 6 logements
-cchabitat62@gmail.com;CC HABITAT;6.7;Opportunité : Immeuble de 116 m² à Lens, 2 logements classés F ou G;non;2/4 connus, 5 logements
-lindenberg@wanadoo.fr;CIBEC;6.6;Opportunité : Immeuble de 83 m² classé F à Douai;non;3/3 connus, 6 logements
-energies.techniques@wanadoo.fr;ENERGIES ET TECHNIQUES;6.5;Opportunité : Immeuble de 1 427 m² à Bapaume, 1 logement classé F ou G;non;1/1 connus, 3 logements
-sarl3c@free.fr;LES 3 C;6.5;Opportunité : Immeuble de 161 m² classé F à Anzin;non;1/2 connus, 5 logements
-okourant@gmail.com;OKOURANT;6.4;Opportunité : Immeuble de 225 m² à Vendin-le-Vieil, 1 logement classé F ou G;non;1/1 connus, 3 logements
-pcbelectricite@gmail.com;PCB ELEC;6.4;Opportunité : Immeuble de 162 m² à Waziers, 1 logement classé F ou G;non;1/2 connus, 4 logements
-batismartlille@gmail.com;SAS BATISMART;6.4;Opportunité : Immeuble de 91 m² à Lille, 1 logement classé F ou G;non;1/2 connus, 3 logements
-cheauffhabitat@gmail.com;SASU CHEAUFF HABITAT;6.4;Opportunité : Immeuble de 217 m² classé F à Lens;non;1/6 connus, 6 logements
-tac-batiment@orange.fr;TAC BATIMENT;6.4;Opportunité : Immeuble de 162 m² à Waziers, 1 logement classé F ou G;non;1/2 connus, 4 logements
-cslwimille@wanadoo.fr;CHAUFFAGE SANITAIRE DU LITTORAL;6.4;Opportunité : Immeuble de 135 m² classé F à Boulogne-sur-Mer;non;1/1 connus, 3 logements
-secretariat.marcdubois@gmail.com;EURL N BOUDRINGHIN;6.3;Opportunité : Immeuble de 175 m² à Arques, 1 logement classé F ou G;non;1/2 connus, 3 logements
-premshabitat@gmail.com;PREM'S HABITAT;6.3;Opportunité : Immeuble de 115 m² à Arras, 2 logements classés F ou G;non;2/2 connus, 4 logements
-comecotec@orange.fr;COMECOTEC;6.2;Opportunité : Immeuble de 115 m² à Arras, 2 logements classés F ou G;non;2/2 connus, 4 logements
-sas.renovaneuf@gmail.com;SAS RENOVANEUF;6.1;Opportunité : Immeuble de 146 m² classé G à Béthune;non;1/4 connus, 4 logements
-etr-ecotoiturerenove@outlook.fr;ECO TOITURE RENOVE;6.0;Opportunité : Immeuble de 118 m² à Tourcoing, 3 logements classés F ou G;non;3/4 connus, 4 logements
-full.renov.habitat59@gmail.com;FULL RENOV HABITAT;6.0;Opportunité : Immeuble de 230 m² à Lille, 1 logement classé F ou G;oui;1/2 connus, 5 logements
-delta.energies59@gmail.com;DELTA ENERGIES;5.9;Opportunité : Immeuble de 85 m² à Valenciennes, 1 logement classé F ou G;non;1/2 connus, 3 logements
-energie5993@gmail.com;ENERGIE +;5.9;Opportunité : Immeuble de 85 m² à Valenciennes, 1 logement classé F ou G;non;1/2 connus, 3 logements
-mariecalouagencement@gmail.com;MARIE CALOU;5.9;Opportunité : Immeuble de 187 m² à Béthune, 4 logements classés F ou G;non;4/6 connus, 6 logements
-environnementsunaris@gmail.com;SUNARIS ENVIRONNEMENT;5.9;Opportunité : Immeuble de 210 m² à Loos, 2 logements classés F ou G;non;2/2 connus, 8 logements
-evin-facade@hotmail.com;EVIN FACADE;5.9;Opportunité : Immeuble de 418 m² classé G à Lille;non;3/11 connus, 14 logements
-gtrenovationramonage@hotmail.com;GTRR (THOMAS FETIVEAU) (SAS);5.9;Opportunité : Immeuble de 215 m² à Marcq-en-Barœul, 1 logement classé F ou G;oui;1/1 connus, 5 logements
-avarelec@gmail.com;AVARELEC PERE & FILS;5.8;Opportunité : Immeuble de 174 m² à Dunkerque, 3 logements classés F ou G;non;3/3 connus, 3 logements
-madeline.somaten@gmail.com;SOMATEN;5.8;Opportunité : Immeuble de 98 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/1 connus, 3 logements
-structurebatiment-sarl@wanadoo.fr;SARL STRUCTURE BATIMENT;5.8;Opportunité : Immeuble de 208 m² classé F à Lille;oui;8/10 connus, 10 logements
-adconstruction.nord@yahoo.fr;A.D.CONSTRUCTION;5.7;Opportunité : Immeuble de 164 m² à Caudry, 1 logement classé F ou G;non;1/1 connus, 3 logements
-glec62130@gmail.com;G'LEC;5.7;Opportunité : Immeuble de 198 m² classé F à Saint-Pol-sur-Ternoise;non;0/0 connus, 5 logements
-sarl.aces@sfr.fr;A.C.E.S.;5.7;Opportunité : Immeuble de 117 m² classé F à Douai;non;3/3 connus, 3 logements
-mclenergies62@gmail.com;MCL ENERGIES;5.7;Opportunité : Immeuble de 150 m² à Béthune, 2 logements classés F ou G;non;2/4 connus, 4 logements
-lm-services@orange.fr;SARL LM SERVICES;5.7;Opportunité : Immeuble de 522 m² à Douai, 1 logement classé F ou G;non;1/1 connus, 9 logements
-hd.elec@orange.fr;H.D ELEC;5.6;Opportunité : Immeuble de 167 m² à Dunkerque, 1 logement classé F ou G;non;1/1 connus, 3 logements
-facoreno@hotmail.fr;FACO RENO;5.6;Opportunité : Immeuble de 128 m² classé G à Lille;non;0/0 connus, 4 logements
-stidel.construction@wanadoo.fr;SARL STIDEL CONSTRUCTION;5.6;Opportunité : Immeuble de 208 m² classé F à Lille;oui;8/10 connus, 10 logements
-homecoenergies@gmail.com;HOMECO ENERGIES;5.5;Opportunité : Immeuble de 167 m² à Dunkerque, 1 logement classé F ou G;non;1/1 connus, 3 logements
-ideofacade@gmail.com;IDEO FACADE (IDEO FACADE);5.5;Opportunité : Immeuble de 240 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/1 connus, 4 logements
-homeservicesfa@free.fr;SARL HOMESERVICES;5.5;Opportunité : Immeuble de 168 m² classé F à Roubaix;non;2/4 connus, 4 logements
-etsmarcel.huyghe@wanadoo.fr;SARL ETABLISSEMENTS MARCEL HUYGHE;5.4;Opportunité : Immeuble de 202 m² à Armentières, 1 logement classé F ou G;non;1/2 connus, 5 logements
-foulonchauffage@outlook.com;FOULON CHAUFFAGE;5.9;Opportunité : Immeuble de 163 m² à Bully-les-Mines, 1 logement classé F ou G;non;1/3 connus, 3 logements
-sarlanthonycossart@gmail.com;ANTHONY COSSART;5.8;Opportunité : Immeuble de 106 m² à Calais, 1 logement classé F ou G;non;1/3 connus, 3 logements
-frema2@frema2.fr;FREMA CHAUFF ELEC;7.5;Opportunité : Immeuble de 256 m² à Longuenesse, 2 logements classés F ou G;non;2/6 connus, 6 logements
-mbarbier@sogebat.fr;SOGEBAT;6.6;Opportunité : Immeuble de 109 m² à Bully-les-Mines, 1 logement classé F ou G;non;1/3 connus, 4 logements
-adv@murfy.fr;MURFY ENERGIES;6.0;Opportunité : Immeuble de 230 m² à Armentières, 1 logement classé F ou G;non;1/3 connus, 5 logements
-xd@bphrenovation.fr;BPH RENOVATION;5.6;Opportunité : Immeuble de 118 m² à Ronchin, 1 logement classé F ou G;non;1/3 connus, 4 logements
-direction@d-delplanque.fr;DELPLANQUE HABITAT;7.7;Opportunité : Immeuble de 721 m² à Saint-Omer, 1 logement classé F ou G;non;1/3 connus, 5 logements
-contact@les3artisans.com;SARL LES 3 ARTISANS;6.8;Opportunité : Immeuble de 146 m² à Lille, 2 logements classés F ou G;oui;2/5 connus, 5 logements
-contact@hdfcouverture.fr;HAUTS DE FRANCE COUVERTURE;6.7;Opportunité : Immeuble de 231 m² à Pont-à-Vendin, 2 logements classés F ou G;non;2/6 connus, 6 logements
-contact@jpruelle.fr;SAS JEAN PIERRE RUELLE;6.1;Opportunité : Immeuble de 107 m² à Anzin, 1 logement classé F ou G;non;1/3 connus, 3 logements
-secretariat@normand-construction.com;NORMAND CONSTRUCTION;6.1;Opportunité : Immeuble de 201 m² à Cambrai, 1 logement classé F ou G;non;1/3 connus, 3 logements
-contact@cmba-nord.com;CONSTRUCTION MACONNERIE BETON ARME (C.M.B.A.);5.9;Opportunité : Immeuble de 419 m² à Boulogne-sur-Mer, 3 logements classés F ou G;non;3/7 connus, 7 logements
-info@iep-solutions.com;IEP SOLUTIONS (IEP SOLUTIONS) (IEPS);5.8;Opportunité : Immeuble de 118 m² à Ronchin, 1 logement classé F ou G;non;1/3 connus, 4 logements
-contact@solr-et-techniques.fr;SOL R ET TECHNIQUES;5.5;Opportunité : Immeuble de 69 m² à Lens, 1 logement classé F ou G;non;1/4 connus, 4 logements
-home-renov@wanadoo.fr;HOME RENOV CONSTRUCTION;7.3;Opportunité : Immeuble de 352 m² à Saint-Omer, 1 logement classé F ou G;non;1/5 connus, 5 logements
-sjd3@wanadoo.fr;S.J.D. BATIMENT;7.2;Opportunité : Immeuble de 336 m² à Saint-Amand-les-Eaux, 2 logements classés F ou G;non;2/5 connus, 10 logements
-artoneconseilhabitat@gmail.com;ARTONE CONSEIL HABITAT;7.1;Opportunité : Immeuble de 214 m² à Roubaix, 3 logements classés F ou G;non;3/10 connus, 10 logements
-canconstruction59@gmail.com;CAN CONSTRUCTION;7.1;Opportunité : Immeuble de 214 m² à Roubaix, 3 logements classés F ou G;non;3/10 connus, 10 logements
-ecorenobat@gmail.com;ECO-RENO-BAT;6.9;Opportunité : Immeuble de 262 m² à Béthune, 3 logements classés F ou G;non;3/7 connus, 7 logements
-dpro59190@gmail.com;DPRO SARL;6.7;Opportunité : Immeuble de 721 m² à Saint-Omer, 1 logement classé F ou G;non;1/3 connus, 5 logements
-artbatiment62@gmail.com;ART BATIMENT;6.7;Opportunité : Immeuble de 96 m² à Saint-Omer, 1 logement classé F ou G;non;1/3 connus, 3 logements
-francehabitatenergie@hotmail.com;ENERGIE FRANCE HABITAT;6.7;Opportunité : Immeuble de 60 m² à Tourcoing, 1 logement classé F ou G;non;1/4 connus, 4 logements
-rb.home59@gmail.com;RB HOME;6.4;Opportunité : Immeuble de 183 m² à Aire-sur-la-Lys, 1 logement classé F ou G;non;1/3 connus, 3 logements
-ccssarl62160@gmail.com;CCS (CCS) (CCS);6.4;Opportunité : Immeuble de 109 m² à Bully-les-Mines, 1 logement classé F ou G;non;1/3 connus, 4 logements
-actichauff@orange.fr;ACTICHAUFF;6.1;Opportunité : Immeuble de 184 m² à Armentières, 1 logement classé F ou G;non;1/4 connus, 4 logements
-arno.chauffage@gmail.com;ARNO CHAUFFAGE;6.1;Opportunité : Immeuble de 146 m² à Lille, 2 logements classés F ou G;oui;2/5 connus, 5 logements
-sarlctr@orange.fr;CTR;5.9;Opportunité : Immeuble de 231 m² à Pont-à-Vendin, 2 logements classés F ou G;non;2/6 connus, 6 logements
-climethik@gmail.com;CLIMETHIK;5.7;Opportunité : Immeuble de 184 m² à Armentières, 1 logement classé F ou G;non;1/4 connus, 4 logements
-lysbat@orange.fr;LYS BAT (LYS BAT);5.6;Opportunité : Immeuble de 75 m² à Croix, 1 logement classé F ou G;oui;1/3 connus, 3 logements
-art-reno@orange.fr;POMMART-RENO;5.6;Opportunité : Immeuble de 75 m² à Croix, 1 logement classé F ou G;oui;1/3 connus, 3 logements
-guilluy-toiture@orange.fr;ETABLISSEMENTS GARS-GUILLUY TOITURES;5.4;Opportunité : Immeuble de 230 m² à Armentières, 1 logement classé F ou G;non;1/3 connus, 5 logements
+sasdesavoy@orange.fr;SAS DESAVOY;8.3;Opportunité : Maison de 40 m² classée G à Moreuil;non;1/1 connus, 1 logements
+demollien.f.valerie@orange.fr;DMF SAS DEMOLLIEN F;8.0;Opportunité : Maison de 36 m² classée G à Amiens;non;1/1 connus, 1 logements
+boutroy.charalambous@orange.fr;BOUTROY CHARALAMBOUS;7.9;Opportunité : Immeuble de 898 m² à Tergnier, 3 logements classés F ou G;non;3/6 connus, 15 logements
+sarl-thuillier@wanadoo.fr;ETS THUILLIER JEAN JACQUES;7.9;Opportunité : Immeuble de 898 m² à Tergnier, 3 logements classés F ou G;non;3/6 connus, 15 logements
+colin.elisabeth@yahoo.fr;DENIS COLIN;7.9;Opportunité : Immeuble de 551 m² classé F à Ribécourt-Dreslincourt;non;2/11 connus, 17 logements
+vanessa.arnoux@batichauffe.fr;BATICHAUFFE;7.7;Opportunité : Immeuble de 563 m² à Creil, 5 logements classés F ou G;non;5/8 connus, 9 logements
+sarl.ducauquy@orange.fr;DUCAUQUY;7.3;Opportunité : Immeuble de 131 m² à Roye, 2 logements classés F ou G;non;2/3 connus, 4 logements
+c.rohant@aquarec.fr;SARL ROHANT;7.2;Opportunité : Bâtiment de 172 m² classé G à Saint-Quentin;non;2/2 connus, 2 logements
+arnaud@aes-reims.fr;AZUR RENOVATION - AES;7.1;Opportunité : Maison de 270 m² classée G à Grandrieux;non;1/1 connus, 1 logements
+demonchyfils@sfr.fr;DEMONCHY FILS;7.1;Opportunité : Maison de 68 m² classée G à Breteuil;non;1/1 connus, 1 logements
+sasdasilvadominique@orange.fr;DA SILVA DOMINIQUE;7.0;Opportunité : Maison de 50 m² classée G à Lesges;non;1/1 connus, 1 logements
+morin.wanderpepen@wanadoo.fr;MORIN WANDERPEPEN SAS;7.0;Opportunité : Maison de 316 m² classée F à Chamouille;non;1/1 connus, 1 logements
+jean-michel.vergano@orange.fr;SARL BOSSE;7.0;Opportunité : Immeuble de 128 m² à Chantilly, 2 logements classés F ou G;oui;2/3 connus, 6 logements
+entlabbejerome@gmail.com;LABBE JEROME;6.9;Opportunité : Maison de 144 m² classée G à Beuvardes;non;1/1 connus, 1 logements
+ltavergnier@wanadoo.fr;ETABLISSEMENT TAVERGNIER;6.9;Opportunité : Maison de 78 m² classée G à Rougeries;non;1/1 connus, 1 logements
+carlier-baudoin@wanadoo.fr;LA MAISONCELL'OISE;6.9;Opportunité : Maison de 336 m² classée G à Lafraye;non;1/1 connus, 1 logements
+sas.douai@orange.fr;SAS DOUAI;6.8;Opportunité : Maison de 23 m² classée G à Feignies;non;1/1 connus, 1 logements
+valerie_salmon@yahoo.fr;SALMON F.;6.8;Opportunité : Immeuble de 143 m² à Crépy-en-Valois, 3 logements classés F ou G;non;3/4 connus, 4 logements
+colombe.sebastien@wanadoo.fr;COLOMBE SEBASTIEN;6.7;Opportunité : Maison de 270 m² classée G à Grandrieux;non;1/1 connus, 1 logements
+franck@rehenergiebatiment.fr;REH ENERGIE BATIMENT;6.7;Opportunité : Maison de 68 m² classée G à Breteuil;non;1/1 connus, 1 logements
+tony.guillemont@outlook.fr;SARL DOBEL GUILLEMONT;6.7;Opportunité : Immeuble de 170 m² à Combles, 2 logements classés F ou G;non;2/2 connus, 4 logements
+stephane.robillard0340@orange.fr;ROBILLARD;6.6;Opportunité : Maison de 176 m² classée G à Aubenton;non;1/1 connus, 1 logements
+regis.alluitte@emrh-piscines.fr;ENTRPRISE MACONNAGE RENOVATION HABITAT (E.M.R.H);6.5;Opportunité : Maison de 105 m² classée G à Tergnier;non;1/1 connus, 1 logements
+pruvot.rv@orange.fr;PRUVOT HERVE;6.5;Opportunité : Maison de 165 m² classée G à Guise;non;1/1 connus, 1 logements
+lboculat@hotmail.com;ATEL SOLUTIONS;6.4;Opportunité : Immeuble de 137 m² à Chaumont-en-Vexin, 4 logements classés F ou G;non;4/4 connus, 5 logements
+david@brv-groupe.fr;BRV RENOVATION;6.4;Opportunité : Maison de 132 m² classée F à Hazebrouck;non;1/1 connus, 1 logements
+vincent.lefebvre03@orange.fr;VINCENT LEFEBVRE;6.4;Opportunité : Maison de 111 m² classée G à Fillièvres;non;1/1 connus, 1 logements
+ferrier.willy@wanadoo.fr;WILLY FERRIER;6.4;Opportunité : Immeuble de 130 m² à Aulnoye-Aymeries, 6 logements classés F ou G;non;6/6 connus, 6 logements
+dubrulle.michel@orange.fr;DUBRULLE PERE ET FILS (SAS DUBRULLE PERE ET FILS);6.3;Opportunité : Bâtiment de 249 m² classé F à Annezin;non;1/2 connus, 2 logements
+legaymathieu@orange.fr;SOCIETE LEGAY (SOCIETE LEGAY);6.2;Opportunité : Maison de 161 m² classée F à Oisemont;non;1/1 connus, 1 logements
+roxane.g@ganfornina-batiment.com;GANFORNINA BATIMENT;6.2;Opportunité : Maison de 78 m² classée G à Chierry;non;1/1 connus, 1 logements
+pmullet@generalehabitat.fr;LA GENERALE D'HABITAT (LA GENERALE D'HABITAT - RENOVATION HABITAT);6.2;Opportunité : Immeuble de 196 m² classé F à Auby;non;4/5 connus, 5 logements
+tahar.ben-amor@rpmrenovation.fr;SARL R P M RENOVATION;6.2;Opportunité : Immeuble de 97 m² à Senlis, 2 logements classés F ou G;non;2/3 connus, 3 logements
+bruno@ropital.fr;ENTREPRISE ROPITAL;6.1;Opportunité : Maison de 93 m² classée G à Divion;non;1/1 connus, 1 logements
+eric.glacet@wanadoo.fr;ETS ERIC GLACET;6.1;Opportunité : Immeuble de 196 m² à Cambrai, 3 logements classés F ou G;non;3/4 connus, 4 logements
+ets.remy@wanadoo.fr;ETS REMY;6.1;Opportunité : Maison de 164 m² classée G à Bienvillers-au-Bois;non;1/1 connus, 1 logements
+sarlfeutrez@hotmail.fr;FEUTREZ FRERES;6.1;Opportunité : Maison de 40 m² classée G à Curchy;non;1/1 connus, 1 logements
+ets.margez@wanadoo.fr;MARGEZ;6.1;Opportunité : Maison de 108 m² classée F à Audincthun;non;1/1 connus, 1 logements
+jean.renaud@laflammepicarde.fr;LA FLAMME PICARDE;6.1;Opportunité : Maison de 76 m² classée G à Soissons;non;1/1 connus, 1 logements
+sarl-durot@orange.fr;SARL DUROT;6.1;Opportunité : Immeuble de 204 m² classé G à Abbeville;non;0/0 connus, 4 logements
+pinto80@orange.fr;SAS PINTO (SAS PINTO);6.1;Opportunité : Maison de 72 m² classée G à Péronne;non;1/1 connus, 1 logements
+bethfort@orange.fr;SOC EXPLOIT BETHFORT ET FILS;6.1;Opportunité : Maison de 90 m² classée G à Beaucamps-le-Vieux;non;1/1 connus, 1 logements
+sarljeremybouchet@gmail.com;JB COUVERTURE;6.0;Opportunité : Maison de 99 m² classée G à Le Quesnoy;non;1/1 connus, 1 logements
+frgorin@wanadoo.fr;SARL GORIN PERE ET FILS;6.0;Opportunité : Maison de 114 m² classée G à Poix-de-Picardie;non;1/1 connus, 1 logements
+benoit.vanthournout@ppf.fr;VTH RENOV;6.0;Opportunité : Maison de 78 m² classée G à Leers;non;1/1 connus, 1 logements
+dominique.callence@wanadoo.fr;EURL CALLENCE SIMONET DOMINIQUE;5.9;Opportunité : Maison de 105 m² classée G à Château-Thierry;non;1/1 connus, 1 logements
+sas-omilanowski@laposte.net;OMILANOWSKI PERE ET FILS;5.9;Opportunité : Maison de 30 m² classée G à Nogent-l'Artaud;non;1/1 connus, 1 logements
+benjamin.olivier@recobat.net;RECOBAT (RECOBAT);5.9;Opportunité : Maison de 190 m² classée F à Grenay;non;1/1 connus, 1 logements
+luigi.marino0130@orange.fr;LUIGI MARINO;5.9;Opportunité : Maison de 117 m² classée G à Comines;non;1/1 connus, 1 logements
+sas.lopezbruno@gmail.com;SOCIETE LOPEZ;5.8;Opportunité : Immeuble de 143 m² à Crépy-en-Valois, 3 logements classés F ou G;non;3/4 connus, 4 logements
+pfauveau@ouddesteens.fr;OUDDE STEENS;5.8;Opportunité : Maison de 80 m² classée F à Longuenesse;non;1/1 connus, 1 logements
+delmaetcouverture@outlook.com;DELMAET RENOV;5.8;Opportunité : Maison de 33 m² classée G à Villeneuve-d'Ascq;non;1/1 connus, 1 logements
+buzzijeanmarc@orange.fr;JEAN BUZZI;5.8;Opportunité : Maison de 79 m² classée G à Douai;non;1/1 connus, 1 logements
+loic.tassin59450@gmail.com;LOIC TASSIN SARL;5.8;Opportunité : Maison de 79 m² classée G à Douai;non;1/1 connus, 1 logements
+cedricdenaes@hotmail.fr;DENAES ET FILS (DENAES ET FILS);5.7;Opportunité : Maison de 66 m² classée F à Hazebrouck;non;1/1 connus, 1 logements
+delepine.sarl@orange.fr;SARL DELEPINE;5.7;Opportunité : Maison de 80 m² classée G à Norrent-Fontes;non;1/1 connus, 1 logements
+sarl.joelsmagghe@gmail.com;SARL JOEL SMAGGHE;5.7;Opportunité : Maison de 80 m² classée F à Longuenesse;non;1/1 connus, 1 logements
+avalente.artisan@gmail.com;ANTONIO VALENTE;5.7;Opportunité : Maison de 55 m² classée G à Montigny-Lengrain;non;1/1 connus, 1 logements
+laurent.luste@orange.fr;LAURENT LUSTE;5.7;Opportunité : Maison de 74 m² classée G à Vercourt;non;1/1 connus, 1 logements
+mhericotte@live.fr;M H (MH RENOVATION);5.7;Opportunité : Maison de 64 m² classée G à Le Quesnel;non;1/1 connus, 1 logements
+mcb.amiens.rabeuf@gmail.com;MAXIMILIEN RABEUF (MCB - RABEUF MAXIMILIEN);5.7;Opportunité : Maison de 29 m² classée G à Amiens;non;1/1 connus, 1 logements
+kurt.amico@hotmail.fr;AMICO'NSTRUCT;5.6;Opportunité : Maison de 123 m² classée F à Solre-le-Château;non;1/1 connus, 1 logements
+fanny.veron@bvf62.net;BVF 62 (BVF 62);5.6;Opportunité : Maison de 124 m² classée G à Nortkerque;non;1/1 connus, 1 logements
+ldenis.construction@gmail.com;LD CONSTRUCTION;5.6;Opportunité : Maison de 119 m² classée F à Lumbres;non;0/0 connus, 1 logements
+sauvage.bat@gmail.com;SARL SAUVAGE BATIMENT;5.6;Opportunité : Maison de 72 m² classée G à Gravelines;non;1/1 connus, 1 logements
+jeanbaptiste.prudhomme@sfr.fr;SASU ATHIES BATIMENT;5.6;Opportunité : Maison de 207 m² classée F à Laon;non;1/1 connus, 1 logements
+fabbri.jeanpierre@free.fr;BATI ' TOUT;5.6;Opportunité : Maison de 116 m² classée G à Thivencelle;non;1/1 connus, 1 logements
+lagougechristophe.renov@gmail.com;CHRISTOPHE LAGOUGE (LAGOUGE CHRISTOPHE RENOVATION);5.6;Opportunité : Maison de 90 m² classée G à Beaurevoir;non;1/1 connus, 1 logements
+contact.dnaim.batiment@gmail.com;DNAIM BATIMENT;5.6;Opportunité : Immeuble de 217 m² classé F à Lens;non;1/6 connus, 6 logements
+cedric.bonnaire448@orange.fr;ETS BONNAIRE;5.6;Opportunité : Immeuble de 445 m² classé F à Jouy-sous-Thelle;non;4/12 connus, 12 logements
+sarl.pecora@gmail.com;PECORA GIOVANNI ET FILS;5.6;Opportunité : Maison de 170 m² classée F à Sallaumines;non;1/1 connus, 1 logements
+vermeersch.toiture@hotmail.com;VERMEERSCH TOITURE;5.6;Opportunité : Immeuble de 209 m² classé F à Dunkerque;non;3/6 connus, 6 logements
+entreprise.johnmouliere@outlook.fr;JOHN MOULIERE;5.5;Opportunité : Maison de 76 m² classée G à Desvres;non;1/1 connus, 1 logements
+david.marques@marques-freres.fr;ENTREPRISE MARQUES FRERES;5.5;Opportunité : Bâtiment de 58 m² à Cambrai, 1 logement classé F ou G;non;1/2 connus, 2 logements
+lourme.thierry@hotmail.fr;THIERRY LOURME (THIERRY LOURME);5.4;Opportunité : Maison de 20 m² classée F à Hautmont;non;1/1 connus, 1 logements
+decroixjb@yahoo.fr;DECROIX CONSTRUCTION;5.4;Opportunité : Maison de 119 m² classée F à Lumbres;non;0/0 connus, 1 logements
+corailler.dany@wanadoo.fr;ENTREPRISE DANY CORAILLER;5.4;Opportunité : Maison de 306 m² classée F à Annezin;non;1/1 connus, 1 logements
+rino.san-martino@wanadoo.fr;SAN MARTINO RINO;5.4;Opportunité : Maison de 96 m² classée G à Quiévrechain;non;1/1 connus, 1 logements
+martin-guillaume2@wanadoo.fr;SAS GUILLAUME MARTIN;5.4;Opportunité : Maison de 161 m² classée F à Oisemont;non;1/1 connus, 1 logements
+benjaminconstruction02@gmail.com;BENJAMIN CONSTRUCTIONS;5.3;Opportunité : Maison de 52 m² classée G à Vassens;non;1/1 connus, 1 logements
+martiaux.jean-luc@wanadoo.fr;JEAN-LUC MARTIAUX (JLM CONSTRUCTION);5.3;Opportunité : Immeuble de 128 m² à Arras, 2 logements classés F ou G;non;2/3 connus, 3 logements
+martelrenov5@gmail.com;MARTEL RENOVATION;5.3;Opportunité : Maison de 91 m² classée F à Wardrecques;non;1/1 connus, 1 logements
+wepierre.stephane@sfr.fr;SW PLATRERIE;5.3;Opportunité : Bâtiment de 440 m² à Hucqueliers, 1 logement classé F ou G;non;1/2 connus, 2 logements
+l.triquenaux@orange.fr;TRIQUENAUX LUDOVIC;5.3;Opportunité : Maison de 186 m² classée F à Braine;non;1/1 connus, 1 logements
+troisi-dehen@nordnet.fr;TROISI-DEHEN;5.3;Opportunité : Maison de 99 m² classée G à Le Quesnoy;non;1/1 connus, 1 logements
+francky.62470@outlook.com;BATI RENOV'CONSTRUCTIONS FC;5.3;Opportunité : Maison de 85 m² classée G à Auchel;non;1/1 connus, 1 logements
+pelletier.eddy@orange.fr;EDDY PELLETIER;5.3;Opportunité : Maison de 176 m² classée G à Aubenton;non;1/1 connus, 1 logements
+sarljd.petit@gmail.com;J&D PETIT PERE ET FILS (J&D PETIT PERE ET FILS);5.3;Opportunité : Maison de 74 m² classée G à Montdidier;non;1/1 connus, 1 logements
+gaslecocq@numericable.fr;LECOCQ GASTON;5.3;Opportunité : Maison de 85 m² classée G à Auchel;non;1/1 connus, 1 logements
+sarl.pomart-sabre@orange.fr;POMART-SABRE;5.3;Opportunité : Maison de 179 m² classée F à Estaires;non;1/1 connus, 1 logements
+celine.holl0316@orange.fr;F.H. SARL;5.2;Opportunité : Maison de 186 m² classée F à Braine;non;1/1 connus, 1 logements
+jeanlin.p@gmail.com;CREATION PLANCKE (CREATION PLANCKE);5.2;Opportunité : Maison de 108 m² classée F à Wormhout;non;1/1 connus, 1 logements
+vincent.thorel@duoconfort-hdf.fr;DUO CONFORT BY MAISON THOREL;5.2;Opportunité : Bâtiment de 81 m² à Marquette-en-Ostrevant, 2 logements classés F ou G;non;2/2 connus, 2 logements
+clement@maisonsetmetiers.fr;MAISONS ET METIERS DE L'ARTOIS;5.2;Opportunité : Maison de 73 m² classée G à Verquigneul;non;1/1 connus, 1 logements
+sanniermaconnerie@hotmail.com;SANNIER ANTHONY EURL;5.2;Opportunité : Maison de 199 m² classée F à La Capelle;non;0/0 connus, 1 logements
+sarlcatez@orange.fr;SARL CATEZ ET FILS;5.2;Opportunité : Maison de 64 m² classée G à Guînes;non;1/1 connus, 1 logements
+bruno.dieu0207@orange.fr;SARL LES DIEU DU BATIMENT;5.2;Opportunité : Maison de 188 m² classée G à Holnon;non;1/1 connus, 1 logements
+develay.construction@orange.fr;SOCIETE DEVELAY (VALSUN);5.2;Opportunité : Maison de 239 m² classée F à Crespin;non;1/1 connus, 1 logements
+ericv@verlinde-ets.fr;VERLINDE ERIC;5.2;Opportunité : Maison de 199 m² classée F à La Capelle;non;0/0 connus, 1 logements
+richard.sanguinette@orange.fr;ENTREPRISE RICHARD SANGUINETTE;5.2;Opportunité : Maison de 188 m² classée G à Holnon;non;1/1 connus, 1 logements
+benard.renovation@gmail.com;BENARD RENOVATION;5.1;Opportunité : Maison de 144 m² classée G à Oye-Plage;non;1/1 connus, 1 logements
+ldefoort@dt-home.fr;DT HOME;5.1;Opportunité : Maison de 139 m² classée F à Béthune;non;1/1 connus, 1 logements
+sarl.romele@free.fr;ETABLISSEMENTS ROMELE;5.1;Opportunité : Maison de 105 m² classée G à Denain;non;1/1 connus, 1 logements
+coquetteeddie@orange.fr;RENOV'HABITAT MC;5.1;Opportunité : Maison de 121 m² classée F à Bruay-la-Buissière;non;1/1 connus, 1 logements
+caria@club-internet.fr;A.C.BAT;5.0;Opportunité : Maison de 88 m² classée F à Givenchy-en-Gohelle;non;1/1 connus, 1 logements
+alain.cortiez@wanadoo.fr;ALAIN CORTIEZ CONSTRUCTIONS;5.0;Opportunité : Maison de 130 m² classée G à Douai;non;1/1 connus, 1 logements
+sarldelfabbroserge@orange.fr;DEL FABBRO SERGE;5.0;Opportunité : Maison de 63 m² classée G à Albert;non;1/1 connus, 1 logements
+yoann.walczak@sfr.fr;MILLE ET UN BATIMENTS;5.0;Opportunité : Maison de 179 m² classée F à Estaires;non;1/1 connus, 1 logements
+blanpaind@wanadoo.fr;PRO'GBAT (PRO'GBAT);5.0;Opportunité : Maison de 156 m² classée F à Erquinghem-Lys;non;1/1 connus, 1 logements
+caustony@yahoo.fr;TC CONSTRUCTION (TC CONSTRUCTION);5.0;Opportunité : Maison de 239 m² classée F à Crespin;non;1/1 connus, 1 logements
+beun.cleva@orange.fr;BEUN CLEVA (BEUN CLEVA);4.9;Opportunité : Maison de 74 m² classée F à Cassel;non;1/1 connus, 1 logements
+nicolasdelezenne@yahoo.fr;DELEZENNE NICOLAS;4.9;Opportunité : Maison de 114 m² classée G à Poix-de-Picardie;non;1/1 connus, 1 logements
+jerome.loffroy@orange.fr;JEROME LOFFROY;4.9;Opportunité : Maison de 95 m² classée G à Orvillers-Sorel;non;1/1 connus, 1 logements
+franckbatrancourt@yahoo.fr;FRANCK BATRANCOURT RENOVATION;4.8;Opportunité : Maison de 207 m² classée F à Laon;non;1/1 connus, 1 logements
+nicolasdrouin@orange.fr;NICOLAS DROUIN;4.8;Opportunité : Maison de 30 m² classée G à Nogent-l'Artaud;non;1/1 connus, 1 logements
+julien@origin-renovation.fr;ORIGIN RENOVATION;4.8;Opportunité : Immeuble de 418 m² classé G à Lille;non;3/11 connus, 14 logements
+srcherbin@orange.fr;SOCIETE DE RAVALEMENT DU CAMBRESIS (SRC);4.8;Opportunité : Maison de 79 m² classée G à Troisvilles;non;1/1 connus, 1 logements
+magalie.sarltriquet@gmail.com;TRIQUET STEPHANE;4.7;Opportunité : Maison de 20 m² classée F à Hautmont;non;1/1 connus, 1 logements
+manuel.herbin@fenisol.fr;RHC RENOV (FENISOL) (RHC);4.3;Opportunité : Maison de 77 m² classée F à Arras;non;1/1 connus, 1 logements
+durant-construction@outlook.com;DURANT CONSTRUCTION;3.9;Opportunité : Maison de 164 m² classée F à Beaufort;non;1/1 connus, 1 logements
+ap@groupeparin.fr;ETS PARIN-CLAIDIERE;7.8;Opportunité : Maison de 63 m² classée G à Camon;non;1/1 connus, 1 logements
+e.simonetti@leongrosse.fr;ENTREPRISE GENERALE LEON GROSSE;7.7;Opportunité : Immeuble de 156 m² classé G à Amiens;non;4/4 connus, 7 logements
+soretherm.picardie@soretherm.fr;SAS SORETHERM PICARDIE;7.4;Opportunité : Immeuble de 131 m² classé G à Anizy-le-Grand;non;3/3 connus, 3 logements
+chauffage@chauffage-cts.com;CHAUFFAGE CENTRALE CTS;7.1;Opportunité : Immeuble de 131 m² classé G à Anizy-le-Grand;non;3/3 connus, 3 logements
+sylvie@mauprivez.fr;MAUPRIVEZ SAS;7.1;Opportunité : Maison de 55 m² classée G à Montigny-Lengrain;non;1/1 connus, 1 logements
+eurogaz@eurogazservice.fr;EUROGAZ SERVICE;7.0;Opportunité : Immeuble de 137 m² à Lens, 3 logements classés F ou G;non;3/3 connus, 3 logements
+gestion@alternativeboisconcept.fr;ALTERNATIVE BOIS CONCEPT;6.9;Opportunité : Maison de 63 m² classée G à Nœux-les-Mines;non;1/1 connus, 1 logements
+blm@blm-construction.fr;BLM BERTRAND-LEROY-MARTIN;6.9;Opportunité : Maison de 104 m² classée G à Suzoy;non;1/1 connus, 1 logements
+christele@effetdoh.fr;EFFET D'O HABITAT;6.9;Opportunité : Immeuble de 141 m² à Lens, 2 logements classés F ou G;non;2/4 connus, 6 logements
+m.plessier@numeriss.fr;NUMERISS;6.9;Opportunité : Immeuble de 156 m² classé G à Amiens;non;4/4 connus, 7 logements
+a3renovation@a3renovation.fr;A3 RENOVATION;6.7;Opportunité : Immeuble de 70 m² à Amiens, 2 logements classés F ou G;non;2/3 connus, 3 logements
+solange@lesfacadierspicards.com;LES FACADIERS PICARDS;6.7;Opportunité : Immeuble de 70 m² à Amiens, 2 logements classés F ou G;non;2/3 connus, 3 logements
+jbarbe@proxiserve.fr;PROXISERVE;6.5;Opportunité : Maison de 72 m² classée G à Chambly;non;1/1 connus, 1 logements
+flore@adi80.fr;SARL ADI 80;6.4;Opportunité : Immeuble de 275 m² classé G à Chaulnes;non;5/6 connus, 6 logements
+stephanie@fabienmoreau.fr;SAS FABIEN MOREAU (EURL FABIEN MOREAU);5.8;Opportunité : Maison de 66 m² classée F à Glageon;non;1/1 connus, 1 logements
+lauriane@leullier.eu;LEULLIER - LE RESEAU;5.1;Opportunité : Maison de 84 m² classée F à Avelesges;non;1/1 connus, 1 logements
+contact@ciepiela-bertranuc.fr;CIEPIELA ET BERTRANUC;8.9;Opportunité : Immeuble de 563 m² à Creil, 5 logements classés F ou G;non;5/8 connus, 9 logements
+contact@aireo.fr;AIREO;8.6;Opportunité : Immeuble de 551 m² classé F à Ribécourt-Dreslincourt;non;2/11 connus, 17 logements
+contact@dbcrenovation.fr;DBC RENOVATION;8.1;Opportunité : Maison de 63 m² classée G à Camon;non;1/1 connus, 1 logements
+contact@csc-confort.com;CSC CONFORT;7.9;Opportunité : Immeuble de 119 m² classé G à Amiens;non;1/3 connus, 3 logements
+directioncommerce.ecp@eiffage.com;EIFFAGE CONSTRUCTION PICARDIE;7.7;Opportunité : Immeuble de 119 m² classé G à Amiens;non;1/3 connus, 3 logements
+accueil@etspolle.com;POLLE;7.6;Opportunité : Maison de 35 m² classée G à Beauvais;non;1/1 connus, 1 logements
+contact@hdf-facade.fr;HDF FACADE;7.4;Opportunité : Immeuble de 146 m² à Beauvais, 2 logements classés F ou G;non;2/2 connus, 5 logements
+contact@ets-bled60.fr;ETS BLED;7.1;Opportunité : Maison de 81 m² classée G à Saint-Just-en-Chaussée;non;1/1 connus, 1 logements
+contact@platrelec.fr;SARL PLATRELEC;7.1;Opportunité : Immeuble de 177 m² à Autreville, 2 logements classés F ou G;non;2/2 connus, 3 logements
+contact@confort-o-de-france.fr;CONFORT O DE FRANCE;7.1;Opportunité : Immeuble de 141 m² à Lens, 2 logements classés F ou G;non;2/4 connus, 6 logements
+contact@denishurtrel.fr;DENIS HURTREL (DENIS HURTREL);7.1;Opportunité : Maison de 154 m² classée G à Rinxent;non;1/1 connus, 1 logements
+secretariat@eep.fr;EEP;7.1;Opportunité : Immeuble de 204 m² classé G à Abbeville;non;0/0 connus, 4 logements
+contact@renoleers.fr;RENOLEERS;7.1;Opportunité : Maison de 78 m² classée G à Leers;non;1/1 connus, 1 logements
+agence@reno-habitation.com;RENO HABITATION;6.9;Opportunité : Maison de 93 m² classée G à Divion;non;1/1 connus, 1 logements
+contact@sarda-chauny.com;SARL SARDA WETISCHEK;6.8;Opportunité : Maison de 164 m² classée F à Chauny;non;1/1 connus, 1 logements
+contact@etshuyghe.fr;SAS HUYGHE;6.8;Opportunité : Bâtiment de 50 m² à Hazebrouck, 1 logement classé F ou G;non;1/2 connus, 2 logements
+contact@smlquignon.fr;SML QUIGNON (SML);6.8;Opportunité : Maison de 34 m² classée G à Amiens;non;1/1 connus, 1 logements
+contact@lefebvre-staple.fr;ETABLISSEMENTS LEFEBVRE SARL;6.7;Opportunité : Bâtiment de 50 m² à Hazebrouck, 1 logement classé F ou G;non;1/2 connus, 2 logements
+contact@plucain.fr;SARL PLUCAIN;6.7;Opportunité : Maison de 173 m² classée F à Bailleul;non;1/1 connus, 1 logements
+contact@w-asap.fr;ASAP;6.7;Opportunité : Immeuble de 146 m² à Beauvais, 2 logements classés F ou G;non;2/2 connus, 5 logements
+info@mckbt.fr;MCK;6.7;Opportunité : Bâtiment de 80 m² classé G à Nogent-sur-Oise;non;2/2 connus, 2 logements
+contact@cdnormandie.fr;C&D NORMANDIE;6.5;Opportunité : Maison de 94 m² classée G à Éragny-sur-Epte;non;1/1 connus, 1 logements
+contact@mjmenergies.fr;SAS MJM ENERGIES;6.5;Opportunité : Maison de 316 m² classée F à Chamouille;non;1/1 connus, 1 logements
+contact@duberavalement.fr;SARL DUBE FRANCIS;6.5;Opportunité : Immeuble de 312 m² à Compiègne, 1 logement classé F ou G;non;1/2 connus, 4 logements
+contact@cmkplomberie.fr;CMK Plomberie;6.4;Opportunité : Maison de 67 m² classée G à Liesse-Notre-Dame;non;1/1 connus, 1 logements
+contact@parmentier-chauffage.fr;PARMENTIER CHAUFFAGE;6.4;Opportunité : Maison de 60 m² classée G à Gouzeaucourt;non;1/1 connus, 1 logements
+contact@cholewa-solution-batiment.fr;CHOLEWA SOLUTION BATIMENT;6.3;Opportunité : Maison de 82 m² classée G à Valenciennes;non;1/1 connus, 1 logements
+contact@lm-renovation.fr;LM RENOVATION;6.2;Opportunité : Immeuble de 159 m² classé G à Cambrai;non;5/5 connus, 5 logements
+contact@aisne-batiment.fr;AISNE BATIMENT;6.2;Opportunité : Maison de 67 m² classée G à Liesse-Notre-Dame;non;1/1 connus, 1 logements
+contact@hainaut-constructions.fr;HAINAUT CONSTRUCTIONS;6.1;Opportunité : Maison de 107 m² classée G à Raismes;non;1/1 connus, 1 logements
+contact@onsenoccupe-hdf.fr;ONSENOCCUPE-HDF;6.1;Opportunité : Bâtiment de 78 m² à Arras, 1 logement classé F ou G;non;1/2 connus, 2 logements
+contact@batineuf.fr;BATINEUF;6.0;Opportunité : Maison de 76 m² classée G à Mazingarbe;non;1/1 connus, 1 logements
+contact@cofapi.fr;CO.FA.PI;6.0;Opportunité : Maison de 67 m² classée G à Clermont;non;1/1 connus, 1 logements
+contact@domus-eco62.com;DOMUS ECO 62;6.0;Opportunité : Maison de 123 m² classée G à Éleu-dit-Leauwette;non;1/1 connus, 1 logements
+contact@sauvagedautricourt.fr;ETS SAUVAGE DAUTRICOURT;6.0;Opportunité : Maison de 76 m² classée G à Méricourt;non;1/1 connus, 1 logements
+contact@fmt-batiment.fr;FMT BATIMENT;6.0;Opportunité : Maison de 116 m² classée G à Thivencelle;non;1/1 connus, 1 logements
+administration@moretticonstructions.fr;MORETTI CONSTRUCTIONS (MCTI);5.9;Opportunité : Maison de 85 m² classée G à Douai;non;1/1 connus, 1 logements
+contact@reseauhabitat.fr;RESEAU HABITAT;5.9;Opportunité : Maison de 29 m² classée G à Amiens;non;1/1 connus, 1 logements
+entreprise@rouze-sas.fr;SOCIETE ROUZE;5.9;Opportunité : Maison de 80 m² classée G à Attiches;non;1/1 connus, 1 logements
+contact@sarl-sp-da.fr;SP-DA;5.9;Opportunité : Maison de 81 m² classée G à Saint-Just-en-Chaussée;non;1/1 connus, 1 logements
+contact@design3drenovation.fr;DESIGN 3D RENOVATION;5.8;Opportunité : Immeuble de 123 m² à Breteuil, 2 logements classés F ou G;non;2/3 connus, 4 logements
+entreprise@blondezjj.fr;ENTREPRISE J.J BLONDEZ;5.8;Opportunité : Maison de 108 m² classée F à Wormhout;non;1/1 connus, 1 logements
+contact@hacovia.fr;HACOVIA;5.7;Opportunité : Immeuble de 304 m² à Lesquin, 1 logement classé F ou G;oui;1/2 connus, 8 logements
+contact@technobat-60.fr;TECHNOBAT;5.7;Opportunité : Maison de 69 m² classée G à Saint-Leu-d'Esserent;non;1/1 connus, 1 logements
+contact@bat-reno-gc.com;BAT RENO GC;5.6;Opportunité : Maison de 216 m² classée G à Cassel;non;1/1 connus, 1 logements
+accueil@milleetunefenetres.fr;MILLE ET UN TRAVAUX;5.6;Opportunité : Maison de 106 m² classée G à Beauvois-en-Cambrésis;non;1/1 connus, 1 logements
+contact@acr-ericlepine.fr;AISNE CONSTRUCTION RENOVATION (ACR);5.5;Opportunité : Maison de 100 m² classée G à Neuilly-Saint-Front;non;1/1 connus, 1 logements
+contact@hernoult.com;SARL HERNOULT;5.5;Opportunité : Maison de 37 m² classée G à Cambrai;non;1/1 connus, 1 logements
+contact@ep2b-renovation.fr;EP2B RENOVATION (EP2B RENOVATION) (EP2B);5.4;Opportunité : Maison de 139 m² classée G à Crèvecœur-le-Grand;non;1/1 connus, 1 logements
+contact@sasmonnier.com;YANNICK MONNIER;5.4;Opportunité : Bâtiment de 81 m² à Le Cateau-Cambrésis, 2 logements classés F ou G;non;2/2 connus, 2 logements
+contact@mbtrenobat.com;MBT RENOBAT;5.3;Opportunité : Maison de 44 m² classée G à Villers-Cotterêts;non;1/1 connus, 1 logements
+contact@isol59.com;ISOL'59;5.3;Opportunité : Maison de 190 m² classée F à Gouzeaucourt;non;1/1 connus, 1 logements
+contact@ateliers-acm.fr;LES ATELIERS ACM;5.3;Opportunité : Maison de 166 m² classée G à Gerberoy;non;1/1 connus, 1 logements
+contact@sas-sferrazza.fr;SFERRAZZA;5.2;Opportunité : Maison de 194 m² classée F à La Sentinelle;non;1/1 connus, 1 logements
+accueil@bvtservices.fr;BVT SERVICES (BVT SERVICES) (BVT);4.6;Opportunité : Maison de 87 m² classée G à Marcq-en-Barœul;non;1/1 connus, 1 logements
+contact@rp-construction.fr;RP CONSTRUCTION (PR CONSTRUCTION);4.4;Opportunité : Maison de 64 m² classée G à Sainte-Geneviève;non;1/1 connus, 1 logements
+contact@chemineesbarbier.fr;CHEMINEES BARBIER;4.2;Opportunité : Immeuble de 238 m² à Rochy-Condé, 4 logements classés F ou G;non;4/6 connus, 6 logements
+contact@mareha.fr;MAREHA;4.0;Opportunité : Maison de 77 m² classée F à Raimbeaucourt;non;1/1 connus, 1 logements
+macho-59@orange.fr;MACHO;7.9;Opportunité : Maison de 658 m² classée F à Roubaix;non;1/1 connus, 1 logements
+adm.chaleuretconfort@gmail.com;CHALEUR ET CONFORT;7.8;Opportunité : Maison de 48 m² classée G à Estaires;non;1/1 connus, 1 logements
+isolhome.fenetresdespros@gmail.com;ISOL'HOME;7.8;Opportunité : Bâtiment de 485 m² à Valenciennes, 1 logement classé F ou G;non;1/2 connus, 2 logements
+facadiersdelasomme@yahoo.fr;SARL LES FACADIERS DE LA SOMME;7.7;Opportunité : Maison de 66 m² classée G à Amiens;non;1/1 connus, 1 logements
+habitatrenov.laon@gmail.com;HABITATRENOV;7.6;Opportunité : Immeuble de 147 m² classé G à Laon;non;1/3 connus, 3 logements
+thermotecservices@gmail.com;THERMOTEC SERVICES;7.6;Opportunité : Immeuble de 440 m² à Compiègne, 2 logements classés F ou G;non;2/4 connus, 4 logements
+cwaubant@wanadoo.fr;URBEL FACADE (URBEL FACADE);7.5;Opportunité : Maison de 543 m² classée G à Aire-sur-la-Lys;non;1/1 connus, 1 logements
+abc_elec@orange.fr;ABC ELEC';7.4;Opportunité : Immeuble de 177 m² à Autreville, 2 logements classés F ou G;non;2/2 connus, 3 logements
+aehhabitat@gmail.com;ALLIANCE ENERGIE HABITAT;7.4;Opportunité : Immeuble de 162 m² classé G à Soissons;non;1/3 connus, 3 logements
+bacphil21@orange.fr;EURL DELFORGE BACLET;7.3;Opportunité : Immeuble de 147 m² classé G à Laon;non;1/3 connus, 3 logements
+je.raout@laposte.net;SARL NJC HABITAT;7.3;Opportunité : Maison de 145 m² classée G à Caudry;non;1/1 connus, 1 logements
+accueil.lmfhabitat@gmail.com;L.M.F HABITAT (L.M.F. HABITAT);7.2;Opportunité : Maison de 108 m² classée G à Pont-à-Vendin;non;1/1 connus, 1 logements
+pldsarl@wanadoo.fr;SAS DESBIENDRAS;7.2;Opportunité : Maison de 95 m² classée G à Le Crotoy;oui;1/1 connus, 1 logements
+cd-reno@hotmail.com;C & D RENO;7.2;Opportunité : Bâtiment de 139 m² à Hénin-Beaumont, 1 logement classé F ou G;non;1/2 connus, 2 logements
+homerge59@gmail.com;HOME RGE;7.2;Opportunité : Immeuble de 200 m² à Roubaix, 1 logement classé F ou G;non;1/2 connus, 5 logements
+imeo.renov@gmail.com;IMEO RENOV;7.2;Opportunité : Immeuble de 440 m² à Compiègne, 2 logements classés F ou G;non;2/4 connus, 4 logements
+isoleco02@orange.fr;ISOLECO;7.2;Opportunité : Immeuble de 162 m² classé G à Soissons;non;1/3 connus, 3 logements
+jld80320@gmail.com;JLD COUVERTURE PLOMBERIE CHAUFFAGE ELECTRICITE;7.2;Opportunité : Immeuble de 275 m² classé G à Chaulnes;non;5/6 connus, 6 logements
+ets.flipo@wanadoo.fr;ETABLISSEMENTS JM FLIPO;7.1;Opportunité : Maison de 91 m² classée G à Aulnoye-Aymeries;non;1/1 connus, 1 logements
+lafacadedubeauvaisis@orange.fr;L.F.B;7.1;Opportunité : Maison de 35 m² classée G à Beauvais;non;1/1 connus, 1 logements
+eprservices.roye@gmail.com;E.P.R. SERVICES;7.0;Opportunité : Immeuble de 131 m² à Roye, 2 logements classés F ou G;non;2/3 connus, 4 logements
+sasbatidur@gmail.com;BATIDUR;7.0;Opportunité : Maison de 67 m² classée G à Clermont;non;1/1 connus, 1 logements
+pacisolair@hotmail.com;PAC'ISOLAIR;7.0;Opportunité : Maison de 76 m² classée G à Méricourt;non;1/1 connus, 1 logements
+renove80@orange.fr;RENOVE 80;7.0;Opportunité : Maison de 62 m² classée G à Berteaucourt-les-Dames;non;1/1 connus, 1 logements
+electro.tech@orange.fr;ELECTRO-TECH;6.9;Opportunité : Maison de 48 m² classée G à Estaires;non;1/1 connus, 1 logements
+etsnormand60@gmail.com;ETABLISSEMENTS NORMAND;6.9;Opportunité : Maison de 104 m² classée G à Suzoy;non;1/1 connus, 1 logements
+n.thermique@gmail.com;SARL N'THERMIQUE;6.9;Opportunité : Maison de 124 m² classée G à Chauny;non;1/1 connus, 1 logements
+solutionrenovation80@hotmail.fr;SOLUTION RENOVATION 80 (SOLUTION RENOVATION 80);6.9;Opportunité : Immeuble de 244 m² à Albert, 3 logements classés F ou G;non;3/4 connus, 7 logements
+ecotherm22@gmail.com;ECOTHERM;6.8;Opportunité : Maison de 164 m² classée F à Chauny;non;1/1 connus, 1 logements
+lmbat59610@gmail.com;LMBATIMENT;6.8;Opportunité : Immeuble de 165 m² à Fourmies, 2 logements classés F ou G;non;2/3 connus, 9 logements
+ceps62790@wanadoo.fr;CEPS;6.8;Opportunité : Immeuble de 196 m² classé F à Auby;non;4/5 connus, 5 logements
+dpentreprise@aol.com;DP ENTREPRISE;6.8;Opportunité : Maison de 91 m² classée G à Aulnoye-Aymeries;non;1/1 connus, 1 logements
+deltath80@gmail.com;ENGELS THOMAS;6.8;Opportunité : Maison de 74 m² classée G à Montdidier;non;1/1 connus, 1 logements
+drticontact@gmail.com;DRTI;6.7;Opportunité : Maison de 70 m² classée G à Hesdigneul-lès-Boulogne;non;1/1 connus, 1 logements
+lesfacadiersdunord@gmail.com;LES FACADIERS DU NORD;6.7;Opportunité : Immeuble de 483 m² à Beauvais, 1 logement classé F ou G;non;1/2 connus, 4 logements
+rgrenov59@gmail.com;RG RENOV;6.7;Opportunité : Maison de 84 m² classée G à Lourches;non;1/1 connus, 1 logements
+c2lpompeachaleur@orange.fr;C2L;6.6;Opportunité : Immeuble de 445 m² classé F à Jouy-sous-Thelle;non;4/12 connus, 12 logements
+mdsservice59@gmail.com;MD SERVICES;6.6;Opportunité : Maison de 84 m² classée G à Lourches;non;1/1 connus, 1 logements
+s3dbatiment@hotmail.com;3D BATIMENT;6.5;Opportunité : Maison de 78 m² classée G à Rougeries;non;1/1 connus, 1 logements
+batid@orange.fr;BAT'ID;6.5;Opportunité : Maison de 62 m² classée G à Berteaucourt-les-Dames;non;1/1 connus, 1 logements
+montech.cnt@gmail.com;MONTECH;6.5;Opportunité : Maison de 86 m² classée G à Bertry;non;1/1 connus, 1 logements
+pocholle59@gmail.com;SOCIETE NOUVELLE DES ETABLISSEMENTS POCHOLLE;6.4;Opportunité : Maison de 132 m² classée F à Hazebrouck;non;1/1 connus, 1 logements
+dl-plomberie-chauffage@orange.fr;DL PLOMBERIE CHAUFFAGE;6.4;Opportunité : Maison de 76 m² classée G à Mazingarbe;non;1/1 connus, 1 logements
+monsieurfacade@hotmail.com;MONSIEUR FACADE;6.4;Opportunité : Bâtiment de 249 m² classé F à Annezin;non;1/2 connus, 2 logements
+direction.solevi@gmail.com;SOLEVI;6.4;Opportunité : Immeuble de 378 m² à Noailles, 4 logements classés F ou G;non;4/7 connus, 9 logements
+vitecoenergy@gmail.com;VITECOBAT;6.4;Opportunité : Maison de 111 m² classée G à Auchel;non;1/1 connus, 1 logements
+batichoc@laposte.net;BATI CHOC;6.4;Opportunité : Immeuble de 244 m² à Albert, 3 logements classés F ou G;non;3/4 connus, 7 logements
+agthermic@gmail.com;AG THERMIC;6.3;Opportunité : Maison de 45 m² classée G à Avesnes-le-Comte;non;1/1 connus, 1 logements
+arvillers.chauffage@wanadoo.fr;ARVILLERS CHAUFFAGE;6.3;Opportunité : Maison de 64 m² classée G à Le Quesnel;non;1/1 connus, 1 logements
+e.d.chauffagesanitaire@gmail.com;ED CHAUFFAGE SANITAIRE;6.3;Opportunité : Maison de 82 m² classée G à Valenciennes;non;1/1 connus, 1 logements
+poindron.freres@wanadoo.fr;EURL POINDRON;6.3;Opportunité : Maison de 106 m² classée G à Beauvois-en-Cambrésis;non;1/1 connus, 1 logements
+ideechauffage@gmail.com;IDEE CHAUFFAGE;6.3;Opportunité : Maison de 180 m² classée G à Monchecourt;non;1/1 connus, 1 logements
+mjmrenov@orange.fr;MJM RENOV;6.3;Opportunité : Maison de 97 m² classée G à Courrières;non;1/1 connus, 1 logements
+pernes-chauffage@wanadoo.fr;PERNES CHAUFFAGE ROPITAL SARL;6.3;Opportunité : Maison de 111 m² classée G à Auchel;non;1/1 connus, 1 logements
+gds59227@gmail.com;GUIDEZ DEPANNAGE SERVICE;6.2;Opportunité : Maison de 69 m² classée G à Solesmes;non;1/1 connus, 1 logements
+celectrem@gmail.com;SARL CELECTREM;6.2;Opportunité : Maison de 95 m² classée G à Le Crotoy;oui;1/1 connus, 1 logements
+bterenov59@gmail.com;BTE RENOV (BTE RENOV);6.2;Opportunité : Maison de 60 m² classée G à Roubaix;non;1/1 connus, 1 logements
+mgbatimentt@gmail.com;MG BATIMENT;6.2;Opportunité : Immeuble de 148 m² classé F à Saint-Quentin;non;4/5 connus, 6 logements
+epc-services@orange.fr;ELECTRICITE PLOMBERIE CHAUFFAGE SERVICES;6.1;Opportunité : Maison de 69 m² classée G à Solesmes;non;1/1 connus, 1 logements
+lcs59@orange.fr;LECELLES CHAUFFAGE SANITAIRE;6.1;Opportunité : Maison de 105 m² classée G à Beuvry-la-Forêt;non;1/1 connus, 1 logements
+entreprise.rmoe@gmail.com;R.MOE RENOVATION ET MAITRISE D'OEUVRE;6.1;Opportunité : Maison de 78 m² classée G à Chierry;non;1/1 connus, 1 logements
+abprorenov@orange.fr;AB PRO RENOV;6.0;Opportunité : Maison de 108 m² classée G à Pont-à-Vendin;non;1/1 connus, 1 logements
+hautdefranceexperthabitat@gmail.com;HAUT DE FRANCE EXPERT HABITAT;6.0;Opportunité : Maison de 137 m² classée G à Croix;non;1/1 connus, 1 logements
+tgrv@orange.fr;THIERRY GIVRY;6.0;Opportunité : Immeuble de 149 m² à Soissons, 3 logements classés F ou G;non;3/4 connus, 4 logements
+fgrenov88@gmail.com;FG RENOV;6.0;Opportunité : Maison de 165 m² classée G à Guise;non;1/1 connus, 1 logements
+galerieduchauffage@orange.fr;GALERIE DU CHAUFFAGE;5.9;Opportunité : Maison de 50 m² classée G à Lesges;non;1/1 connus, 1 logements
+aaservices@hotmail.fr;L'AA SERVICES;5.9;Opportunité : Maison de 108 m² classée F à Audincthun;non;1/1 connus, 1 logements
+batiment.gt@gmail.com;THIBAULT GREVERAND;5.9;Opportunité : Bâtiment de 198 m² à Carvin, 1 logement classé F ou G;non;1/2 connus, 2 logements
+savanmarcke.laurence@gmail.com;VANMARCKE SA;5.9;Opportunité : Bâtiment de 94 m² classé G à Marcq-en-Barœul;non;0/0 connus, 2 logements
+dtbatiment80@gmail.com;DT BATIMENT;5.9;Opportunité : Maison de 58 m² classée G à Nesle;non;1/1 connus, 1 logements
+chauff-h2o@outlook.com;SARL CHAUFF H20;5.8;Opportunité : Maison de 124 m² classée G à Nortkerque;non;1/1 connus, 1 logements
+dldbatiment@orange.fr;DLD BATIMENT;5.8;Opportunité : Maison de 174 m² classée F à Flixecourt;non;1/1 connus, 1 logements
+mikaservicesfils@gmail.com;MIKA SERVICES FILS;5.8;Opportunité : Maison de 82 m² classée F à Sinceny;non;1/1 connus, 1 logements
+apbe@live.fr;AMELIORATION DES PERFORMANCES DU BATI EXISTANT (APBE);5.7;Opportunité : Maison de 64 m² classée F à Beauvais;non;1/1 connus, 1 logements
+dimitryhuet@hotmail.fr;DY RENOVATION;5.7;Opportunité : Maison de 104 m² classée G à Montescourt-Lizerolles;non;1/1 connus, 1 logements
+concept.renov@sfr.fr;EURL CONCEPT RENOV;5.7;Opportunité : Maison de 306 m² classée F à Annezin;non;1/1 connus, 1 logements
+sas.agsrenov@gmail.com;AGS RENOV (AGS RENOV) (AGS RENOV);5.6;Opportunité : Maison de 111 m² classée G à Villeneuve-d'Ascq;non;1/1 connus, 1 logements
+jmcbatiment02@orange.fr;JMC BATIMENT;5.6;Opportunité : Maison de 144 m² classée G à Beuvardes;non;1/1 connus, 1 logements
+rctrinabat@gmail.com;RENOVATION CONSTRUCTION TRINABAT (R.C.TRINABAT);5.6;Opportunité : Bâtiment de 198 m² à Carvin, 1 logement classé F ou G;non;1/2 connus, 2 logements
+vpbatiment@outlook.fr;VP BATIMENT;5.6;Opportunité : Maison de 74 m² classée G à Bouchain;non;1/1 connus, 1 logements
+bat.elec@hotmail.com;4J BAT ELEC;5.6;Opportunité : Maison de 74 m² classée G à Bouchain;non;1/1 connus, 1 logements
+egdbr@wanadoo.fr;ALAIN REVERSEZ ET FILS (ALAIN REVERSEZ ET FILS);5.6;Opportunité : Immeuble de 170 m² à Combles, 2 logements classés F ou G;non;2/2 connus, 4 logements
+bt7v@orange.fr;BATIMENT DES SEPT VALLEES;5.6;Opportunité : Maison de 105 m² classée G à Beaurainville;non;1/1 connus, 1 logements
+contact.sameko@gmail.com;SAMEKO RENOVATION;5.5;Opportunité : Maison de 164 m² classée F à Beaufort;non;1/1 connus, 1 logements
+julien.oge@gmail.com;ART PLAQUE;5.5;Opportunité : Maison de 116 m² classée G à Mons-en-Pévèle;non;1/1 connus, 1 logements
+gregduclos@orange.fr;DGL BATIMENT;5.5;Opportunité : Maison de 104 m² classée G à Montescourt-Lizerolles;non;1/1 connus, 1 logements
+dollenathalie9@gmail.com;HMP (HMP);5.5;Opportunité : Maison de 76 m² classée G à Desvres;non;1/1 connus, 1 logements
+vexinbat@outlook.fr;VEXINBAT;5.5;Opportunité : Immeuble de 137 m² à Chaumont-en-Vexin, 4 logements classés F ou G;non;4/4 connus, 5 logements
+cheminees.ecodesig@orange.fr;CHEMINEES ECO DESIGN;5.5;Opportunité : Bâtiment de 58 m² à Cambrai, 1 logement classé F ou G;non;1/2 connus, 2 logements
+ipm.renov@gmail.com;I.P.M;5.5;Opportunité : Bâtiment de 80 m² classé G à Nogent-sur-Oise;non;2/2 connus, 2 logements
+sarl.tekman@gmail.com;SARL TEKMAN;5.5;Opportunité : Immeuble de 88 m² classé G à Nogent-sur-Oise;non;3/3 connus, 3 logements
+mcpassocies@gmail.com;MCP;5.4;Opportunité : Maison de 73 m² classée F à Laon;non;1/1 connus, 1 logements
+glob.renov@gmail.com;CHARLES-PHILIPPE BELHADJ (GLOBAL RENOVATION);5.4;Opportunité : Maison de 214 m² classée F à Pierrefonds;non;1/1 connus, 1 logements
+fh-construction-renovation@orange.fr;FH CONSTRUCTION RENOVATION;5.4;Opportunité : Maison de 105 m² classée G à Beaurainville;non;1/1 connus, 1 logements
+atoutrenov-boisbernard@orange.fr;GERARD VELU;5.4;Opportunité : Maison de 104 m² classée F à Méricourt;non;1/1 connus, 1 logements
+jean-marc.leroy134@orange.fr;L.C CONSTRUCTION;5.4;Opportunité : Maison de 107 m² classée F à Frévent;non;1/1 connus, 1 logements
+eurlacbatiment@gmail.com;AC BATIMENT;5.4;Opportunité : Bâtiment de 81 m² à Marquette-en-Ostrevant, 2 logements classés F ou G;non;2/2 connus, 2 logements
+avcheminees@hotmail.com;AV CHEMINEES;5.4;Opportunité : Maison de 63 m² classée G à Nœux-les-Mines;non;1/1 connus, 1 logements
+sas.ebrc@gmail.com;EBRC;5.4;Opportunité : Maison de 37 m² classée G à Cambrai;non;1/1 connus, 1 logements
+fhbatiment@yahoo.fr;FH BATIMENT;5.3;Opportunité : Maison de 91 m² classée F à Wardrecques;non;1/1 connus, 1 logements
+avenirdeco@orange.fr;AVENIR DECO;5.3;Opportunité : Immeuble de 128 m² classé G à Lille;non;0/0 connus, 4 logements
+secretariat.brusca@gmail.com;BRUSCA BATIMENT ET BOIS;5.3;Opportunité : Maison de 105 m² classée G à Denain;non;1/1 connus, 1 logements
+jmbconstructions@orange.fr;EURL J.M.B CONSTRUCTIONS;5.3;Opportunité : Maison de 86 m² classée G à Bertry;non;1/1 connus, 1 logements
+h2o.renov@gmail.com;H2O (H2O);5.3;Opportunité : Maison de 313 m² classée G à Mello;non;1/1 connus, 1 logements
+bbatrenov@outlook.fr;B BAT RENOV;5.2;Opportunité : Maison de 110 m² classée F à Beuvry;non;1/1 connus, 1 logements
+david27100@hotmail.fr;COMPAGNIE DES FACADES;5.2;Opportunité : Maison de 77 m² classée F à Raimbeaucourt;non;1/1 connus, 1 logements
+eurl.renopolitain@gmail.com;RENOPOLITAIN (RENOPOLITAIN);5.2;Opportunité : Maison de 156 m² classée F à Erquinghem-Lys;non;1/1 connus, 1 logements
+bati_plus@orange.fr;SARL BATI PLUS;5.2;Opportunité : Maison de 50 m² classée F à Trith-Saint-Léger;non;1/1 connus, 1 logements
+sagnier.regis@orange.fr;SARL REGIS SAGNIER;5.2;Opportunité : Maison de 122 m² classée F à Grandvilliers;non;1/1 connus, 1 logements
+carpema@wanadoo.fr;CARPEMA;5.1;Opportunité : Immeuble de 156 m² à Froissy, 1 logement classé F ou G;non;1/2 connus, 4 logements
+clconstructionpro@gmail.com;CL CONSTRUCTION;5.1;Opportunité : Maison de 110 m² classée F à Beuvry;non;1/1 connus, 1 logements
+sarl.maquet@wanadoo.fr;MAQUET ET FILS;5.1;Opportunité : Maison de 64 m² classée G à Guînes;non;1/1 connus, 1 logements
+picardieplatres@orange.fr;PICARDIE PLATRES;5.1;Opportunité : Immeuble de 252 m² à Amiens, 2 logements classés F ou G;non;2/3 connus, 7 logements
+sassotobat@gmail.com;SOTOBAT (SOTOBAT);5.1;Opportunité : Maison de 139 m² classée F à Béthune;non;1/1 connus, 1 logements
+entreprisemrenovation@gmail.com;M RENOVATION;5.0;Opportunité : Maison de 64 m² classée G à Sainte-Geneviève;non;1/1 connus, 1 logements
+constructionsdumatz@orange.fr;CONSTRUCTIONS DU MATZ;4.8;Opportunité : Maison de 93 m² classée G à Compiègne;non;1/1 connus, 1 logements
+sc.lhagencement@outlook.fr;LH AGENCEMENT;4.7;Opportunité : Maison de 169 m² classée F à Beaufort;non;1/1 connus, 1 logements
+constructionsettraditions@gmail.com;CONSTRUCTIONS ET TRADITIONS (CONSTRUCTIONS ET TRADITIONS);4.5;Opportunité : Immeuble de 148 m² classé F à Saint-Quentin;non;4/5 connus, 6 logements
+bta80500@gmail.com;ANTONY BOUABTA (ANTONY BTA);4.3;Opportunité : Maison de 60 m² classée G à Caix;non;1/1 connus, 1 logements
+deco-platre-design@outlook.com;DECO PLATRE DESIGN;4.2;Opportunité : Maison de 45 m² classée G à Avesnes-le-Comte;non;1/1 connus, 1 logements
+stephane.dudayfils@free.fr;ENTREPRISE GENERALE DU BATIMENT TOUS CORPS D'ETAT DUDAY FILS;7.1;Opportunité : Immeuble de 408 m² à Amiens, 1 logement classé F ou G;non;1/5 connus, 8 logements
+arboulet@gmail.com;SAS ARNAUD BOULET;6.4;Opportunité : Immeuble de 378 m² à Ault, 1 logement classé F ou G;non;1/1 connus, 4 logements
+huriezentreprise@gmail.com;SARL HURIEZ;6.2;Opportunité : Immeuble de 486 m² à Saint-Quentin, 1 logement classé F ou G;non;1/1 connus, 6 logements
+sylvain.ducant@gmail.com;DUCANT RENOVATION HABITAT (DUCANT RH);6.1;Opportunité : Bâtiment de 38 m² à Neuville-Saint-Rémy, 1 logement classé F ou G;non;1/1 connus, 2 logements
+rosin.m@wanadoo.fr;ROSIN ET FILS;6.0;Opportunité : Bâtiment de 172 m² à Rocquemont, 1 logement classé F ou G;non;1/1 connus, 2 logements
+zambelli.travaux@hotmail.fr;DUFOSSEZ CONSTRUCTION (DUFOSSEZ CONSTRUCTION);5.9;Opportunité : Bâtiment de 210 m² à Maubeuge, 1 logement classé F ou G;non;1/1 connus, 2 logements
+emre.gurbuz@egcetudes.com;ENVELOPPE GLOBALE CONSTRUCTION (EGC);5.8;Opportunité : Bâtiment de 128 m² à Laon, 1 logement classé F ou G;non;1/1 connus, 2 logements
+jeanbaptiste.meni@yahoo.fr;MENI;5.8;Opportunité : Immeuble de 436 m² à Soissons, 1 logement classé F ou G;non;1/1 connus, 6 logements
+eurl.remi.lefevre@orange.fr;EURL REMI LEFEVRE;5.6;Opportunité : Immeuble de 436 m² à Soissons, 1 logement classé F ou G;non;1/1 connus, 6 logements
+s-dotte@hotmail.fr;SEBAT (SEBAT);5.2;Opportunité : Immeuble de 71 m² à Armentières, 1 logement classé F ou G;non;1/1 connus, 3 logements
+dewidehem@hotmail.fr;DEWIDEHEM & FILS (DEWIDEHEM & FILS);5.0;Opportunité : Bâtiment de 140 m² à Beaumetz-lès-Aire, 1 logement classé F ou G;non;1/1 connus, 2 logements
+santerremarchal@hotmail.com;SAS SANTERRE-MARCHAL;5.0;Opportunité : Immeuble de 144 m² à Cambrai, 1 logement classé F ou G;non;1/1 connus, 3 logements
+moncourtois2005@hotmail.fr;DAVID MONCOURTOIS;4.9;Opportunité : Immeuble de 146 m² à Laon, 1 logement classé F ou G;non;1/3 connus, 3 logements
+zub@zub.fr;SA ZUB;8.0;Opportunité : Immeuble de 571 m² à Trosly-Breuil, 1 logement classé F ou G;oui;1/4 connus, 13 logements
+pierre@caphabitat.com;CAP HABITAT;7.5;Opportunité : Immeuble de 243 m² à Jeumont, 1 logement classé F ou G;non;1/3 connus, 4 logements
+thierry@gaudefroy-maconnerie.fr;GAUDEFROY THIERRY;5.7;Opportunité : Immeuble de 133 m² à Beauvais, 1 logement classé F ou G;non;1/3 connus, 4 logements
+julie.denivet@robbe-habitat.fr;ROBBE JONATHAN;5.7;Opportunité : Immeuble de 486 m² à Saint-Quentin, 1 logement classé F ou G;non;1/1 connus, 6 logements
+stephane@prorenov.net;PRO'RENOV (PRO RENOV);5.6;Opportunité : Immeuble de 108 m² à Liancourt, 1 logement classé F ou G;non;1/1 connus, 5 logements
+contact@60degres.fr;60 DEGRES;8.6;Opportunité : Immeuble de 177 m² à Beauvais, 1 logement classé F ou G;non;1/1 connus, 5 logements
+contact@sas-des.fr;D.E.S;7.7;Opportunité : Immeuble de 851 m² à Abbeville, 1 logement classé F ou G;non;1/1 connus, 6 logements
+contact@entreprise-vigreux.fr;ENTREPRISE VIGREUX;7.1;Opportunité : Immeuble de 108 m² à Liancourt, 1 logement classé F ou G;non;1/1 connus, 5 logements
+contact@bati-entreprises.fr;BATI RENOV;7.0;Opportunité : Immeuble de 770 m² à Fourmies, 1 logement classé F ou G;non;1/11 connus, 11 logements
+direction@entreprise-copin.fr;COPIN;7.0;Opportunité : Immeuble de 770 m² à Fourmies, 1 logement classé F ou G;non;1/11 connus, 11 logements
+contact@bricaust-michael.fr;BRICAUST MICHAEL;6.4;Opportunité : Immeuble de 571 m² à Trosly-Breuil, 1 logement classé F ou G;oui;1/4 connus, 13 logements
+contact@ctrah.fr;CONCEPTION ET TRAVAUX DE RENOVATION POUR L'AMELIORATION ENERGETIQUE DE L'HABITAT (C.TRAH BATIMENT);6.4;Opportunité : Bâtiment de 340 m² à Coudekerque-Branche, 1 logement classé F ou G;non;1/1 connus, 2 logements
+contact@blc-pro-renovation.fr;BLC PRO RENOVATION (TARMACHARGE);6.1;Opportunité : Immeuble de 245 m² à Compiègne, 1 logement classé F ou G;non;1/9 connus, 9 logements
+contact@servitech-habitat.fr;ServiTech Habitat;6.1;Opportunité : Immeuble de 333 m² à Lille, 1 logement classé F ou G;non;1/1 connus, 4 logements
+bureau@littoralenduit.fr;SARL LITTORAL ENDUIT;6.0;Opportunité : Immeuble de 295 m² à Calais, 1 logement classé F ou G;non;1/4 connus, 4 logements
+contact@sarlpierru.fr;PIERRU BATIMENTS;5.9;Opportunité : Bâtiment de 200 m² à Saint-Omer, 1 logement classé F ou G;non;1/1 connus, 2 logements
+secretariat@exactysnord.fr;EXACTYS (SARL);5.8;Opportunité : Bâtiment de 259 m² à Masny, 1 logement classé F ou G;non;1/1 connus, 2 logements
+contact@piazzachape.fr;PIAZZA;5.5;Opportunité : Bâtiment de 128 m² à Raismes, 1 logement classé F ou G;non;1/1 connus, 2 logements
+contact.lausserand@gmail.com;LAUSSERAND;7.9;Opportunité : Immeuble de 215 m² à Vailly-sur-Aisne, 1 logement classé F ou G;non;1/1 connus, 4 logements
+accueildmd02@gmail.com;D.M.D.;7.9;Opportunité : Immeuble de 215 m² à Vailly-sur-Aisne, 1 logement classé F ou G;non;1/1 connus, 4 logements
+ecs.aniche@gmail.com;CARTIGNY SEBASTIEN;6.8;Opportunité : Bâtiment de 259 m² à Masny, 1 logement classé F ou G;non;1/1 connus, 2 logements
+acmlaon@hotmail.com;ACM;6.7;Opportunité : Immeuble de 92 m² à Laon, 1 logement classé F ou G;non;1/3 connus, 3 logements
+sjvplomberiechauffage@gmail.com;SJV PLOMBERIE CHAUFFAGE;6.5;Opportunité : Immeuble de 245 m² à Compiègne, 1 logement classé F ou G;non;1/9 connus, 9 logements
+pic.batiment@wanadoo.fr;PIC BATIMENT;6.4;Opportunité : Immeuble de 92 m² à Laon, 1 logement classé F ou G;non;1/3 connus, 3 logements
+btreno.contact@gmail.com;GREGORY THOMAS (BT RENO  /  OISE FRELONS GUEPES);6.0;Opportunité : Bâtiment de 248 m² à Mouy, 1 logement classé F ou G;non;1/1 connus, 2 logements
+lafontainoise@gmail.com;FONTAINOISE;5.9;Opportunité : Bâtiment de 38 m² à Neuville-Saint-Rémy, 1 logement classé F ou G;non;1/1 connus, 2 logements
+thuryhabitat@orange.fr;THURY HABITAT;5.9;Opportunité : Bâtiment de 248 m² à Mouy, 1 logement classé F ou G;non;1/1 connus, 2 logements
+procheminees@gmail.com;PRO CHEMINEES (PRO CHEMINEES);5.8;Opportunité : Immeuble de 133 m² à Beauvais, 1 logement classé F ou G;non;1/3 connus, 4 logements
+proconcept@orange.fr;PRO CONCEPT RENOVATION;5.8;Opportunité : Bâtiment de 210 m² à Maubeuge, 1 logement classé F ou G;non;1/1 connus, 2 logements
+avsbatiment80@orange.fr;AVS BATIMENT;5.7;Opportunité : Immeuble de 295 m² à Villers-Bretonneux, 2 logements classés F ou G;non;2/6 connus, 6 logements
+secretariat.delebat@gmail.com;DELEBAT;5.2;Opportunité : Bâtiment de 179 m² à Wicres, 1 logement classé F ou G;non;1/1 connus, 2 logements
+balzanosylvain@yahoo.fr;BCL BAT (BCL BAT);5.1;Opportunité : Bâtiment de 179 m² à Wicres, 1 logement classé F ou G;non;1/1 connus, 2 logements
+yd.laliettroise@hotmail.fr;LA LIETTROISE;4.6;Opportunité : Bâtiment de 140 m² à Beaumetz-lès-Aire, 1 logement classé F ou G;non;1/1 connus, 2 logements
