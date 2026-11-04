@@ -102,7 +102,7 @@ export default function CityPricePage({ slug }: { slug: string }) {
                         </div>
                         <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 rounded-3xl border border-brass/30 bg-gradient-to-r from-brass/[0.10] to-transparent p-5">
                             <p className="flex-1 text-ink">Combien vaut votre bien à {c.name}&nbsp;? <span className="text-muted">Estimation gratuite et immédiate, calculée sur les ventes de votre rue.</span></p>
-                            <GlowButton onClick={() => navigate(`/estimation?commune=${encodeURIComponent(c.name)}`)}>Estimer mon bien <ArrowRight size={16} /></GlowButton>
+                            <GlowButton onClick={() => navigate(`/estimation?commune=${encodeURIComponent(c.name)}&insee=${insee}`)}>Estimer mon bien <ArrowRight size={16} /></GlowButton>
                         </div>
                     </div>
                 </section>
