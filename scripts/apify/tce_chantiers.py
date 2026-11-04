@@ -20,6 +20,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 from datetime import date
 from typing import Dict, List, Optional, Tuple
@@ -133,7 +134,8 @@ async def building_facts(client: httpx.AsyncClient, b: Dict) -> Dict:
         rows = await ademe_rows(client, {"geo_distance": f"{b['lon']},{b['lat']},30", "size": "300"})
     except httpx.HTTPError:
         pass
-    company = await fetch_company(b["owner_siren"])
+    # The company kept in the database first (monopro_owners.company): the Annuaire refuses many requests
+    company = (b.get("_owner") or {}).get("company") or await fetch_company(b["owner_siren"])
     d = build_dossier(b, b.get("_owner"), company, 0, rows, None, SPREA_AGENCY)
     owner = b.get("_owner") or {}
     works = d.get("works") or {}
@@ -206,17 +208,19 @@ def hook(director: str, f: Dict, distance: float) -> str:
     works = (f" Le dossier chiffre la rénovation énergétique entre {euros(f['works_low'])} et {euros(f['works_high'])}."
              if f.get("works_low") and f.get("works_high") else "")
     when = f" au DPE de {dpe_when(f)}" if dpe_when(f) else ""
-    return (f"{hello} un immeuble de {f['nb_log']} logements ({size}, classé {f.get('label')}{when}) se trouve à "
-            f"{distance:.0f} km de votre entreprise, au {f.get('address')}. Il appartient à la société "
+    thing = (f"une maison ({size}, classée {f.get('label')}{when})" if f["nb_log"] == 1 else
+             f"un immeuble de {f['nb_log']} logements ({size}, classé {f.get('label')}{when})")
+    return (f"{hello} {thing} se trouve à "
+            f"{distance:.0f} km de votre entreprise, au {f.get('address')}. {'Elle' if f['nb_log'] == 1 else 'Il'} appartient à la société "
             f"{f['sci_name']} (SIREN {f['sci_siren']}). {ban}{works} Le dossier complet : {f['link']}")
 
 
 def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts: List[Dict],
-          today: Optional[date] = None) -> List[Dict]:
+          today: Optional[date] = None, offered: Optional[Dict[str, int]] = None) -> List[Dict]:
     """Chaque entreprise, par score décroissant, prend le meilleur immeuble à moins de MAX_KM
     encore proposé à moins de MAX_PER_BUILDING entreprises : un DPE de moins de 3 ans d'abord,
     un plus ancien seulement s'il n'y en a pas. Les lignes à DPE ancien finissent la liste."""
-    used: Dict[str, int] = {}
+    used: Dict[str, int] = dict(offered or {})
     out = []
     ordered = sorted(tce_rows, key=lambda r: -float(r.get("Score_Final") or 0))
     for r in ordered:
@@ -259,30 +263,45 @@ async def main_async(args):
     positions = company_positions(args.tce)
     cache_path = os.path.join(args.out, "4_immeubles_fg.json")
     async with httpx.AsyncClient(timeout=30) as client:
-        if os.path.exists(cache_path):
-            facts = json.load(open(cache_path, encoding="utf-8"))
-            if any("dpe_date" not in f for f in facts):  # cache d'avant la date du DPE
-                dates = {b["id"]: b.get("dpe_date") for b in await load_buildings(client)}
-                for f in facts:
-                    f["dpe_date"] = dates.get(f["id"])
+        cached = {f["id"]: f for f in json.load(open(cache_path, encoding="utf-8"))} if os.path.exists(cache_path) else {}
+        buildings = await load_buildings(client)
+        print(f"{len(buildings)} biens F/G détenus par une société (maisons et immeubles), {len(cached)} déjà calculés")
+        facts = []
+        new = [b for b in buildings if b["id"] not in cached]
+        for b in buildings:
+            if b["id"] in cached:
+                f = cached[b["id"]]
+                f.setdefault("dpe_date", b.get("dpe_date"))
+                facts.append(f)
+        for i, b in enumerate(new):
+            facts.append(await building_facts(client, b))
+            if i % 100 == 99:
+                print(f"  {i + 1} / {len(new)} nouveaux dossiers calculés", flush=True)
                 json.dump(facts, open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-        else:
-            buildings = await load_buildings(client)
-            print(f"{len(buildings)} immeubles F/G détenus par une société dans les Hauts-de-France")
-            facts = []
-            for i, b in enumerate(buildings):
-                facts.append(await building_facts(client, b))
-                if i % 50 == 49:
-                    print(f"  {i + 1} dossiers calculés", flush=True)
-                await asyncio.sleep(0.15)  # Annuaire des entreprises : quelques appels par seconde
-            json.dump(facts, open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            await asyncio.sleep(0.05)
+        json.dump(facts, open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         # Un lien vérifié de bout en bout : le site doit ouvrir le PDF signé
         sample = next((f["link"] for f in facts if f.get("link")), None)
         if sample:
             res = await client.get(sample, timeout=90)
             print(f"Lien de dossier testé : HTTP {res.status_code}, {'PDF' if res.content[:4] == b'%PDF' else 'pas un PDF'}")
-    out = match(rows, positions, facts)
+    # A new wave: the firms already written to are left out, and a building already offered counts
+    # in its limit of MAX_PER_BUILDING firms (envois_tce.csv of send_tce.py)
+    track = os.path.join(args.out, "envois_tce.csv")
+    sent = list(csv.DictReader(open(track, encoding="utf-8"), delimiter=";")) if os.path.exists(track) else []
+    written = {t["email"].strip().lower() for t in sent}
+    offered: Dict[str, int] = {}
+    for t in sent:
+        m = re.search(r"/monopro/([^/]+)/dossier", t.get("lien") or "")
+        if m:
+            offered[m.group(1)] = offered.get(m.group(1), 0) + 1
+    fresh = [r for r in rows if (r.get("Email") or "").strip().lower() not in written]
+    print(f"{len(rows) - len(fresh)} entreprises déjà écrites mises de côté, {len(offered)} biens déjà proposés")
+    out = match(fresh, positions, facts, offered=offered)
     path = os.path.join(args.out, "prospection_TCE_chantiers.csv")
+    previous = os.path.join(args.out, "prospection_TCE_chantiers_vague1.csv")
+    if sent and os.path.exists(path) and not os.path.exists(previous):
+        os.replace(path, previous)  # the file of the first wave, as it was sent
     with open(path, "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter=";")
         w.writeheader()
