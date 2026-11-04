@@ -13,6 +13,11 @@ chantier envoyé à toute la région n'a plus de valeur.
 
   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \\
   python scripts/apify/tce_chantiers.py --tce tce_hdf --out tce_hdf
+
+--france : toute la France. Les entreprises du fichier gratuit (gratuit/france, tce_free.py)
+s'ajoutent à celles d'Apify, les biens de tous les départements sont lus, et seuls les dossiers
+des biens les plus prometteurs près des meilleures entreprises sont calculés, dans la limite de
+--minutes : chaque exécution reprend où la précédente s'est arrêtée (cache 4_immeubles_fg.json).
 """
 import argparse
 import asyncio
@@ -22,6 +27,7 @@ import math
 import os
 import re
 import sys
+import time
 from datetime import date
 from typing import Dict, List, Optional, Tuple
 
@@ -33,7 +39,8 @@ from api.monopro import SPREA_AGENCY, fetch_company, share_token  # noqa: E402
 from api.monopro_report import build_dossier  # noqa: E402
 
 SITE = "https://sprea.app"
-DEPARTMENTS = ["02", "59", "60", "62", "80"]
+DEPARTMENTS = ["02", "59", "60", "62", "80"]  # Hauts-de-France : fichiers Apify
+CANDIDATES = 3        # en France entière : biens calculés par entreprise, les plus prometteurs d'abord
 MAX_KM = 40           # au-delà, un chantier n'est plus dans la zone d'une entreprise
 MAX_PER_BUILDING = 2  # entreprises à qui le même immeuble est proposé
 FRESH_MONTHS = 18     # DPE de moins de 18 mois : le propriétaire vient de faire diagnostiquer
@@ -92,13 +99,14 @@ def company_positions(tce_dir: str) -> Dict[str, Tuple[float, float]]:
 
 # --- Immeubles : Supabase, dossier SPREA, propriétaire ----------------------
 
-async def load_buildings(client: httpx.AsyncClient) -> List[Dict]:
+async def load_buildings(client: httpx.AsyncClient, france: bool = False) -> List[Dict]:
     url, key = os.environ["SUPABASE_URL"].rstrip("/"), os.environ["SUPABASE_SERVICE_ROLE_KEY"]
     headers = {"apikey": key, "Authorization": f"Bearer {key}"}
     out, offset = [], 0
+    where = {} if france else {"dep": f"in.({','.join(DEPARTMENTS)})"}
     while True:
         res = await client.get(f"{url}/rest/v1/monopro_buildings", headers=headers, params={
-            "select": "*", "dep": f"in.({','.join(DEPARTMENTS)})", "dpe_label": "in.(F,G)",
+            "select": "*", **where, "dpe_label": "in.(F,G)",
             "owner_siren": "not.is.null", "order": "id", "limit": 1000, "offset": offset})
         res.raise_for_status()
         page = res.json()
@@ -215,6 +223,55 @@ def hook(director: str, f: Dict, distance: float) -> str:
             f"{f['sci_name']} (SIREN {f['sci_siren']}). {ban}{works} Le dossier complet : {f['link']}")
 
 
+def cell(lat: float, lon: float) -> Tuple[int, int]:
+    """Case de 0,4° de latitude sur 0,6° de longitude (plus de MAX_KM de côté en France) : les biens
+    à moins de MAX_KM d'un point sont dans sa case ou les huit voisines."""
+    return int(math.floor(lat / 0.4)), int(math.floor(lon / 0.6))
+
+
+def grid(items: List[Dict]) -> Dict[Tuple[int, int], List[Dict]]:
+    g: Dict[Tuple[int, int], List[Dict]] = {}
+    for it in items:
+        if it.get("lat") is not None and it.get("lon") is not None:
+            g.setdefault(cell(it["lat"], it["lon"]), []).append(it)
+    return g
+
+
+def near(g: Dict[Tuple[int, int], List[Dict]], lat: float, lon: float) -> List[Dict]:
+    i, j = cell(lat, lon)
+    return [it for di in (-1, 0, 1) for dj in (-1, 0, 1) for it in g.get((i + di, j + dj), [])]
+
+
+def raw_priority(b: Dict, today: Optional[date] = None) -> float:
+    """building_priority() avant le calcul du dossier : la classe et la date du DPE, le nombre de logements."""
+    return building_priority({"label": b.get("dpe_label"), "dpe_date": b.get("dpe_date"),
+                              "shab": 65 * (b.get("nb_log") or 1)}, today)
+
+
+def wanted(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], buildings: List[Dict],
+           today: Optional[date] = None, offered: Optional[Dict[str, int]] = None) -> List[Dict]:
+    """Les biens à calculer, dans l'ordre : pour chaque entreprise (meilleur score d'abord), ses
+    CANDIDATES biens les plus prometteurs à moins de MAX_KM parmi ceux encore libres. Le premier est
+    réservé à l'entreprise : un bien déjà réservé ou proposé à MAX_PER_BUILDING entreprises passe son
+    tour, sans quoi les entreprises d'une même ville se disputeraient les trois mêmes biens."""
+    g, out, seen = grid(buildings), [], set()
+    load: Dict[str, int] = dict(offered or {})
+    for r in sorted(tce_rows, key=lambda r: -float(r.get("Score_Final") or 0)):
+        p = positions.get(str(r.get("SIRET", ""))[:9])
+        if not p:
+            continue
+        close = [b for b in near(g, *p) if km(p[0], p[1], b["lat"], b["lon"]) <= MAX_KM]
+        close.sort(key=lambda b: (not is_old(b, today), raw_priority(b, today)), reverse=True)
+        free = [b for b in close if load.get(b["id"], 0) < MAX_PER_BUILDING][:CANDIDATES]
+        if free:
+            load[free[0]["id"]] = load.get(free[0]["id"], 0) + 1
+        for b in free:
+            if b["id"] not in seen:
+                seen.add(b["id"])
+                out.append(b)
+    return out
+
+
 def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts: List[Dict],
           today: Optional[date] = None, offered: Optional[Dict[str, int]] = None) -> List[Dict]:
     """Chaque entreprise, par score décroissant, prend le meilleur immeuble à moins de MAX_KM
@@ -222,13 +279,14 @@ def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts
     un plus ancien seulement s'il n'y en a pas. Les lignes à DPE ancien finissent la liste."""
     used: Dict[str, int] = dict(offered or {})
     out = []
+    g = grid(facts)
     ordered = sorted(tce_rows, key=lambda r: -float(r.get("Score_Final") or 0))
     for r in ordered:
         p = positions.get(str(r.get("SIRET", ""))[:9])
         if not p:
             continue
         best = None
-        for f in facts:
+        for f in near(g, *p):
             if used.get(f["id"], 0) >= MAX_PER_BUILDING or not f.get("sci_active", True):
                 continue
             if f.get("label") not in ("F", "G"):  # DPE collectif meilleur : seuls quelques lots sont F/G
@@ -257,23 +315,74 @@ def match(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], facts
     return out
 
 
+def read_csv(path: str) -> List[Dict]:
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8-sig") as fh:
+        return list(csv.DictReader(fh, delimiter=";"))
+
+
+def free_firms(tce_dir: str, rows: List[Dict], positions: Dict[str, Tuple[float, float]]) -> List[Dict]:
+    """Ajoute les entreprises du fichier gratuit (France entière) absentes du fichier Apify, et leur position."""
+    seen = {(r.get("Email") or "").strip().lower() for r in rows} | {str(r.get("SIRET", ""))[:9] for r in rows}
+    out = list(rows)
+    for path in (os.path.join(tce_dir, "gratuit", "prospection_tce_gratuit.csv"),
+                 os.path.join(tce_dir, "gratuit", "france", "prospection_tce_france.csv")):
+        for r in read_csv(path):
+            e, siren = (r.get("Email") or "").strip().lower(), str(r.get("SIRET", ""))[:9]
+            if not e or e in seen or siren in seen:
+                continue
+            seen |= {e, siren}
+            out.append(r)
+    for path in (os.path.join(tce_dir, "gratuit", "1a_rge_registre.json"),
+                 os.path.join(tce_dir, "gratuit", "france", "1a_rge_registre.json")):
+        if os.path.exists(path):
+            for p in json.load(open(path, encoding="utf-8")):
+                try:
+                    positions.setdefault(str(p["siren"])[:9], (float(p["latitude"]), float(p["longitude"])))
+                except (KeyError, TypeError, ValueError):
+                    pass
+    return out
+
+
 async def main_async(args):
-    rows = list(csv.DictReader(open(os.path.join(args.tce, "prospection_tce_hauts_de_france.csv"), encoding="utf-8-sig"),
-                               delimiter=";"))
+    rows = read_csv(os.path.join(args.tce, "prospection_tce_hauts_de_france.csv"))
     positions = company_positions(args.tce)
+    if args.france:
+        n = len(rows)
+        rows = free_firms(args.tce, rows, positions)
+        print(f"{n} entreprises Apify, {len(rows) - n} ajoutées par le fichier gratuit (France)")
+    track = os.path.join(args.out, "envois_tce.csv")
+    sent = read_csv(track)
+    written = {t["email"].strip().lower() for t in sent}
+    offered: Dict[str, int] = {}
+    for t in sent:
+        m = re.search(r"/monopro/([^/]+)/dossier", t.get("lien") or "")
+        if m:
+            offered[m.group(1)] = offered.get(m.group(1), 0) + 1
+    started = time.monotonic()
     cache_path = os.path.join(args.out, "4_immeubles_fg.json")
     async with httpx.AsyncClient(timeout=30) as client:
         cached = {f["id"]: f for f in json.load(open(cache_path, encoding="utf-8"))} if os.path.exists(cache_path) else {}
-        buildings = await load_buildings(client)
+        buildings = await load_buildings(client, args.france)
         print(f"{len(buildings)} biens F/G détenus par une société (maisons et immeubles), {len(cached)} déjà calculés")
         facts = []
-        new = [b for b in buildings if b["id"] not in cached]
+        if args.france:
+            # Only the buildings worth offering, near the best firms not yet written to
+            fresh_rows = [r for r in rows if (r.get("Email") or "").strip().lower() not in written]
+            new = [b for b in wanted(fresh_rows, positions, buildings, offered=offered) if b["id"] not in cached]
+        else:
+            new = [b for b in buildings if b["id"] not in cached]
+        print(f"{len(new)} dossiers à calculer")
         for b in buildings:
             if b["id"] in cached:
                 f = cached[b["id"]]
                 f.setdefault("dpe_date", b.get("dpe_date"))
                 facts.append(f)
         for i, b in enumerate(new):
+            if args.minutes and time.monotonic() - started > args.minutes * 60:
+                print(f"Temps écoulé : {i} dossiers calculés, {len(new) - i} pour la prochaine exécution", flush=True)
+                break
             facts.append(await building_facts(client, b))
             if i % 100 == 99:
                 print(f"  {i + 1} / {len(new)} nouveaux dossiers calculés", flush=True)
@@ -287,14 +396,6 @@ async def main_async(args):
             print(f"Lien de dossier testé : HTTP {res.status_code}, {'PDF' if res.content[:4] == b'%PDF' else 'pas un PDF'}")
     # A new wave: the firms already written to are left out, and a building already offered counts
     # in its limit of MAX_PER_BUILDING firms (envois_tce.csv of send_tce.py)
-    track = os.path.join(args.out, "envois_tce.csv")
-    sent = list(csv.DictReader(open(track, encoding="utf-8"), delimiter=";")) if os.path.exists(track) else []
-    written = {t["email"].strip().lower() for t in sent}
-    offered: Dict[str, int] = {}
-    for t in sent:
-        m = re.search(r"/monopro/([^/]+)/dossier", t.get("lien") or "")
-        if m:
-            offered[m.group(1)] = offered.get(m.group(1), 0) + 1
     fresh = [r for r in rows if (r.get("Email") or "").strip().lower() not in written]
     print(f"{len(rows) - len(fresh)} entreprises déjà écrites mises de côté, {len(offered)} biens déjà proposés")
     out = match(fresh, positions, facts, offered=offered)
@@ -315,6 +416,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--tce", default="tce_hdf", help="dossier de sortie de tce_pipeline.py")
     ap.add_argument("--out", default="tce_hdf")
+    ap.add_argument("--france", action="store_true", help="toute la France (fichier gratuit, tous les départements)")
+    ap.add_argument("--minutes", type=float, default=0, help="temps de calcul des dossiers (0 : sans limite)")
     args = ap.parse_args(argv)
     os.makedirs(args.out, exist_ok=True)
     asyncio.run(main_async(args))

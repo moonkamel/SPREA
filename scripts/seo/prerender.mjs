@@ -163,7 +163,7 @@ pages.push(page({
     title: 'Trouver des chantiers de rénovation énergétique : dossiers exclusifs pour artisans RGE | SPREA',
     description: "Des chantiers de rénovation repérés avant vos concurrents, près de votre entreprise, avec le dossier chiffré et le contact du maître d'ouvrage. 1 dossier d'essai gratuit, Pack Découverte 99 € HT.",
     jsonld: [
-        { '@context': 'https://schema.org', '@type': 'Service', name: 'Dossiers chantier SPREA', provider: ORG, areaServed: 'Hauts-de-France',
+        { '@context': 'https://schema.org', '@type': 'Service', name: 'Dossiers chantier SPREA', provider: ORG, areaServed: 'France',
           offers: [{ '@type': 'Offer', name: 'Pack Découverte', price: '99', priceCurrency: 'EUR' }, { '@type': 'Offer', name: 'Zone exclusive', price: '349', priceCurrency: 'EUR' }] },
         { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: chantiersFaq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
         BREADCRUMB([['SPREA', '/'], ['Trouver des chantiers', '/trouver-des-chantiers']]),

@@ -144,7 +144,7 @@ function Hero({ onStart }: { onStart: () => void }) {
                     </motion.div>
                     <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }}
                         className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-faint">
-                        {['Sans carte bancaire', 'Réponse sous 24 h ouvrées', 'Nord et Pas-de-Calais'].map(t => (
+                        {['Sans carte bancaire', 'Réponse sous 24 h ouvrées', 'Toute la France'].map(t => (
                             <li key={t} className="flex items-center gap-1.5"><Check size={14} className="text-sage" />{t}</li>
                         ))}
                     </motion.ul>
@@ -255,7 +255,7 @@ function Trades() {
 
 function Figures() {
     const items = [
-        { node: <Counter to={2600} suffix="+" />, label: 'maisons et immeubles à rénover repérés dans le Nord et le Pas-de-Calais' },
+        { node: <Counter to={2600} suffix="+" />, label: 'maisons et immeubles à rénover déjà repérés par notre moteur' },
         { node: <>2025 · <span className="text-brass-light">2028</span></>, label: 'logements G interdits à la location, puis F : les propriétaires doivent agir' },
         { node: <Counter to={1} />, label: 'seul décideur par chantier : pas de syndic, pas de copropriété' },
         { node: <Counter to={2} suffix=" pages" />, label: 'un dossier clair, prêt à joindre à votre courrier' },

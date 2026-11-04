@@ -72,3 +72,31 @@ def test_hook_states_only_facts():
                            "se trouve à 12 km")
     assert "à partir du 1er janvier 2028" in text and "315 000 € et 525 000 €" in text and text.endswith("L1")
     assert "depuis le 1er janvier 2025" in ch.hook("", building(2, "G"), 3)
+
+
+def test_france_grid_and_buildings_worth_computing():
+    marseille = (43.2965, 5.3698)
+    firms = [firm("100000000", 15), firm("100000001", 3)]
+    pos = {"100000000": ARRAS, "100000001": marseille}
+    raw = [{"id": f"b{i}", "lat": ARRAS[0] + i * 0.01, "lon": ARRAS[1], "dpe_label": "G" if i % 2 else "F",
+            "dpe_date": "2026-05-01", "nb_log": 1 + i} for i in range(6)]
+    raw.append({"id": "m1", "lat": marseille[0], "lon": marseille[1], "dpe_label": "F", "dpe_date": "2026-05-01", "nb_log": 4})
+    out = [b["id"] for b in ch.wanted(firms, pos, raw, TODAY)]
+    # The best firm first, its CANDIDATES best buildings (G and larger first), then Marseille's
+    assert out[:ch.CANDIDATES] == ["b5", "b3", "b1"] and out[-1] == "m1" and len(out) == ch.CANDIDATES + 1
+    # Matching only looks at the cells around the firm: Marseille's building goes to the Marseille firm
+    facts = [building(1), {**building(2), "lat": marseille[0], "lon": marseille[1]}]
+    got = {r["Entreprise"]: r["Immeuble_Adresse"][:2] for r in ch.match(firms, pos, facts, TODAY)}
+    assert got == {"TCE 100000000": "1 ", "TCE 100000001": "2 "}
+
+
+def test_firms_of_the_same_town_do_not_all_want_the_same_buildings():
+    firms = [firm(str(100000000 + i), 15 - i) for i in range(6)]
+    pos = {f["SIRET"][:9]: ARRAS for f in firms}
+    raw = [{"id": f"b{i}", "lat": ARRAS[0], "lon": ARRAS[1], "dpe_label": "G", "dpe_date": "2026-05-01", "nb_log": 10 - i}
+           for i in range(6)]
+    out = [b["id"] for b in ch.wanted(firms, pos, raw, TODAY)]
+    # 6 firms, 2 per building: the 3 best buildings are reserved, the others are computed too
+    assert set(out) == {f"b{i}" for i in range(5)} or set(out) == {f"b{i}" for i in range(6)}
+    # A building already offered twice is not wanted again
+    assert "b0" not in [b["id"] for b in ch.wanted(firms[:1], pos, raw, TODAY, offered={"b0": 2})]

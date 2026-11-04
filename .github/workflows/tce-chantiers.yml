@@ -6,6 +6,13 @@ name: Apify (chantiers pour les entreprises TCE)
 # credit used: SPREA's buildings, ADEME and the Annuaire des entreprises.
 on:
   workflow_dispatch:
+    inputs:
+      france:
+        description: "Toute la France (fichier gratuit, tous les départements) : true / false"
+        default: "false"
+      minutes:
+        description: "Temps de calcul des dossiers, en minutes (la suite à la prochaine exécution)"
+        default: "300"
 
 permissions:
   contents: write
@@ -16,7 +23,7 @@ concurrency:
 jobs:
   chantiers:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - name: TCE results
@@ -29,10 +36,24 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python -u scripts/apify/tce_chantiers.py --tce out --out out
+        run: python -u scripts/apify/tce_chantiers.py --tce out --out out --minutes "${{ inputs.minutes || '300' }}" $([ "${{ inputs.france }}" = "true" ] && echo --france)
+      # A copy of the results first: a refused push no longer loses hours of computing
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chantiers
+          path: |
+            out/prospection_TCE_chantiers*.csv
+            out/4_immeubles_fg.json
+          if-no-files-found: ignore
       - name: Save
+        if: always()
         run: |
           cd out
+          git config user.name github-actions && git config user.email actions@github.com
           git add -A
           git -c user.name=github-actions -c user.email=actions@github.com commit -qm "Chantiers TCE $(date +%F-%H%M)" || exit 0
-          git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce
+          for i in 1 2 3 4 5; do
+            git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce && break
+            sleep $((i * 5)); git fetch -q origin apify-tce && git rebase -q origin/apify-tce
+          done

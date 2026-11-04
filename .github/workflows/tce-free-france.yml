@@ -1,0 +1,106 @@
+name: TCE gratuit France (liste RGE ADEME + Annuaire, tous départements)
+
+# The free TCE pipeline (scripts/apify/tce_free.py) over the whole of France: one job per
+# department, side by side, then one commit of every result in gratuit/france/ on the
+# apify-tce branch, with the merged file prospection_tce_france.csv. No paid service.
+# A new run reads back what earlier runs saved: only the missing work is done.
+on:
+  workflow_dispatch:
+    inputs:
+      all_rge:
+        description: "Toutes les entreprises RGE, pas seulement les tous corps d'état (true / false)"
+        default: "false"
+  push:
+    branches: ["claude/**"]
+    paths: [".github/workflows/tce-free-france.yml", "scripts/apify/tce_free.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tce-free-france
+
+jobs:
+  dep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 14  # room left for the imports and the chantiers run (20 jobs at a time on the account)
+      matrix:
+        dep: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      # Results of an earlier run: the RGE list, the Annuaire and the websites already read are kept
+      - name: Earlier results
+        run: |
+          git fetch -q origin apify-tce
+          mkdir -p work
+          git archive origin/apify-tce "gratuit/france/${{ matrix.dep }}" 2>/dev/null | tar -x -C work 2>/dev/null || true
+          mkdir -p "work/gratuit/france/${{ matrix.dep }}"
+      - name: Run
+        env:
+          ALL: ${{ inputs.all_rge || 'false' }}
+        run: python -u scripts/apify/tce_free.py --deps ${{ matrix.dep }} --out "work/gratuit/france/${{ matrix.dep }}" $([ "$ALL" = "true" ] && echo --all)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dep-${{ matrix.dep }}
+          path: work/gratuit/france/${{ matrix.dep }}
+          if-no-files-found: ignore
+
+  save:
+    needs: dep
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: TCE files
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Merge
+        run: |
+          mkdir -p out/gratuit/france
+          for d in artifacts/dep-*; do
+            [ -d "$d" ] || continue
+            dep=${d#artifacts/dep-}
+            rm -rf "out/gratuit/france/$dep" && cp -r "$d" "out/gratuit/france/$dep"
+          done
+          python - <<'PY'
+          import csv, glob, json, os
+          base = "out/gratuit/france"
+          rows, header, reg = [], None, []
+          for path in sorted(glob.glob(f"{base}/*/prospection_tce_gratuit.csv")):
+              with open(path, encoding="utf-8-sig") as fh:
+                  r = csv.DictReader(fh, delimiter=";")
+                  header = header or r.fieldnames
+                  rows += list(r)
+          for path in sorted(glob.glob(f"{base}/*/1a_rge_registre.json")):
+              reg += json.load(open(path, encoding="utf-8"))
+          rows.sort(key=lambda x: -float(x.get("Score_Final") or 0))
+          if header:
+              with open(f"{base}/prospection_tce_france.csv", "w", newline="", encoding="utf-8-sig") as fh:
+                  w = csv.DictWriter(fh, fieldnames=header, delimiter=";")
+                  w.writeheader()
+                  w.writerows(rows)
+          json.dump(reg, open(f"{base}/1a_rge_registre.json", "w", encoding="utf-8"))
+          deps = {os.path.basename(os.path.dirname(p)) for p in glob.glob(f"{base}/*/prospection_tce_gratuit.csv")}
+          print(f"{len(rows)} entreprises, {sum(1 for r in rows if r.get('Email'))} avec un email, {len(deps)} départements")
+          PY
+      - name: Save
+        run: |
+          cd out
+          git config user.name github-actions && git config user.email actions@github.com
+          git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "TCE gratuit France $(date +%F-%H%M)" || exit 0
+          for i in 1 2 3 4 5; do
+            git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce && break
+            sleep $((i * 5)); git fetch -q origin apify-tce && git rebase -q origin/apify-tce
+          done
