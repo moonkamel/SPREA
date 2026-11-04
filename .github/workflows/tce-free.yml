@@ -1,0 +1,53 @@
+name: TCE gratuit (liste RGE ADEME + Annuaire des entreprises)
+
+# Free replacement for the Apify TCE pipeline (scripts/apify/tce_free.py): RGE firms of
+# the departments from the ADEME open data, officers and NAF from the Annuaire des
+# entreprises, named emails from the firms' own websites. Results in gratuit/ on the
+# apify-tce branch. No paid service.
+on:
+  workflow_dispatch:
+    inputs:
+      departments:
+        description: "Départements (ex. : 02 60 80)"
+        default: "02 60 80"
+      all_rge:
+        description: "Toutes les entreprises RGE, pas seulement les tous corps d'état (true / false)"
+        default: "false"
+  push:
+    branches: ["claude/**"]
+    paths: ["scripts/apify/tce_free.py", ".github/workflows/tce-free.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tce-free
+
+jobs:
+  free:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: TCE files
+        run: git fetch -q origin apify-tce && git worktree add out origin/apify-tce
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Run
+        env:
+          DEPS: ${{ inputs.departments || '02 60 80' }}
+          ALL: ${{ inputs.all_rge || 'false' }}
+        run: python -u scripts/apify/tce_free.py --deps $DEPS --out out/gratuit $([ "$ALL" = "true" ] && echo --all)
+      - name: Save
+        if: always()
+        run: |
+          cd out
+          git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "TCE gratuit $(date +%F-%H%M)" || exit 0
+          # Another run (chantiers, sends) may have pushed meanwhile: replay this commit on top
+          for i in 1 2 3; do
+            git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce && break
+            git fetch -q origin apify-tce && git rebase -q origin/apify-tce
+          done
