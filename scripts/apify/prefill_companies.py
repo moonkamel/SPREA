@@ -48,7 +48,12 @@ def main():
         for n, siren in enumerate(todo, 1):
             res = None
             for attempt in range(5):
-                res = client.get(COMPANY_URL, params={"q": siren, "per_page": 1})
+                try:
+                    res = client.get(COMPANY_URL, params={"q": siren, "per_page": 1})
+                except httpx.HTTPError:  # a slow answer: wait and try again, never stop the run for it
+                    res = None
+                    time.sleep(5 * (attempt + 1))
+                    continue
                 if res.status_code != 429:
                     break
                 time.sleep(5 * (attempt + 1))
@@ -59,9 +64,13 @@ def main():
             if not hits:
                 missing += 1
                 continue
-            client.patch(f"{URL}/rest/v1/monopro_owners", params={"siren": f"eq.{siren}"}, headers=HEADERS,
-                         json={"company": company_details(hits[0]), "company_at": datetime.now(timezone.utc).isoformat()}
-                         ).raise_for_status()
+            try:
+                client.patch(f"{URL}/rest/v1/monopro_owners", params={"siren": f"eq.{siren}"}, headers=HEADERS,
+                             json={"company": company_details(hits[0]), "company_at": datetime.now(timezone.utc).isoformat()}
+                             ).raise_for_status()
+            except httpx.HTTPError:
+                refused += 1
+                continue
             filled += 1
             if n % 50 == 0:
                 print(f"  {n} traitées", flush=True)
