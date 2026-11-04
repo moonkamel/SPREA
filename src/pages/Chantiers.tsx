@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
     ArrowLeft, ArrowRight, Building2, Check, CheckCircle2, ChevronDown, Crown, FileText, Flame, Gauge, Hammer,
     Home as HomeIcon, Loader2, Lock, MapPin, Phone, Radar, ShieldCheck, Sparkles, Target, Users, Wind, X,
@@ -108,15 +108,12 @@ function Kicker({ children }: { children: ReactNode }) {
 // --- Hero ---
 
 function Hero({ onStart }: { onStart: () => void }) {
-    const { scrollY } = useScroll();
-    const y = useTransform(scrollY, [0, 700], [0, 120]);
-    const fade = useTransform(scrollY, [0, 600], [1, 0]);
     return (
         <section className="relative overflow-hidden">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_75%_45%,rgba(40,120,255,0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_12%_25%,rgba(201,164,92,0.12),transparent_70%)]" />
             <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 lg:pt-20 lg:pb-24 grid gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] items-center">
-                <motion.div style={{ y, opacity: fade }}>
+                <div>
                     <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
                         className="inline-flex items-center gap-2 rounded-full border border-brass/30 bg-brass/[0.06] px-4 py-1.5 text-xs sm:text-sm text-brass-light tracking-wide backdrop-blur">
                         <span className="h-1.5 w-1.5 rounded-full bg-brass-light animate-pulse" /> Pour les entreprises du bâtiment · RGE
@@ -151,7 +148,7 @@ function Hero({ onStart }: { onStart: () => void }) {
                             <li key={t} className="flex items-center gap-1.5"><Check size={14} className="text-sage" />{t}</li>
                         ))}
                     </motion.ul>
-                </motion.div>
+                </div>
                 <motion.div initial={{ opacity: 0, y: 40, rotate: 2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ delay: 0.5, duration: 1, ease: [0.2, 0.8, 0.2, 1] }}>
                     <DossierPreview />
                 </motion.div>
