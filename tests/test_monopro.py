@@ -481,7 +481,7 @@ def test_worksite_dossier_for_building_firms():
     assert "Dossier chantier" in pdf and "Le chantier, poste par poste" in pdf and "Corps d'état" in pdf
     assert "Couvreur" in pdf and "Électricien" in pdf and "Budget travaux estimé" in pdf
     assert "Pourquoi le propriétaire doit agir" in pdf and "Vos arguments face au propriétaire" in pdf
-    assert "entreprise RGE" in pdf and "Dirigeant : Jean DUPONT (Gérant)" in pdf and "2 autres immeubles" in pdf
+    assert "entreprise RGE" in pdf and "Dirigeant : Jean DUPONT (Gérant)" in pdf and "2 autres biens" in pdf
     # What the TCE email promises, only when the dossier has it
     assert "après rénovation" in pdf and "Décote liée au DPE" in pdf
     # Nothing of the sale dossier: no agency, no sale in one piece
@@ -721,3 +721,20 @@ def test_company_lookup_waits_on_429_and_falls_back_to_the_kept_copy(monkeypatch
     got = asyncio.run(monopro.company_for("393748926", {"siren": "393748926", "company": kept}, store))
     assert got["officers"][0]["name"] == "Marie LEFEBVRE" and store.saved[-1][0] == "393748926"
     monopro._company_cache.clear()
+
+
+def test_worksite_dossier_for_a_house():
+    from api import monopro_pdf
+    from tests.test_pdf import pdf_text
+    house = {**flat(1, "G"), "qualite_isolation_murs": "insuffisante", "qualite_isolation_plancher_bas": "insuffisante",
+             "type_ventilation": "Ventilation par ouverture des fenêtres", "surface_habitable_logement": 95}
+    company = {"name": "SCI DU JARDIN", "address": "2 RUE Y 62000 ARRAS", "officers": [{"name": "Paul MARTIN", "role": "Gérant"}]}
+    d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 1, "levels": 2, "dpe_label": "G", "year_built": 1930},
+                                     OWNERS[0], company, 0, [house], None, {}, TODAY)
+    pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
+    assert "rénovation énergétique d'une maison" in pdf and "immeuble" not in pdf.split("SPREA ·")[0].lower()
+    assert "Propriétaire unique : " in pdf and "(société)" in pdf and "syndic" not in pdf
+    assert "DPE collectif obligatoire" not in pdf and "assemblée générale" not in pdf
+    assert "1 logement classé G" in pdf and "(environ 95 m²)" in pdf and "chacun" not in pdf
+    assert "· classée G" in pdf and "DPE collectif" not in pdf
+    assert "Ventilation mécanique" in pdf and "collective" not in pdf.lower()

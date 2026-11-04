@@ -16,6 +16,12 @@ on:
         description: "Millésime BDNB (bdnb.io/download)"
         required: true
         default: "2026-02-a"
+      min_log:
+        description: "Logements au moins (3 : immeubles ; 1 : aussi les maisons et petits bâtiments)"
+        default: "3"
+      dry_run:
+        description: "Comptage sans rien écrire (true / false)"
+        default: "false"
 
 permissions:
   contents: read
@@ -40,9 +46,12 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           BDNB_MILLESIME: ${{ inputs.millesime }}
           DEPARTMENTS: ${{ inputs.departments }}
+          MIN_LOG: ${{ inputs.min_log || '3' }}
+          DRY: ${{ inputs.dry_run || 'false' }}
         run: |
           for dep in $DEPARTMENTS; do
             [[ "$dep" =~ ^([0-9]{2,3}|2[AB])$ ]] || { echo "Département invalide : $dep"; exit 1; }
-            python scripts/monopro/import_bdnb.py --dep "$dep"
+            [[ "$MIN_LOG" =~ ^[1-9]$ ]] || { echo "min_log invalide : $MIN_LOG"; exit 1; }
+            python scripts/monopro/import_bdnb.py --dep "$dep" --min-log "$MIN_LOG" $([ "$DRY" = "true" ] && echo --dry-run)
             rm -f "bdnb_$dep.zip"
           done

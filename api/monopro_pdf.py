@@ -226,6 +226,24 @@ def work_lines(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [it for it in items if not it.get("per_dwelling")] + [merged]
 
 
+def what(d: Dict[str, Any], article: str) -> str:
+    """« d'une maison », « de ce bâtiment de 2 logements », « d'un immeuble »..."""
+    n = d["building"]["nb_log"]
+    noun = "maison" if n == 1 else "bâtiment de 2 logements" if n == 2 else "immeuble"
+    if article == "ce":
+        return "cette maison" if n == 1 else f"ce {noun}"
+    return "d'une maison" if n == 1 else f"d'un {noun}"
+
+
+# A house has no collective ventilation nor parking under it
+HOUSE_NAMES = {"vmc": "Ventilation mécanique (VMC)", "floor": "Isolation du plancher bas (vide sanitaire, cave)"}
+HOUSE_TRADES = {"floor": "Isolation du plancher bas", "vmc": "Électricien, ventilation (VMC)"}
+
+
+def house_name(d: Dict[str, Any], item: Dict[str, Any]) -> str:
+    return HOUSE_NAMES.get(item.get("id"), item["name"]) if d["building"]["nb_log"] == 1 else item["name"]
+
+
 def owner_pressure(d: Dict[str, Any]) -> List[str]:
     """What forces the owner to act: the law on its dwellings, its obligations."""
     out = []
@@ -246,7 +264,8 @@ def owner_pressure(d: Dict[str, Any]) -> List[str]:
         out.append(f"Pour vendre, il doit faire réaliser un audit énergétique (classe {d['label']}) : les travaux deviennent "
                    "visibles de tout acheteur et pèsent sur le prix.")
     cdpe = d.get("collective_dpe") or {}
-    if cdpe and not cdpe.get("done"):
+    # The collective DPE is due for a building of several dwellings, not for a house
+    if cdpe and not cdpe.get("done") and d["building"]["nb_log"] > 1:
         out.append(cdpe["text"])
     return out
 
@@ -278,6 +297,8 @@ def label_text(d: Dict[str, Any]) -> Optional[str]:
                 if d.get("label") else None)
     span = present[0] if len(present) == 1 else f"de {present[0]} à {present[-1]}"
     n, nb = units["n_known"], d["building"]["nb_log"]
+    if nb == 1:
+        return f"classée {span}" if len(present) == 1 else f"logement classé {span}"
     if n < nb:
         # Only some dwellings have a DPE: say so, the others are an estimate
         return (f"{n} logement{'s' if n > 1 else ''} diagnostiqué{'s' if n > 1 else ''} sur {nb} "
@@ -306,7 +327,9 @@ def win_arguments(d: Dict[str, Any]) -> List[str]:
                        "révision des loyers.")
     out.append("Les primes CEE (certificats d'économies d'énergie) sont ouvertes à tout propriétaire, société comprise, "
                "mais seulement pour des travaux réalisés par une entreprise RGE.")
-    out.append("Un seul propriétaire décide : pas d'assemblée générale ni de vote de copropriété avant de lancer le chantier.")
+    out.append("Un seul propriétaire décide" + (" : pas d'assemblée générale ni de vote de copropriété avant de lancer le "
+                                                "chantier." if d["building"]["nb_log"] > 1 else ", et c'est une société : un "
+                                                "interlocuteur unique, qui raisonne en investisseur."))
     return out
 
 
@@ -340,11 +363,11 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         dpe_txt,
     ] if x)
     story: List[Any] = [
-        Paragraph("Dossier chantier · rénovation énergétique d'un immeuble", style('kicker', fontSize=9, textColor=BRASS)),
+        Paragraph(f"Dossier chantier · rénovation énergétique {what(d, 'de')}", style('kicker', fontSize=9, textColor=BRASS)),
         Paragraph(text(address), S['address']), Spacer(1, 4), Paragraph(text(facts), S['meta']),
     ]
     if owner_name:
-        story.append(Paragraph(f"Propriétaire unique : {text(owner_name)} (monopropriété, pas de syndic ni de copropriété)", S['meta']))
+        story.append(Paragraph(f"Propriétaire unique : {text(owner_name)} (société" + (")" if d["building"]["nb_log"] == 1 else ", pas de syndic ni de copropriété)"), S['meta']))
     story.append(Spacer(1, gap + 2))
 
     # Key figures: the job, its size, its urgency
@@ -376,8 +399,9 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
     if w:
         rows = [[head("Poste"), head("Constat (DPE)"), head("Corps d'état"), head("Coût TTC", 2)]]
         for it in work_lines(w["items"]):
-            rows.append([Paragraph(text(it["name"]), S['body']), Paragraph(text(it["reason"]), S['muted']),
-                         Paragraph(text(trade(it)), S['muted']), Paragraph(eur_range(it['low'], it['high']), S['right'])])
+            rows.append([Paragraph(text(house_name(d, it)), S['body']), Paragraph(text(it["reason"]), S['muted']),
+                         Paragraph(text(HOUSE_TRADES.get(it.get("id"), trade(it)) if b["nb_log"] == 1 else trade(it)), S['muted']),
+                         Paragraph(eur_range(it['low'], it['high']), S['right'])])
         rows.append([Paragraph("<b>Total</b>", S['body']), Paragraph("", S['muted']), Paragraph("", S['muted']),
                      Paragraph(eur_range(w['low'], w['high']), S['right_b'])])
         works_part = [
@@ -403,7 +427,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
     if units["unknown"]:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
-             Paragraph(text(" · ".join(source) or "Aucun DPE publié pour cet immeuble."), S['small'])]
+             Paragraph(text(" · ".join(source) or f"Aucun DPE publié pour {what(d, 'ce')}."), S['small'])]
     # A long list of works pushes the small DPE block, then the rest, onto a third page: in the
     # compact layout it comes first and the works table may run on to the next page
     if compact:
@@ -454,7 +478,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
             lines.append(f"Dirigeant : {officer_name(officer['name'])}" + (f" ({officer['role']})" if officer.get("role") else ""))
         if d.get("portfolio_count"):
             s = "s" if d["portfolio_count"] > 1 else ""
-            lines.append(f"Ce propriétaire détient {d['portfolio_count']} autre{s} immeuble{s} dans la base SPREA : "
+            lines.append(f"Ce propriétaire détient {d['portfolio_count']} autre{s} bien{s} dans la base SPREA : "
                          "un premier chantier peut en appeler d'autres.")
     lines.append("Prise de contact : courrier au siège de la société, à l'attention de son dirigeant, en joignant ce dossier.")
     sources = Paragraph("Sources publiques : base nationale des bâtiments (CSTB), propriétaires personnes morales (DGFiP), DPE (ADEME), "
@@ -462,7 +486,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
                         "ni un audit énergétique, ni un devis.", S['small'])
     tail = [next_section("Le maître d'ouvrage"), Spacer(1, 6), *bullet_list(lines, 'muted'), Spacer(1, gap - 2),
             boxed([Paragraph("<b>SPREA</b> · chantiers de rénovation repérés pour les entreprises du bâtiment", S['body']),
-                   Paragraph(text("D'autres immeubles à rénover près de votre entreprise : contact@sprea.app · sprea.app"), S['muted']),
+                   Paragraph(text("D'autres maisons et immeubles à rénover près de votre entreprise : contact@sprea.app · sprea.app"), S['muted']),
                    Spacer(1, 6), sources], rule=BRASS_LIGHT, padding=6 if compact else 10)]
     story += [CondPageBreak(6 * cm), Spacer(1, gap), *tail]
 
