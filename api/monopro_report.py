@@ -212,7 +212,7 @@ def works_per_dwelling(works: Optional[Dict], units: Dict, shab: float, nb_log: 
             source = " · ".join(x for x in (f"{known} DPE publié{'s' if known > 1 else ''}" if known else None,
                                             f"{est} estimé{'s' if est > 1 else ''}" if est else None) if x)
             s = "s" if n > 1 else ""
-            items.append({"name": f"{n} logement{s} classé{s} {l} (environ {round(unit)} m² chacun)",
+            items.append({"name": f"{n} logement{s} classé{s} {l} (environ {round(unit)} m²{' chacun' if n > 1 else ''})",
                           "reason": f"{what} ({source})" if source else what,
                           "low": round(rest_low * share_low, -2), "high": round(rest_high * share_high, -2),
                           "per_dwelling": True})
