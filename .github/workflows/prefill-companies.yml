@@ -4,6 +4,9 @@ name: Sociétés propriétaires (siège et dirigeant gardés)
 # the F/G buildings (scripts/apify/prefill_companies.py), so that the signed dossiers show
 # them even when the Annuaire des entreprises refuses a request.
 on:
+  # Nightly: the Annuaire refuses many requests from GitHub's addresses, each night fills the rest
+  schedule:
+    - cron: "17 3 * * *"
   workflow_dispatch:
   push:
     branches: ["claude/**"]
@@ -15,7 +18,7 @@ permissions:
 jobs:
   prefill:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
