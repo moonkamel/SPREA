@@ -12,7 +12,7 @@ on:
         default: "false"
   push:
     branches: ["claude/**"]
-    paths: [".github/workflows/tce-free-france.yml"]
+    paths: [".github/workflows/tce-free-france.yml", "scripts/apify/tce_free.py"]
 
 permissions:
   contents: write
