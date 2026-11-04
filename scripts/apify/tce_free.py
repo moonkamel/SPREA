@@ -167,12 +167,13 @@ SKIP = ("example", "sentry", "wixpress", "domain.", "@2x", ".png", ".jpg", ".web
 def site_emails(client: httpx.Client, website: str) -> List[str]:
     if not website:
         return []
+    website = website.strip().lstrip("/")
     base = website if website.startswith("http") else f"https://{website}"
     found: List[str] = []
     for path in ("", "/contact", "/mentions-legales", "/mentions-legales/", "/contact/"):
         try:
             res = client.get(urllib.parse.urljoin(base.rstrip("/") + "/", path.lstrip("/")), timeout=8, follow_redirects=True)
-        except httpx.HTTPError:
+        except (httpx.HTTPError, ValueError):  # unreachable site or malformed address
             continue
         if res.status_code != 200 or "html" not in res.headers.get("content-type", ""):
             continue
@@ -226,7 +227,11 @@ def main():
         sites: Dict[str, List[str]] = json.load(open(sites_path, encoding="utf-8")) if os.path.exists(sites_path) else {}
         for i, (s, f) in enumerate(kept.items(), 1):
             if s not in sites and f.get("website"):
-                sites[s] = site_emails(client, f["website"])
+                try:
+                    sites[s] = site_emails(client, f["website"])
+                except Exception as e:  # noqa: BLE001 - one odd website must not stop the department
+                    print(f"Site illisible pour {s} : {type(e).__name__}", flush=True)
+                    sites[s] = []
                 if i % 50 == 0:
                     json.dump(sites, open(sites_path, "w", encoding="utf-8"), ensure_ascii=False)
         json.dump(sites, open(sites_path, "w", encoding="utf-8"), ensure_ascii=False)
