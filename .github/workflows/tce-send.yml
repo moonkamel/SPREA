@@ -6,9 +6,8 @@ name: Prospection TCE (envoi Brevo)
 # (apercu_envoi_tce.html / .csv) and sends nothing. Tracking (envois_tce.csv)
 # on the apify-tce branch: an address is never written to twice.
 on:
-  # Weekdays 9:10 (Paris, winter time): 40 emails a day while sprea.app warms up
-  schedule:
-    - cron: "10 8 * * 1-5"
+  # On demand only since 4/11/2026: the first campaign (300 firms) is done, and a new chantiers file
+  # would otherwise start writing to new firms on its own the next morning
   workflow_dispatch:
     inputs:
       limit:
@@ -48,8 +47,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LIMIT: ${{ inputs.limit || '300' }}
-          QUOTA: ${{ github.event_name == 'schedule' && '40' || inputs.quota || '40' }}
-          DRY: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run || 'true' }}
+          QUOTA: ${{ inputs.quota || '40' }}
+          DRY: ${{ inputs.dry_run || 'true' }}
           TEST_TO: ${{ inputs.test_to }}
         run: |
           if [ -n "$TEST_TO" ]; then
