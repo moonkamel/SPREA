@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { animate, AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Building2, Check, ChevronDown, Home as HomeIcon, Loader2, MapPin, Search, ShieldCheck, Sparkles, TrendingDown, TrendingUp, Wand2 } from 'lucide-react';
+import { ArrowRight, Building2, Check, ChevronDown, Home as HomeIcon, Loader2, MapPin, Phone, Search, ShieldCheck, Sparkles, TrendingDown, TrendingUp, Wand2 } from 'lucide-react';
 import { SiteFooter, SiteHeader } from './site';
 import { useSeo } from '../seo';
 import { DPE_COLORS, DPE_LABELS, errorDetail, type DPEClass } from '../ui';
@@ -247,8 +247,14 @@ export default function EstimationPage() {
 // --- Address with the Base Adresse Nationale autocomplete ---
 
 function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked: Place | null }) {
-    // From a « Prix m² à <commune> » page: the commune is typed, the owner adds the street
-    const [q, setQ] = useState(() => { const c = new URLSearchParams(window.location.search).get('commune'); return c ? `${c.slice(0, 60)} ` : ''; });
+    // From a « Prix m² à <commune> » page: the field stays empty for the address, the suggestions
+    // are those of the commune (citycode) and the hint names it
+    const [{ commune, insee }] = useState(() => {
+        const sp = new URLSearchParams(window.location.search);
+        const code = (sp.get('insee') || '').toUpperCase();
+        return { commune: (sp.get('commune') || '').slice(0, 60), insee: /^[0-9][0-9AB][0-9]{3}$/.test(code) ? code : '' };
+    });
+    const [q, setQ] = useState('');
     const [list, setList] = useState<Place[]>([]);
     const [active, setActive] = useState(0);
     const [chosen, setChosen] = useState('');
@@ -257,7 +263,9 @@ function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked:
         const ctl = new AbortController();
         const t = setTimeout(async () => {
             try {
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`, { signal: ctl.signal });
+                // An address typed in another town (its postcode) is not held to the commune of the page
+                const city = insee && !/\b\d{5}\b/.test(q) ? `&citycode=${insee}` : '';
+                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1${city}`, { signal: ctl.signal });
                 const d = await res.json();
                 setList((d.features || []).map((f: any) => ({
                     label: f.properties.label, insee: f.properties.citycode, postcode: f.properties.postcode, city: f.properties.city,
@@ -274,7 +282,8 @@ function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked:
             <form onSubmit={e => { e.preventDefault(); if (list[active]) choose(list[active]); }}
                 className="flex items-center gap-3 rounded-2xl border border-white/15 bg-panel/80 backdrop-blur px-4 h-16 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] focus-within:border-brass/70 focus-within:shadow-[0_0_0_4px_rgba(201,164,92,0.15)] transition-all">
                 <Search size={20} className="text-brass shrink-0" />
-                <input autoFocus onFocus={e => e.currentTarget.setSelectionRange(0, 0)} aria-label="Adresse du bien" placeholder="Adresse du bien : 12 rue de la Paix, Lille" value={q}
+                <input autoFocus aria-label="Adresse du bien" value={q}
+                    placeholder={commune ? `N° et rue de votre bien à ${commune}` : 'Adresse du bien : 12 rue de la Paix, Lille'}
                     onChange={e => setQ(e.target.value)}
                     onKeyDown={e => {
                         if (e.key === 'ArrowDown') { e.preventDefault(); setActive(a => Math.min(a + 1, list.length - 1)); }
@@ -488,6 +497,10 @@ function ResultCard({ result, busy, error, ready, place, form, payload }: {
                             ))}
                         </div>
                     )}
+                    <button type="button" onClick={() => document.getElementById('rappel')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                        className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-brass/50 bg-brass/10 px-4 h-11 text-sm font-semibold text-brass-light hover:bg-brass/20 transition-colors">
+                        <Phone size={16} /> Être rappelé par un conseiller du secteur
+                    </button>
                     {result.renovation && (
                         <div className="mt-5 rounded-2xl border border-sage/30 bg-sage/[0.07] p-4 text-sm text-ink-soft">
                             <b className="text-sage">+{euro(result.renovation.gain)}</b> de valeur possible après une rénovation énergétique jusqu'à la classe {result.renovation.target}, selon les écarts de prix mesurés dans votre département.
@@ -495,8 +508,8 @@ function ResultCard({ result, busy, error, ready, place, form, payload }: {
                     )}
                 </div>
             </div>
-            <Explanation result={result} form={form} place={place} />
             <LeadForm result={result} payload={payload} />
+            <Explanation result={result} form={form} place={place} />
             <Comparables result={result} />
         </div>
     );
@@ -553,7 +566,9 @@ function Explanation({ result, form, place }: { result: Result; form: Form; plac
 
 function LeadForm({ result, payload }: { result: Result; payload: Record<string, unknown> | null }) {
     const [project, setProject] = useState('vendre_3m');
-    const [name, setName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [consent, setConsent] = useState(false);
@@ -562,7 +577,7 @@ function LeadForm({ result, payload }: { result: Result; payload: Record<string,
     const [error, setError] = useState<string | null>(null);
     const submit = async () => {
         setError(null);
-        if (name.trim().length < 2) return setError('Indiquez votre nom.');
+        if (!firstName.trim() || lastName.trim().length < 2) return setError('Indiquez votre prénom et votre nom.');
         if (!phone.trim() && !email.trim()) return setError('Indiquez un téléphone ou un email.');
         if (!consent) return setError('Cochez la case pour accepter d\'être recontacté.');
         setState('busy');
@@ -583,15 +598,17 @@ function LeadForm({ result, payload }: { result: Result; payload: Record<string,
         );
     }
     return (
-        <div className="rounded-3xl border border-white/10 bg-panel/60 p-5 sm:p-6">
-            <h2 className="text-lg text-ink">Affinez le prix avec un conseiller du secteur</h2>
+        <div id="rappel" className="scroll-mt-24 rounded-3xl border-2 border-brass/50 bg-gradient-to-br from-brass/[0.12] via-panel to-panel p-5 sm:p-6 shadow-[0_20px_60px_-25px_rgba(201,164,92,0.5)]">
+            <p className="text-xs uppercase tracking-[0.16em] text-brass">Gratuit · sans engagement</p>
+            <h2 className="mt-1 text-xl text-ink">Affinez le prix avec un conseiller du secteur</h2>
             <p className="mt-1 text-sm text-muted">Gratuit et sans engagement. Un professionnel qui connaît votre quartier tient compte de ce qu'aucun algorithme ne voit : vue, exposition, état réel.</p>
             <div className="mt-4 space-y-3">
                 <div className="flex flex-wrap gap-2">
                     {PROJECTS.map(([v, l]) => <Toggle key={v} on={project === v} onClick={() => setProject(v)}>{l}</Toggle>)}
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Nom" autoComplete="name" className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint outline-none focus:border-brass/70" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Prénom" autoComplete="given-name" aria-label="Prénom" className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint outline-none focus:border-brass/70" />
+                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Nom" autoComplete="family-name" aria-label="Nom" className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint outline-none focus:border-brass/70" />
                     <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Téléphone" inputMode="tel" autoComplete="tel" className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint outline-none focus:border-brass/70" />
                     <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" autoComplete="email" className="h-11 rounded-xl border border-line bg-raised px-3 text-sm text-ink placeholder:text-faint outline-none focus:border-brass/70" />
                 </div>

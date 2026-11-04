@@ -1,0 +1,29 @@
+name: Sociétés propriétaires (siège et dirigeant gardés)
+
+# Keeps in monopro_owners the registered office and officers of the companies that own
+# the F/G buildings (scripts/apify/prefill_companies.py), so that the signed dossiers show
+# them even when the Annuaire des entreprises refuses a request.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths: ["scripts/apify/prefill_companies.py", ".github/workflows/prefill-companies.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  prefill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      - name: Prefill
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python -u scripts/apify/prefill_companies.py
