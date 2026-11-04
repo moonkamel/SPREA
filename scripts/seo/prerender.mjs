@@ -152,6 +152,38 @@ ${faq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n')}
 <p><a href="/estimation">Estimer mon bien gratuitement</a></p>`,
 }));
 
+// Building firms: « trouver des chantiers » (about 1 000 searches a month in France)
+const chantiersFaq = [
+    { q: 'Comment trouver des chantiers quand on est artisan du bâtiment ?', a: "SPREA repère les propriétaires qui devront faire des travaux à cause de la loi Climat et Résilience (maisons et immeubles F ou G détenus par une société) et vous donne le dossier chiffré pour les contacter avant toute mise en concurrence." },
+    { q: "D'où viennent les informations ?", a: "De données publiques : DPE de l'ADEME, base nationale des bâtiments (CSTB), locaux des personnes morales (DGFiP), ventes DVF, Annuaire des entreprises." },
+    { q: 'Les dossiers sont-ils exclusifs ?', a: "Avec le Pack Découverte et la Zone exclusive, un dossier acheté n'est proposé à aucune autre entreprise." },
+];
+pages.push(page({
+    path: '/trouver-des-chantiers',
+    title: 'Trouver des chantiers de rénovation énergétique : dossiers exclusifs pour artisans RGE | SPREA',
+    description: "Maisons et immeubles F/G détenus par des SCI près de votre entreprise, avec le dossier chantier chiffré (postes, corps d'état, propriétaire). 1 dossier d'essai gratuit, Pack Découverte 99 € HT.",
+    jsonld: [
+        { '@context': 'https://schema.org', '@type': 'Service', name: 'Dossiers chantier SPREA', provider: ORG, areaServed: 'Hauts-de-France',
+          offers: [{ '@type': 'Offer', name: 'Pack Découverte', price: '99', priceCurrency: 'EUR' }, { '@type': 'Offer', name: 'Zone exclusive', price: '349', priceCurrency: 'EUR' }] },
+        { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: chantiersFaq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+        BREADCRUMB([['SPREA', '/'], ['Trouver des chantiers', '/trouver-des-chantiers']]),
+    ],
+    body: `${nav}
+<h1>Trouver des chantiers de rénovation énergétique avant vos concurrents</h1>
+<p>Des maisons et immeubles classés F ou G, détenus par une société, près de votre entreprise. Pour chacun, un dossier chantier chiffré et le contact du maître d'ouvrage : pas une demande de devis revendue à plusieurs entreprises.</p>
+<h2>Comment ça marche</h2>
+${ul([
+        "<strong>Nous repérons le chantier</strong> : biens F ou G détenus par une SCI ou une société, dont les logements ne pourront bientôt plus être loués.",
+        "<strong>Nous préparons le dossier</strong> : postes de travaux et corps d'état, DPE de chaque logement, règles de location, maître d'ouvrage.",
+        "<strong>Vous prenez contact</strong> : un seul décideur, pas de syndic ni d'assemblée générale.",
+    ])}
+<h2>Offres</h2>
+${ul(["Dossier d'essai : gratuit", 'Pack Découverte : 99 € HT, 3 dossiers exclusifs', 'Zone exclusive : 349 € HT par mois, tous les chantiers F/G de votre zone'])}
+<h2>Questions fréquentes</h2>
+${chantiersFaq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n')}
+<p><a href="/trouver-des-chantiers">Recevoir un dossier gratuit</a></p>`,
+}));
+
 pages.push(page({
     path: '/demo',
     title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",
