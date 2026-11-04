@@ -144,10 +144,10 @@ def annuaire(client: httpx.Client, siren: str) -> Optional[Dict]:
         people = [d for d in h.get("dirigeants") or [] if d.get("type_dirigeant") == "personne physique"]
         boss = next((d for d in people if re.search(r"(?i)g[ée]rant|pr[ée]sident|directeur", d.get("qualite") or "")), None) \
             or (people[0] if people else None)
-        director = " ".join(x for x in ((boss or {}).get("prenoms", "").split(" ")[0].title(),
+        director = " ".join(x for x in (((boss or {}).get("prenoms") or "").split(" ")[0].title(),
                                         ((boss or {}).get("nom") or "").title()) if x) if boss else ""
         fin = h.get("finances") or {}
-        last = fin[max(fin)] if fin else {}
+        last = (fin[max(fin)] or {}) if fin else {}
         return {"director": director, "naf": h.get("activite_principale") or "",
                 "active": h.get("etat_administratif") == "A", "band": h.get("tranche_effectif_salarie") or "",
                 "revenue": last.get("ca"), "legal_name": h.get("nom_raison_sociale") or h.get("nom_complet") or ""}
@@ -209,7 +209,11 @@ def main():
         info: Dict[str, Dict] = json.load(open(info_path, encoding="utf-8")) if os.path.exists(info_path) else {}
         todo = [s for s in kept if s not in info]
         for i, s in enumerate(todo, 1):
-            got = annuaire(client, s)
+            try:
+                got = annuaire(client, s)
+            except Exception as e:  # noqa: BLE001 - one odd record must not stop the department
+                print(f"Annuaire illisible pour {s} : {type(e).__name__} {e}", flush=True)
+                got = None
             if got is not None:
                 info[s] = got
             if i % 50 == 0:
