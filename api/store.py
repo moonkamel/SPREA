@@ -386,6 +386,11 @@ class SupabaseStore:
     async def monopro_owners(self, sirens: List[str]) -> List[Dict[str, Any]]:
         return await self._request("GET", "monopro_owners", params={"siren": self._in(sirens), "select": "*"})
 
+    async def save_owner_company(self, siren: str, company: Dict[str, Any]) -> None:
+        from datetime import datetime, timezone
+        await self._request("PATCH", "monopro_owners", params={"siren": f"eq.{siren}"},
+                            json={"company": company, "company_at": datetime.now(timezone.utc).isoformat()})
+
     async def monopro_signal(self, siren: str) -> Optional[Dict[str, Any]]:
         return await self._one("monopro_signals", {"siren": f"eq.{siren}"})
 

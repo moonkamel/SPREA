@@ -674,3 +674,50 @@ def test_worksite_dossier_without_any_dpe_at_the_address():
     assert "5 estimés d'après la base nationale des bâtiments" in pdf and "à la classe du DPE publié" not in pdf
     assert "remettent les logements G sur le marché locatif et débloquent" in pdf and "logements F d'en sortir" not in pdf
     assert "5 logements, 1 niveau " in pdf + " " and "1 niveaux" not in pdf
+
+
+def test_company_lookup_waits_on_429_and_falls_back_to_the_kept_copy(monkeypatch):
+    import asyncio
+    import httpx
+    from api import monopro
+    monopro._company_cache.clear()
+    calls = []
+
+    def handler(request):
+        calls.append(1)
+        if len(calls) == 1:
+            return httpx.Response(429, text="Too Many Requests")
+        return httpx.Response(200, json={"results": [{"siren": "393748926", "nom_raison_sociale": "SCI MARMOTTAN",
+                                                      "siege": {"adresse": "32 RUE HAUTE 62122 LAPUGNOY"},
+                                                      "dirigeants": [{"type_dirigeant": "personne physique", "prenoms": "Jean",
+                                                                      "nom": "LEFEBVRE", "qualite": "Gérant"}]}]})
+
+    async def no_wait(_):
+        return None
+    monkeypatch.setattr(monopro.asyncio, "sleep", no_wait)
+    c = asyncio.run(monopro.fetch_company("393748926", transport=httpx.MockTransport(handler)))
+    assert len(calls) == 2 and c["address"] == "32 RUE HAUTE 62122 LAPUGNOY" and c["officers"][0]["name"] == "Jean LEFEBVRE"
+
+    class Store:
+        saved = []
+
+        async def save_owner_company(self, siren, company):
+            self.saved.append((siren, company))
+
+    store = Store()
+    kept = {"name": "SCI MARMOTTAN", "address": "32 RUE HAUTE 62122 LAPUGNOY", "officers": [{"name": "Jean LEFEBVRE"}]}
+
+    async def refused(siren):
+        return None
+
+    async def fresh(siren):
+        return {**kept, "officers": [{"name": "Marie LEFEBVRE"}]}
+    # The Annuaire refuses: the kept copy is used
+    monkeypatch.setattr(monopro, "fetch_company", refused)
+    assert asyncio.run(monopro.company_for("393748926", {"siren": "393748926", "company": kept}, store)) == kept
+    assert asyncio.run(monopro.company_for("393748926", {"siren": "393748926"}, store)) is None
+    # The Annuaire answers with something new: it is kept for next time
+    monkeypatch.setattr(monopro, "fetch_company", fresh)
+    got = asyncio.run(monopro.company_for("393748926", {"siren": "393748926", "company": kept}, store))
+    assert got["officers"][0]["name"] == "Marie LEFEBVRE" and store.saved[-1][0] == "393748926"
+    monopro._company_cache.clear()

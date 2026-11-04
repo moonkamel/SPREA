@@ -15,6 +15,7 @@ an unknown owner. Officers' names come from the public company registers; the
 subscriber uses them under article 14 of the CGV (origin of the data stated,
 objections honoured, no phone or email canvassing).
 """
+import asyncio
 import hashlib
 import hmac
 import logging
@@ -113,17 +114,41 @@ async def fetch_company(siren: str, transport: Optional[httpx.AsyncBaseTransport
     cached = _company_cache.get(siren)
     if cached and time.time() - cached[0] < CACHE_TTL:
         return cached[1]
-    try:
-        async with httpx.AsyncClient(timeout=10, transport=transport) as client:
-            res = await client.get(COMPANY_URL, params={"q": siren, "per_page": 1})
-            res.raise_for_status()
-            results = [r for r in res.json().get("results") or [] if r.get("siren") == siren]
-    except httpx.HTTPError as e:
-        logger.warning(f"Company lookup failed: {type(e).__name__}")
-        return None  # Not cached: retried next time
+    results = None
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=10, transport=transport) as client:
+                res = await client.get(COMPANY_URL, params={"q": siren, "per_page": 1})
+                if res.status_code == 429 and attempt < 2:
+                    # The Annuaire limits requests per address: wait a little rather than lose the officers
+                    await asyncio.sleep(1 + attempt)
+                    continue
+                res.raise_for_status()
+                results = [r for r in res.json().get("results") or [] if r.get("siren") == siren]
+                break
+        except httpx.HTTPError as e:
+            logger.warning(f"Company lookup failed: {type(e).__name__}")
+            return None  # Not cached: retried next time
+    if results is None:
+        return None
     details = company_details(results[0]) if results else None
     _company_cache[siren] = (time.time(), details)
     return details
+
+
+async def company_for(siren: str, owner: Optional[Dict], store: SupabaseStore) -> Optional[Dict]:
+    """The company as the Annuaire gives it now, kept in the database; the kept copy when the
+    Annuaire does not answer (a dossier must not lose the registered office and the officers)."""
+    company = await fetch_company(siren)
+    kept = (owner or {}).get("company")
+    if company:
+        if company != kept and owner is not None:
+            try:
+                await store.save_owner_company(siren, company)
+            except Exception as e:  # noqa: BLE001  the column may not exist yet: the dossier is still made
+                logger.warning(f"Company not kept: {type(e).__name__}")
+        return company
+    return kept or None
 
 
 # Building found from the position of a DPE: within about 40 m
@@ -221,7 +246,7 @@ async def dossier_response(building: Dict, agency: Dict, store: SupabaseStore, i
     siren = building.get("owner_siren")
     owner = (await store.monopro_owners([siren]) or [None])[0] if siren else None
     portfolio = len(await store.monopro_by_owner(siren, PORTFOLIO_LIMIT + 1)) - 1 if siren else 0
-    company = await fetch_company(siren) if siren else None
+    company = await company_for(siren, owner, store) if siren else None
     rows: List[Dict] = []
     try:
         async with httpx.AsyncClient(timeout=12) as client:
@@ -258,7 +283,7 @@ async def monopro_sheet(building_id: str, user: User = Depends(current_user), st
         others = await store.monopro_by_owner(siren, PORTFOLIO_LIMIT + 1)
         portfolio = [{"id": b["id"], "address": b.get("address"), "nb_log": b["nb_log"], "dpe_label": b.get("dpe_label"),
                       "lat": b["lat"], "lon": b["lon"]} for b in others if b["id"] != building_id][:PORTFOLIO_LIMIT]
-        company = await fetch_company(siren)
+        company = await company_for(siren, owners.get(siren), store)
     signal = await owner_signal(store, siren, building.get("last_sale_date")) if siren else None
     return {**building_summary(building, owners), "company": company, "portfolio": portfolio, "signal": signal}
 
