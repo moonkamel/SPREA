@@ -112,12 +112,13 @@ def select_owner(holdings: List[Tuple[str, int]], nb_log: int, owners: Dict[str,
     return "company", owner["siren"], round(min(share, 9.99), 2)
 
 
-def build(z: zipfile.ZipFile, dep: str, today: str) -> Tuple[List[Dict], Dict[str, Dict], Counter]:
+def build(z: zipfile.ZipFile, dep: str, today: str, min_log: int = MIN_LOG) -> Tuple[List[Dict], Dict[str, Dict], Counter]:
+    """min_log 1 also keeps the houses and small buildings (1 or 2 dwellings) held by a company."""
     stats = Counter()
     candidates: Dict[str, Dict] = {}
     for r in rows(z, "batiment_groupe_ffo_bat"):
         n = _int(r.get("nb_log"))
-        if n and n >= MIN_LOG:
+        if n and n >= min_log:
             candidates[r["batiment_groupe_id"]] = {"nb_log": n, "levels": _int(r.get("nb_niveau")),
                                                     "year_built": _int(r.get("annee_construction"))}
     stats["buildings_3_plus_dwellings"] = len(candidates)
@@ -238,6 +239,7 @@ def main():
     ap.add_argument("--dep", required=True)
     ap.add_argument("--file", help="Local zip instead of the BDNB download")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--min-log", type=int, default=MIN_LOG, help="1: also the houses and 2-dwelling buildings")
     args = ap.parse_args()
     dep = args.dep.upper()
     today = date.today().isoformat()
@@ -248,8 +250,13 @@ def main():
         log(f"Downloading {URL.format(m=MILLESIME, d=dep.lower())}")
         urllib.request.urlretrieve(URL.format(m=MILLESIME, d=dep.lower()), path)
     with zipfile.ZipFile(path) as z:
-        buildings, owners, stats = build(z, dep, today)
+        buildings, owners, stats = build(z, dep, today, args.min_log)
     log(json.dumps(stats, indent=1))
+    # By size: what the houses and small buildings add, F/G ones first
+    size = lambda n: "1 logement" if n == 1 else "2 logements" if n == 2 else "3 logements et plus"
+    by = Counter((size(b["nb_log"]), b.get("dpe_label") in ("F", "G")) for b in buildings)
+    for s_ in ("1 logement", "2 logements", "3 logements et plus"):
+        log(f"{s_} : {by[(s_, True)] + by[(s_, False)]} détenus par une société, dont {by[(s_, True)]} classés F ou G")
     log(f"~{len(json.dumps(buildings)) // 1024} KB of buildings, {len(json.dumps(list(owners.values()))) // 1024} KB of owners")
     if args.dry_run:
         for b in buildings[:3]:
