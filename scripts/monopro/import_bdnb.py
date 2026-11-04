@@ -112,8 +112,11 @@ def select_owner(holdings: List[Tuple[str, int]], nb_log: int, owners: Dict[str,
     return "company", owner["siren"], round(min(share, 9.99), 2)
 
 
-def build(z: zipfile.ZipFile, dep: str, today: str, min_log: int = MIN_LOG) -> Tuple[List[Dict], Dict[str, Dict], Counter]:
-    """min_log 1 also keeps the houses and small buildings (1 or 2 dwellings) held by a company."""
+def build(z: zipfile.ZipFile, dep: str, today: str, min_log: int = MIN_LOG,
+          fg_only: bool = False) -> Tuple[List[Dict], Dict[str, Dict], Counter]:
+    """min_log 1 also keeps the houses and small buildings (1 or 2 dwellings) held by a company.
+    fg_only: only the F/G buildings held by a company, whatever their size (the worksites offered to
+    building firms), to cover the whole of France without filling the database."""
     stats = Counter()
     candidates: Dict[str, Dict] = {}
     for r in rows(z, "batiment_groupe_ffo_bat"):
@@ -200,7 +203,11 @@ def build(z: zipfile.ZipFile, dep: str, today: str, min_log: int = MIN_LOG) -> T
         if c.get("lat") is None:
             stats["no_position"] += 1
             continue
-        if c["nb_log"] < MIN_LOG and not (c.get("dpe_label") in ("F", "G") or c.get("dpe_fg")):
+        fg = c.get("dpe_label") in ("F", "G") or c.get("dpe_fg")
+        if fg_only and not (fg and c.get("owner_siren")):
+            stats["not_fg"] += 1
+            continue
+        if c["nb_log"] < MIN_LOG and not fg:
             # Houses and 2-dwelling buildings: only the F/G ones, the worksites offered to building firms
             stats["small_not_fg"] += 1
             continue
@@ -246,6 +253,7 @@ def main():
     ap.add_argument("--file", help="Local zip instead of the BDNB download")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--min-log", type=int, default=MIN_LOG, help="1: also the houses and 2-dwelling buildings")
+    ap.add_argument("--fg-only", action="store_true", help="only the F/G buildings held by a company")
     args = ap.parse_args()
     dep = args.dep.upper()
     today = date.today().isoformat()
@@ -256,7 +264,7 @@ def main():
         log(f"Downloading {URL.format(m=MILLESIME, d=dep.lower())}")
         urllib.request.urlretrieve(URL.format(m=MILLESIME, d=dep.lower()), path)
     with zipfile.ZipFile(path) as z:
-        buildings, owners, stats = build(z, dep, today, args.min_log)
+        buildings, owners, stats = build(z, dep, today, args.min_log, args.fg_only)
     log(json.dumps(stats, indent=1))
     # By size: what the houses and small buildings add, F/G ones first
     size = lambda n: "1 logement" if n == 1 else "2 logements" if n == 2 else "3 logements et plus"

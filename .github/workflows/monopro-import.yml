@@ -19,6 +19,9 @@ on:
       min_log:
         description: "Logements au moins (3 : immeubles ; 1 : aussi les maisons et petits bâtiments)"
         default: "3"
+      fg_only:
+        description: "Seulement les biens F/G détenus par une société (true pour la France entière)"
+        default: "false"
       dry_run:
         description: "Comptage sans rien écrire (true / false)"
         default: "false"
@@ -26,8 +29,9 @@ on:
 permissions:
   contents: read
 
+# One run per list of departments: France is imported in several runs side by side
 concurrency:
-  group: monopro-import
+  group: monopro-import-${{ inputs.departments }}
   cancel-in-progress: false
 
 jobs:
@@ -48,10 +52,11 @@ jobs:
           DEPARTMENTS: ${{ inputs.departments }}
           MIN_LOG: ${{ inputs.min_log || '3' }}
           DRY: ${{ inputs.dry_run || 'false' }}
+          FG: ${{ inputs.fg_only || 'false' }}
         run: |
           for dep in $DEPARTMENTS; do
             [[ "$dep" =~ ^([0-9]{2,3}|2[AB])$ ]] || { echo "Département invalide : $dep"; exit 1; }
             [[ "$MIN_LOG" =~ ^[1-9]$ ]] || { echo "min_log invalide : $MIN_LOG"; exit 1; }
-            python scripts/monopro/import_bdnb.py --dep "$dep" --min-log "$MIN_LOG" $([ "$DRY" = "true" ] && echo --dry-run)
+            python scripts/monopro/import_bdnb.py --dep "$dep" --min-log "$MIN_LOG" $([ "$FG" = "true" ] && echo --fg-only) $([ "$DRY" = "true" ] && echo --dry-run) || echo "::warning::$dep en échec"
             rm -f "bdnb_$dep.zip"
           done
