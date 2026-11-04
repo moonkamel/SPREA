@@ -152,6 +152,38 @@ ${faq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n')}
 <p><a href="/estimation">Estimer mon bien gratuitement</a></p>`,
 }));
 
+// Building firms: « trouver des chantiers » (about 1 000 searches a month in France)
+const chantiersFaq = [
+    { q: 'Comment trouver des chantiers quand on est artisan du bâtiment ?', a: "SPREA repère les propriétaires qui vont devoir rénover, à cause de la loi Climat et Résilience, et vous donne le dossier chiffré pour les contacter avant toute mise en concurrence." },
+    { q: 'Comment repérez-vous ces chantiers ?', a: "Grâce à notre moteur d'analyse du parc immobilier, développé avec une expertise technique du bâtiment : il isole les biens où des travaux deviennent inévitables." },
+    { q: 'Les dossiers sont-ils exclusifs ?', a: "Avec le Pack Découverte et la Zone exclusive, un dossier acheté n'est proposé à aucune autre entreprise." },
+];
+pages.push(page({
+    path: '/trouver-des-chantiers',
+    title: 'Trouver des chantiers de rénovation énergétique : dossiers exclusifs pour artisans RGE | SPREA',
+    description: "Des chantiers de rénovation repérés avant vos concurrents, près de votre entreprise, avec le dossier chiffré et le contact du maître d'ouvrage. 1 dossier d'essai gratuit, Pack Découverte 99 € HT.",
+    jsonld: [
+        { '@context': 'https://schema.org', '@type': 'Service', name: 'Dossiers chantier SPREA', provider: ORG, areaServed: 'Hauts-de-France',
+          offers: [{ '@type': 'Offer', name: 'Pack Découverte', price: '99', priceCurrency: 'EUR' }, { '@type': 'Offer', name: 'Zone exclusive', price: '349', priceCurrency: 'EUR' }] },
+        { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: chantiersFaq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+        BREADCRUMB([['SPREA', '/'], ['Trouver des chantiers', '/trouver-des-chantiers']]),
+    ],
+    body: `${nav}
+<h1>Trouver des chantiers de rénovation énergétique avant vos concurrents</h1>
+<p>Des propriétaires qui vont devoir rénover, près de votre entreprise, repérés par notre moteur d'analyse. Pour chacun, un dossier chantier chiffré et le contact du maître d'ouvrage : pas une demande de devis revendue à plusieurs entreprises.</p>
+<h2>Comment ça marche</h2>
+${ul([
+        "<strong>Nous repérons le chantier</strong> : notre moteur d'analyse isole, autour de votre entreprise, les biens où la rénovation devient inévitable.",
+        "<strong>Nous préparons le dossier</strong> : postes de travaux et corps d'état, situation réglementaire du bien, maître d'ouvrage.",
+        "<strong>Vous prenez contact</strong> : un seul décideur, pas de syndic ni d'assemblée générale.",
+    ])}
+<h2>Offres</h2>
+${ul(["Dossier d'essai : gratuit", 'Pack Découverte : 99 € HT, 3 dossiers exclusifs', 'Zone exclusive : 349 € HT par mois, tous les chantiers de votre zone'])}
+<h2>Questions fréquentes</h2>
+${chantiersFaq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n')}
+<p><a href="/trouver-des-chantiers">Recevoir un dossier gratuit</a></p>`,
+}));
+
 pages.push(page({
     path: '/demo',
     title: "Visite guidée de SPREA : prospection DPE, signaux de vente des SCI, PV d'AG lus par l'IA",

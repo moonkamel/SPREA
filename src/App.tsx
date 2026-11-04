@@ -20,6 +20,7 @@ const TeamPage = lazy(() => import('./pages/Team'));
 const JoinPage = lazy(() => import('./pages/Join'));
 const CoproDocsPage = lazy(() => import('./pages/CoproDocs'));
 const EstimationPage = lazy(() => import('./pages/Estimation'));
+const ChantiersPage = lazy(() => import('./pages/Chantiers'));
 const AdminPage = lazy(() => import('./pages/Admin'));
 const CityPricePage = lazy(() => import('./pages/CityPrice'));
 const CityPriceIndexPage = lazy(() => import('./pages/CityPrice').then(m => ({ default: m.CityPriceIndexPage })));
@@ -64,6 +65,7 @@ function Pages() {
         '/rejoindre': <Suspense fallback={null}><JoinPage /></Suspense>,
         '/documents-copro': <Suspense fallback={null}><CoproDocsPage /></Suspense>,
         '/estimation': <Suspense fallback={null}><EstimationPage /></Suspense>,
+        '/trouver-des-chantiers': <Suspense fallback={null}><ChantiersPage /></Suspense>,
         '/prix-m2': <Suspense fallback={null}><CityPriceIndexPage /></Suspense>,
         '/admin': <Suspense fallback={null}><AdminPage /></Suspense>,
     };
