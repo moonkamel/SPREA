@@ -130,33 +130,50 @@ def dossier_facts(d: Dict) -> Dict:
     }
 
 
+def place(nb: int) -> str:
+    """« cette maison », « ce bâtiment de 2 logements », « cet immeuble de 6 logements »."""
+    return "cette maison" if nb == 1 else "ce bâtiment de 2 logements" if nb == 2 else f"cet immeuble de {nb} logements"
+
+
 def dwellings_sentence(f: Dict) -> str:
     """The published DPE as the dossier shows them, never a class the building does not have."""
     nb, n, kfg = f["nb_log"], f["n_known"], f["known_fg"]
+    short = place(nb).split(" de ")[0]
+    if nb == 1:
+        return f"Le DPE de cette maison la classe {f['worst']}."
     if f["collective"] in ("F", "G"):
         when = f" ({month_year(f['collective_date'])})" if month_year(f["collective_date"]) else ""
-        s = f"Le DPE collectif de cet immeuble de {nb} logements le classe {f['collective']}{when}"
+        s = f"Le DPE collectif de {place(nb)} le classe {f['collective']}{when}"
         return s + (f", et {kfg} des {n} logements diagnostiqués {verb(kfg)} F ou G." if n else ".")
     if n == nb and kfg == nb:
-        return f"Les {nb} logements de cet immeuble sont classés F ou G."
+        return f"Les {nb} logements de {short} sont classés F ou G."
     if n == 1:
-        return (f"Le seul DPE publié pour cet immeuble de {nb} logements classe son logement {f['worst']}, et les autres "
+        return (f"Le seul DPE publié pour {place(nb)} classe son logement {f['worst']}, et les autres "
                 "logements n'ont pas encore de DPE.")
     if n == nb:
-        return f"{kfg} des {nb} logements de cet immeuble {verb(kfg)} F ou G."
-    return f"{kfg} des {n} logements diagnostiqués de cet immeuble de {nb} logements {verb(kfg)} F ou G."
+        return f"{kfg} des {nb} logements de {short} {verb(kfg)} F ou G."
+    return f"{kfg} des {n} logements diagnostiqués de {place(nb)} {verb(kfg)} F ou G."
 
 
 def subject_line(f: Dict, btown: str) -> str:
     surface = f"{m2(f['shab'])}{NBSP}m²"
+    if f["nb_log"] == 1:
+        return f"Opportunité : Maison de {surface} classée {f['worst']} à {btown}"
+    noun = "Bâtiment" if f["nb_log"] == 2 else "Immeuble"
     if f["collective"] in ("F", "G"):
-        return f"Opportunité : Immeuble de {surface} classé {f['collective']} à {btown}"
+        return f"Opportunité : {noun} de {surface} classé {f['collective']} à {btown}"
     k = f["known_fg"]
-    return f"Opportunité : Immeuble de {surface} à {btown}, {k} logement{'s' if k > 1 else ''} classé{'s' if k > 1 else ''} F ou G"
+    return f"Opportunité : {noun} de {surface} à {btown}, {k} logement{'s' if k > 1 else ''} classé{'s' if k > 1 else ''} F ou G"
 
 
-def ban_sentence(label: str, holder: str, major: bool = True) -> str:
+def ban_sentence(label: str, holder: str, major: bool = True, house: bool = False) -> str:
     """major: at least half of the dwellings known are F or G; else « d'envergure » would overstate the job."""
+    if house:
+        rule = ("Une maison classée G ne peut plus être proposée à un nouveau locataire depuis le 1er janvier 2025"
+                if label == "G" else
+                "Une maison classée F ne pourra plus être proposée à un nouveau locataire à partir du 1er janvier 2028")
+        return (f"{rule} : si elle est louée, le propriétaire ({holder}) est directement concerné, et des travaux "
+                "seront nécessaires pour continuer à la louer.")
     if label == "G":
         rule = ("Les logements classés G ne peuvent plus être proposés à un nouveau locataire depuis le "
                 "1er janvier 2025, et les logements classés F suivront le 1er janvier 2028")
@@ -165,6 +182,10 @@ def ban_sentence(label: str, holder: str, major: bool = True) -> str:
     works = "des travaux d'envergure seront nécessaires" if major else "des travaux seront nécessaires"
     return (f"{rule} : le propriétaire ({holder}) est directement concerné par ces restrictions locatives, et "
             f"{works} pour continuer à louer ces logements.")
+
+
+def what_is(nb: int) -> str:
+    return "une maison" if nb == 1 else "un bâtiment de 2 logements" if nb == 2 else "un immeuble en monopropriété"
 
 
 def compose(row: Dict, firm: Dict, f: Dict) -> Dict:
@@ -187,9 +208,9 @@ def compose(row: Dict, firm: Dict, f: Dict) -> Dict:
         "SPREA, la plateforme que j'ai développée, associe une expertise technique du bâtiment (performance "
         "énergétique, chiffrage des travaux) à l'intelligence artificielle.",
         f"En analysant le parc immobilier de votre secteur, elle a repéré une opportunité qui correspond à votre zone "
-        f"d'intervention : un immeuble en monopropriété de {surface}{NBSP}m² situé à {btown} "
+        f"d'intervention : {what_is(f['nb_log'])} de {surface}{NBSP}m² situé{'e' if f['nb_log'] == 1 else ''} à {btown} "
         f"({row['Immeuble_Adresse']}), à seulement {dist_txt} de votre entreprise.",
-        dwellings_sentence(f) + " " + ban_sentence(f["worst"], holder, f["major"]),
+        dwellings_sentence(f) + " " + ban_sentence(f["worst"], holder, f["major"], f["nb_log"] == 1),
         f"Pour vous faire gagner un temps considérable, j'ai utilisé mon outil d'analyse pour générer le dossier "
         f"complet de ce chantier. Vous y trouverez {contents}.",
         "Vous pouvez télécharger l'analyse PDF gratuitement ici :",

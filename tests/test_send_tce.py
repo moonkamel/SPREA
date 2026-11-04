@@ -126,3 +126,17 @@ def test_architects_and_non_works_firms_left_out():
     rows = [dict(ROW, Email="a@x.fr", Entreprise="ARCHI"), dict(ROW, Email="b@x.fr", Entreprise="BATI")]
     firms = {"ARCHI": {"Codes_NAF": "71.11Z"}, "BATI": {"Codes_NAF": "43.99C"}}
     assert [r["Email"] for r in st.eligible(rows, set(), firms)] == ["b@x.fr"]
+
+
+def test_mail_for_a_house_and_a_two_dwelling_building():
+    f = facts([flat(1, "G")], 1, "G")
+    assert f["ok"] and f["nb_log"] == 1
+    m = st.compose(ROW, FIRM, f)
+    assert m["subject"].startswith("Opportunité : Maison de ") and m["subject"].endswith("classée G à Roubaix")
+    t = m["text"]
+    assert "une maison de " in t and "située à Roubaix" in t and "monopropriété" not in t
+    assert "Le DPE de cette maison la classe G." in t and "Une maison classée G ne peut plus" in t
+    assert "logements" not in t.split("Pour vous faire")[0].split("une maison de")[1]
+    f2 = facts([flat(1, "F"), flat(2, "G")], 2, "G")
+    m2 = st.compose(ROW, FIRM, f2)
+    assert m2["subject"].startswith("Opportunité : Bâtiment de ") and "Les 2 logements de ce bâtiment sont classés F ou G." in m2["text"]
