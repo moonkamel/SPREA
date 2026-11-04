@@ -200,8 +200,14 @@ def build(z: zipfile.ZipFile, dep: str, today: str, min_log: int = MIN_LOG) -> T
         if c.get("lat") is None:
             stats["no_position"] += 1
             continue
+        if c["nb_log"] < MIN_LOG and not (c.get("dpe_label") in ("F", "G") or c.get("dpe_fg")):
+            # Houses and 2-dwelling buildings: only the F/G ones, the worksites offered to building firms
+            stats["small_not_fg"] += 1
+            continue
         out.append({"id": bid, "dep": dep, **{k: c.get(k) for k in keys}, "imported_on": today})
     stats["kept"] = len(out)
+    kept_sirens = {b["owner_siren"] for b in out}
+    used = {s_: o for s_, o in used.items() if s_ in kept_sirens}
     stats["companies"] = len(used)
     return out, {s: {**o, "siren": s, "imported_on": today} for s, o in used.items()}, stats
 
