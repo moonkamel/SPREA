@@ -249,17 +249,23 @@ def raw_priority(b: Dict, today: Optional[date] = None) -> float:
 
 
 def wanted(tce_rows: List[Dict], positions: Dict[str, Tuple[float, float]], buildings: List[Dict],
-           today: Optional[date] = None) -> List[Dict]:
+           today: Optional[date] = None, offered: Optional[Dict[str, int]] = None) -> List[Dict]:
     """Les biens à calculer, dans l'ordre : pour chaque entreprise (meilleur score d'abord), ses
-    CANDIDATES biens les plus prometteurs à moins de MAX_KM."""
+    CANDIDATES biens les plus prometteurs à moins de MAX_KM parmi ceux encore libres. Le premier est
+    réservé à l'entreprise : un bien déjà réservé ou proposé à MAX_PER_BUILDING entreprises passe son
+    tour, sans quoi les entreprises d'une même ville se disputeraient les trois mêmes biens."""
     g, out, seen = grid(buildings), [], set()
+    load: Dict[str, int] = dict(offered or {})
     for r in sorted(tce_rows, key=lambda r: -float(r.get("Score_Final") or 0)):
         p = positions.get(str(r.get("SIRET", ""))[:9])
         if not p:
             continue
         close = [b for b in near(g, *p) if km(p[0], p[1], b["lat"], b["lon"]) <= MAX_KM]
         close.sort(key=lambda b: (not is_old(b, today), raw_priority(b, today)), reverse=True)
-        for b in close[:CANDIDATES]:
+        free = [b for b in close if load.get(b["id"], 0) < MAX_PER_BUILDING][:CANDIDATES]
+        if free:
+            load[free[0]["id"]] = load.get(free[0]["id"], 0) + 1
+        for b in free:
             if b["id"] not in seen:
                 seen.add(b["id"])
                 out.append(b)
@@ -349,6 +355,11 @@ async def main_async(args):
     track = os.path.join(args.out, "envois_tce.csv")
     sent = read_csv(track)
     written = {t["email"].strip().lower() for t in sent}
+    offered: Dict[str, int] = {}
+    for t in sent:
+        m = re.search(r"/monopro/([^/]+)/dossier", t.get("lien") or "")
+        if m:
+            offered[m.group(1)] = offered.get(m.group(1), 0) + 1
     started = time.monotonic()
     cache_path = os.path.join(args.out, "4_immeubles_fg.json")
     async with httpx.AsyncClient(timeout=30) as client:
@@ -359,7 +370,7 @@ async def main_async(args):
         if args.france:
             # Only the buildings worth offering, near the best firms not yet written to
             fresh_rows = [r for r in rows if (r.get("Email") or "").strip().lower() not in written]
-            new = [b for b in wanted(fresh_rows, positions, buildings) if b["id"] not in cached]
+            new = [b for b in wanted(fresh_rows, positions, buildings, offered=offered) if b["id"] not in cached]
         else:
             new = [b for b in buildings if b["id"] not in cached]
         print(f"{len(new)} dossiers à calculer")
@@ -385,11 +396,6 @@ async def main_async(args):
             print(f"Lien de dossier testé : HTTP {res.status_code}, {'PDF' if res.content[:4] == b'%PDF' else 'pas un PDF'}")
     # A new wave: the firms already written to are left out, and a building already offered counts
     # in its limit of MAX_PER_BUILDING firms (envois_tce.csv of send_tce.py)
-    offered: Dict[str, int] = {}
-    for t in sent:
-        m = re.search(r"/monopro/([^/]+)/dossier", t.get("lien") or "")
-        if m:
-            offered[m.group(1)] = offered.get(m.group(1), 0) + 1
     fresh = [r for r in rows if (r.get("Email") or "").strip().lower() not in written]
     print(f"{len(rows) - len(fresh)} entreprises déjà écrites mises de côté, {len(offered)} biens déjà proposés")
     out = match(fresh, positions, facts, offered=offered)
