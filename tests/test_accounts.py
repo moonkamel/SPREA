@@ -842,6 +842,29 @@ def test_quote_request_is_stored(env, monkeypatch):
     assert len(store.quotes) == 1
 
 
+def test_chantier_request_is_stored(env):
+    client, store, _, _ = env
+    store.quotes = []
+
+    async def create_quote_request(row):
+        store.quotes.append(row)
+
+    store.create_quote_request = create_quote_request
+    from api.ratelimit import lead_limiter
+    lead_limiter.calls.clear()
+    body = {"offer": "pack", "trades": ["Isolation", "Menuiseries"], "city": "Arras", "insee": "62041", "radius": 30,
+            "first_name": "Paul", "last_name": "Durand", "company": "Durand Rénovation", "email": "Paul@Durand.fr",
+            "phone": "06 12 34 56 78"}
+    assert client.post("/api/chantiers/demande", json=body).status_code == 200
+    q = store.quotes[0]
+    assert q["offer"] == "chantier_pack" and q["name"] == "Paul Durand" and q["email"] == "paul@durand.fr"
+    assert "Isolation, Menuiseries" in q["message"] and "Arras (62041), 30 km" in q["message"]
+    assert client.post("/api/chantiers/demande", json={**body, "trades": []}).status_code == 422
+    assert client.post("/api/chantiers/demande", json={**body, "offer": "agence"}).status_code == 422
+    assert client.post("/api/chantiers/demande", json={**body, "website": "spam"}).json() == {"received": True}
+    assert len(store.quotes) == 1
+
+
 def test_shared_test_account_cannot_be_deleted(env):
     client, store, _, state = env
     state["user"] = User(id="33333333-3333-3333-3333-333333333333", email="test@sprea.invalid")

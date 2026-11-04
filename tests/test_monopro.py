@@ -670,8 +670,8 @@ def test_worksite_dossier_without_any_dpe_at_the_address():
     d = monopro_report.build_dossier({**DOSSIER_BUILDING, "nb_log": 5, "levels": 1, "dpe_label": "G", "year_built": 1890},
                                      OWNERS[0], None, 0, [], None, {}, TODAY)
     pdf = pdf_text(monopro_pdf.generate(d, "tce")).replace("\n", " ")
-    assert "classé G selon la base nationale des bâtiments (aucun DPE retrouvé à cette adresse)" in pdf
-    assert "5 estimés d'après la base nationale des bâtiments" in pdf and "à la classe du DPE publié" not in pdf
+    assert "classé G d'après les DPE rattachés au bâtiment (aucun DPE retrouvé à cette adresse)" in pdf
+    assert "5 estimés d'après les DPE rattachés au bâtiment" in pdf and "à la classe du DPE publié" not in pdf
     assert "remettent les logements G sur le marché locatif et débloquent" in pdf and "logements F d'en sortir" not in pdf
     assert "5 logements, 1 niveau " in pdf + " " and "1 niveaux" not in pdf
 

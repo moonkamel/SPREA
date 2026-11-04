@@ -293,7 +293,7 @@ def label_text(d: Dict[str, Any]) -> Optional[str]:
     if not present:
         # No DPE at this address: the class is the one the national building database (BDNB) links to the
         # building, from DPE filed under another address. Say where it comes from.
-        return (f"classé {d['label']} selon la base nationale des bâtiments (aucun DPE retrouvé à cette adresse)"
+        return (f"classé {d['label']} d'après les DPE rattachés au bâtiment (aucun DPE retrouvé à cette adresse)"
                 if d.get("label") else None)
     span = present[0] if len(present) == 1 else f"de {present[0]} à {present[-1]}"
     n, nb = units["n_known"], d["building"]["nb_log"]
@@ -423,7 +423,7 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
         source.append(f"{est} estimé{'s' if est > 1 else ''} " + (
             "d'après le DPE collectif" if d.get("building_dpe") else
             f"à la classe du{'s' if n > 1 else ''} DPE publié{'s' if n > 1 else ''}" if n else
-            "d'après la base nationale des bâtiments (DPE rattachés au bâtiment, non retrouvés à cette adresse)"))
+            "d'après les DPE rattachés au bâtiment (non retrouvés à cette adresse)"))
     if units["unknown"]:
         source.append(f"{units['unknown']} sans information")
     block = [next_section("Le DPE des logements"), Spacer(1, 6), _units_table(d), Spacer(1, 4),
@@ -481,9 +481,9 @@ def _render_tce(d: Dict[str, Any], compact: bool) -> bytes:
             lines.append(f"Ce propriétaire détient {d['portfolio_count']} autre{s} bien{s} dans la base SPREA : "
                          "un premier chantier peut en appeler d'autres.")
     lines.append("Prise de contact : courrier au siège de la société, à l'attention de son dirigeant, en joignant ce dossier.")
-    sources = Paragraph("Sources publiques : base nationale des bâtiments (CSTB), propriétaires personnes morales (DGFiP), DPE (ADEME), "
-                        "ventes DVF (DGFiP), Annuaire des entreprises. Document indicatif, qui ne constitue ni une expertise, "
-                        "ni un audit énergétique, ni un devis.", S['small'])
+    # Worksite dossier: the producers are named (Licence Ouverte), not how the data is combined
+    sources = Paragraph("Analyse SPREA à partir de données ouvertes (ADEME, CSTB, DGFiP, INSEE), Licence Ouverte. Document indicatif, "
+                        "qui ne constitue ni une expertise, ni un audit énergétique, ni un devis.", S['small'])
     tail = [next_section("Le maître d'ouvrage"), Spacer(1, 6), *bullet_list(lines, 'muted'), Spacer(1, gap - 2),
             boxed([Paragraph("<b>SPREA</b> · chantiers de rénovation repérés pour les entreprises du bâtiment", S['body']),
                    Paragraph(text("D'autres maisons et immeubles à rénover près de votre entreprise : contact@sprea.app · sprea.app"), S['muted']),
