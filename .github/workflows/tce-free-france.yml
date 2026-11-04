@@ -3,6 +3,7 @@ name: TCE gratuit France (liste RGE ADEME + Annuaire, tous départements)
 # The free TCE pipeline (scripts/apify/tce_free.py) over the whole of France: one job per
 # department, side by side, then one commit of every result in gratuit/france/ on the
 # apify-tce branch, with the merged file prospection_tce_france.csv. No paid service.
+# A new run reads back what earlier runs saved: only the missing work is done.
 on:
   workflow_dispatch:
     inputs:
