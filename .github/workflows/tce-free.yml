@@ -41,10 +41,11 @@ jobs:
         if: always()
         run: |
           cd out
+          git config user.name github-actions && git config user.email actions@github.com
           git add -A
           git -c user.name=github-actions -c user.email=actions@github.com commit -qm "TCE gratuit $(date +%F-%H%M)" || exit 0
           # Another run (chantiers, sends) may have pushed meanwhile: replay this commit on top
-          for i in 1 2 3; do
+          for i in 1 2 3 4 5; do
             git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:apify-tce && break
             git fetch -q origin apify-tce && git rebase -q origin/apify-tce
           done

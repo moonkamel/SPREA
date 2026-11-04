@@ -97,6 +97,7 @@ jobs:
       - name: Save
         run: |
           cd out
+          git config user.name github-actions && git config user.email actions@github.com
           git add -A
           git -c user.name=github-actions -c user.email=actions@github.com commit -qm "TCE gratuit France $(date +%F-%H%M)" || exit 0
           for i in 1 2 3 4 5; do
