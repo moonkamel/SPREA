@@ -37,8 +37,6 @@ on:
         description: "Pour emails : nombre maximal de requêtes Brave (facturées)"
         required: false
         default: "500"
-  schedule:
-    - cron: "17 5 * * 1"
 
 permissions:
   contents: read
