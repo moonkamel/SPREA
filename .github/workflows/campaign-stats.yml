@@ -5,8 +5,6 @@ name: Prospection (statistiques Brevo)
 # those loaded by a proxy, clicks and the links clicked. Pushed to the
 # campaign-stats branch (stats.md). Daily after the send, or on request.
 on:
-  schedule:
-    - cron: "0 17 * * 1-5"
   workflow_dispatch:
     inputs:
       days:
