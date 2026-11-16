@@ -661,7 +661,7 @@ export default function ProspectionPage() {
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=4`, { signal: controller.signal });
+                const res = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(query)}&limit=4`, { signal: controller.signal });
                 const data = await res.json();
                 setPlaces((data.features || []).map((f: any) => ({ label: f.properties.label, lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0],
                     city: f.properties.city, precise: f.properties.type === 'housenumber' })));

@@ -667,7 +667,7 @@ function CityInput({ place, setPlace }: { place: Place | null; setPlace: (p: Pla
         const ctl = new AbortController();
         const t = setTimeout(async () => {
             try {
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&type=municipality&limit=6&autocomplete=1`, { signal: ctl.signal });
+                const res = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}&type=municipality&limit=6&autocomplete=1`, { signal: ctl.signal });
                 const d = await res.json();
                 setList((d.features ?? []).map((f: { properties: { city: string; postcode: string; citycode: string } }) => ({
                     label: `${f.properties.city} (${f.properties.postcode})`, insee: f.properties.citycode,

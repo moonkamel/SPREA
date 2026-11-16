@@ -265,7 +265,7 @@ function AddressSearch({ onPick, picked }: { onPick: (p: Place) => void; picked:
             try {
                 // An address typed in another town (its postcode) is not held to the commune of the page
                 const city = insee && !/\b\d{5}\b/.test(q) ? `&citycode=${insee}` : '';
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1${city}`, { signal: ctl.signal });
+                const res = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}&limit=6&autocomplete=1${city}`, { signal: ctl.signal });
                 const d = await res.json();
                 setList((d.features || []).map((f: any) => ({
                     label: f.properties.label, insee: f.properties.citycode, postcode: f.properties.postcode, city: f.properties.city,

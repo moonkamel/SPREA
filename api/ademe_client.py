@@ -105,7 +105,7 @@ class PropertySchema(BaseModel):
 
 class AdemeConnector:
     BASE_URL = "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines"
-    BAN_URL = "https://api-adresse.data.gouv.fr/search/"
+    BAN_URL = "https://data.geopf.fr/geocodage/search"
 
     def __init__(self, timeout: int = 8):
         self.timeout = timeout

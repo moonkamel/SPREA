@@ -33,7 +33,7 @@ export default function Landing({ loading, error, onSearchAddress, onSearchDpe }
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`, { signal: controller.signal });
+                const res = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(query)}&limit=5`, { signal: controller.signal });
                 const data = await res.json();
                 setSuggestions((data.features || []).map((f: any) => ({ label: f.properties.label })));
             } catch { /* autocomplete is optional */ }
