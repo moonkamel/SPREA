@@ -1,0 +1,31 @@
+INFO:httpx:HTTP Request: GET https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?bbox=3.04%2C50.625%2C3.075%2C50.645&size=4000&select=numero_dpe%2Cdate_etablissement_dpe%2Cetiquette_dpe%2Ctype_batiment%2Csurface_habitable_logement%2Cadresse_ban%2Cidentifiant_ban%2Ccode_insee_ban%2C_geopoint%2Cperiode_construction%2Ccomplement_adresse_logement%2Cnumero_etage_appartement&sort=-date_etablissement_dpe&qs=etiquette_dpe%3A%28A+OR+B+OR+C+OR+D+OR+E+OR+F+OR+G%29+AND+date_etablissement_dpe%3A%5B2024-10-30+TO+%2A%5D "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2026/communes/59/59350.csv "HTTP/1.1 502 Bad Gateway"
+Traceback (most recent call last):
+  File "/home/runner/work/SPREA/SPREA/scripts/probe/signals_check.py", line 32, in main
+    data = await signals.commune_sales(client, c, date.today())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/SPREA/SPREA/scripts/probe/../../api/signals.py", line 106, in commune_sales
+    texts = await asyncio.gather(*(one(y) for y in span))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/SPREA/SPREA/scripts/probe/../../api/signals.py", line 103, in one
+    res.raise_for_status()
+  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '502 Bad Gateway' for url 'https://files.data.gouv.fr/geo-dvf/latest/csv/2026/communes/59/59350.csv'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502
+INFO:httpx:HTTP Request: GET https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines?bbox=3.04%2C50.625%2C3.075%2C50.645&size=4000&select=numero_dpe%2Cdate_etablissement_dpe%2Cetiquette_dpe%2Ctype_batiment%2Csurface_habitable_logement%2Cadresse_ban%2Cidentifiant_ban%2Ccode_insee_ban%2C_geopoint%2Cperiode_construction%2Ccomplement_adresse_logement%2Cnumero_etage_appartement&sort=-date_etablissement_dpe&qs=etiquette_dpe%3A%28A+OR+B+OR+C+OR+D+OR+E+OR+F+OR+G%29+AND+date_etablissement_dpe%3A%5B2024-11-16+TO+%2A%5D "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2020/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2020/communes/59/59350.csv "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://files.data.gouv.fr/geo-dvf/latest/csv/2021/communes/59/59350.csv "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://geo-dvf.s3.sbg.io.cloud.ovh.net/latest/csv/2021/communes/59/59350.csv "HTTP/1.1 200 OK"
+WARNING:api.signals:DVF of 59350 unavailable: ReadTimeout
+ADEME: 1854 adresses, total 10918, tronqué True, 1.9s
+  dates DPE: min ['2026-03-05'] max ['2026-11-11'] par mois: [('2026-04', 372), ('2026-05', 395), ('2026-06', 467), ('2026-07', 452), ('2026-08', 739), ('2026-09', 549), ('2026-10', 423), ('2026-11', 104)]
+  communes: [('59350', 1845), ('old59350', 9)]
+Signaux: 1854 adresses, forts 32, DVF depuis None, 32.4s
+  répartition des raisons: Counter({'dpe': 400, 'rental': 318, 'building': 182})
+   65 30 Rue Catel Beghin 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "5 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible']
+   65 171 Rue Pierre Mauroy 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "3 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible']
+   65 156 Rue de Solférino 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "5 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible']
+   65 1 Rue des Frères Vaillant 59000 Lille ['DPE de moins de 3 mois : souvent le prem', "6 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible']
+   65 97 Rue Ratisbonne 59800 Lille ['DPE de moins de 3 mois : souvent le prem', "3 DPE récents dans l'immeuble : des lots", 'Classé G : plus de nouveau bail possible']

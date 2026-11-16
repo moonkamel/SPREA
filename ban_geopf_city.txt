@@ -1,0 +1,18 @@
+HTTP/2 200 
+date: Mon, 16 Nov 2026 09:14:56 GMT
+content-type: application/json; charset=utf-8
+content-length: 1149
+x-ratelimit-limit-second: 1
+ratelimit-limit: 50
+vary: Origin
+etag: W/"47d-N91H6MeCKBybopL+GDRilqxcxpE"
+strict-transport-security: max-age=31536000; includeSubDomains
+access-control-allow-origin: *
+access-control-allow-credentials: true
+access-control-allow-methods: GET, PUT, POST, DELETE, PATCH, OPTIONS
+access-control-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Content-Disposition,Content-Length,X-Community
+access-control-max-age: 1728000
+x-iplb-request-id: 032A9D73:61B3_91EFC1E7:01BB_6AFAC990_92797CCD:253CE7
+x-iplb-instance: 61217
+
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[3.053923,50.628312]},"properties":{"label":"Rue de la Paix d'Utrecht 59000 Lille","score":0.8861181818181817,"id":"59350_6554","banId":"1eba909a-f1b9-4cb7-a6bc-e653dbe591a5","name":"Rue de la Paix d'Utrecht","postcode":"59000","citycode":"59350","oldcitycode":"59350","x":703821.87,"y":7059037.47,"city":"Lille","oldcity":"Lille","context":"59, Nord, Hauts-de-France","type":"street","importance":0.7473,"depcode":"59","street":"Rue de la Paix d'Utrecht","_type":"address"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[3.011594,50.641441]},"properties":{"label":"Rue de la Paix du 8 Mai 1945 59160 Lille","score":0.8817754545454546,"id":"59350_9555","banId":"c80e755f-3a3d-407f-9c3f-2972a2b8e5c3","name":"Rue de la Paix du 8 Mai 1945","postcode":"59160","citycode":"59350","oldcitycode":"59355","x":700821.53,"y":7060499.19,"city":"Lille","oldcity":"Lomme","context":"59, Nord, Hauts-de-France","type":"street","importance":0.69953,"depcode":"59","street":"Rue de la Paix du 8 Mai 1945","_type":"address"}}],"query":"rue de la paix"}

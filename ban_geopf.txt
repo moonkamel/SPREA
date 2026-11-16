@@ -1,0 +1,18 @@
+HTTP/2 200 
+date: Mon, 16 Nov 2026 09:14:55 GMT
+content-type: application/json; charset=utf-8
+content-length: 1111
+x-ratelimit-limit-second: 1
+ratelimit-limit: 50
+vary: Origin
+etag: W/"457-y7El8GjhB2n/XAaKEIlXo5h34r4"
+strict-transport-security: max-age=31536000; includeSubDomains
+access-control-allow-origin: *
+access-control-allow-credentials: true
+access-control-allow-methods: GET, PUT, POST, DELETE, PATCH, OPTIONS
+access-control-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Content-Disposition,Content-Length,X-Community
+access-control-max-age: 1728000
+x-iplb-request-id: 032A9D73:2CB3_91EFC1E7:01BB_6AFAC98F_92797227:253CE7
+x-iplb-instance: 61217
+
+{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2.474593,50.558145]},"properties":{"label":"12 Rue de la Paix 62190 Lillers","score":0.8699509090909091,"housenumber":"12","id":"62516_0508_00012","banId":"b2501cd7-9ce6-4f4a-8fdf-d24eed7efc6b","name":"12 Rue de la Paix","postcode":"62190","citycode":"62516","x":662709.29,"y":7051342.01,"city":"Lillers","context":"62, Pas-de-Calais, Hauts-de-France","type":"housenumber","importance":0.56946,"depcode":"62","street":"Rue de la Paix","_type":"address"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2.415266,48.881901]},"properties":{"label":"12 Rue de la Paix 93260 Les Lilas","score":0.6912354545454545,"housenumber":"12","id":"93045_7105_00012","banId":"6985a972-5899-43c7-ae8c-70d8bc89466f","name":"12 Rue de la Paix","postcode":"93260","citycode":"93045","x":657117.1,"y":6864812.45,"city":"Les Lilas","context":"93, Seine-Saint-Denis, Île-de-France","type":"housenumber","importance":0.60359,"depcode":"93","street":"Rue de la Paix","_type":"address"}}],"query":"12 rue de la paix lille"}
