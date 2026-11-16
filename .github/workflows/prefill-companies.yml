@@ -5,8 +5,6 @@ name: Sociétés propriétaires (siège et dirigeant gardés)
 # them even when the Annuaire des entreprises refuses a request.
 on:
   # Nightly: the Annuaire refuses many requests from GitHub's addresses, each night fills the rest
-  schedule:
-    - cron: "17 3 * * *"
   workflow_dispatch:
   push:
     branches: ["claude/**"]

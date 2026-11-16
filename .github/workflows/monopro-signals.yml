@@ -11,11 +11,6 @@ on:
         description: "Nombre de sociétés (vide = toutes)"
         required: false
         default: ""
-  schedule:
-    - cron: "23 4 * * 6"
-  workflow_run:
-    workflows: ["Monopropriétés (BDNB)"]
-    types: [completed]
 
 permissions:
   contents: read
